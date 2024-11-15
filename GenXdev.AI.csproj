@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <PackageLicenseFile>license.txt</PackageLicenseFile>
+        <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+        <NeutralLanguage>en</NeutralLanguage>
+        <AssemblyVersion>1.36.2024</AssemblyVersion>
+        <FileVersion>1.36.2024</FileVersion>
+        <Description>A Windows PowerShell module for local and online AI related operations</Description>
+        <Copyright>Copyright (c) 2024 GenXdev</Copyright>
+        <PackageProjectUrl>https://github.com/genXdev/GenXdev.AI</PackageProjectUrl>
+        <PackageIcon>powershell.jpg</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RepositoryUrl>https://github.com/genXdev/GenXdev.AI</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>GenXdev, PowerShell, Windows, AI</PackageTags>
+        <UseWindowsForms>true</UseWindowsForms>
+        <AssemblyName>GenXdev.AI</AssemblyName>
+        <RootNamespace>GenXdev.AI</RootNamespace>
+        <OutputPath>./bin/</OutputPath>
+        <IntermediateOutputPath>./obj/</IntermediateOutputPath>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="System.Management.Automation" Version="7.4.2" />
+    </ItemGroup>
+</Project>
