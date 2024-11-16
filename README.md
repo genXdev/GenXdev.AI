@@ -27,15 +27,15 @@ Update-Module
 
 # Cmdlet Index
 ### GenXdev.AI<hr/>
-| Command&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | aliases&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Description                                                                                                                                                            |
-| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Invoke-LMStudioQuery](#Invoke-LMStudioQuery)                                                                 | qlms                                                          | The `Invoke-LMStudioQuery` function sends a query to the LM-Studio API and returns the response.                                                                       |
-| [Invoke-QueryImageContent](#Invoke-QueryImageContent)                                                         |                                                               | The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns the response.                                                                  |
-| [Invoke-QueryImageKeywords](#Invoke-QueryImageKeywords)                                                       |                                                               | The `Invoke-QueryImageKeywords` function sends an image to the LM-Studio API and returns keywords found in the image.                                                  |
-| [Invoke-ImageKeywordUpdate](#Invoke-ImageKeywordUpdate)                                                       | updateimages                                                  | The `Invoke-ImageKeywordUpdate` function updates the keywords and description of images in a directory.                                                                |
-| [Invoke-ImageKeywordScan](#Invoke-ImageKeywordScan)                                                           | findimages                                                    | The `Invoke-ImageKeywordScan` function scans images in a directory for keywords and description.                                                                       |
-| [GenerateMasonryLayoutHtml](#GenerateMasonryLayoutHtml)                                                       |                                                               | The `GenerateMasonryLayoutHtml` function creates an HTML file with a masonry layout for displaying images, including their descriptions and keywords.                  |
-| [Add-ImageDescriptionsToFileNames](#Add-ImageDescriptionsToFileNames)                                         |                                                               | This function iterates through all image files in a given directory and appends a description to each file name. The description is extracted from the image metadata. |
+| Command&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | aliases&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Description |
+| --- | --- | --- |
+| [Invoke-LMStudioQuery](#Invoke-LMStudioQuery) | qlms | The `Invoke-LMStudioQuery` function sends a query to the LM-Studio API and returns the response. |
+| [Invoke-QueryImageContent](#Invoke-QueryImageContent) |  | The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns the response. |
+| [Invoke-QueryImageKeywords](#Invoke-QueryImageKeywords) |  | The `Invoke-QueryImageKeywords` function sends an image to the LM-Studio API and returns keywords found in the image. |
+| [Invoke-ImageKeywordUpdate](#Invoke-ImageKeywordUpdate) | updateimages | The `Invoke-ImageKeywordUpdate` function updates the keywords and description of images in a directory. |
+| [Invoke-ImageKeywordScan](#Invoke-ImageKeywordScan) | findimages | The `Invoke-ImageKeywordScan` function scans images in a directory for keywords and description. |
+| [GenerateMasonryLayoutHtml](#GenerateMasonryLayoutHtml) |  | The `GenerateMasonryLayoutHtml` function creates an HTML file with a masonry layout for displaying images, including their descriptions and keywords. |
+| [Add-ImageDescriptionsToFileNames](#Add-ImageDescriptionsToFileNames) |  | This function iterates through all image files in a given directory and appends a description to each file name. The description is extracted from the image metadata. |
 
 <br/><hr/><hr/><br/>
 
@@ -55,13 +55,13 @@ Invoke-LMStudioQuery                 --> qlms
 
 ### SYNTAX
 ````PowerShell
-Invoke-LMStudioQuery [-query] <String> [[-attachments] <String[]>] [[-instructions]
-<String>] [[-model] <String>] [[-temperature] <Double>] [[-max_token] <Int32>]
+Invoke-LMStudioQuery [-query] <String> [[-attachments] <String[]>] [[-instructions] 
+<String>] [[-model] <String>] [[-temperature] <Double>] [[-max_token] <Int32>] 
 [[-imageDetail] <String>] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Invoke-LMStudioQuery` function sends a query to the LM-Studio API and returns the
+    The `Invoke-LMStudioQuery` function sends a query to the LM-Studio API and returns the 
     response.
 
 ### PARAMETERS
@@ -69,7 +69,7 @@ Invoke-LMStudioQuery [-query] <String> [[-attachments] <String[]>] [[-instructio
         The query string for the LLM
         Required?                    true
         Position?                    1
-        Default value
+        Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -attachments <String[]>
@@ -83,7 +83,7 @@ Invoke-LMStudioQuery [-query] <String> [[-attachments] <String[]>] [[-instructio
         The system instructions for the LLM.
         Required?                    false
         Position?                    3
-        Default value                Your an AI assistent that never tells a lie and always
+        Default value                Your an AI assistent that never tells a lie and always 
         answers truthfully, first of all comprehensive and then if possible consice.
         Accept pipeline input?       false
         Accept wildcard characters?  false
@@ -91,7 +91,7 @@ Invoke-LMStudioQuery [-query] <String> [[-attachments] <String[]>] [[-instructio
         The LM-Studio model to use for generating the response.
         Required?                    false
         Position?                    4
-        Default value                Meta-Llama-3-8B-Instruct
+        Default value                yi-coder-9b-chat
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -temperature <Double>
@@ -119,7 +119,7 @@ Invoke-LMStudioQuery [-query] <String> [[-attachments] <String[]>] [[-instructio
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
 
 <br/><hr/><hr/><br/>
 
@@ -133,27 +133,27 @@ Invoke-QueryImageContent
 
 ### SYNTAX
 ````PowerShell
-Invoke-QueryImageContent [-query] <String> [-ImagePath] <String> [[-temperature] <Double>]
+Invoke-QueryImageContent [-query] <String> [-ImagePath] <String> [[-temperature] <Double>] 
 [<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns
-    the response.
+    The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns the 
+    response.
 
 ### PARAMETERS
     -query <String>
         The query string for the LLM.
         Required?                    true
         Position?                    1
-        Default value
+        Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -ImagePath <String>
         The file path of the image to send with the query.
         Required?                    true
         Position?                    2
-        Default value
+        Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -temperature <Double>
@@ -166,7 +166,7 @@ Invoke-QueryImageContent [-query] <String> [-ImagePath] <String> [[-temperature]
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
 
 <br/><hr/><hr/><br/>
 
@@ -184,7 +184,7 @@ Invoke-QueryImageKeywords [-ImagePath] <String> [<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Invoke-QueryImageKeywords` function sends an image to the LM-Studio API and returns
+    The `Invoke-QueryImageKeywords` function sends an image to the LM-Studio API and returns 
     keywords found in the image.
 
 ### PARAMETERS
@@ -192,14 +192,14 @@ Invoke-QueryImageKeywords [-ImagePath] <String> [<CommonParameters>]
         The file path of the image to send with the query.
         Required?                    true
         Position?                    1
-        Default value
+        Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
 
 <br/><hr/><hr/><br/>
 
@@ -213,12 +213,12 @@ Invoke-ImageKeywordUpdate            --> updateimages
 
 ### SYNTAX
 ````PowerShell
-Invoke-ImageKeywordUpdate [[-imageDirectory] <String>] [[-recurse]] [[-onlyNew]]
+Invoke-ImageKeywordUpdate [[-imageDirectory] <String>] [[-recurse]] [[-onlyNew]] 
 [[-retryFailed]] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Invoke-ImageKeywordUpdate` function updates the keywords and description of images in
+    The `Invoke-ImageKeywordUpdate` function updates the keywords and description of images in 
     a directory.
 
 ### PARAMETERS
@@ -254,7 +254,7 @@ Invoke-ImageKeywordUpdate [[-imageDirectory] <String>] [[-recurse]] [[-onlyNew]]
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
 
 <br/><hr/><hr/><br/>
 
@@ -268,12 +268,12 @@ Invoke-ImageKeywordScan              --> findimages
 
 ### SYNTAX
 ````PowerShell
-Invoke-ImageKeywordScan [[-keywords] <String[]>] [[-imageDirectory] <String>]
-[[-passthru]] [<CommonParameters>]
+Invoke-ImageKeywordScan [[-keywords] <String[]>] [[-imageDirectory] <String>] [[-passthru]] 
+[<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Invoke-ImageKeywordScan` function scans images in a directory for keywords and
+    The `Invoke-ImageKeywordScan` function scans images in a directory for keywords and 
     description.
 
 ### PARAMETERS
@@ -302,7 +302,7 @@ Invoke-ImageKeywordScan [[-keywords] <String[]>] [[-imageDirectory] <String>]
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
 
 <br/><hr/><hr/><br/>
 
@@ -320,7 +320,7 @@ GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [<CommonParam
 ````
 
 ### DESCRIPTION
-    The `GenerateMasonryLayoutHtml` function creates an HTML file with a masonry layout for
+    The `GenerateMasonryLayoutHtml` function creates an HTML file with a masonry layout for 
     displaying images, including their descriptions and keywords.
 
 ### PARAMETERS
@@ -328,21 +328,21 @@ GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [<CommonParam
         An array of image objects containing path, keywords, and description.
         Required?                    true
         Position?                    1
-        Default value
+        Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -FilePath <String>
         The file path where the HTML file will be saved.
         Required?                    false
         Position?                    2
-        Default value
+        Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
 
 <br/><hr/><hr/><br/>
 
@@ -360,7 +360,7 @@ Add-ImageDescriptionsToFileNames [<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    This function iterates through all image files in a given directory and appends a
+    This function iterates through all image files in a given directory and appends a 
     description to each file name. The description is extracted from the image metadata.
 
 ### PARAMETERS
@@ -368,6 +368,6 @@ Add-ImageDescriptionsToFileNames [<CommonParameters>]
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
 
 <br/><hr/><hr/><br/>

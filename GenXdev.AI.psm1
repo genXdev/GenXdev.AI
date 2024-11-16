@@ -30,9 +30,9 @@ The image detail to use for the attachments.
 .EXAMPLE
     -------------------------- Example 1 --------------------------
 
-    Invoke-LMStudioQuery -query "Introduce yourself." -instructions "Always answer in rhymes." -model "lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF" -temperature 0.9
+    Invoke-LMStudioQuery -query "Introduce yourself." -instructions "Always answer in rhymes." -model "lmstudio-community/yi-coder-9b-chat-GGUF" -temperature 0.9
 
-    qlms "Introduce yourself." "Always answer in rhymes." "lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF" 0.9
+    qlms "Introduce yourself." "Always answer in rhymes." "lmstudio-community/yi-coder-9b-chat-GGUF" 0.9
 
 .EXAMPLE
     -------------------------- Example 2 --------------------------
@@ -76,8 +76,8 @@ function Invoke-LMStudioQuery {
             Position = 3,
             Mandatory = $false,
             HelpMessage = "The LM-Studio model to use for generating the response.")]
-        [PSDefaultValue(Value = "Meta-Llama-3-8B-Instruct")]
-        [string]$model = "Meta-Llama-3-8B-Instruct",
+        [PSDefaultValue(Value = "yi-coder-9b-chat")]
+        [string]$model = "yi-coder-9b-chat",
 
         [Parameter(
             Mandatory = $false,
@@ -328,12 +328,10 @@ function Invoke-LMStudioQuery {
 
             function getImageBase64Data($filePath, $imageDetail) {
                 $image = $null
-                try
-                {
+                try {
                     $image = [System.Drawing.Image]::FromFile($filePath)
                 }
-                catch
-                {
+                catch {
                     return
                 }
                 if ($null -eq $image) {
