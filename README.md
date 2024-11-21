@@ -36,6 +36,9 @@ Update-Module
 | [Invoke-ImageKeywordScan](#Invoke-ImageKeywordScan) | findimages | The `Invoke-ImageKeywordScan` function scans images in a directory for keywords and description. |
 | [GenerateMasonryLayoutHtml](#GenerateMasonryLayoutHtml) |  | The `GenerateMasonryLayoutHtml` function creates an HTML file with a masonry layout for displaying images, including their descriptions and keywords. |
 | [Add-ImageDescriptionsToFileNames](#Add-ImageDescriptionsToFileNames) |  | This function iterates through all image files in a given directory and appends a description to each file name. The description is extracted from the image metadata. |
+| [Start-AudioTranscription](#Start-AudioTranscription) |  | Records audio using the default audio input device and returns the detected text |
+| [Start-AudioChat](#Start-AudioChat) |  | Starts an audio chat session by recording audio and invoking the default LLM |
+| [Get-MediaFileAudioTranscription](#Get-MediaFileAudioTranscription) |  | Transcribes an audio or video file to text using the Whisper AI model |
 
 <br/><hr/><hr/><br/>
 
@@ -364,6 +367,130 @@ Add-ImageDescriptionsToFileNames [<CommonParameters>]
     description to each file name. The description is extracted from the image metadata.
 
 ### PARAMETERS
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
+
+<br/><hr/><hr/><br/>
+
+##	Start-AudioTranscription
+````PowerShell
+Start-AudioTranscription
+````
+
+### SYNOPSIS
+    Transcribes audio to text using the default audio input device.
+
+### SYNTAX
+````PowerShell
+Start-AudioTranscription [[-Language] <String>] [<CommonParameters>]
+````
+
+### DESCRIPTION
+    Records audio using the default audio input device and returns the detected text
+
+### PARAMETERS
+    -Language <String>
+        The language to expect in the audio.
+        Required?                    false
+        Position?                    1
+        Default value                auto
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
+
+<br/><hr/><hr/><br/>
+
+##	Start-AudioChat
+````PowerShell
+Start-AudioChat
+````
+
+### SYNOPSIS
+    Starts a rudimentary audio chat session.
+
+### SYNTAX
+````PowerShell
+Start-AudioChat [[-Language] <String>] [[-instructions] <String>] [[-model] <String>] 
+[[-temperature] <Double>] [<CommonParameters>]
+````
+
+### DESCRIPTION
+    Starts an audio chat session by recording audio and invoking the default LLM
+
+### PARAMETERS
+    -Language <String>
+        The language to expect in the audio.
+        Required?                    false
+        Position?                    1
+        Default value                auto
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -instructions <String>
+        Required?                    false
+        Position?                    2
+        Default value                Your an AI assistent that never tells a lie and always 
+        answers truthfully, first of all comprehensive and then if possible consice.
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -model <String>
+        Required?                    false
+        Position?                    3
+        Default value                yi-coder-9b-chat
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -temperature <Double>
+        Required?                    false
+        Position?                    4
+        Default value                0.7
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
+
+<br/><hr/><hr/><br/>
+
+##	Get-MediaFileAudioTranscription
+````PowerShell
+Get-MediaFileAudioTranscription
+````
+
+### SYNOPSIS
+    Transcribes an audio or video file to text..
+
+### SYNTAX
+````PowerShell
+Get-MediaFileAudioTranscription [-FilePath] <String> [[-Language] <String>] 
+[<CommonParameters>]
+````
+
+### DESCRIPTION
+    Transcribes an audio or video file to text using the Whisper AI model
+
+### PARAMETERS
+    -FilePath <String>
+        The file path of the audio or video file to transcribe.
+        Required?                    true
+        Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -Language <String>
+        The language to expect in the audio.
+        Required?                    false
+        Position?                    2
+        Default value                auto
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
