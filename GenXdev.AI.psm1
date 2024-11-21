@@ -193,7 +193,9 @@ function Invoke-LMStudioQuery {
 
             Write-Output $foundModel
 
-            $foundModelLoaded = (Get-LoadedModelList) | Where-Object { $_.path -eq $foundModel.path } | Select-Object -First 1
+            $foundModelLoaded = (Get-LoadedModelList) | Where-Object {
+                $_.path -eq $foundModel.path
+            } | Select-Object -First 1
 
             if ($null -eq $foundModelLoaded) {
 
@@ -201,7 +203,7 @@ function Invoke-LMStudioQuery {
                 try {
 
                     Write-Verbose "Loading model.."
-                    & "$lmsPath" load --identifier $foundModel.path --yes --gpu off
+                    & "$lmsPath" load "$($foundModel.path)" --yes --gpu off --exact
 
                     if ($LASTEXITCODE -ne 0) {
 
@@ -332,14 +334,13 @@ function Invoke-LMStudioQuery {
                     $image = [System.Drawing.Image]::FromFile($filePath)
                 }
                 catch {
-                    return
+                    $image = $null
                 }
                 if ($null -eq $image) {
 
                     return [System.Convert]::ToBase64String([IO.File]::ReadAllBytes($filePath));
                 }
 
-                $image = [System.Drawing.Image]::FromFile($filePath)
                 $maxImageDimension = [Math]::Max($image.Width, $image.Height);
                 $maxDimension = $maxImageDimension;
 
@@ -367,8 +368,6 @@ function Invoke-LMStudioQuery {
                     $graphics = [System.Drawing.Graphics]::FromImage($scaledImage)
                     $graphics.DrawImage($image, 0, 0, $newWidth, $newHeight)
                     $graphics.Dispose()
-                    $image.Dispose();
-                    $image = $scaledImage
                 }
 
                 $memoryStream = New-Object System.IO.MemoryStream
@@ -578,19 +577,19 @@ function Invoke-ImageKeywordUpdate {
 
         if ($retryFailed) {
 
-            if (Test-Path "$($PSItem):description.json") {
+            if ([IO.File]::Exists("$($PSItem):description.json")) {
 
                 if ("$(Get-Content "$($PSItem):description.json")".StartsWith("{}")) {
 
-                    Remove-Item "$($PSItem):description.json" -Force
+                    [IO.File]::Delete("$($PSItem):description.json");
                 }
             }
 
-            if (Test-Path "$($PSItem):keywords.json") {
+            if ([IO.File]::Exists("$($PSItem):keywords.json")) {
 
-                if ("$(Get-Content "$($PSItem):keywords.json")".StartsWith("{}")) {
+                if ("$(Get-Content "$($PSItem):keywords.json")".StartsWith("[]")) {
 
-                    Remove-Item "$($PSItem):keywords.json" -Force
+                    [IO.File]::Delete("$($PSItem):keywords.json");
                 }
             }
         }
@@ -989,4 +988,203 @@ function Add-ImageDescriptionsToFileNames {
 }
 
 ################################################################################
+<#
+.SYNOPSIS
+Transcribes audio to text using the default audio input device.
+
+.DESCRIPTION
+Records audio using the default audio input device and returns the detected text
+
+.PARAMETER Language
+The language to expect in the audio.
+#>
+function Start-AudioTranscription {
+
+    [CmdletBinding()]
+
+    param (
+        [Parameter(Mandatory = $false, Position = 0, HelpMessage = "The language to expect")]
+        [PSDefaultValue(Value = "auto")]
+        [string] $Language = "auto"
+    )
+
+    process {
+        $ModelFilePath = Expand-Path "$PSScriptRoot\..\..\GenXdev.Local\" -CreateDirectory
+
+        Get-SpeechToText -ModelFilePath $ModelFilePath -Language $Language
+    }
+}
+
 ################################################################################
+<#
+.SYNOPSIS
+Starts a rudimentary audio chat session.
+
+.DESCRIPTION
+Starts an audio chat session by recording audio and invoking the default LLM
+
+.PARAMETER Language
+The language to expect in the audio.
+#>
+function Start-AudioChat {
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $false, Position = 0, HelpMessage = "The language to expect")]
+        [PSDefaultValue(Value = "auto")]
+        [string] $Language = "auto",
+
+        [Parameter(
+            Position = 1,
+            Mandatory = $false,
+            HelpMessage = "The system instructions for the LLM.")]
+        [PSDefaultValue(Value = "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice.")]
+        [string]$instructions = "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice.",
+
+        [Parameter(
+            Position = 2,
+            Mandatory = $false,
+            HelpMessage = "The LM-Studio model to use for generating the response.")]
+        [PSDefaultValue(Value = "yi-coder-9b-chat")]
+        [string]$model = "yi-coder-9b-chat",
+
+        [Parameter(
+            Mandatory = $false,
+            Position = 3,
+            HelpMessage = "The temperature parameter for controlling the randomness of the response."
+        )]
+        [ValidateRange(0.0, 1.0)]
+        [double] $temperature = 0.7
+    )
+    process {
+
+        [string] $session = "";
+
+        while ($true) {
+            $text = (Start-AudioTranscription -Language:$Language)
+            $question = $text
+            $session += "Current content to respond to: `r`n$text`r`n`r`n"
+            Write-Host "--"
+            $a = [System.Console]::ForegroundColor
+            [System.Console]::ForegroundColor = [System.ConsoleColor]::Yellow
+            Write-Host ">> $text"
+            [System.Console]::ForegroundColor = $a;
+            Write-Host "--"
+            $answer = (qlms -query $session -instructions:$instructions -model:$model -temperature:$temperature)
+            $session = "Previous content responded to: `r`n$question`r`n`r`nPrevious response: `r`n$answer`r`n`r`n"
+            Write-Host "--"
+
+            [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+            Write-Host "<< $answer"
+            [System.Console]::ForegroundColor = $a;
+            Write-Host "--"
+            say $answer
+            Write-Host "Press any key to start recording or Q to quit"
+            if ([Console]::ReadKey().Key -eq "Q") { sst; break }
+            sst;
+            Write-Host "---------------"
+        }
+    }
+}
+
+################################################################################
+<#
+.SYNOPSIS
+Transcribes an audio or video file to text..
+
+.DESCRIPTION
+Transcribes an audio or video file to text using the Whisper AI model
+
+.PARAMETER FilePath
+The file path of the audio or video file to transcribe.
+
+.PARAMETER Language
+The language to expect in the audio.
+#>
+function Get-MediaFileAudioTranscription {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, HelpMessage = "The file path of the audio or video file to transcribe.")]
+        [string] $FilePath,
+
+        [Parameter(Mandatory = $false, Position = 1, HelpMessage = "The language to expect in the audio.")]
+        [PSDefaultValue(Value = "auto")]
+        [string] $Language = "auto"
+    )
+
+    process {
+
+        function IsWinGetInstalled {
+
+            $module = Get-Module "Microsoft.WinGet.Client"
+
+            if ($null -eq $module) {
+
+                return $false
+            }
+        }
+        function InstallWinGet {
+
+            Write-Verbose "Installing WinGet PowerShell client.."
+            Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber
+        }
+
+        $ffmpegPath = (Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\ffmpeg.exe" -File -rec | Select-Object -First 1 | ForEach-Object FullName)
+
+        function Installffmpeg {
+
+            if ($null -ne $ffmpegPath) { return }
+
+            if (-not (IsWinGetInstalled)) {
+
+                InstallWinGet
+            }
+
+            $ffmpeg = "Gyan.FFmpeg"
+            $ffmpegPackage = Get-WinGetPackage -Id $ffmpeg
+
+            if ($null -eq $ffmpegPackage) {
+
+                Write-Verbose "Installing ffmpeg.."
+                Install-WinGetPackage -Name $lmStudio -Force
+                $ffmpegPath = (Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\ffmpeg.exe" -File -rec | Select-Object -First 1).FullName
+            }
+        }
+
+        Installffmpeg;
+
+        $ModelFilePath = Expand-Path "$PSScriptRoot\..\..\GenXdev.Local\" -CreateDirectory
+
+        # Replace these paths with your actual file paths
+        $inputFile = Expand-Path $FilePath
+        $outputFile = [IO.Path]::GetTempFileName() + ".wav";
+
+        # Construct and execute the ffmpeg command
+        $job = Start-Job -ArgumentList $ffmpegPath, $inputFile, $outputFile -ScriptBlock {
+            param($ffmpegPath, $inputFile, $outputFile)
+            & $ffmpegPath -i "$inputFile" -ac 1 -ar 16000 -sample_fmt s16 "$outputFile" -loglevel quiet -y | Out-Null
+            return $LASTEXITCODE
+        }
+
+        $job | Wait-Job | Out-Null
+        $success = ($job | Receive-Job) -eq 0
+        Remove-Job -Job $job | Out-Null
+
+        if (-not $success) {
+
+            Write-Warning "Failed to convert the file to WAV format."
+            if ([IO.File]::Exists($outputFile)) {
+
+                Remove-Item -Path $outputFile -Force
+            }
+            return
+        }
+
+        try {
+            Get-SpeechToText -ModelFilePath:$ModelFilePath -Language:$Language -WaveFile:$outputFile
+        }
+        finally {
+            Remove-Item -Path $outputFile -Force
+        }
+    }
+}
