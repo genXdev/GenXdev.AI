@@ -141,8 +141,8 @@ Invoke-QueryImageContent [-query] <String> [-ImagePath] <String> [[-temperature]
 ````
 
 ### DESCRIPTION
-    The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns the 
-    response.
+    The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns 
+    the response.
 
 ### PARAMETERS
     -query <String>
@@ -271,8 +271,8 @@ Invoke-ImageKeywordScan              --> findimages
 
 ### SYNTAX
 ````PowerShell
-Invoke-ImageKeywordScan [[-keywords] <String[]>] [[-imageDirectory] <String>] [[-passthru]] 
-[<CommonParameters>]
+Invoke-ImageKeywordScan [[-keywords] <String[]>] [[-imageDirectory] <String>] 
+[[-passthru]] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
