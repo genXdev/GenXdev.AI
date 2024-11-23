@@ -35,7 +35,6 @@ Update-Module
 | [Invoke-ImageKeywordUpdate](#Invoke-ImageKeywordUpdate) | updateimages | The `Invoke-ImageKeywordUpdate` function updates the keywords and description of images in a directory. |
 | [Invoke-ImageKeywordScan](#Invoke-ImageKeywordScan) | findimages | The `Invoke-ImageKeywordScan` function scans images in a directory for keywords and description. |
 | [GenerateMasonryLayoutHtml](#GenerateMasonryLayoutHtml) |  | The `GenerateMasonryLayoutHtml` function creates an HTML file with a masonry layout for displaying images, including their descriptions and keywords. |
-| [Add-ImageDescriptionsToFileNames](#Add-ImageDescriptionsToFileNames) |  | This function iterates through all image files in a given directory and appends a description to each file name. The description is extracted from the image metadata. |
 | [Start-AudioTranscription](#Start-AudioTranscription) |  | Records audio using the default audio input device and returns the detected text |
 | [Start-AudioChat](#Start-AudioChat) |  | Starts an audio chat session by recording audio and invoking the default LLM |
 | [Get-TextTranslation](#Get-TextTranslation) |  | The `Get-TextTranslation` function translates text to another language using the LM-Studio API. |
@@ -350,32 +349,6 @@ GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [<CommonParam
 
 <br/><hr/><hr/><br/>
 
-##	Add-ImageDescriptionsToFileNames
-````PowerShell
-Add-ImageDescriptionsToFileNames
-````
-
-### SYNOPSIS
-    Adds image descriptions to file names in a specified directory.
-
-### SYNTAX
-````PowerShell
-Add-ImageDescriptionsToFileNames [<CommonParameters>]
-````
-
-### DESCRIPTION
-    This function iterates through all image files in a given directory and appends a 
-    description to each file name. The description is extracted from the image metadata.
-
-### PARAMETERS
-    <CommonParameters>
-        This cmdlet supports the common parameters: Verbose, Debug,
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
-
-<br/><hr/><hr/><br/>
-
 ##	Start-AudioTranscription
 ````PowerShell
 Start-AudioTranscription
@@ -529,7 +502,7 @@ Get-MediaFileAudioTranscription
 ### SYNTAX
 ````PowerShell
 Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] 
-[[-LanguageOut] <String>] [[-model] <String>] [[-srt]] [[-MaxSrtChars] <Int32>] 
+[[-LanguageOut] <String>] [[-model] <String>] [[-SRT]] [[-MaxSrtChars] <Int32>] 
 [<CommonParameters>]
 ````
 
@@ -565,7 +538,7 @@ Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>]
         Default value                yi-coder-9b-chat
         Accept pipeline input?       false
         Accept wildcard characters?  false
-    -srt [<SwitchParameter>]
+    -SRT [<SwitchParameter>]
         Output in SRT format.
         Required?                    false
         Position?                    5

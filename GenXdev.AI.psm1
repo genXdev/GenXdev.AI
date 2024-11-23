@@ -14,6 +14,7 @@ The file paths of the attachments to send with the query.
 
 .PARAMETER instructions
 The system instructions for the LLM.
+Default value: "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice."
 
 .PARAMETER model
 The LM-Studio model to use for generating the response.
@@ -487,7 +488,7 @@ function Invoke-QueryImageContent {
 
         [Parameter(
             Mandatory = $false,
-            Position = 3,
+            Position = 2,
             HelpMessage = "The temperature parameter for controlling the randomness of the response."
         )]
         [ValidateRange(0.0, 1.0)]
@@ -499,38 +500,38 @@ function Invoke-QueryImageContent {
     # Invoke-LMStudioQuery -model "xtuner/llava-llama-3-8b-v1_1-gguf/llava-llama-3-8b-v1_1-f16.gguf" -query $query -instructions "You are an AI assistant that analyzes images." -attachments @($ImagePath) -temperature $temperature
 }
 
-################################################################################
-<#
-.SYNOPSIS
-Queries the LM-Studio API to get keywords from an image.
+# ################################################################################
+# <#
+# .SYNOPSIS
+# Queries the LM-Studio API to get keywords from an image.
 
-.DESCRIPTION
-The `Invoke-QueryImageKeywords` function sends an image to the LM-Studio API and returns keywords found in the image.
+# .DESCRIPTION
+# The `Invoke-QueryImageKeywords` function sends an image to the LM-Studio API and returns keywords found in the image.
 
-.PARAMETER ImagePath
-The file path of the image to send with the query.
+# .PARAMETER ImagePath
+# The file path of the image to send with the query.
 
-.EXAMPLE
-    -------------------------- Example 1 --------------------------
+# .EXAMPLE
+#     -------------------------- Example 1 --------------------------
 
-    Invoke-QueryImageKeywords -ImagePath "C:\path\to\image.jpg"
-#>
-function Invoke-QueryImageKeywords {
+#     Invoke-QueryImageKeywords -ImagePath "C:\path\to\image.jpg"
+# #>
+# function Invoke-QueryImageKeywords {
 
-    [CmdletBinding()]
-    param (
-        [Parameter(
-            Mandatory = $true,
-            Position = 0,
-            HelpMessage = "The file path of the image to send with the query."
-        )]
-        [string]$ImagePath
-    )
+#     [CmdletBinding()]
+#     param (
+#         [Parameter(
+#             Mandatory = $true,
+#             Position = 0,
+#             HelpMessage = "The file path of the image to send with the query."
+#         )]
+#         [string]$ImagePath
+#     )
 
-    # Invoke the query to get keywords from the image
-    Invoke-LMStudioQuery -model "MiniCPM" -instructions "You are an AI assistant that analyzes images that returns nothing other then text in the form of a array of strings in json format that holds short names for each object you see in the picture. Only return json strings in a single array, no json objects. return only no other text, explanations or notes" -query "analyze this image" -attachments @($ImagePath) -temperature 0.01
-    # Invoke-LMStudioQuery -model "xtuner/llava-llama-3-8b-v1_1-gguf/llava-llama-3-8b-v1_1-f16.gguf" -instructions "You are an AI assistant that analyzes images that returns nothing other then text in the form of a array of strings in json format that holds short names for each object you see in the picture. Only return json strings in a single array, no json objects. return only no other text, explanations or notes" -query "analyze this image" -attachments @($ImagePath) -temperature 0.01
-}
+#     # Invoke the query to get keywords from the image
+#     Invoke-LMStudioQuery -model "MiniCPM" -instructions "You are an AI assistant that analyzes images that returns nothing other then text in the form of a array of strings in json format that holds short names for each object you see in the picture. Only return json strings in a single array, no json objects. return only no other text, explanations or notes" -query "analyze this image" -attachments @($ImagePath) -temperature 0.01
+#     # Invoke-LMStudioQuery -model "xtuner/llava-llama-3-8b-v1_1-gguf/llava-llama-3-8b-v1_1-f16.gguf" -instructions "You are an AI assistant that analyzes images that returns nothing other then text in the form of a array of strings in json format that holds short names for each object you see in the picture. Only return json strings in a single array, no json objects. return only no other text, explanations or notes" -query "analyze this image" -attachments @($ImagePath) -temperature 0.01
+# }
 
 ################################################################################
 <#
@@ -556,6 +557,10 @@ Retry previously failed images.
     -------------------------- Example 1 --------------------------
 
     Invoke-ImageKeywordUpdate -imageDirectory "C:\path\to\images"
+
+    or in short form:
+
+    updateimages "C:\path\to\images"
 #>
 function Invoke-ImageKeywordUpdate {
 
@@ -591,7 +596,7 @@ function Invoke-ImageKeywordUpdate {
 
             if ([IO.File]::Exists("$($PSItem):description.json")) {
 
-                if ("$(Get-Content "$($PSItem):description.json")".StartsWith("{}")) {
+                if ("$([IO.File]::ReadAllText("$($PSItem):description.json"))".StartsWith("{}")) {
 
                     [IO.File]::Delete("$($PSItem):description.json");
                 }
@@ -599,7 +604,7 @@ function Invoke-ImageKeywordUpdate {
 
             if ([IO.File]::Exists("$($PSItem):keywords.json")) {
 
-                if ("$(Get-Content "$($PSItem):keywords.json")".StartsWith("[]")) {
+                if ("$([IO.File]::ReadAllText("$($PSItem):keywords.json"))".StartsWith("[]")) {
 
                     [IO.File]::Delete("$($PSItem):keywords.json");
                 }
@@ -613,7 +618,7 @@ function Invoke-ImageKeywordUpdate {
             $_.Attributes = $_.Attributes -bxor [System.IO.FileAttributes]::ReadOnly
         }
 
-        if ((-not $onlyNew) -or (-not [IO.File]::Exists("$($image):description.json"))) {
+        if ((-not $onlyNew) -or (-not [IO.File]::Exists("$($image):description.json") -or ([IO.File]::Exists("$($image):keywords.json")))) {
 
             if (-not [IO.File]::Exists("$($image):description.json")) {
 
@@ -621,7 +626,7 @@ function Invoke-ImageKeywordUpdate {
             }
 
             Write-Verbose "Getting image description for $image.."
-            $description = Invoke-QueryImageContent -query "Analyze image and return it as a single json object with properties: short_description (max 80 chars), long_description, has_nudity, has_explicit_content, overall_mood_of_image, picture_type, style_type. The filepath of the image is: '$image'" -ImagePath $image -temperature 0.01
+            $description = Invoke-QueryImageContent -query "Analyze image and return it as a single json object with properties: short_description (max 80 chars), long_description, has_nudity, keywords (array of strings), has_explicit_content, overall_mood_of_image, picture_type, style_type. The filepath of the image is: '$image'" -ImagePath $image -temperature 0.01
             Write-Verbose $description
 
             try {
@@ -632,6 +637,24 @@ function Invoke-ImageKeywordUpdate {
 
                     $description = $description.Substring($i0, $i1 - $i0 + 1)
                 }
+
+                if ([IO.File]::Exists("$($image):keywords.json")) {
+
+                    try {
+                        $keywordsFound = [IO.File]::ReadAllText("$($image):keywords.json") | ConvertFrom-Json
+
+                        if ($null -eq $descriptionFound.keywords) {
+
+                            Add-Member -NotePropertyName "keywords" -InputObject $description -NotePropertyValue $keywordsFound -Force | Out-Null
+
+                            [IO.File]::Delete("$($image):keywords.json")
+                        }
+                    }
+                    catch {
+                        $keywordsFound = @()
+                    }
+                }
+
                 $description | ConvertFrom-Json | ConvertTo-Json -Compress -Depth 20 | Out-File -FilePath "$($image):description.json" -Force
             }
             catch {
@@ -639,25 +662,25 @@ function Invoke-ImageKeywordUpdate {
             }
         }
 
-        if ($onlyNew -and [IO.File]::Exists("$($image):keywords.json")) {
+        # if ($onlyNew -and [IO.File]::Exists("$($image):keywords.json")) {
 
-            return
-        }
+        #     return
+        # }
 
-        if (-not [IO.File]::Exists("$($image):keywords.json")) {
+        # if (-not [IO.File]::Exists("$($image):keywords.json")) {
 
-            "[]" > "$($image):keywords.json"
-        }
+        #     "[]" > "$($image):keywords.json"
+        # }
 
-        $keywords = Invoke-QueryImageKeywords -ImagePath $image
+        # $keywords = Invoke-QueryImageKeywords -ImagePath $image
 
-        if ($null -ne $keywords) {
+        # if ($null -ne $keywords) {
 
-            $keywords = $keywords | ConvertTo-Json -Compress -Depth 20;
-            Write-Verbose "$image : $keywords`r`n`r`n"
+        #     $keywords = $keywords | ConvertTo-Json -Compress -Depth 20;
+        #     Write-Verbose "$image : $keywords`r`n`r`n"
 
-            $keywords | Out-File -FilePath "$($image):keywords.json" -Force
-        }
+        #     $keywords | Out-File -FilePath "$($image):keywords.json" -Force
+        # }
     }
 }
 
@@ -717,7 +740,9 @@ function Invoke-ImageKeywordScan {
         if ([IO.File]::Exists("$($image):description.json")) {
 
             try {
-                $descriptionFound = Get-Content "$($image):description.json" | ConvertFrom-Json
+                $descriptionFound = [IO.File]::ReadAllText("$($image):description.json") | ConvertFrom-Json
+                $keywordsFound = ($null -eq $descriptionFound.keywords) ? @() : $descriptionFound.keywords;
+
             }
             catch {
                 $descriptionFound = $null;
@@ -727,34 +752,63 @@ function Invoke-ImageKeywordScan {
         if ([IO.File]::Exists("$($image):keywords.json")) {
 
             try {
-                $keywordsFound = Get-Content "$($image):keywords.json" | ConvertFrom-Json
+                $keywordsFound = [IO.File]::ReadAllText("$($image):keywords.json") | ConvertFrom-Json
+
+                if ($null -eq $descriptionFound.keywords) {
+
+                    Add-Member -NotePropertyName "keywords" -InputObject $descriptionFound -NotePropertyValue $keywordsFound -Force | Out-Null
+
+                    [IO.File]::Delete("$($image):keywords.json")
+
+                    $descriptionFound | ConvertTo-Json -Depth 99 -Compress |  Set-Content "$($image):description.json" | ConvertFrom-Json
+                }
             }
             catch {
                 $keywordsFound = @()
             }
         }
 
-        if ((($null -eq $keywords -or ($keywords.Length -eq 0)) -and (($null -eq $keywordsFound -or ($keywordsFound.length -eq 0)) -and ($null -eq $descriptionFound)))) {
+        if (
+            (
+                # No keywords specified or no keywords found
+                ($null -eq $keywords -or ($keywords.Length -eq 0)) -and
+                (
+                    # No keywords found
+                    ($null -eq $keywordsFound -or ($keywordsFound.length -eq 0)) -and
+
+                    # No description found
+                    ($null -eq $descriptionFound)
+                )
+            )) {
 
             return;
         }
 
+        # No keywords specified
         $found = ($null -eq $keywords -or ($keywords.Length -eq 0));
 
+        # keywords specified
         if (-not $found) {
 
+            # get json of description
             $descriptionFoundJson = $null -ne $descriptionFound ? $descriptionFound : "" | ConvertTo-Json -Compress -Depth 10
 
+            # check if any of the keywords are found in the description
             foreach ($requiredKeyword in $keywords) {
 
+                # check if the description contains the keyword
                 $found = "$descriptionFoundJson" -like $requiredKeyword;
 
+                # if not found, check if any of the keywords are found in the keywords
                 if (-not $found) {
 
+                    # skip if no keywords found for this image?
                     if ($null -eq $keywordsFound -or ($keywordsFound.Length -eq 0)) { continue; }
 
+                    # check if any of the keywords are found in the keywords
                     foreach ($imageKeyword in $keywordsFound) {
 
+                        # check if the keyword matches
                         if ($imageKeyword -like $requiredKeyword) {
 
                             $found = $true
@@ -1165,16 +1219,19 @@ Transcribes an audio or video file to text using the Whisper AI model
 The file path of the audio or video file to transcribe.
 
 .PARAMETER LanguageIn
-The language to expect in the audio.
+The language to expect in the audio. E.g. "en", "fr", "de", "nl"
 
 .PARAMETER LanguageOut
-The language to translate to
+The language to translate to. E.g. "french", "german", "dutch"
 
 .PARAMETER model
 The LM-Studio model to use for translations
 
-.PARAMETER srt
+.PARAMETER SRT
 Output in SRT format.
+
+.PARAMETER MaxSrtChars
+The maximum number of characters per line in the SRT output.
 
 #>
 function Get-MediaFileAudioTranscription {
