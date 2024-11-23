@@ -38,6 +38,7 @@ Update-Module
 | [Add-ImageDescriptionsToFileNames](#Add-ImageDescriptionsToFileNames) |  | This function iterates through all image files in a given directory and appends a description to each file name. The description is extracted from the image metadata. |
 | [Start-AudioTranscription](#Start-AudioTranscription) |  | Records audio using the default audio input device and returns the detected text |
 | [Start-AudioChat](#Start-AudioChat) |  | Starts an audio chat session by recording audio and invoking the default LLM |
+| [Get-TextTranslation](#Get-TextTranslation) |  | The `Get-TextTranslation` function translates text to another language using the LM-Studio API. |
 | [Get-MediaFileAudioTranscription](#Get-MediaFileAudioTranscription) |  | Transcribes an audio or video file to text using the Whisper AI model |
 
 <br/><hr/><hr/><br/>
@@ -141,8 +142,8 @@ Invoke-QueryImageContent [-query] <String> [-ImagePath] <String> [[-temperature]
 ````
 
 ### DESCRIPTION
-    The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns 
-    the response.
+    The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns the 
+    response.
 
 ### PARAMETERS
     -query <String>
@@ -271,8 +272,8 @@ Invoke-ImageKeywordScan              --> findimages
 
 ### SYNTAX
 ````PowerShell
-Invoke-ImageKeywordScan [[-keywords] <String[]>] [[-imageDirectory] <String>] 
-[[-passthru]] [<CommonParameters>]
+Invoke-ImageKeywordScan [[-keywords] <String[]>] [[-imageDirectory] <String>] [[-passthru]] 
+[<CommonParameters>]
 ````
 
 ### DESCRIPTION
@@ -459,6 +460,64 @@ Start-AudioChat [[-Language] <String>] [[-instructions] <String>] [[-model] <Str
 
 <br/><hr/><hr/><br/>
 
+##	Get-TextTranslation
+````PowerShell
+Get-TextTranslation
+````
+
+### SYNOPSIS
+    Translates text to another language using the LM-Studio API.
+
+### SYNTAX
+````PowerShell
+Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Object>] 
+[[-model] <String>] [<CommonParameters>]
+````
+
+### DESCRIPTION
+    The `Get-TextTranslation` function translates text to another language using the LM-Studio 
+    API.
+
+### PARAMETERS
+    -Text <String>
+        The text to translate.
+        Required?                    true
+        Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -Language <String>
+        The language to translate to.
+        Required?                    false
+        Position?                    2
+        Default value                english
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -Instructions <Object>
+        The instructions for the model.
+        Defaults to:
+        Required?                    false
+        Position?                    3
+        Default value                Translate this partial subtitle text, into the [Language] 
+        language, leave in the same style of writing, and leave the paragraph structure in 
+        tact, ommit only the translation no yapping or chatting.
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -model <String>
+        The LM-Studio model to use for generating the response.
+        Required?                    false
+        Position?                    4
+        Default value                yi-coder-9b-chat
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
+
+<br/><hr/><hr/><br/>
+
 ##	Get-MediaFileAudioTranscription
 ````PowerShell
 Get-MediaFileAudioTranscription
@@ -469,7 +528,8 @@ Get-MediaFileAudioTranscription
 
 ### SYNTAX
 ````PowerShell
-Get-MediaFileAudioTranscription [-FilePath] <String> [[-Language] <String>] 
+Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] 
+[[-LanguageOut] <String>] [[-model] <String>] [[-srt]] [[-MaxSrtChars] <Int32>] 
 [<CommonParameters>]
 ````
 
@@ -484,11 +544,38 @@ Get-MediaFileAudioTranscription [-FilePath] <String> [[-Language] <String>]
         Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
-    -Language <String>
+    -LanguageIn <String>
         The language to expect in the audio.
         Required?                    false
         Position?                    2
         Default value                auto
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -LanguageOut <String>
+        The language to translate to
+        Required?                    false
+        Position?                    3
+        Default value                
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -model <String>
+        The LM-Studio model to use for translations
+        Required?                    false
+        Position?                    4
+        Default value                yi-coder-9b-chat
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -srt [<SwitchParameter>]
+        Output in SRT format.
+        Required?                    false
+        Position?                    5
+        Default value                False
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -MaxSrtChars <Int32>
+        Required?                    false
+        Position?                    6
+        Default value                25
         Accept pipeline input?       false
         Accept wildcard characters?  false
     <CommonParameters>

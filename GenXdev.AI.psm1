@@ -1090,6 +1090,132 @@ function Start-AudioChat {
 ################################################################################
 <#
 .SYNOPSIS
+Translates text to another language using the LM-Studio API.
+
+.DESCRIPTION
+The `Get-TextTranslation` function translates text to another language using the LM-Studio API.
+
+.PARAMETER Text
+The text to translate.
+
+.PARAMETER Language
+The language to translate to.
+
+.PARAMETER Instructions
+The instructions for the model.
+Defaults to:
+
+.PARAMETER model
+The LM-Studio model to use for generating the response.
+
+.EXAMPLE
+    -------------------------- Example 1 --------------------------
+
+    Get-TextTranslation -Text "Hello, how are you?" -Language "french"
+
+#>
+function Get-TextTranslation {
+
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, Position = 0, HelpMessage = "The text to translate")]
+        [string] $Text,
+
+        [Parameter(Mandatory = $false, Position = 1, HelpMessage = "The language to translate to.")]
+        [PSDefaultValue(Value = "english")]
+        [string] $Language = "english",
+
+        [Parameter(
+            Mandatory = $false,
+            Position = 2,
+            HelpMessage = "The system instructions for the LLM."
+        )]
+        [PSDefaultValue(Value = "Translate this partial subtitle text, into the `[Language] language, leave in the same style of writing, and leave the paragraph structure in tact, ommit only the translation no yapping or chatting.")]
+        $Instructions = "Translate this partial subtitle text, into the [Language] language, leave in the same style of writing, and leave the paragraph structure in tact, ommit only the translation no yapping or chatting.",
+
+        [Parameter(
+            Position = 3,
+            Mandatory = $false,
+            HelpMessage = "The LM-Studio model to use for generating the response.")]
+        [PSDefaultValue(Value = "yi-coder-9b-chat")]
+        [string]$model = "yi-coder-9b-chat"
+    )
+
+    process {
+
+        $Instructions = $Instructions.Replace("[Language]", $Language);
+
+        # initialize translation container
+        [System.Text.StringBuilder] $translation = New-Object System.Text.StringBuilder;
+
+        # initialize the cursor, trying +/- 1K characters
+        $i = [Math]::Min(1000, $Text.Length)
+
+        # perform translations in chunks
+        while ($i -gt 0) {
+
+            # move the cursor to the next word
+            while (($i -gt 0) -and (" `t`r`n".indexOf($Text[$i]) -lt 0)) { $i--; }
+            while (($i -lt $Text.Length) -and (" `t`r`n".indexOf($Text[$i]) -lt 0)) { $i++; }
+            if ($i -lt 1000) { $i = $Text.Length; }
+
+            # get the next part of the text
+            $nextPart = $Text.Substring(0, $i);
+            $spaceLeft = "";
+
+            # remove the part from the work queue
+            $Text = $Text.Substring($i);
+
+            if ([string]::IsNullOrWhiteSpace($nextPart)) {
+
+                $translation.Append("$nextPart");
+                $i = [Math]::Min(100, $Text.Length)
+                continue;
+            }
+
+            $spaceLeft = "";
+            while ($nextPart.StartsWith(" ") -or $nextPart.StartsWith("`t") -or $nextPart.StartsWith("`r") -or $nextPart.StartsWith("`n")) {
+
+                $spaceLeft += $nextPart[0];
+                $nextPart = $nextPart.Substring(1);
+            }
+            $spaceRight = "";
+            while ($nextPart.EndsWith(" ") -or $nextPart.EndsWith("`t") -or $nextPart.EndsWith("`r") -or $nextPart.EndsWith("`n")) {
+
+                $spaceRight += $nextPart[-1];
+                $nextPart = $nextPart.Substring(0, $nextPart.Length - 1);
+            }
+
+            Write-Verbose "Translating text to $Language for: `"$nextPart`".."
+
+            try {
+                # translate the text
+                $translatedPart = qlms -query $nextPart -instructions $Instructions -model $model -temperature 0.02
+
+                # append the translated part
+                $translation.Append("$spaceLeft$translatedPart$spaceRight");
+
+                Write-Verbose "Text translated to: `"$translatedPart`".."
+            }
+            catch {
+
+                # append the original part
+                $translation.Append("$spaceLeft$nextPart$spaceRight");
+
+                Write-Verbose "Translating text to $LanguageOut, failed: $PSItem"
+            }
+
+            $i = [Math]::Min(100, $Text.Length)
+        }
+
+        # return the translation
+        $translation.ToString();
+    }
+}
+
+################################################################################
+<#
+.SYNOPSIS
 Transcribes an audio or video file to text..
 
 .DESCRIPTION
@@ -1098,21 +1224,71 @@ Transcribes an audio or video file to text using the Whisper AI model
 .PARAMETER FilePath
 The file path of the audio or video file to transcribe.
 
-.PARAMETER Language
+.PARAMETER LanguageIn
 The language to expect in the audio.
+
+.PARAMETER LanguageOut
+The language to translate to
+
+.PARAMETER model
+The LM-Studio model to use for translations
+
+.PARAMETER srt
+Output in SRT format.
+
 #>
 function Get-MediaFileAudioTranscription {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true, Position = 0, HelpMessage = "The file path of the audio or video file to transcribe.")]
+        [Parameter(
+            Mandatory = $true,
+            Position = 0,
+            HelpMessage = "The file path of the audio or video file to transcribe."
+        )]
         [string] $FilePath,
 
-        [Parameter(Mandatory = $false, Position = 1, HelpMessage = "The language to expect in the audio.")]
+        [Parameter(
+            Mandatory = $false,
+            Position = 1,
+            HelpMessage = "The language to expect in the audio."
+        )]
         [PSDefaultValue(Value = "auto")]
-        [string] $Language = "auto"
+        [string] $LanguageIn = "auto",
+
+        [Parameter(
+            ParameterSetName = "Translate",
+            Mandatory = $false,
+            Position = 2,
+            HelpMessage = "The language to translate the text to using LM Studio."
+        )]
+        [string] $LanguageOut = $null,
+
+        [Parameter(
+            ParameterSetName = "Translate",
+            Position = 3,
+            Mandatory = $false,
+            HelpMessage = "The LM-Studio model to use for translations")]
+        [PSDefaultValue(Value = "yi-coder-9b-chat")]
+        [string]$model = "yi-coder-9b-chat",
+
+        [Parameter(
+            Mandatory = $false,
+            Position = 4,
+            HelpMessage = "Output in SRT format."
+        )]
+        [switch] $srt,
+
+        [Parameter(
+            Mandatory = $false,
+            Position = 5,
+            HelpMessage = "The maximum number of characters per line in the SRT output."
+        )]
+        [int] $MaxSrtChars = 25
     )
 
     process {
+
+        $MaxSrtChars = [System.Math]::Min(200, [System.Math]::Max(20, $MaxSrtChars))
 
         function IsWinGetInstalled {
 
@@ -1151,8 +1327,10 @@ function Get-MediaFileAudioTranscription {
             }
         }
 
+        # Make sure ffmpeg is installed
         Installffmpeg;
 
+        # Re-use downloaded models
         $ModelFilePath = Expand-Path "$PSScriptRoot\..\..\GenXdev.Local\" -CreateDirectory
 
         # Replace these paths with your actual file paths
@@ -1161,30 +1339,149 @@ function Get-MediaFileAudioTranscription {
 
         # Construct and execute the ffmpeg command
         $job = Start-Job -ArgumentList $ffmpegPath, $inputFile, $outputFile -ScriptBlock {
+
             param($ffmpegPath, $inputFile, $outputFile)
+
+            # Convert the file to WAV format
             & $ffmpegPath -i "$inputFile" -ac 1 -ar 16000 -sample_fmt s16 "$outputFile" -loglevel quiet -y | Out-Null
+
             return $LASTEXITCODE
         }
 
+        # Wait for the job to complete and check the result
         $job | Wait-Job | Out-Null
         $success = ($job | Receive-Job) -eq 0
         Remove-Job -Job $job | Out-Null
 
         if (-not $success) {
 
-            Write-Warning "Failed to convert the file to WAV format."
+            Write-Warning "Failed to convert the file '$inputFile' to WAV format."
+
+            # Clean up the temporary file
             if ([IO.File]::Exists($outputFile)) {
 
                 Remove-Item -Path $outputFile -Force
             }
+
             return
         }
 
         try {
-            Get-SpeechToText -ModelFilePath:$ModelFilePath -Language:$Language -WaveFile:$outputFile
+
+            # outputting in SRT format?
+            if ($srt) {
+
+                # initialize srt counter
+                $i = 1
+
+                # iterate over the results
+                Get-SpeechToText -ModelFilePath:$ModelFilePath -Language:$LanguageIn -WaveFile:$outputFile -Passthru:($srt -eq $true) | ForEach-Object {
+
+                    $result = $PSItem;
+
+                    # needs translation?
+                    if (-not [string]::IsNullOrWhiteSpace($LanguageOut)) {
+
+                        Write-Verbose "Translating text to $LanguageOut for: `"$($result.Text)`".."
+
+                        try {
+                            # translate the text
+                            $result = @{
+                                Text  = Get-TextTranslation -Text:($result.Text) -Language:$LanguageOut -model:$model -Instructions "Translate this partial subtitle text, into the [Language] language. ommit only the translation no yapping or chatting.";
+                                Start = $result.Start;
+                                End   = $result.End;
+                            }
+
+                            Write-Verbose "Text translated to: `"$($result.Text)`".."
+                        }
+                        catch {
+
+                            Write-Verbose "Translating text to $LanguageOut, failed: $PSItem"
+                        }
+                    }
+
+                    $Lines = @("$($result.Text.Replace("`r", "`n").Replace("`n`n", "`n").Replace("`n`n", "`n"))".Split("`n", [System.StringSplitOptions]::RemoveEmptyEntries));
+                    $Lengths = @($Lines | ForEach-Object { $_.Length })
+                    $TotalLength = [string]::Join(". ", $Lines).Length;
+                    $TotalDuration = $result.End - $result.Start;
+                    $Durations = @($Lengths | ForEach-Object { [TimeSpan]::FromSeconds((($PSItem / $TotalLength) * $TotalDuration.Seconds)) });
+
+                    for ($iLine = 0; $iLine -lt $lines.Length; $iLine++) {
+
+                        $Line = $Lines[$iLine];
+                        $max = [Math]::Min($MaxSrtChars, $Line.Length);
+
+                        $startTimespan = $result.Start
+
+                        while ($max -gt 0) {
+
+                            # move the cursor to the next word
+                            while (($max -gt 0) -and (" `t`r`n".indexOf($Line[$max]) -lt 0)) { $max--; }
+                            while (($max -lt $Line.Length) -and (" `t`r`n".indexOf($Line[$max]) -lt 0)) { $max++; }
+                            if ($max -lt $MaxSrtChars) { $max = $Line.Length; }
+
+                            # get the next part of the text
+                            $nextPart = $Line.Substring(0, $max).Trim("`r`t`n ".ToCharArray());
+                            $Line = $Line.Substring($max).Trim("`r`t`n ".ToCharArray());
+
+                            $Duration = [Timespan]::FromSeconds($Durations[$iLine].TotalSeconds * ($nextPart.Length / $Lengths[$iLine]));
+                            $FullDuration = $Duration
+
+                            if ($Duration.Seconds -gt 8) {
+
+                                $Duration = [TimeSpan]::FromSeconds(8)
+                            }
+
+                            $startTimespan = $result.Start
+                            $endTimespan = $startTimespan + $Duration;
+
+                            $result = @{
+                                Text  = $result.Text;
+                                Start = $result.Start + $FullDuration;
+                                End   = $result.End;
+                            }
+
+                            $start = $startTimespan.ToString("hh\:mm\:ss\,fff", [CultureInfo]::InvariantCulture);
+                            $end = $endTimespan.ToString("hh\:mm\:ss\,fff", [CultureInfo]::InvariantCulture);
+
+                            "$i`r`n$start --> $end`r`n$nextPart`r`n`r`n"
+
+                            # increment the counter
+                            $i++
+
+                            # find next part
+                            $max = [Math]::Min($MaxSrtChars, $line.Length);
+                        }
+                    }
+                }
+
+                # end of SRT format
+                return;
+            }
+
+            # transcribe the audio file to text
+            $results = Get-SpeechToText -ModelFilePath:$ModelFilePath -Language:$LanguageIn -WaveFile:$outputFile -Passthru:($srt -eq $true)
+
+            #  needs translation?
+            if (-not [string]::IsNullOrWhiteSpace($LanguageOut)) {
+
+                # delegate
+                Get-TextTranslation -Text "$results" -Language $LanguageOut -model $model
+
+                # end of translation
+                return;
+            }
+
+            # return the text results without translation
+            $results
         }
         finally {
-            Remove-Item -Path $outputFile -Force
+
+            # Clean up the temporary file
+            if ([IO.File]::Exists($outputFile)) {
+
+                Remove-Item -Path $outputFile -Force
+            }
         }
     }
 }
