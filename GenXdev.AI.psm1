@@ -44,6 +44,10 @@ Invoke-LMStudioQuery -query "What is PowerShell?" -temperature 0.7
     -------------------------- Example 3 --------------------------
 Invoke-LMStudioQuery -query "Analyze this code" -attachments ".\script.ps1" -instructions "Be thorough"
 
+.EXAMPLE
+    -------------------------- Example 4 --------------------------
+qlms "give a technical summary of the content of this html document" -attachments ".\index.html" -model "llava"
+
 #>
 function Invoke-LMStudioQuery {
 
@@ -271,65 +275,230 @@ function Invoke-LMStudioQuery {
             $filePath = Expand-Path $PSItem;
             $fileExtension = [IO.Path]::GetExtension($filePath).ToLowerInvariant();
             $mimeType = "application/octet-stream";
+            $isText = $false;
             switch ($fileExtension) {
 
-                ".jpg" { $mimeType = "image/jpeg" }
-                ".jpeg" { $mimeType = "image/jpeg" }
-                ".png" { $mimeType = "image/png" }
-                ".gif" { $mimeType = "image/gif" }
-                ".bmp" { $mimeType = "image/bmp" }
-                ".tiff" { $mimeType = "image/tiff" }
-                ".mp4" { $mimeType = "video/mp4" }
-                ".avi" { $mimeType = "video/avi" }
-                ".mov" { $mimeType = "video/quicktime" }
-                ".webm" { $mimeType = "video/webm" }
-                ".mkv" { $mimeType = "video/x-matroska" }
-                ".flv" { $mimeType = "video/x-flv" }
-                ".wmv" { $mimeType = "video/x-ms-wmv" }
-                ".mpg" { $mimeType = "video/mpeg" }
-                ".mpeg" { $mimeType = "video/mpeg" }
-                ".3gp" { $mimeType = "video/3gpp" }
-                ".3g2" { $mimeType = "video/3gpp2" }
-                ".m4v" { $mimeType = "video/x-m4v" }
-                ".webp" { $mimeType = "image/webp" }
-                ".heic" { $mimeType = "image/heic" }
-                ".heif" { $mimeType = "image/heif" }
-                ".avif" { $mimeType = "image/avif" }
-                ".jxl" { $mimeType = "image/jxl" }
-                ".ps1" { $mimeType = "text/x-powershell" }
-                ".psm1" { $mimeType = "text/x-powershell" }
-                ".psd1" { $mimeType = "text/x-powershell" }
-                ".sh" { $mimeType = "application/x-sh" }
-                ".bat" { $mimeType = "application/x-msdos-program" }
-                ".cmd" { $mimeType = "application/x-msdos-program" }
-                ".py" { $mimeType = "text/x-python" }
-                ".rb" { $mimeType = "application/x-ruby" }
-                ".pl" { $mimeType = "text/x-perl" }
-                ".php" { $mimeType = "application/x-httpd-php" }
-                ".js" { $mimeType = "application/javascript" }
-                ".ts" { $mimeType = "application/typescript" }
-                ".java" { $mimeType = "text/x-java-source" }
-                ".c" { $mimeType = "text/x-c" }
-                ".cpp" { $mimeType = "text/x-c++src" }
-                ".cs" { $mimeType = "text/x-csharp" }
-                ".go" { $mimeType = "text/x-go" }
-                ".rs" { $mimeType = "text/x-rustsrc" }
-                ".swift" { $mimeType = "text/x-swift" }
-                ".kt" { $mimeType = "text/x-kotlin" }
-                ".scala" { $mimeType = "text/x-scala" }
-                ".r" { $mimeType = "text/x-r" }
-                ".sql" { $mimeType = "application/sql" }
-                ".html" { $mimeType = "text/html" }
-                ".css" { $mimeType = "text/css" }
-                ".xml" { $mimeType = "application/xml" }
-                ".json" { $mimeType = "application/json" }
-                ".yaml" { $mimeType = "application/x-yaml" }
-                ".md" { $mimeType = "text/markdown" }
+                ".jpg" {
+                    $mimeType = "image/jpeg"
+                    $isText = $false
+                }
+                ".jpeg" {
+                    $mimeType = "image/jpeg"
+                    $isText = $false
+                }
+                ".png" {
+                    $mimeType = "image/png"
+                    $isText = $false
+                }
+                ".gif" {
+                    $mimeType = "image/gif"
+                    $isText = $false
+                }
+                ".bmp" {
+                    $mimeType = "image/bmp"
+                    $isText = $false
+                }
+                ".tiff" {
+                    $mimeType = "image/tiff"
+                    $isText = $false
+                }
+                ".mp4" {
+                    $mimeType = "video/mp4"
+                    $isText = $false
+                }
+                ".avi" {
+                    $mimeType = "video/avi"
+                    $isText = $false
+                }
+                ".mov" {
+                    $mimeType = "video/quicktime"
+                    $isText = $false
+                }
+                ".webm" {
+                    $mimeType = "video/webm"
+                    $isText = $false
+                }
+                ".mkv" {
+                    $mimeType = "video/x-matroska"
+                    $isText = $false
+                }
+                ".flv" {
+                    $mimeType = "video/x-flv"
+                    $isText = $false
+                }
+                ".wmv" {
+                    $mimeType = "video/x-ms-wmv"
+                    $isText = $false
+                }
+                ".mpg" {
+                    $mimeType = "video/mpeg"
+                    $isText = $false
+                }
+                ".mpeg" {
+                    $mimeType = "video/mpeg"
+                    $isText = $false
+                }
+                ".3gp" {
+                    $mimeType = "video/3gpp"
+                    $isText = $false
+                }
+                ".3g2" {
+                    $mimeType = "video/3gpp2"
+                    $isText = $false
+                }
+                ".m4v" {
+                    $mimeType = "video/x-m4v"
+                    $isText = $false
+                }
+                ".webp" {
+                    $mimeType = "image/webp"
+                    $isText = $false
+                }
+                ".heic" {
+                    $mimeType = "image/heic"
+                    $isText = $false
+                }
+                ".heif" {
+                    $mimeType = "image/heif"
+                    $isText = $false
+                }
+                ".avif" {
+                    $mimeType = "image/avif"
+                    $isText = $false
+                }
+                ".jxl" {
+                    $mimeType = "image/jxl"
+                    $isText = $false
+                }
+                ".ps1" {
+                    $mimeType = "text/x-powershell"
+                    $isText = $true
+                }
+                ".psm1" {
+                    $mimeType = "text/x-powershell"
+                    $isText = $true
+                }
+                ".psd1" {
+                    $mimeType = "text/x-powershell"
+                    $isText = $true
+                }
+                ".sh" {
+                    $mimeType = "application/x-sh"
+                    $isText = $true
+                }
+                ".bat" {
+                    $mimeType = "application/x-msdos-program"
+                    $isText = $true
+                }
+                ".cmd" {
+                    $mimeType = "application/x-msdos-program"
+                    $isText = $true
+                }
+                ".py" {
+                    $mimeType = "text/x-python"
+                    $isText = $true
+                }
+                ".rb" {
+                    $mimeType = "application/x-ruby"
+                    $isText = $true
+                }
+                ".txt" {
+                    $mimeType = "text/plain"
+                    $isText = $true
+                }
+                ".pl" {
+                    $mimeType = "text/x-perl"
+                    $isText = $true
+                }
+                ".php" {
+                    $mimeType = "application/x-httpd-php"
+                    $isText = $true
+                }
+                ".js" {
+                    $mimeType = "application/javascript"
+                    $isText = $true
+                }
+                ".ts" {
+                    $mimeType = "application/typescript"
+                    $isText = $true
+                }
+                ".java" {
+                    $mimeType = "text/x-java-source"
+                    $isText = $true
+                }
+                ".c" {
+                    $mimeType = "text/x-c"
+                    $isText = $true
+                }
+                ".cpp" {
+                    $mimeType = "text/x-c++src"
+                    $isText = $true
+                }
+                ".cs" {
+                    $mimeType = "text/x-csharp"
+                    $isText = $true
+                }
+                ".go" {
+                    $mimeType = "text/x-go"
+                    $isText = $true
+                }
+                ".rs" {
+                    $mimeType = "text/x-rustsrc"
+                    $isText = $true
+                }
+                ".swift" {
+                    $mimeType = "text/x-swift"
+                    $isText = $true
+                }
+                ".kt" {
+                    $mimeType = "text/x-kotlin"
+                    $isText = $true
+                }
+                ".scala" {
+                    $mimeType = "text/x-scala"
+                    $isText = $true
+                }
+                ".r" {
+                    $mimeType = "text/x-r"
+                    $isText = $true
+                }
+                ".sql" {
+                    $mimeType = "application/sql"
+                    $isText = $true
+                }
+                ".html" {
+                    $mimeType = "text/html"
+                    $isText = $true
+                }
+                ".css" {
+                    $mimeType = "text/css"
+                    $isText = $true
+                }
+                ".xml" {
+                    $mimeType = "application/xml"
+                    $isText = $true
+                }
+                ".json" {
+                    $mimeType = "application/json"
+                    $isText = $true
+                }
+                ".yaml" {
+                    $mimeType = "application/x-yaml"
+                    $isText = $true
+                }
+                ".md" {
+                    $mimeType = "text/markdown"
+                    $isText = $true
+                }
 
-                default { $mimeType = "image/jpeg" }
+                default {
+                    $mimeType = "image/jpeg"
+                    $isText = $false
+                }
             }
 
             function getImageBase64Data($filePath, $imageDetail) {
+
                 $image = $null
                 try {
                     $image = [System.Drawing.Image]::FromFile($filePath)
@@ -391,22 +560,42 @@ function Invoke-LMStudioQuery {
                 return $base64Image;
             }
 
-            $base64Image = getImageBase64Data $filePath $imageDetail
 
-            $messages.Add(
-                @{
-                    role    = "user"
-                    content = @(
-                        @{
-                            type      = "image_url"
-                            image_url = @{
-                                url    = "data:$mimeType;base64,$base64Image"
-                                detail = "$imageDetail"
-                            }
+
+            if ($isText) {
+
+                $base64Image = [System.Convert]::ToBase64String([IO.File]::ReadAllBytes($filePath));
+                $messages.Add(
+                    @{
+                        role    = "user"
+                        content = $query
+                        file    = @{
+                            name         = [IO.Path]::GetFileName($filePath)
+                            content_type = $mimeType
+                            bytes        = "data:$mimeType;base64,$base64Image"
                         }
-                    )
-                }
-            ) | Out-Null;
+                    }
+                ) | Out-Null;
+            }
+            else {
+
+                $base64Image = getImageBase64Data $filePath $imageDetail
+
+                $messages.Add(
+                    @{
+                        role    = "user"
+                        content = @(
+                            @{
+                                type      = "image_url"
+                                image_url = @{
+                                    url    = "data:$mimeType;base64,$base64Image"
+                                    detail = "$imageDetail"
+                                }
+                            }
+                        )
+                    }
+                ) | Out-Null;
+            }
         }
 
         $messages.Add(

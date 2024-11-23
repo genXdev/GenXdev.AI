@@ -31,7 +31,6 @@ Update-Module
 | --- | --- | --- |
 | [Invoke-LMStudioQuery](#Invoke-LMStudioQuery) | qlms | The `Invoke-LMStudioQuery` function sends a query to the LM-Studio API and returns the response. |
 | [Invoke-QueryImageContent](#Invoke-QueryImageContent) |  | The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns the response. |
-| [Invoke-QueryImageKeywords](#Invoke-QueryImageKeywords) |  | The `Invoke-QueryImageKeywords` function sends an image to the LM-Studio API and returns keywords found in the image. |
 | [Invoke-ImageKeywordUpdate](#Invoke-ImageKeywordUpdate) | updateimages | The `Invoke-ImageKeywordUpdate` function updates the keywords and description of images in a directory. |
 | [Invoke-ImageKeywordScan](#Invoke-ImageKeywordScan) | findimages | The `Invoke-ImageKeywordScan` function scans images in a directory for keywords and description. |
 | [GenerateMasonryLayoutHtml](#GenerateMasonryLayoutHtml) |  | The `GenerateMasonryLayoutHtml` function creates an HTML file with a masonry layout for displaying images, including their descriptions and keywords. |
@@ -84,6 +83,8 @@ Invoke-LMStudioQuery [-query] <String> [[-attachments] <String[]>] [[-instructio
         Accept wildcard characters?  false
     -instructions <String>
         The system instructions for the LLM.
+        Default value: "Your an AI assistent that never tells a lie and always answers 
+        truthfully, first of all comprehensive and then if possible consice."
         Required?                    false
         Position?                    3
         Default value                Your an AI assistent that never tells a lie and always 
@@ -161,41 +162,8 @@ Invoke-QueryImageContent [-query] <String> [-ImagePath] <String> [[-temperature]
         Accept wildcard characters?  false
     -temperature <Double>
         Required?                    false
-        Position?                    4
+        Position?                    3
         Default value                0.25
-        Accept pipeline input?       false
-        Accept wildcard characters?  false
-    <CommonParameters>
-        This cmdlet supports the common parameters: Verbose, Debug,
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
-
-<br/><hr/><hr/><br/>
-
-##	Invoke-QueryImageKeywords
-````PowerShell
-Invoke-QueryImageKeywords
-````
-
-### SYNOPSIS
-    Queries the LM-Studio API to get keywords from an image.
-
-### SYNTAX
-````PowerShell
-Invoke-QueryImageKeywords [-ImagePath] <String> [<CommonParameters>]
-````
-
-### DESCRIPTION
-    The `Invoke-QueryImageKeywords` function sends an image to the LM-Studio API and returns 
-    keywords found in the image.
-
-### PARAMETERS
-    -ImagePath <String>
-        The file path of the image to send with the query.
-        Required?                    true
-        Position?                    1
-        Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
     <CommonParameters>
@@ -518,14 +486,14 @@ Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>]
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -LanguageIn <String>
-        The language to expect in the audio.
+        The language to expect in the audio. E.g. "en", "fr", "de", "nl"
         Required?                    false
         Position?                    2
         Default value                auto
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -LanguageOut <String>
-        The language to translate to
+        The language to translate to. E.g. "french", "german", "dutch"
         Required?                    false
         Position?                    3
         Default value                
@@ -546,6 +514,7 @@ Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>]
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -MaxSrtChars <Int32>
+        The maximum number of characters per line in the SRT output.
         Required?                    false
         Position?                    6
         Default value                25
