@@ -108,12 +108,11 @@ function Invoke-LMStudioQuery {
         [string] $imageDetail = "low"
     )
 
-    $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec | Select-Object -First 1).FullName
+    $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
 
     function IsLMStudioInstalled {
 
-        $lmStudioPath = "$env:LOCALAPPDATA\LM-Studio\LM Studio.exe"
-        return Test-Path -Path $lmStudioPath
+        return Test-Path -Path $lmsPath -ErrorAction SilentlyContinue
     }
 
     # Function to check if LMStudio is running
@@ -125,17 +124,22 @@ function Invoke-LMStudioQuery {
 
     function IsWinGetInstalled {
 
-        $module = Get-Module "Microsoft.WinGet.Client"
+        Import-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
+        $module = Get-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
 
         if ($null -eq $module) {
 
             return $false
         }
+
+        return $true
     }
+
     function InstallWinGet {
 
         Write-Verbose "Installing WinGet PowerShell client.."
         Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber
+        Import-Module "Microsoft.WinGet.Client"
     }
 
     function InstallLMStudio {
@@ -151,8 +155,8 @@ function Invoke-LMStudioQuery {
         if ($null -eq $lmStudioPackage) {
 
             Write-Verbose "Installing LM-Studio.."
-            Install-WinGetPackage -Name $lmStudio -Force
-            $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec | Select-Object -First 1).FullName
+            Install-WinGetPackage -Id $lmStudio -Force
+            $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
         }
     }
 
@@ -169,7 +173,7 @@ function Invoke-LMStudioQuery {
             Write-Verbose "Starting LM-Studio..";
             $lmStudioPath = "$env:LOCALAPPDATA\LM-Studio\LM Studio.exe";
             Write-Verbose "$((Start-Process -FilePath $lmStudioPath -WindowStyle Minimized))";
-            $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec | Select-Object -First 1).FullName
+            $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
             Start-Sleep -Seconds 10
         }
     }
@@ -779,7 +783,7 @@ function Invoke-ImageKeywordUpdate {
         return
     }
 
-    Get-ChildItem -Path "$Path\*.jpg", "$Path\*.jpeg", "$Path\*.png" -Recurse:$recurse -File | ForEach-Object {
+    Get-ChildItem -Path "$Path\*.jpg", "$Path\*.jpeg", "$Path\*.png" -Recurse:$recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
 
         if ($retryFailed) {
 
@@ -920,7 +924,7 @@ function Invoke-ImageKeywordScan {
         return
     }
 
-    $results = Get-ChildItem -Path "$Path\*.jpg", "$Path\*.jpeg", "$Path\*.png" -Recurse -File | ForEach-Object {
+    $results = Get-ChildItem -Path "$Path\*.jpg", "$Path\*.jpeg", "$Path\*.png" -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
 
         $image = $_.FullName
         $keywordsFound = @()
@@ -1476,22 +1480,41 @@ function Get-MediaFileAudioTranscription {
 
         $MaxSrtChars = [System.Math]::Min(200, [System.Math]::Max(20, $MaxSrtChars))
 
+        $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+
+        function IsLMStudioInstalled {
+
+            return Test-Path -Path $lmsPath -ErrorAction SilentlyContinue
+        }
+
+        # Function to check if LMStudio is running
+        function IsLMStudioRunning {
+
+            $process = Get-Process -Name "LM Studio" -ErrorAction SilentlyContinue
+            return $null -ne $process
+        }
+
         function IsWinGetInstalled {
 
-            $module = Get-Module "Microsoft.WinGet.Client"
+            Import-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
+            $module = Get-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
 
             if ($null -eq $module) {
 
                 return $false
             }
+
+            return $true
         }
+
         function InstallWinGet {
 
             Write-Verbose "Installing WinGet PowerShell client.."
             Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber
+            Import-Module "Microsoft.WinGet.Client"
         }
 
-        $ffmpegPath = (Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\ffmpeg.exe" -File -rec | Select-Object -First 1 | ForEach-Object FullName)
+        $ffmpegPath = (Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1 | ForEach-Object FullName)
 
         function Installffmpeg {
 
@@ -1508,8 +1531,8 @@ function Get-MediaFileAudioTranscription {
             if ($null -eq $ffmpegPackage) {
 
                 Write-Verbose "Installing ffmpeg.."
-                Install-WinGetPackage -Name $lmStudio -Force
-                $ffmpegPath = (Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\ffmpeg.exe" -File -rec | Select-Object -First 1).FullName
+                Install-WinGetPackage -Id $ffmpeg -Force
+                $ffmpegPath = (Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
             }
         }
 
