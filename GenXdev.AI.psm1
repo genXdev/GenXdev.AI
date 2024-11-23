@@ -354,20 +354,29 @@ function Invoke-LMStudioQuery {
                     }
                 }
 
-                if ($maxDimension -lt $maxImageDimension) {
+                try {
+                    if ($maxDimension -lt $maxImageDimension) {
 
-                    if ($image.Width -gt $image.Height) {
-                        $newWidth = $maxDimension
-                        $newHeight = [math]::Round($image.Height * ($maxDimension / $image.Width))
+                        $newWidth = $image.Width;
+                        $newHeight = $image.Height;
+
+                        if ($image.Width -gt $image.Height) {
+
+                            $newWidth = $maxDimension
+                            $newHeight = [math]::Round($image.Height * ($maxDimension / $image.Width))
+                        }
+                        else {
+                            $newHeight = $maxDimension
+                            $newWidth = [math]::Round($image.Width * ($maxDimension / $image.Height))
+                        }
+
+                        $scaledImage = New-Object System.Drawing.Bitmap $newWidth, $newHeight
+                        $graphics = [System.Drawing.Graphics]::FromImage($scaledImage)
+                        $graphics.DrawImage($image, 0, 0, $newWidth, $newHeight)
+                        $graphics.Dispose();
                     }
-                    else {
-                        $newHeight = $maxDimension
-                        $newWidth = [math]::Round($image.Width * ($maxDimension / $image.Height))
-                    }
-                    $scaledImage = New-Object System.Drawing.Bitmap $newWidth, $newHeight
-                    $graphics = [System.Drawing.Graphics]::FromImage($scaledImage)
-                    $graphics.DrawImage($image, 0, 0, $newWidth, $newHeight)
-                    $graphics.Dispose()
+                }
+                catch {
                 }
 
                 $memoryStream = New-Object System.IO.MemoryStream
@@ -375,7 +384,9 @@ function Invoke-LMStudioQuery {
                 $imageData = $memoryStream.ToArray()
                 $memoryStream.Close()
                 $image.Dispose()
+
                 $base64Image = [System.Convert]::ToBase64String($imageData);
+
                 return $base64Image;
             }
 
@@ -396,6 +407,7 @@ function Invoke-LMStudioQuery {
                 }
             ) | Out-Null;
         }
+
         $messages.Add(
             @{
                 role    = "user"
@@ -918,78 +930,6 @@ function GenerateMasonryLayoutHtml {
 ################################################################################
 <#
 .SYNOPSIS
-Adds image descriptions to file names in a specified directory.
-
-.DESCRIPTION
-This function iterates through all image files in a given directory and appends a description to each file name. The description is extracted from the image metadata.
-
-.PARAMETER DirectoryPath
-The path to the directory containing the image files.
-
-.PARAMETER DescriptionKey
-The metadata key used to extract the description from the image files.
-
-.EXAMPLE
-Add-ImageDescriptionsToFileNames -DirectoryPath "C:\Images" -DescriptionKey "Title"
-This example adds the title metadata as a description to each image file name in the "C:\Images" directory.
-#>
-function Add-ImageDescriptionsToFileNames {
-
-    [CmdletBinding()]
-
-    $Path = Expand-Path $imageDirectory
-
-    if (-not [IO.Directory]::Exists($Path)) {
-
-        Write-Host "The directory '$Path' does not exist."
-        return
-    }
-
-    Get-ChildItem -Path "$Path\*.jpg", "$Path\*.jpeg", "$Path\*.png" -Recurse:$recurse -File | ForEach-Object {
-
-        $image = $_.FullName
-        $directory = [io.path]::GetDirectoryName($image);
-        $extension = [io.path]::GetExtension($image);
-        $onlyFilename = [io.path]::GetFileNameWithoutExtension($image)
-
-        if ($onlyFilename -match ".*_\[.*\]\..*") {
-
-            return
-        }
-
-        if ([IO.File]::Exists("$($image):description.json")) {
-
-            try {
-                $descriptionFound = Get-Content "$($image):description.json" | ConvertFrom-Json
-            }
-            catch {
-
-                return;
-            }
-
-            if (-not [String]::IsNullOrWhiteSpace($descriptionFound.short_description)) {
-
-                $newFileName = [GenXdev.Helpers.Security]::SanitizeFileName($descriptionFound.short_description).Replace(" ", "_").Replace("__", "_")
-                $newFilePath = "$directory\$onlyFilename_[$newFileName]$extension"
-
-                try {
-
-                    Write-Verbose "$onlyFileName$extension => $onlyFilename_[$newFileName]$extension"
-                    Rename-Item $image $newFilePath -Force
-
-                }
-                catch {
-
-                    Write-Warning $_
-                }
-            }
-        }
-    }
-}
-
-################################################################################
-<#
-.SYNOPSIS
 Transcribes audio to text using the default audio input device.
 
 .DESCRIPTION
@@ -1276,7 +1216,7 @@ function Get-MediaFileAudioTranscription {
             Position = 4,
             HelpMessage = "Output in SRT format."
         )]
-        [switch] $srt,
+        [switch] $SRT,
 
         [Parameter(
             Mandatory = $false,
@@ -1369,13 +1309,13 @@ function Get-MediaFileAudioTranscription {
         try {
 
             # outputting in SRT format?
-            if ($srt) {
+            if ($SRT) {
 
                 # initialize srt counter
                 $i = 1
 
                 # iterate over the results
-                Get-SpeechToText -ModelFilePath:$ModelFilePath -Language:$LanguageIn -WaveFile:$outputFile -Passthru:($srt -eq $true) | ForEach-Object {
+                Get-SpeechToText -ModelFilePath:$ModelFilePath -Language:$LanguageIn -WaveFile:$outputFile -Passthru:($SRT -eq $true) | ForEach-Object {
 
                     $result = $PSItem;
 
@@ -1436,7 +1376,7 @@ function Get-MediaFileAudioTranscription {
                             $endTimespan = $startTimespan + $Duration;
 
                             $result = @{
-                                Text  = $result.Text;
+                                Text  = $nextPart;
                                 Start = $result.Start + $FullDuration;
                                 End   = $result.End;
                             }
@@ -1460,7 +1400,7 @@ function Get-MediaFileAudioTranscription {
             }
 
             # transcribe the audio file to text
-            $results = Get-SpeechToText -ModelFilePath:$ModelFilePath -Language:$LanguageIn -WaveFile:$outputFile -Passthru:($srt -eq $true)
+            $results = Get-SpeechToText -ModelFilePath:$ModelFilePath -Language:$LanguageIn -WaveFile:$outputFile -Passthru:($SRT -eq $true)
 
             #  needs translation?
             if (-not [string]::IsNullOrWhiteSpace($LanguageOut)) {
