@@ -16,7 +16,7 @@ The file paths of the attachments to send with the query.
 The system instructions for the LLM.
 Default value: "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice."
 
-.PARAMETER model
+.PARAMETER Model
 The LM-Studio model to use for generating the response.
 
 .PARAMETER temperature
@@ -29,23 +29,17 @@ The maximum number of tokens to generate in the response.
 The image detail to use for the attachments.
 
 .EXAMPLE
-    -------------------------- Example 1 --------------------------
-
     Invoke-LMStudioQuery -query "Introduce yourself." -instructions "Always answer in rhymes." -model "lmstudio-community/yi-coder-9b-chat-GGUF" -temperature 0.9
 
     qlms "Introduce yourself." "Always answer in rhymes." "lmstudio-community/yi-coder-9b-chat-GGUF" 0.9
 
 .EXAMPLE
-    -------------------------- Example 2 --------------------------
-
 Invoke-LMStudioQuery -query "What is PowerShell?" -temperature 0.7
 
 .EXAMPLE
-    -------------------------- Example 3 --------------------------
 Invoke-LMStudioQuery -query "Analyze this code" -attachments ".\script.ps1" -instructions "Be thorough"
 
 .EXAMPLE
-    -------------------------- Example 4 --------------------------
 qlms "give a technical summary of the content of this html document" -attachments ".\index.html" -model "llava"
 
 #>
@@ -75,14 +69,14 @@ function Invoke-LMStudioQuery {
             Mandatory = $false,
             HelpMessage = "The system instructions for the LLM.")]
         [PSDefaultValue(Value = "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice.")]
-        [string]$instructions = "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice.",
+        [string]$Instructions = "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice.",
 
         [Parameter(
             Position = 3,
             Mandatory = $false,
             HelpMessage = "The LM-Studio model to use for generating the response.")]
         [PSDefaultValue(Value = "yi-coder-9b-chat")]
-        [string]$model = "yi-coder-9b-chat",
+        [string]$Model = "yi-coder-9b-chat",
 
         [Parameter(
             Mandatory = $false,
@@ -90,7 +84,7 @@ function Invoke-LMStudioQuery {
             HelpMessage = "The temperature parameter for controlling the randomness of the response."
         )]
         [ValidateRange(0.0, 1.0)]
-        [double] $temperature = 0.7,
+        [double] $temperature = 0.01,
 
         [Parameter(
             Mandatory = $false,
@@ -105,7 +99,14 @@ function Invoke-LMStudioQuery {
             HelpMessage = "The image detail to use for the attachments."
         )]
         [ValidateSet("low", "medium", "high")]
-        [string] $imageDetail = "low"
+        [string] $imageDetail = "low",
+
+        [Parameter(
+            Mandatory = $false,
+            Position = 7,
+            HelpMessage = "Show the LM-Studio window."
+        )]
+        [Switch] $ShowLMStudioWindow
     )
 
     $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
@@ -118,7 +119,25 @@ function Invoke-LMStudioQuery {
     # Function to check if LMStudio is running
     function IsLMStudioRunning {
 
-        $process = Get-Process -Name "LM Studio" -ErrorAction SilentlyContinue
+        $process = Get-Process -Name "LM Studio" -ErrorAction SilentlyContinue | Where-Object -Property MainWindowHandle -NE 0
+
+        if ($null -ne $process) {
+
+            $w = [GenXdev.Helpers.WindowObj]::new($process.MainWindowHandle, "LM Studio");
+            if ($null -ne $w) {
+
+                if ($ShowLMStudioWindow) {
+
+                    $w.Maximize();
+                    $w.Show();
+                }
+                else {
+                    $w.Minimize();
+                    (Get-PowershellMainWindow).Focus();
+                }
+            }
+        }
+
         return $null -ne $process
     }
 
@@ -175,6 +194,7 @@ function Invoke-LMStudioQuery {
             Write-Verbose "$((Start-Process -FilePath $lmStudioPath -WindowStyle Minimized))";
             $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
             Start-Sleep -Seconds 10
+            IsLMStudioRunning | Out-Null
         }
     }
 
@@ -182,21 +202,21 @@ function Invoke-LMStudioQuery {
     function Get-ModelList {
 
         Write-Verbose "Getting installed model list.."
-        $modelList = & "$lmsPath" ls --yes --json | ConvertFrom-Json
-        return $modelList
+        $ModelList = & "$lmsPath" ls --yes --json | ConvertFrom-Json
+        return $ModelList
     }
     function Get-LoadedModelList {
 
         Write-Verbose "Getting loaded model list.."
-        $modelList = & "$lmsPath" ps --yes --json | ConvertFrom-Json
-        return $modelList
+        $ModelList = & "$lmsPath" ps --yes --json | ConvertFrom-Json
+        return $ModelList
     }
 
     # Function to load the LLava model
     function LoadLMStudioModel {
 
-        $modelList = Get-ModelList
-        $foundModel = $modelList | Where-Object { $_.path -like "*$model*" } | Select-Object -First 1
+        $ModelList = Get-ModelList
+        $foundModel = $ModelList | Where-Object { $_.path -like "*$Model*" } | Select-Object -First 1
 
         if ($foundModel) {
 
@@ -212,11 +232,35 @@ function Invoke-LMStudioQuery {
                 try {
 
                     Write-Verbose "Loading model.."
-                    & "$lmsPath" load "$($foundModel.path)" --yes --gpu off --exact
+                    [System.Console]::Write("`r`n");
+
+                    if (-not (Get-HasCapableGpu)) {
+
+                        & "$lmsPath" load "$($foundModel.path)" --yes --gpu off --exact
+                    }
+                    else {
+
+                        & "$lmsPath" load "$($foundModel.path)" --yes --exact
+                    }
 
                     if ($LASTEXITCODE -ne 0) {
 
                         $success = $false;
+                    }
+                    else {
+                        # ansi for cursor up and clear line
+                        [System.Console]::Write("`e[1A`e[2K")
+                        # ansi for cursor up and clear line
+                        [System.Console]::Write("`e[1A`e[2K")
+                        # ansi for cursor up and clear line
+                        [System.Console]::Write("`e[1A`e[2K")
+                        # ansi for cursor up and clear line
+                        [System.Console]::Write("`e[1A`e[2K")
+                        # ansi for cursor up and clear line
+                        [System.Console]::Write("`e[1A`e[2K")
+                        # ansi for cursor up and clear line
+                        [System.Console]::Write("`e[1A`e[2K")
+
                     }
                 }
                 catch {
@@ -245,13 +289,16 @@ function Invoke-LMStudioQuery {
 
                 if (-not $success) {
 
-                    throw "Model with path: '*$model*', could not be loaded."
+                    $ShowLMStudioWindow = $true
+                    IsLMStudioRunning | Out-Null
+                    throw "Model with path: '*$Model*', not found. Please install and configure startup-parameters manually in LM-Studio first."
                 }
             }
         }
         else {
-
-            throw "Model with path: '*$model*', not found. Please install it manually in LM-Studio first, using the discovery page of LM-Studio."
+            $ShowLMStudioWindow = $true
+            IsLMStudioRunning | Out-Null
+            throw "Model with path: '*$Model*', not found. Please install and configure startup-parameters manually in LM-Studio first."
         }
     }
 
@@ -260,7 +307,7 @@ function Invoke-LMStudioQuery {
 
         param (
             $loadedModel,
-            [string]$instructions,
+            [string]$Instructions,
             [string]$query,
             [string[]]$attachments,
             [double]$temperature,
@@ -271,7 +318,7 @@ function Invoke-LMStudioQuery {
         $messages.Add(
             @{
                 role    = "system"
-                content = "$instructions"
+                content = "$Instructions"
             }
         ) | Out-Null;
 
@@ -629,17 +676,21 @@ function Invoke-LMStudioQuery {
             "Content-Type" = "application/json"
         }
 
-        Write-Verbose "Quering LM-Studio model '$model'.."
+        Write-Verbose "Quering LM-Studio model '$Model'.."
+        # ansi for cursor up and clear line
+        [System.Console]::WriteLine("Quering LM-Studio model '$Model'..");
 
         $response = Invoke-RestMethod -Uri $apiUrl -Method Post -Body $bytes -Headers $headers -OperationTimeoutSeconds 900 -ConnectionTimeoutSeconds 900
         $response.choices.message | ForEach-Object content
+
+        [System.Console]::Write("`e[1A`e[2K");
     }
 
     # Main script execution
     Start-LMStudio
     $loadedModel = LoadLMStudioModel
     if ($null -eq $loadedModel) { return }
-    $result = QueryLMStudio -loadedModel $loadedModel -instructions $instructions -query $query -attachments $attachments -temperature $temperature -max_token $max_token
+    $result = QueryLMStudio -loadedModel $loadedModel -instructions $Instructions -query $query -attachments $attachments -temperature $temperature -max_token $max_token
     Write-Output $result
 }
 ################################################################################
@@ -658,8 +709,6 @@ The query string for the LLM.
 The file path of the image to send with the query.
 
 .EXAMPLE
-    -------------------------- Example 1 --------------------------
-
     Invoke-QueryImageContent -query "Analyze this image." -ImagePath "C:\path\to\image.jpg"
 #>
 function Invoke-QueryImageContent {
@@ -685,46 +734,13 @@ function Invoke-QueryImageContent {
             HelpMessage = "The temperature parameter for controlling the randomness of the response."
         )]
         [ValidateRange(0.0, 1.0)]
-        [double] $temperature = 0.25
+        [double] $temperature = 0.1
     )
 
     # Invoke the LM-Studio query with the specified model, query, instructions, and attachments
-    Invoke-LMStudioQuery -model "MiniCPM" -query $query -instructions "You are an AI assistant that analyzes images." -attachments @($ImagePath) -temperature $temperature -max_token 3253
+    Invoke-LMStudioQuery -Model "MiniCPM" -query $query -Instructions "You are an AI assistant that analyzes images." -attachments @($ImagePath) -temperature $temperature -max_token 3253
     # Invoke-LMStudioQuery -model "xtuner/llava-llama-3-8b-v1_1-gguf/llava-llama-3-8b-v1_1-f16.gguf" -query $query -instructions "You are an AI assistant that analyzes images." -attachments @($ImagePath) -temperature $temperature
 }
-
-# ################################################################################
-# <#
-# .SYNOPSIS
-# Queries the LM-Studio API to get keywords from an image.
-
-# .DESCRIPTION
-# The `Invoke-QueryImageKeywords` function sends an image to the LM-Studio API and returns keywords found in the image.
-
-# .PARAMETER ImagePath
-# The file path of the image to send with the query.
-
-# .EXAMPLE
-#     -------------------------- Example 1 --------------------------
-
-#     Invoke-QueryImageKeywords -ImagePath "C:\path\to\image.jpg"
-# #>
-# function Invoke-QueryImageKeywords {
-
-#     [CmdletBinding()]
-#     param (
-#         [Parameter(
-#             Mandatory = $true,
-#             Position = 0,
-#             HelpMessage = "The file path of the image to send with the query."
-#         )]
-#         [string]$ImagePath
-#     )
-
-#     # Invoke the query to get keywords from the image
-#     Invoke-LMStudioQuery -model "MiniCPM" -instructions "You are an AI assistant that analyzes images that returns nothing other then text in the form of a array of strings in json format that holds short names for each object you see in the picture. Only return json strings in a single array, no json objects. return only no other text, explanations or notes" -query "analyze this image" -attachments @($ImagePath) -temperature 0.01
-#     # Invoke-LMStudioQuery -model "xtuner/llava-llama-3-8b-v1_1-gguf/llava-llama-3-8b-v1_1-f16.gguf" -instructions "You are an AI assistant that analyzes images that returns nothing other then text in the form of a array of strings in json format that holds short names for each object you see in the picture. Only return json strings in a single array, no json objects. return only no other text, explanations or notes" -query "analyze this image" -attachments @($ImagePath) -temperature 0.01
-# }
 
 ################################################################################
 <#
@@ -747,8 +763,6 @@ Only update images that do not have keywords and description.
 Retry previously failed images.
 
 .EXAMPLE
-    -------------------------- Example 1 --------------------------
-
     Invoke-ImageKeywordUpdate -imageDirectory "C:\path\to\images"
 
     or in short form:
@@ -895,8 +909,6 @@ The image directory path.
 Don't show the images in the webbrowser, return as object instead.
 
 .EXAMPLE
-    -------------------------- Example 1 --------------------------
-
     Invoke-ImageKeywordScan -keywords "cat" -imageDirectory "C:\path\to\images"
 #>
 function Invoke-ImageKeywordScan {
@@ -1070,8 +1082,6 @@ An array of image objects containing path, keywords, and description.
 The file path where the HTML file will be saved.
 
 .EXAMPLE
-    -------------------------- Example 1 --------------------------
-
     $images = @(
         @{ path = "C:\path\to\image1.jpg"; keywords = @("keyword1", "keyword2"); description = @{ short_description = "Short description"; long_description = "Long description" } },
         @{ path = "C:\path\to\image2.jpg"; keywords = @("keyword3", "keyword4"); description = @{ short_description = "Short description"; long_description = "Long description" } }
@@ -1182,94 +1192,287 @@ Transcribes audio to text using the default audio input device.
 .DESCRIPTION
 Records audio using the default audio input device and returns the detected text
 
+.PARAMETER WaveFile
+Path to the 16Khz mono, .WAV file to process.
+
+.PARAMETER Passthru
+Returns objects instead of strings.
+
+.PARAMETER UseDesktopAudioCapture
+Whether to use desktop audio capture instead of microphone input
+
+.PARAMETER WithTokenTimestamps
+Whether to include token timestamps in the output.
+
+.PARAMETER TokenTimestampsSumThreshold
+Sum threshold for token timestamps, defaults to 0.5.
+
+.PARAMETER SplitOnWord
+Whether to split on word boundaries.
+
+.PARAMETER MaxTokensPerSegment
+Maximum number of tokens per segment.
+
+.PARAMETER IgnoreSilence
+Whether to ignore silence (will mess up timestamps).
+
+.PARAMETER MaxDurationOfSilence
+Maximum duration of silence before automatically stopping recording.
+
+.PARAMETER SilenceThreshold
+Silence detect threshold (0..32767 defaults to 30).
+
 .PARAMETER Language
-The language to expect in the audio.
+Sets the language to detect, defaults to 'auto'.
+
+.PARAMETER CpuThreads
+Number of CPU threads to use, defaults to 0 (auto).
+
+.PARAMETER Temperature
+Temperature for speech generation.
+
+.PARAMETER TemperatureInc
+Temperature increment.
+
+.PARAMETER Prompt
+Prompt to use for the model.
+
+.PARAMETER SuppressRegex
+Regex to suppress tokens from the output.
+
+.PARAMETER WithProgress
+Whether to show progress.
+
+.PARAMETER AudioContextSize
+Size of the audio context.
+
+.PARAMETER DontSuppressBlank
+Whether to NOT suppress blank lines.
+
+.PARAMETER MaxDuration
+Maximum duration of the audio.
+
+.PARAMETER Offset
+Offset for the audio.
+
+.PARAMETER MaxLastTextTokens
+Maximum number of last text tokens.
+
+.PARAMETER SingleSegmentOnly
+Whether to use single segment only.
+
+.PARAMETER PrintSpecialTokens
+Whether to print special tokens.
+
+.PARAMETER MaxSegmentLength
+Maximum segment length.
+
+.PARAMETER MaxInitialTimestamp
+Start timestamps at this moment.
+
+.PARAMETER LengthPenalty
+Length penalty.
+
+.PARAMETER EntropyThreshold
+Entropy threshold.
+
+.PARAMETER LogProbThreshold
+Log probability threshold.
+
+.PARAMETER NoSpeechThreshold
+No speech threshold.
+
+.PARAMETER NoContext
+Don't use context.
+
+.PARAMETER WithBeamSearchSamplingStrategy
+Use beam search sampling strategy.
+
+.EXAMPLE
+    $text = Start-AudioTranscription;
+    $text
 #>
 function Start-AudioTranscription {
 
-    [CmdletBinding()]
+    [Alias("transcribe", "recordandtranscribe")]
 
     param (
-        [Parameter(Mandatory = $false, Position = 0, HelpMessage = "The language to expect")]
-        [PSDefaultValue(Value = "auto")]
-        [string] $Language = "auto"
-    )
+        [Parameter(Mandatory = $false, HelpMessage = "Path to the 16Khz mono, .WAV file to process")]
+        [string] $WaveFile = $null,
 
-    process {
-        $ModelFilePath = Expand-Path "$PSScriptRoot\..\..\GenXdev.Local\" -CreateDirectory
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Use silence detection to automatically stop recording."
+        )]
+        [switch] $VOX,
 
-        Get-SpeechToText -ModelFilePath $ModelFilePath -Language $Language
-    }
-}
+        [Parameter(Mandatory = $false, HelpMessage = "Returns objects instead of strings")]
+        [switch] $Passthru,
 
-################################################################################
-<#
-.SYNOPSIS
-Starts a rudimentary audio chat session.
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to use desktop audio capture instead of microphone input")]
+        [switch] $UseDesktopAudioCapture,
 
-.DESCRIPTION
-Starts an audio chat session by recording audio and invoking the default LLM
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to include token timestamps in the output")]
+        [switch] $WithTokenTimestamps,
 
-.PARAMETER Language
-The language to expect in the audio.
-#>
-function Start-AudioChat {
+        [Parameter(Mandatory = $false, HelpMessage = "Sum threshold for token timestamps, defaults to 0.5")]
+        [float] $TokenTimestampsSumThreshold = 0.5,
 
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $false, Position = 0, HelpMessage = "The language to expect")]
-        [PSDefaultValue(Value = "auto")]
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to split on word boundaries")]
+        [switch] $SplitOnWord,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Maximum number of tokens per segment")]
+        [int] $MaxTokensPerSegment,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to ignore silence (will mess up timestamps)")]
+        [switch] $IgnoreSilence,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Maximum duration of silence before automatically stopping recording")]
+        [timespan] $MaxDurationOfSilence,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Silence detect threshold (0..32767 defaults to 30)")]
+        [ValidateRange(0, 32767)]
+        [int] $SilenceThreshold,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Sets the language to detect, defaults to 'auto'")]
         [string] $Language = "auto",
 
-        [Parameter(
-            Position = 1,
-            Mandatory = $false,
-            HelpMessage = "The system instructions for the LLM.")]
-        [PSDefaultValue(Value = "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice.")]
-        [string]$instructions = "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice.",
+        [Parameter(Mandatory = $false, HelpMessage = "Number of CPU threads to use, defaults to 0 (auto)")]
+        [int] $CpuThreads = 0,
 
-        [Parameter(
-            Position = 2,
-            Mandatory = $false,
-            HelpMessage = "The LM-Studio model to use for generating the response.")]
-        [PSDefaultValue(Value = "yi-coder-9b-chat")]
-        [string]$model = "yi-coder-9b-chat",
+        [Parameter(Mandatory = $false, HelpMessage = "Temperature for speech generation")]
+        [ValidateRange(0, 100)]
+        [float] $Temperature = 0.01,
 
-        [Parameter(
-            Mandatory = $false,
-            Position = 3,
-            HelpMessage = "The temperature parameter for controlling the randomness of the response."
-        )]
-        [ValidateRange(0.0, 1.0)]
-        [double] $temperature = 0.7
+        [Parameter(Mandatory = $false, HelpMessage = "Temperature increment")]
+        [ValidateRange(0, 1)]
+        [float] $TemperatureInc,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to translate the output")]
+        [switch] $WithTranslate,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Prompt to use for the model")]
+        [string] $Prompt,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Regex to suppress tokens from the output")]
+        [string] $SuppressRegex = $null,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to show progress")]
+        [switch] $WithProgress,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Size of the audio context")]
+        [int] $AudioContextSize,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to NOT suppress blank lines")]
+        [switch] $DontSuppressBlank,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Maximum duration of the audio")]
+        [timespan] $MaxDuration,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Offset for the audio")]
+        [timespan] $Offset,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Maximum number of last text tokens")]
+        [int] $MaxLastTextTokens,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to use single segment only")]
+        [switch] $SingleSegmentOnly,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to print special tokens")]
+        [switch] $PrintSpecialTokens,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Maximum segment length")]
+        [int] $MaxSegmentLength,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Start timestamps at this moment")]
+        [timespan] $MaxInitialTimestamp,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Length penalty")]
+        [ValidateRange(0, 1)]
+        [float] $LengthPenalty,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Entropy threshold")]
+        [ValidateRange(0, 1)]
+        [float] $EntropyThreshold,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Log probability threshold")]
+        [ValidateRange(0, 1)]
+        [float] $LogProbThreshold,
+
+        [Parameter(Mandatory = $false, HelpMessage = "No speech threshold")]
+        [ValidateRange(0, 1)]
+        [float] $NoSpeechThreshold,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Don't use context")]
+        [switch] $NoContext,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Use beam search sampling strategy")]
+        [switch] $WithBeamSearchSamplingStrategy
     )
+
     process {
 
-        [string] $session = "";
 
-        while ($true) {
-            $text = (Start-AudioTranscription -Language:$Language)
-            $question = $text
-            $session += "Current content to respond to: `r`n$text`r`n`r`n"
-            Write-Host "--"
-            $a = [System.Console]::ForegroundColor
-            [System.Console]::ForegroundColor = [System.ConsoleColor]::Yellow
-            Write-Host ">> $text"
-            [System.Console]::ForegroundColor = $a;
-            Write-Host "--"
-            $answer = (qlms -query $session -instructions:$instructions -model:$model -temperature:$temperature)
-            $session = "Previous content responded to: `r`n$question`r`n`r`nPrevious response: `r`n$answer`r`n`r`n"
-            Write-Host "--"
+        $ModelFilePath = Expand-Path "$PSScriptRoot\..\..\GenXdev.Local\" -CreateDirectory
 
-            [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
-            Write-Host "<< $answer"
-            [System.Console]::ForegroundColor = $a;
-            Write-Host "--"
-            say $answer
-            Write-Host "Press any key to start recording or Q to quit"
-            if ([Console]::ReadKey().Key -eq "Q") { sst; break }
-            sst;
-            Write-Host "---------------"
+        if (-not $PSBoundParameters.ContainsKey("ModelFilePath")) {
+
+            $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Out-Null;
+        }
+        if ($VOX -eq $true) {
+
+            if (-not $PSBoundParameters.ContainsKey("MaxDurationOfSilence")) {
+
+                $PSBoundParameters.Add("MaxDurationOfSilence", [timespan]::FromSeconds(4)) | Out-Null;
+            }
+            else {
+
+                $PSBoundParameters["MaxDurationOfSilence"] = [timespan]::FromSeconds(4);
+            }
+
+            if (-not $PSBoundParameters.ContainsKey("IgnoreSilence")) {
+
+                $PSBoundParameters.Add("IgnoreSilence", $true) | Out-Null;
+            }
+            else {
+
+                $PSBoundParameters["IgnoreSilence"] = $true
+            }
+
+            if ($PSBoundParameters.ContainsKey("VOX")) {
+                $PSBoundParameters.Remove("VOX") | Out-Null;
+            }
+        }
+
+        if (-not $PSBoundParameters.ContainsKey("ErrorAction")) {
+
+            $PSBoundParameters.Add("ErrorAction", "Stop") | Out-Null;
+        }
+
+        if (-not (Get-HasCapableGpu)) {
+
+            if (-not $PSBoundParameters.ContainsKey("CpuThreads")) {
+
+                $PSBoundParameters.Add("CpuThreads", (Get-NumberOfCpuCores)) | Out-Null;
+            }
+        }
+
+        # Remove any parameters with $null values
+        $PSBoundParameters.GetEnumerator() | ForEach-Object {
+            if ($null -eq $_.Value) {
+                $PSBoundParameters.Remove($_.Key) | Out-Null
+            }
+        }
+
+        $oldErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = "Stop"
+        try {
+
+            Get-SpeechToText @PSBoundParameters
+        }
+        finally {
+
+            $ErrorActionPreference = $oldErrorActionPreference
         }
     }
 }
@@ -1292,48 +1495,60 @@ The language to translate to.
 The instructions for the model.
 Defaults to:
 
-.PARAMETER model
+.PARAMETER Model
 The LM-Studio model to use for generating the response.
 
 .EXAMPLE
-    -------------------------- Example 1 --------------------------
-
     Get-TextTranslation -Text "Hello, how are you?" -Language "french"
+
+    "Hello, how are you?" | translate -Language "french"
 
 #>
 function Get-TextTranslation {
 
     [CmdletBinding()]
+    [Alias("translate", "Get-Translation")]
+
     param (
-        [Parameter(Mandatory = $true, Position = 0, HelpMessage = "The text to translate")]
+        [Parameter(
+            Mandatory = $true,
+            HelpMessage = "The text to translate",
+            ValueFromPipeline = $true
+        )]
         [string] $Text,
 
-        [Parameter(Mandatory = $false, Position = 1, HelpMessage = "The language to translate to.")]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The language to translate to."
+        )]
         [PSDefaultValue(Value = "english")]
         [string] $Language = "english",
 
         [Parameter(
             Mandatory = $false,
-            Position = 2,
             HelpMessage = "The system instructions for the LLM."
         )]
         [PSDefaultValue(Value = "Translate this partial subtitle text, into the `[Language] language, leave in the same style of writing, and leave the paragraph structure in tact, ommit only the translation no yapping or chatting.")]
         $Instructions = "Translate this partial subtitle text, into the [Language] language, leave in the same style of writing, and leave the paragraph structure in tact, ommit only the translation no yapping or chatting.",
 
         [Parameter(
-            Position = 3,
             Mandatory = $false,
-            HelpMessage = "The LM-Studio model to use for generating the response.")]
+            HelpMessage = "The LM-Studio model to use for generating the response."
+        )]
         [PSDefaultValue(Value = "yi-coder-9b-chat")]
-        [string]$model = "yi-coder-9b-chat"
+        [string]$Model = "yi-coder-9b-chat"
     )
 
-    process {
+    begin {
+        # initialize translation container
+        [System.Text.StringBuilder] $translation = New-Object System.Text.StringBuilder;
 
         $Instructions = $Instructions.Replace("[Language]", $Language);
 
-        # initialize translation container
-        [System.Text.StringBuilder] $translation = New-Object System.Text.StringBuilder;
+        [System.Console]::Write("translating to $Language..")
+    }
+
+    process {
 
         # initialize the cursor, trying +/- 1K characters
         $i = [Math]::Min(1000, $Text.Length)
@@ -1355,7 +1570,7 @@ function Get-TextTranslation {
 
             if ([string]::IsNullOrWhiteSpace($nextPart)) {
 
-                $translation.Append("$nextPart");
+                $translation.Append("$nextPart") | Out-Null
                 $i = [Math]::Min(100, $Text.Length)
                 continue;
             }
@@ -1377,23 +1592,27 @@ function Get-TextTranslation {
 
             try {
                 # translate the text
-                $translatedPart = qlms -query $nextPart -instructions $Instructions -model $model -temperature 0.02
+                $translatedPart = qlms -query $nextPart -Instructions $Instructions -Model $Model -temperature 0.02
 
                 # append the translated part
-                $translation.Append("$spaceLeft$translatedPart$spaceRight");
+                $translation.Append("$spaceLeft$translatedPart$spaceRight") | Out-Null
 
                 Write-Verbose "Text translated to: `"$translatedPart`".."
             }
             catch {
 
                 # append the original part
-                $translation.Append("$spaceLeft$nextPart$spaceRight");
+                $translation.Append("$spaceLeft$nextPart$spaceRight") | Out-Null
 
                 Write-Verbose "Translating text to $LanguageOut, failed: $PSItem"
             }
 
             $i = [Math]::Min(100, $Text.Length)
         }
+    }
+
+    end {
+        [System.Console]::Write("`e[1A`e[2K")
 
         # return the translation
         $translation.ToString();
@@ -1417,15 +1636,107 @@ The language to expect in the audio. E.g. "en", "fr", "de", "nl"
 .PARAMETER LanguageOut
 The language to translate to. E.g. "french", "german", "dutch"
 
-.PARAMETER model
-The LM-Studio model to use for translations
-
 .PARAMETER SRT
 Output in SRT format.
+
+.PARAMETER Passthru
+Returns objects instead of strings.
+
+.PARAMETER UseDesktopAudioCapture
+Whether to use desktop audio capture instead of microphone input
+
+.PARAMETER TranslateUsingLMStudioModel
+The LM Studio model to use for translation.
 
 .PARAMETER MaxSrtChars
 The maximum number of characters per line in the SRT output.
 
+.PARAMETER WithTokenTimestamps
+Whether to include token timestamps in the output.
+
+.PARAMETER TokenTimestampsSumThreshold
+Sum threshold for token timestamps, defaults to 0.5.
+
+.PARAMETER SplitOnWord
+Whether to split on word boundaries.
+
+.PARAMETER MaxTokensPerSegment
+Maximum number of tokens per segment.
+
+.PARAMETER MaxDurationOfSilence
+Maximum duration of silence before automatically stopping recording.
+
+.PARAMETER SilenceThreshold
+Silence detect threshold (0..32767 defaults to 30)
+
+.PARAMETER ModelFilePath
+Path to the model file.
+
+.PARAMETER CpuThreads
+Number of CPU threads to use, defaults to 0 (auto).
+
+.PARAMETER Temperature
+Temperature for speech generation.
+
+.PARAMETER TemperatureInc
+Temperature increment.
+
+.PARAMETER SuppressRegex
+Regex to suppress tokens from the output.
+
+.PARAMETER WithProgress
+Whether to show progress.
+
+.PARAMETER AudioContextSize
+Size of the audio context.
+
+.PARAMETER DontSuppressBlank
+Whether to NOT suppress blank lines.
+
+.PARAMETER MaxDuration
+Maximum duration of the audio.
+
+.PARAMETER Offset
+Offset for the audio.
+
+.PARAMETER MaxLastTextTokens
+Maximum number of last text tokens.
+
+.PARAMETER SingleSegmentOnly
+Whether to use single segment only.
+
+.PARAMETER PrintSpecialTokens
+Whether to print special tokens.
+
+.PARAMETER MaxSegmentLength
+Maximum segment length.
+
+.PARAMETER MaxInitialTimestamp
+Start timestamps at this moment.
+
+.PARAMETER LengthPenalty
+Length penalty.
+
+.PARAMETER EntropyThreshold
+Entropy threshold.
+
+.PARAMETER LogProbThreshold
+Log probability threshold.
+
+.PARAMETER NoSpeechThreshold
+No speech threshold.
+
+.PARAMETER NoContext
+Don't use context.
+
+.PARAMETER WithBeamSearchSamplingStrategy
+Use beam search sampling strategy.
+
+.PARAMETER Prompt
+Prompt to use for the model.
+
+.EXAMPLE
+    Get-MediaFileAudioTranscription -FilePath "C:\path\to\audio.wav" -LanguageIn "en" -LanguageOut "french" -SRT
 #>
 function Get-MediaFileAudioTranscription {
     [CmdletBinding()]
@@ -1445,35 +1756,122 @@ function Get-MediaFileAudioTranscription {
         [PSDefaultValue(Value = "auto")]
         [string] $LanguageIn = "auto",
 
+
         [Parameter(
-            ParameterSetName = "Translate",
             Mandatory = $false,
             Position = 2,
-            HelpMessage = "The language to translate the text to using LM Studio."
+            HelpMessage = "Sets the language to translate to."
         )]
-        [string] $LanguageOut = $null,
-
-        [Parameter(
-            ParameterSetName = "Translate",
-            Position = 3,
-            Mandatory = $false,
-            HelpMessage = "The LM-Studio model to use for translations")]
-        [PSDefaultValue(Value = "yi-coder-9b-chat")]
-        [string]$model = "yi-coder-9b-chat",
+        [string]$LanguageOut = $null,
 
         [Parameter(
             Mandatory = $false,
-            Position = 4,
+            HelpMessage = "The LM Studio model to use for translation."
+        )]
+        [string] $TranslateUsingLMStudioModel = "yi-coder-9b-chat",
+
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = "Output in SRT format."
         )]
         [switch] $SRT,
 
-        [Parameter(
-            Mandatory = $false,
-            Position = 5,
-            HelpMessage = "The maximum number of characters per line in the SRT output."
-        )]
-        [int] $MaxSrtChars = 25
+        [Parameter(Mandatory = $false, HelpMessage = "Returns objects instead of strings")]
+        [switch] $Passthru,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to use desktop audio capture instead of microphone input")]
+        [switch] $UseDesktopAudioCapture,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to include token timestamps in the output")]
+        [switch] $WithTokenTimestamps,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Sum threshold for token timestamps, defaults to 0.5")]
+        [float] $TokenTimestampsSumThreshold = 0.5,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to split on word boundaries")]
+        [switch] $SplitOnWord,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Maximum number of tokens per segment")]
+        [int] $MaxTokensPerSegment,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to ignore silence (will mess up timestamps)")]
+        [switch] $IgnoreSilence,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Maximum duration of silence before automatically stopping recording")]
+        [timespan] $MaxDurationOfSilence,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Silence detect threshold (0..32767 defaults to 30)")]
+        [ValidateRange(0, 32767)]
+        [int] $SilenceThreshold,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Number of CPU threads to use, defaults to 0 (auto)")]
+        [int] $CpuThreads = 0,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Temperature for speech recognition")]
+        [ValidateRange(0, 100)]
+        [float] $Temperature = 0.01,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Temperature increment")]
+        [ValidateRange(0, 1)]
+        [float] $TemperatureInc,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Prompt to use for the model")]
+        [string] $Prompt,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Regex to suppress tokens from the output")]
+        [string] $SuppressRegex = $null,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to show progress")]
+        [switch] $WithProgress,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Size of the audio context")]
+        [int] $AudioContextSize,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to NOT suppress blank lines")]
+        [switch] $DontSuppressBlank,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Maximum duration of the audio")]
+        [timespan] $MaxDuration,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Offset for the audio")]
+        [timespan] $Offset,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Maximum number of last text tokens")]
+        [int] $MaxLastTextTokens,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to use single segment only")]
+        [switch] $SingleSegmentOnly,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to print special tokens")]
+        [switch] $PrintSpecialTokens,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Maximum segment length")]
+        [int] $MaxSegmentLength,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Start timestamps at this moment")]
+        [timespan] $MaxInitialTimestamp,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Length penalty")]
+        [ValidateRange(0, 1)]
+        [float] $LengthPenalty,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Entropy threshold")]
+        [ValidateRange(0, 1)]
+        [float] $EntropyThreshold,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Log probability threshold")]
+        [ValidateRange(0, 1)]
+        [float] $LogProbThreshold,
+
+        [Parameter(Mandatory = $false, HelpMessage = "No speech threshold")]
+        [ValidateRange(0, 1)]
+        [float] $NoSpeechThreshold,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Don't use context")]
+        [switch] $NoContext,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Use beam search sampling strategy")]
+        [switch] $WithBeamSearchSamplingStrategy
     )
 
     process {
@@ -1537,10 +1935,7 @@ function Get-MediaFileAudioTranscription {
         }
 
         # Make sure ffmpeg is installed
-        Installffmpeg;
-
-        # Re-use downloaded models
-        $ModelFilePath = Expand-Path "$PSScriptRoot\..\..\GenXdev.Local\" -CreateDirectory
+        Installffmpeg | Out-Null
 
         # Replace these paths with your actual file paths
         $inputFile = Expand-Path $FilePath
@@ -1551,8 +1946,14 @@ function Get-MediaFileAudioTranscription {
 
             param($ffmpegPath, $inputFile, $outputFile)
 
-            # Convert the file to WAV format
-            & $ffmpegPath -i "$inputFile" -ac 1 -ar 16000 -sample_fmt s16 "$outputFile" -loglevel quiet -y | Out-Null
+            try {
+                [System.Console]::WriteLine("Converting the file '$inputFile' to WAV format..");
+                # Convert the file to WAV format
+                & $ffmpegPath -i "$inputFile" -ac 1 -ar 16000 -sample_fmt s16 "$outputFile" -loglevel quiet -y | Out-Null
+            }
+            finally {
+                [System.Console]::Write("`e[1A`e[2K")
+            }
 
             return $LASTEXITCODE
         }
@@ -1569,10 +1970,75 @@ function Get-MediaFileAudioTranscription {
             # Clean up the temporary file
             if ([IO.File]::Exists($outputFile)) {
 
-                Remove-Item -Path $outputFile -Force
+                Remove-Item -Path $outputFile -Force | Out-Null
             }
 
             return
+        }
+
+        if (-not $PSBoundParameters.ContainsKey("Language")) {
+
+            $PSBoundParameters.Add("Language", $LanguageIn) | Out-Null;
+        }
+        else {
+
+            $PSBoundParameters["Language"] = $LanguageIn;
+        }
+
+        if ($PSBoundParameters.ContainsKey("WithTranslate")) {
+
+            $PSBoundParameters.Remove("WithTranslate", $true) | Out-Null;
+        }
+
+        if (($SRT -eq $true) -and (-not $PSBoundParameters.ContainsKey("Passthru"))) {
+
+            $PSBoundParameters.Add("Passthru", $true) | Out-Null;
+        }
+        else {
+
+            if ((-not $SRT) -and $PSBoundParameters.ContainsKey("Passthru")) {
+
+                $PSBoundParameters.Remove("Passthru") | Out-Null
+            }
+        }
+
+        if ($PSBoundParameters.ContainsKey("FilePath")) {
+
+            $PSBoundParameters.Remove("FilePath") | Out-Null
+        }
+        if ($PSBoundParameters.ContainsKey("LanguageIn")) {
+
+            $PSBoundParameters.Remove("LanguageIn") | Out-Null
+        }
+        if ($PSBoundParameters.ContainsKey("LanguageOut")) {
+
+            $PSBoundParameters.Remove("LanguageOut") | Out-Null
+        }
+        if ($PSBoundParameters.ContainsKey("SRT")) {
+
+            $PSBoundParameters.Remove("SRT") | Out-Null
+        }
+        if ($PSBoundParameters.ContainsKey("TranslateUsingLMStudioModel")) {
+
+            $PSBoundParameters.Remove("TranslateUsingLMStudioModel") | Out-Null
+        }
+
+        if (-not $PSBoundParameters.ContainsKey("WaveFile")) {
+
+            $PSBoundParameters.Add("WaveFile", $outputFile) | Out-Null;
+        }
+
+        if (-not $PSBoundParameters.ContainsKey("ErrorAction")) {
+
+            $PSBoundParameters.Add("ErrorAction", "Stop") | Out-Null;
+        }
+
+        if (-not (Get-HasCapableGpu)) {
+
+            if (-not $PSBoundParameters.ContainsKey("CpuThreads")) {
+
+                $PSBoundParameters.Add("CpuThreads", (Get-NumberOfCpuCores)) | Out-Null;
+            }
         }
 
         try {
@@ -1583,8 +2049,7 @@ function Get-MediaFileAudioTranscription {
                 # initialize srt counter
                 $i = 1
 
-                # iterate over the results
-                Get-SpeechToText -ModelFilePath:$ModelFilePath -Language:$LanguageIn -WaveFile:$outputFile -Passthru:($SRT -eq $true) | ForEach-Object {
+                Start-AudioTranscription @PSBoundParameters | ForEach-Object {
 
                     $result = $PSItem;
 
@@ -1596,7 +2061,7 @@ function Get-MediaFileAudioTranscription {
                         try {
                             # translate the text
                             $result = @{
-                                Text  = Get-TextTranslation -Text:($result.Text) -Language:$LanguageOut -model:$model -Instructions "Translate this partial subtitle text, into the [Language] language. ommit only the translation no yapping or chatting.";
+                                Text  = (Get-TextTranslation -Text:($result.Text) -Language:$LanguageOut -Model:$TranslateUsingLMStudioModel -Instructions "Translate this partial subtitle text, into the [Language] language. ommit only the translation no yapping or chatting. return in json format like so: {`"Translation`":`"Translated text here`"}" | ConvertFrom-Json).Translation;
                                 Start = $result.Start;
                                 End   = $result.End;
                             }
@@ -1609,80 +2074,41 @@ function Get-MediaFileAudioTranscription {
                         }
                     }
 
-                    $Lines = @("$($result.Text.Replace("`r", "`n").Replace("`n`n", "`n").Replace("`n`n", "`n"))".Split("`n", [System.StringSplitOptions]::RemoveEmptyEntries));
-                    $Lengths = @($Lines | ForEach-Object { $_.Length })
-                    $TotalLength = [string]::Join(". ", $Lines).Length;
-                    $TotalDuration = $result.End - $result.Start;
-                    $Durations = @($Lengths | ForEach-Object { [TimeSpan]::FromSeconds((($PSItem / $TotalLength) * $TotalDuration.Seconds)) });
+                    $start = $result.Start.ToString("hh\:mm\:ss\,fff", [CultureInfo]::InvariantCulture);
+                    $end = $result.end.ToString("hh\:mm\:ss\,fff", [CultureInfo]::InvariantCulture);
 
-                    for ($iLine = 0; $iLine -lt $lines.Length; $iLine++) {
+                    "$i`r`n$start --> $end`r`n$($result.Text)`r`n`r`n"
 
-                        $Line = $Lines[$iLine];
-                        $max = [Math]::Min($MaxSrtChars, $Line.Length);
-
-                        $startTimespan = $result.Start
-
-                        while ($max -gt 0) {
-
-                            # move the cursor to the next word
-                            while (($max -gt 0) -and (" `t`r`n".indexOf($Line[$max]) -lt 0)) { $max--; }
-                            while (($max -lt $Line.Length) -and (" `t`r`n".indexOf($Line[$max]) -lt 0)) { $max++; }
-                            if ($max -lt $MaxSrtChars) { $max = $Line.Length; }
-
-                            # get the next part of the text
-                            $nextPart = $Line.Substring(0, $max).Trim("`r`t`n ".ToCharArray());
-                            $Line = $Line.Substring($max).Trim("`r`t`n ".ToCharArray());
-
-                            $Duration = [Timespan]::FromSeconds($Durations[$iLine].TotalSeconds * ($nextPart.Length / $Lengths[$iLine]));
-                            $FullDuration = $Duration
-
-                            if ($Duration.Seconds -gt 8) {
-
-                                $Duration = [TimeSpan]::FromSeconds(8)
-                            }
-
-                            $startTimespan = $result.Start
-                            $endTimespan = $startTimespan + $Duration;
-
-                            $result = @{
-                                Text  = $nextPart;
-                                Start = $result.Start + $FullDuration;
-                                End   = $result.End;
-                            }
-
-                            $start = $startTimespan.ToString("hh\:mm\:ss\,fff", [CultureInfo]::InvariantCulture);
-                            $end = $endTimespan.ToString("hh\:mm\:ss\,fff", [CultureInfo]::InvariantCulture);
-
-                            "$i`r`n$start --> $end`r`n$nextPart`r`n`r`n"
-
-                            # increment the counter
-                            $i++
-
-                            # find next part
-                            $max = [Math]::Min($MaxSrtChars, $line.Length);
-                        }
-                    }
+                    # increment the counter
+                    $i++
                 }
 
                 # end of SRT format
                 return;
             }
 
-            # transcribe the audio file to text
-            $results = Get-SpeechToText -ModelFilePath:$ModelFilePath -Language:$LanguageIn -WaveFile:$outputFile -Passthru:($SRT -eq $true)
-
             #  needs translation?
-            if (-not [string]::IsNullOrWhiteSpace($LanguageOut)) {
+            if (-not [string]::IsNullOrWhiteSpace($LanguageOut) -and ![string]::IsNullOrWhiteSpace($TranslateUsingLMStudioModel)) {
+
+                # transcribe the audio file to text
+                $results = Get-SpeechToText @PSBoundParameters
 
                 # delegate
-                Get-TextTranslation -Text "$results" -Language $LanguageOut -model $model
+                Get-TextTranslation -Text "$results" -Language $LanguageOut -Model $TranslateUsingLMStudioModel
 
                 # end of translation
                 return;
             }
 
             # return the text results without translation
-            $results
+            Start-AudioTranscription @PSBoundParameters
+        }
+        catch {
+
+            if ("$PSItem" -notlike "*aborted*") {
+
+                Write-Error $PSItem
+            }
         }
         finally {
 
@@ -1693,4 +2119,421 @@ function Get-MediaFileAudioTranscription {
             }
         }
     }
+}
+
+################################################################################
+<#
+.SYNOPSIS
+Starts a rudimentary audio chat session.
+
+.DESCRIPTION
+Starts a rudimentary audio chat session using Whisper and the LM-Studio API.
+
+.PARAMETER Instructions
+The system instructions for the responding LLM.
+Default value: "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice."
+
+.PARAMETER Model
+The LM-Studio model to use for generating the response.
+Default value: "yi-coder-9b-chat"
+
+.PARAMETER UseDesktopAudioCapture
+Whether to use desktop audio capture instead of microphone input.
+
+.PARAMETER TemperatureResponse
+The temperature parameter for controlling the randomness of the response.
+
+.PARAMETER Language
+Sets the language to detect, defaults to 'auto'.
+
+.PARAMETER CpuThreads
+Number of CPU threads to use, defaults to 0 (auto).
+
+.PARAMETER Temperature
+Temperature for response generation.
+
+.PARAMETER TemperatureInc
+Temperature increment.
+
+.PARAMETER Prompt
+Prompt to use for the model.
+
+.PARAMETER SuppressRegex
+Regex to suppress tokens from the output.
+
+.PARAMETER AudioContextSize
+Size of the audio context.
+
+.PARAMETER MaxDuration
+Maximum duration of the audio.
+
+.PARAMETER LengthPenalty
+Length penalty.
+
+.PARAMETER EntropyThreshold
+Entropy threshold.
+
+.PARAMETER LogProbThreshold
+Log probability threshold.
+
+.PARAMETER NoSpeechThreshold
+No speech threshold.
+
+.PARAMETER NoContext
+Don't use context.
+
+.PARAMETER WithBeamSearchSamplingStrategy
+Use beam search sampling strategy.
+
+.PARAMETER OnlyResponses
+Whether to suppress reconized text in the output.
+
+.PARAMETER NoTextToSpeech
+Whether to suppress text to speech.
+
+#>
+function Start-AudioChat {
+
+    [Alias("llmchat")]
+
+    param(
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The system instructions for the responding LLM.")]
+        [PSDefaultValue(Value = "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice.")]
+        [string]$Instructions = "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice.",
+
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The LM-Studio model to use for generating the response.")]
+        [PSDefaultValue(Value = "yi-coder-9b-chat")]
+        [string]$Model = "yi-coder-9b-chat",
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to use desktop audio capture instead of microphone input")]
+        [switch] $UseDesktopAudioCapture,
+
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The temperature parameter for controlling the randomness of the response."
+        )]
+        [ValidateRange(0.0, 1.0)]
+        [double] $TemperatureResponse = 0.01,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Sets the language to detect, defaults to 'auto'")]
+        [string] $Language = "auto",
+
+        [Parameter(Mandatory = $false, HelpMessage = "Number of CPU threads to use, defaults to 0 (auto)")]
+        [int] $CpuThreads = 0,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Temperature for response generation")]
+        [ValidateRange(0, 100)]
+        [float] $Temperature = 0.01,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Temperature increment")]
+        [ValidateRange(0, 1)]
+        [float] $TemperatureInc,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Prompt to use for the model")]
+        [string] $Prompt,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Regex to suppress tokens from the output")]
+        [string] $SuppressRegex = $null,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Size of the audio context")]
+        [int] $AudioContextSize,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Maximum duration of the audio")]
+        [timespan] $MaxDuration,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Length penalty")]
+        [ValidateRange(0, 1)]
+        [float] $LengthPenalty,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Entropy threshold")]
+        [ValidateRange(0, 1)]
+        [float] $EntropyThreshold,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Log probability threshold")]
+        [ValidateRange(0, 1)]
+        [float] $LogProbThreshold,
+
+        [Parameter(Mandatory = $false, HelpMessage = "No speech threshold")]
+        [ValidateRange(0, 1)]
+        [float] $NoSpeechThreshold,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Don't use context")]
+        [switch] $NoContext,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Use beam search sampling strategy")]
+        [switch] $WithBeamSearchSamplingStrategy,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to suppress reconized text in the output")]
+        [switch] $OnlyResponses,
+
+        [Parameter(Mandatory = $false, HelpMessage = "Whether to suppress text to speech")]
+        [switch] $NoTextToSpeech
+    )
+
+    process {
+        if (-not $PSBoundParameters.ContainsKey("VOX")) {
+
+            $PSBoundParameters.Add("VOX", $true) | Out-Null;
+        }
+        if ($PSBoundParameters.ContainsKey("OnlyResponses")) {
+
+            $PSBoundParameters.Remove("OnlyResponses") | Out-Null;
+        }
+        if ($PSBoundParameters.ContainsKey("NoTextToSpeech")) {
+
+            $PSBoundParameters.Remove("NoTextToSpeech") | Out-Null;
+        }
+        if ($PSBoundParameters.ContainsKey("instructions")) {
+
+            $PSBoundParameters.Remove("instructions") | Out-Null;
+        }
+        if ($PSBoundParameters.ContainsKey("model")) {
+
+            $PSBoundParameters.Remove("model") | Out-Null;
+        }
+        if ($PSBoundParameters.ContainsKey("TemperatureResponse")) {
+
+            $PSBoundParameters.Remove("TemperatureResponse") | Out-Null;
+        }
+
+        if (-not $PSBoundParameters.ContainsKey("ErrorAction")) {
+
+            $PSBoundParameters.Add("ErrorAction", "Stop") | Out-Null;
+        }
+
+        [string] $session = "";
+
+        while ($true) {
+
+            try {
+
+                $text = Start-AudioTranscription @PSBoundParameters
+            }
+            catch {
+
+                if ("$PSItem" -notlike "*aborted*") {
+
+                    Write-Error $PSItem
+                }
+                return;
+            }
+
+            if (-not [string]::IsNullOrWhiteSpace($text)) {
+
+                $question = $text
+                $session += "<< $text`r`n`r`n"
+
+                if (-not $OnlyResponses) {
+
+                    $a = [System.Console]::ForegroundColor
+                    [System.Console]::ForegroundColor = [System.ConsoleColor]::Yellow
+                    Write-Host "<< $text"
+                    [System.Console]::ForegroundColor = $a;
+                }
+
+                $answer = (qlms -query $session -Instructions:$Instructions -Model:$Model -temperature:$TemperatureResponse)
+                $session = ">> $question`r`n`r`n<< `r`n$answer`r`n`r`n"
+
+                $a = [System.Console]::ForegroundColor
+                [System.Console]::ForegroundColor = [System.ConsoleColor]::Green
+
+                if ($OnlyResponses) {
+
+                    Write-Host "$answer"
+                }
+                else {
+                    Write-Host "<< $answer"
+                }
+                [System.Console]::ForegroundColor = $a;
+
+                if (-not ($true -eq $NoTextToSpeech)) {
+
+                    Start-TextToSpeech -Text $answer
+                }
+
+                Write-Host "Press any key to interrupt and start recording or Q to quit"
+            }
+            else {
+
+                Write-Host "Only silence recorded";
+            }
+
+            # should we wait until a key is pressed?
+            while ((Get-IsSpeaking)) {
+
+                while ([Console]::KeyAvailable) {
+
+                    $key = [Console]::ReadKey().Key
+                    [System.Console]::Write("`e[1G`e[2K")
+
+                    if ($key -eq [ConsoleKey]::Q) {
+
+                        sst;
+                        Write-Host "---------------"
+                        throw "aborted";
+                        return;
+                    }
+                    else {
+
+                        break
+                    }
+                }
+
+                Start-Sleep -Milliseconds 100 | Out-Null
+            }
+
+            # ansi for cursor up and clear line
+            [System.Console]::Write("`e[1A`e[2K")
+
+            sst;
+            Write-Host "---------------"
+        }
+    }
+}
+
+
+################################################################################
+<#
+.SYNOPSIS
+Add suitable emoticons to a text.
+
+.DESCRIPTION
+Add suitable emoticons to a text, which can come from pipeline or parameter or clipboard.
+
+.PARAMETER Text
+Optionally the text to outfit with emoticons, if not specified, will read and set the clipboard.
+
+.PARAMETER Instructions
+Addiitional instructions for the model.
+
+.PARAMETER Model
+The LM-Studio model to use for generating the response.
+
+.PARAMETER SetClipboard
+Force the result to be set to the clipboard.
+
+.EXAMPLE
+    Add-EmoticonsToText -Text "Hello, how are you?"
+
+.EXAMPLE
+    or just get emojify the clipboard text:
+
+    emojify
+
+.EXAMPLE
+    "This is lion, this is a dog, this is a sheep" | emojify
+
+#>
+function Add-EmoticonsToText {
+
+    [CmdletBinding()]
+    [Alias("emojify")]
+
+    param (
+        [Parameter(
+            Position = 0,
+            Mandatory = $false,
+            HelpMessage = "The text to emojify.",
+            ValueFromPipeline = $true
+        )]
+        [string] $Text,
+
+        [Parameter(
+            Position = 1,
+            Mandatory = $false,
+            HelpMessage = "Additional instructions for the LLM."
+        )]
+        $Instructions = "",
+
+        [Parameter(
+            Position = 2,
+            Mandatory = $false,
+            HelpMessage = "The LM-Studio model to use for generating the response."
+        )]
+        [PSDefaultValue(Value = "yi-coder-9b-chat")]
+        [string]$Model = "yi-coder-9b-chat",
+
+        [Parameter(
+            Position = 3,
+            Mandatory = $false,
+            HelpMessage = "Whether to set the clipboard with the result."
+        )]
+        [switch] $SetClipboard
+    )
+
+    begin {
+        [System.Text.StringBuilder] $allResults = New-Object System.Text.StringBuilder;
+        $Instructions = "Add funny or expressive emojii to the text. Don't change the text otherwise.`r`n$Instructions `r`nRespond only in json format, like: {`"response`":`"Hello, how are you? 😊`"}"
+
+        [Console]::Write("emojifying..")
+    }
+
+    process {
+
+        $isFromClipboard = [string]::IsNullOrWhiteSpace($Text)
+        $Text = "$Text"
+
+        if ($isFromClipboard) {
+
+            $Text = Get-Clipboard
+
+            if ([string]::IsNullOrWhiteSpace($Text)) {
+
+                Write-Warning "No text found in the clipboard."
+                return;
+            }
+        }
+
+        try {
+            Write-Verbose "Emojifying text: `"$Text`".."
+
+            # translate the text
+            $Text = (qlms -query "$Text" -Instructions $Instructions -Model $Model | ConvertFrom-Json).response
+        }
+        finally {
+
+
+            $allResults.Append("$Text`r`n") | Out-Null
+        }
+    }
+
+    end {
+        $result = $allResults.ToString();
+
+        if ($SetClipboard) {
+
+            Set-Clipboard -Value $result
+        }
+
+        $result
+
+        [Console]::Write("`e[1A`e[2K");
+    }
+}
+
+################################################################################
+
+function Get-HasCapableGpu {
+
+    # Check for CUDA-compatible GPU with at least 8 GB of RAM
+
+    # Get the list of video controllers
+    $videoControllers = Get-WmiObject Win32_VideoController | Where-Object { $_.AdapterRAM -ge 8GB }
+
+    return $null -ne $videoControllers
+}
+
+################################################################################
+
+function Get-NumberOfCpuCores {
+
+    $cores = 0;
+
+    Get-WmiObject -Class Win32_Processor | Select-Object -Property NumberOfCores  | ForEach-Object { $cores += $_.NumberOfCores }
+
+    return $cores*2;
 }
