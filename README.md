@@ -155,8 +155,8 @@ Invoke-QueryImageContent
 
 ### SYNTAX
 ````PowerShell
-Invoke-QueryImageContent [-query] <String> [-ImagePath] <String> [[-temperature] 
-<Double>] [<CommonParameters>]
+Invoke-QueryImageContent [-query] <String> [-ImagePath] <String> [[-temperature] <Double>] 
+[<CommonParameters>]
 ````
 
 ### DESCRIPTION
@@ -207,8 +207,8 @@ Invoke-ImageKeywordUpdate [[-imageDirectory] <String>] [[-recurse]] [[-onlyNew]]
 ````
 
 ### DESCRIPTION
-    The `Invoke-ImageKeywordUpdate` function updates the keywords and description of images 
-    in a directory.
+    The `Invoke-ImageKeywordUpdate` function updates the keywords and description of images in 
+    a directory.
 
 ### PARAMETERS
     -imageDirectory <String>
@@ -346,16 +346,16 @@ Start-AudioTranscription             --> recordandtranscribe, transcribe
 ### SYNTAX
 ````PowerShell
 Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-Passthru] 
-[-UseDesktopAudioCapture] [-WithTokenTimestamps] [[-TokenTimestampsSumThreshold] 
-<Single>] [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] [-IgnoreSilence] 
-[[-MaxDurationOfSilence] <TimeSpan>] [[-SilenceThreshold] <Int32>] [[-Language] 
-<String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>] [[-TemperatureInc] <Single>] 
-[-WithTranslate] [[-Prompt] <String>] [[-SuppressRegex] <String>] [-WithProgress] 
-[[-AudioContextSize] <Int32>] [-DontSuppressBlank] [[-MaxDuration] <TimeSpan>] 
-[[-Offset] <TimeSpan>] [[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] 
-[-PrintSpecialTokens] [[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <TimeSpan>] 
-[[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] 
-<Single>] [[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] 
+[-UseDesktopAudioCapture] [-WithTokenTimestamps] [[-TokenTimestampsSumThreshold] <Single>] 
+[-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] [-IgnoreSilence] [[-MaxDurationOfSilence] 
+<TimeSpan>] [[-SilenceThreshold] <Int32>] [[-Language] <String>] [[-CpuThreads] <Int32>] 
+[[-Temperature] <Single>] [[-TemperatureInc] <Single>] [-WithTranslate] [[-Prompt] 
+<String>] [[-SuppressRegex] <String>] [-WithProgress] [[-AudioContextSize] <Int32>] 
+[-DontSuppressBlank] [[-MaxDuration] <TimeSpan>] [[-Offset] <TimeSpan>] 
+[[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] 
+[[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <TimeSpan>] [[-LengthPenalty] 
+<Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] 
+[[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] 
 [<CommonParameters>]
 ````
 
@@ -622,8 +622,8 @@ Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Ob
 ````
 
 ### DESCRIPTION
-    The `Get-TextTranslation` function translates text to another language using the 
-    LM-Studio API.
+    The `Get-TextTranslation` function translates text to another language using the LM-Studio 
+    API.
 
 ### PARAMETERS
     -Text <String>
@@ -645,9 +645,9 @@ Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Ob
         Defaults to:
         Required?                    false
         Position?                    3
-        Default value                Translate this partial subtitle text, into the 
-        [Language] language, leave in the same style of writing, and leave the paragraph 
-        structure in tact, ommit only the translation no yapping or chatting.
+        Default value                Translate this partial subtitle text, into the [Language] 
+        language, leave in the same style of writing, and leave the paragraph structure in 
+        tact, ommit only the translation no yapping or chatting.
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -Model <String>
@@ -958,8 +958,8 @@ Start-AudioChat [[-Instructions] <String>] [[-Model] <String>] [-UseDesktopAudio
 [[-TemperatureResponse] <Double>] [[-Language] <String>] [[-CpuThreads] <Int32>] 
 [[-Temperature] <Single>] [[-TemperatureInc] <Single>] [[-Prompt] <String>] 
 [[-SuppressRegex] <String>] [[-AudioContextSize] <Int32>] [[-MaxDuration] <TimeSpan>] 
-[[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] 
-<Single>] [[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] 
+[[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] 
+[[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] 
 [-OnlyResponses] [-NoTextToSpeech] [<CommonParameters>]
 ````
 
@@ -1138,8 +1138,8 @@ Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <Object>] [[-Model] <Str
 
 ### PARAMETERS
     -Text <String>
-        Optionally the text to outfit with emoticons, if not specified, will read and set 
-        the clipboard.
+        Optionally the text to outfit with emoticons, if not specified, will read and set the 
+        clipboard.
         Required?                    false
         Position?                    1
         Default value                

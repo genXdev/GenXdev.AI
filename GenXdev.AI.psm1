@@ -1419,6 +1419,7 @@ function Start-AudioTranscription {
 
             $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Out-Null;
         }
+
         if ($VOX -eq $true) {
 
             if (-not $PSBoundParameters.ContainsKey("MaxDurationOfSilence")) {
@@ -1926,7 +1927,7 @@ function Get-MediaFileAudioTranscription {
             $ffmpeg = "Gyan.FFmpeg"
             $ffmpegPackage = Get-WinGetPackage -Id $ffmpeg
 
-            if ($null -eq $ffmpegPackage) {
+            if ($null -ne $ffmpegPackage) {
 
                 Write-Verbose "Installing ffmpeg.."
                 Install-WinGetPackage -Id $ffmpeg -Force
@@ -2535,5 +2536,5 @@ function Get-NumberOfCpuCores {
 
     Get-WmiObject -Class Win32_Processor | Select-Object -Property NumberOfCores  | ForEach-Object { $cores += $_.NumberOfCores }
 
-    return $cores*2;
+    return $cores * 2;
 }
