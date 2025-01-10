@@ -349,14 +349,14 @@ Start-AudioTranscription             --> recordandtranscribe, transcribe
 
 ### SYNTAX
 ````PowerShell
-Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-PassThru] 
-[-UseDesktopAudioCapture] [-WithTokenTimestamps] [[-TokenTimestampsSumThreshold] <Single>] 
-[-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] [-IgnoreSilence] [[-MaxDurationOfSilence] 
-<TimeSpan>] [[-SilenceThreshold] <Int32>] [[-Language] <String>] [[-CpuThreads] <Int32>] 
-[[-Temperature] <Single>] [[-TemperatureInc] <Single>] [-WithTranslate] [[-Prompt] 
-<String>] [[-SuppressRegex] <String>] [-WithProgress] [[-AudioContextSize] <Int32>] 
-[-DontSuppressBlank] [[-MaxDuration] <TimeSpan>] [[-Offset] <TimeSpan>] 
-[[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] 
+Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX] 
+[-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] 
+[[-TokenTimestampsSumThreshold] <Single>] [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] 
+[-IgnoreSilence] [[-MaxDurationOfSilence] <TimeSpan>] [[-SilenceThreshold] <Int32>] 
+[[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>] [[-TemperatureInc] 
+<Single>] [-WithTranslate] [[-Prompt] <String>] [[-SuppressRegex] <String>] [-WithProgress] 
+[[-AudioContextSize] <Int32>] [-DontSuppressBlank] [[-MaxDuration] <TimeSpan>] [[-Offset] 
+<TimeSpan>] [[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] 
 [[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <TimeSpan>] [[-LengthPenalty] 
 <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] 
 [[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] 
@@ -367,10 +367,17 @@ Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-PassThru]
     Records audio using the default audio input device and returns the detected text
 
 ### PARAMETERS
+    -ModelFilePath <String>
+        Path where model files are stored.
+        Required?                    false
+        Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
     -WaveFile <String>
         Path to the 16Khz mono, .WAV file to process.
         Required?                    false
-        Position?                    1
+        Position?                    2
         Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
@@ -404,7 +411,7 @@ Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-PassThru]
     -TokenTimestampsSumThreshold <Single>
         Sum threshold for token timestamps, defaults to 0.5.
         Required?                    false
-        Position?                    2
+        Position?                    3
         Default value                0.5
         Accept pipeline input?       false
         Accept wildcard characters?  false
@@ -418,7 +425,7 @@ Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-PassThru]
     -MaxTokensPerSegment <Int32>
         Maximum number of tokens per segment.
         Required?                    false
-        Position?                    3
+        Position?                    4
         Default value                0
         Accept pipeline input?       false
         Accept wildcard characters?  false
@@ -432,42 +439,42 @@ Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-PassThru]
     -MaxDurationOfSilence <TimeSpan>
         Maximum duration of silence before automatically stopping recording.
         Required?                    false
-        Position?                    4
+        Position?                    5
         Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -SilenceThreshold <Int32>
         Silence detect threshold (0..32767 defaults to 30).
         Required?                    false
-        Position?                    5
+        Position?                    6
         Default value                0
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -Language <String>
         Sets the language to detect, defaults to 'English'.
         Required?                    false
-        Position?                    6
+        Position?                    7
         Default value                English
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -CpuThreads <Int32>
         Number of CPU threads to use, defaults to 0 (auto).
         Required?                    false
-        Position?                    7
+        Position?                    8
         Default value                0
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -Temperature <Single>
         Temperature for speech generation.
         Required?                    false
-        Position?                    8
+        Position?                    9
         Default value                0.01
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -TemperatureInc <Single>
         Temperature increment.
         Required?                    false
-        Position?                    9
+        Position?                    10
         Default value                0
         Accept pipeline input?       false
         Accept wildcard characters?  false
@@ -480,14 +487,14 @@ Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-PassThru]
     -Prompt <String>
         Prompt to use for the model.
         Required?                    false
-        Position?                    10
+        Position?                    11
         Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -SuppressRegex <String>
         Regex to suppress tokens from the output.
         Required?                    false
-        Position?                    11
+        Position?                    12
         Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
@@ -501,7 +508,7 @@ Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-PassThru]
     -AudioContextSize <Int32>
         Size of the audio context.
         Required?                    false
-        Position?                    12
+        Position?                    13
         Default value                0
         Accept pipeline input?       false
         Accept wildcard characters?  false
@@ -515,21 +522,21 @@ Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-PassThru]
     -MaxDuration <TimeSpan>
         Maximum duration of the audio.
         Required?                    false
-        Position?                    13
+        Position?                    14
         Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -Offset <TimeSpan>
         Offset for the audio.
         Required?                    false
-        Position?                    14
+        Position?                    15
         Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -MaxLastTextTokens <Int32>
         Maximum number of last text tokens.
         Required?                    false
-        Position?                    15
+        Position?                    16
         Default value                0
         Accept pipeline input?       false
         Accept wildcard characters?  false
@@ -550,42 +557,42 @@ Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-PassThru]
     -MaxSegmentLength <Int32>
         Maximum segment length.
         Required?                    false
-        Position?                    16
+        Position?                    17
         Default value                0
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -MaxInitialTimestamp <TimeSpan>
         Start timestamps at this moment.
         Required?                    false
-        Position?                    17
+        Position?                    18
         Default value                
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -LengthPenalty <Single>
         Length penalty.
         Required?                    false
-        Position?                    18
+        Position?                    19
         Default value                0
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -EntropyThreshold <Single>
         Entropy threshold.
         Required?                    false
-        Position?                    19
+        Position?                    20
         Default value                0
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -LogProbThreshold <Single>
         Log probability threshold.
         Required?                    false
-        Position?                    20
+        Position?                    21
         Default value                0
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -NoSpeechThreshold <Single>
         No speech threshold.
         Required?                    false
-        Position?                    21
+        Position?                    22
         Default value                0
         Accept pipeline input?       false
         Accept wildcard characters?  false

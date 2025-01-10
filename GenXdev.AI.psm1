@@ -193,7 +193,7 @@ function Invoke-LMStudioQuery {
         if (-not (IsLMStudioRunning)) {
 
             Write-Verbose "Starting LM-Studio..";
-            $lmStudioPath = "$env:LOCALAPPDATA\LM-Studio\LM Studio.exe";
+            $lmStudioPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lm studio.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName;
             Write-Verbose "$((Start-Process -FilePath $lmStudioPath -WindowStyle Minimized)))";
             $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
             Start-Sleep -Seconds 10
@@ -1243,6 +1243,9 @@ Transcribes audio to text using the default audio input device.
 .DESCRIPTION
 Records audio using the default audio input device and returns the detected text
 
+.PARAMETER ModelFilePath
+Path where model files are stored.
+
 .PARAMETER WaveFile
 Path to the 16Khz mono, .WAV file to process.
 
@@ -1348,6 +1351,9 @@ function Start-AudioTranscription {
     [Alias("transcribe", "recordandtranscribe")]
 
     param (
+        [Parameter(Mandatory = $false, HelpMessage = "Path where model files are stored")]
+        [string] $ModelFilePath,
+
         [Parameter(Mandatory = $false, HelpMessage = "Path to the 16Khz mono, .WAV file to process")]
         [string] $WaveFile = $null,
 
@@ -1618,6 +1624,10 @@ function Start-AudioTranscription {
         if (-not $PSBoundParameters.ContainsKey("ModelFilePath")) {
 
             $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Out-Null;
+        }
+        else {
+
+            $PSBoundParameters["ModelFilePath"] = $ModelFilePath;
         }
 
         if ($VOX -eq $true) {
@@ -2021,9 +2031,6 @@ Maximum duration of silence before automatically stopping recording.
 
 .PARAMETER SilenceThreshold
 Silence detect threshold (0..32767 defaults to 30)
-
-.PARAMETER ModelFilePath
-Path to the model file.
 
 .PARAMETER CpuThreads
 Number of CPU threads to use, defaults to 0 (auto).
@@ -2685,6 +2692,16 @@ function Get-MediaFileAudioTranscription {
 
             $PSBoundParameters.Add("ErrorAction", "Stop") | Out-Null;
         }
+
+        if (-not $PSBoundParameters.ContainsKey("ModelFilePath")) {
+
+            $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Out-Null;
+        }
+        else {
+
+            $PSBoundParameters["ModelFilePath"] = $ModelFilePath;
+        }
+
         if ([string]::IsNullOrWhiteSpace($LanguageIn)) {
 
             $LanguageIn = "English"
