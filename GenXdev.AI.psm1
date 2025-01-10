@@ -29,9 +29,9 @@ The maximum number of tokens to generate in the response.
 The image detail to use for the attachments.
 
 .EXAMPLE
-    Invoke-LMStudioQuery -query "Introduce yourself." -instructions "Always answer in rhymes." -model "lmstudio-community/yi-coder-9b-chat-GGUF" -temperature 0.9
+    Invoke-LMStudioQuery -query "Introduce yourself." -instructions "Always answer in rhymes." -model "lmstudio-community/Yi-Coder-9B-Chat" -temperature 0.9
 
-    qlms "Introduce yourself." "Always answer in rhymes." "lmstudio-community/yi-coder-9b-chat-GGUF" 0.9
+    qlms "Introduce yourself." "Always answer in rhymes." "lmstudio-community/Yi-Coder-9B-Chat" 0.9
 
 .EXAMPLE
 Invoke-LMStudioQuery -query "What is PowerShell?" -temperature 0.7
@@ -51,7 +51,7 @@ function Invoke-LMStudioQuery {
     param (
         [Parameter(
             Position = 0,
-            Mandatory = $true,
+            Mandatory,
             HelpMessage = "The query string for the LLM."
         )]
         [ValidateNotNullOrEmpty()]
@@ -75,8 +75,8 @@ function Invoke-LMStudioQuery {
             Position = 3,
             Mandatory = $false,
             HelpMessage = "The LM-Studio model to use for generating the response.")]
-        [PSDefaultValue(Value = "yi-coder-9b-chat")]
-        [string]$Model = "yi-coder-9b-chat",
+        [PSDefaultValue(Value = "Yi-Coder-9B-Chat")]
+        [string]$Model = "Yi-Coder-9B-Chat",
 
         [Parameter(
             Mandatory = $false,
@@ -123,6 +123,7 @@ function Invoke-LMStudioQuery {
 
         if ($null -ne $process) {
 
+            $process.PriorityClass = "Idle"
             $w = [GenXdev.Helpers.WindowObj]::new($process.MainWindowHandle, "LM Studio");
             if ($null -ne $w) {
 
@@ -132,8 +133,10 @@ function Invoke-LMStudioQuery {
                     $w.Show();
                 }
                 else {
-                    $w.Minimize();
+
                     (Get-PowershellMainWindow).Focus();
+                    wp -Left -Process (Get-PowershellMainWindowProcess)
+                    wp -Right -Process $process
                 }
             }
         }
@@ -191,7 +194,7 @@ function Invoke-LMStudioQuery {
 
             Write-Verbose "Starting LM-Studio..";
             $lmStudioPath = "$env:LOCALAPPDATA\LM-Studio\LM Studio.exe";
-            Write-Verbose "$((Start-Process -FilePath $lmStudioPath -WindowStyle Minimized))";
+            Write-Verbose "$((Start-Process -FilePath $lmStudioPath -WindowStyle Minimized)))";
             $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
             Start-Sleep -Seconds 10
             IsLMStudioRunning | Out-Null
@@ -216,18 +219,81 @@ function Invoke-LMStudioQuery {
     function LoadLMStudioModel {
 
         $ModelList = Get-ModelList
-        $foundModel = $ModelList | Where-Object { $_.path -like "*$Model*" } | Select-Object -First 1
+        $foundModel = $ModelList | Where-Object { $PSItem.path -like "*$Model*" } | Select-Object -First 1
 
-        if ($foundModel) {
+        if (-not $foundModel) {
 
-            Write-Output $foundModel
+            $preferredModelList = @("llama", "vicuna", "alpaca", "gpt", "falcon", "mpt", "koala", "wizard", "guanaco", "bloom", "rwkv", "camel", "pythia", "baichuan")
+            foreach ($preferredModel in $preferredModelList) {
+                $foundModel = $ModelList | Where-Object { $PSItem.path -like "*$preferredModel*" } | Select-Object -First 1
+                if ($foundModel) {
+                    break
+                }
+            }
+        }
 
-            $foundModelLoaded = (Get-LoadedModelList) | Where-Object {
-                $_.path -eq $foundModel.path
-            } | Select-Object -First 1
+        if (-not $foundModel) {
 
-            if ($null -eq $foundModelLoaded) {
+            $foundModel = $ModelList | Select-Object -First 1
+        }
 
+        if (-not $foundModel) {
+
+            $ShowLMStudioWindow = $true
+            IsLMStudioRunning | Out-Null
+            throw "Model with path: '*$Model*', not found. Please install and configure startup-parameters manually in LM-Studio first."
+        }
+
+        Write-Output $foundModel
+
+        $foundModelLoaded = (Get-LoadedModelList) | Where-Object {
+            $PSItem.path -eq $foundModel.path
+        } | Select-Object -First 1
+
+        if ($null -eq $foundModelLoaded) {
+
+            $success = $true;
+            try {
+
+                Write-Verbose "Loading model.."
+                [System.Console]::Write("`r`n");
+
+                if (-not (Get-HasCapableGpu)) {
+
+                    & "$lmsPath" load "$($foundModel.path)" --yes --gpu off --exact
+                }
+                else {
+
+                    & "$lmsPath" load "$($foundModel.path)" --yes --exact
+                }
+
+                if ($LASTEXITCODE -ne 0) {
+
+                    $success = $false;
+                }
+                else {
+                    # ansi for cursor up and clear line
+                    [System.Console]::Write("`e[1A`e[2K")
+                    # ansi for cursor up and clear line
+                    [System.Console]::Write("`e[1A`e[2K")
+                    # ansi for cursor up and clear line
+                    [System.Console]::Write("`e[1A`e[2K")
+                    # ansi for cursor up and clear line
+                    [System.Console]::Write("`e[1A`e[2K")
+                    # ansi for cursor up and clear line
+                    [System.Console]::Write("`e[1A`e[2K")
+                    # ansi for cursor up and clear line
+                    [System.Console]::Write("`e[1A`e[2K")
+
+                }
+            }
+            catch {
+                $success = $false;
+            }
+
+            if (-not $success) {
+
+                & "$lmsPath" unload --all --yes
                 $success = $true;
                 try {
 
@@ -266,47 +332,35 @@ function Invoke-LMStudioQuery {
                 catch {
                     $success = $false;
                 }
+            }
 
-                if (-not $success) {
+            if (-not $success) {
 
-                    Get-Process -Name "LM Studio" -ErrorAction SilentlyContinue | Stop-Process -Force
-                    Start-LMStudio
-
-                    $success = $true;
-                    try {
-                        Write-Verbose "Loading model.."
-                        & "$lmsPath" load $foundModel.path --yes --gpu off --context-length $max_token | Out-Null
-
-                        if ($LASTEXITCODE -ne 0) {
-
-                            $success = $false;
-                        }
-                    }
-                    catch {
-                        $success = $false;
-                    }
-                }
-
-                if (-not $success) {
-
-                    $ShowLMStudioWindow = $true
-                    IsLMStudioRunning | Out-Null
-                    throw "Model with path: '*$Model*', not found. Please install and configure startup-parameters manually in LM-Studio first."
-                }
+                $ShowLMStudioWindow = $true
+                IsLMStudioRunning | Out-Null
+                throw "Model with path: '*$Model*', not found. Please install and configure startup-parameters manually in LM-Studio first."
             }
         }
-        else {
+
+        $foundModelLoaded = (Get-LoadedModelList) | Where-Object {
+            $PSItem.path -eq $foundModel.path
+        } | Select-Object -First 1
+
+        if ($null -eq $foundModelLoaded) {
+
             $ShowLMStudioWindow = $true
             IsLMStudioRunning | Out-Null
             throw "Model with path: '*$Model*', not found. Please install and configure startup-parameters manually in LM-Studio first."
         }
+
+        $foundModelLoaded
     }
 
     # Function to upload image and query to LM-Studio local server
     function QueryLMStudio {
 
         param (
-            $loadedModel,
+            $foundModelLoaded,
             [string]$Instructions,
             [string]$query,
             [string[]]$attachments,
@@ -611,8 +665,6 @@ function Invoke-LMStudioQuery {
                 return $base64Image;
             }
 
-
-
             if ($isText) {
 
                 $base64Image = [System.Convert]::ToBase64String([IO.File]::ReadAllBytes($filePath));
@@ -663,7 +715,7 @@ function Invoke-LMStudioQuery {
 
         $json = @{
             "stream"      = $false
-            "model"       = "$($loadedModel.path)"
+            "model"       = "$($foundModelLoaded.identifier)"
             "messages"    = $messages
             "temperature" = $temperature
             "max_tokens"  = $max_token
@@ -680,18 +732,17 @@ function Invoke-LMStudioQuery {
         # ansi for cursor up and clear line
         [System.Console]::WriteLine("Quering LM-Studio model '$Model'..");
 
-        $response = Invoke-RestMethod -Uri $apiUrl -Method Post -Body $bytes -Headers $headers -OperationTimeoutSeconds 900 -ConnectionTimeoutSeconds 900
-        $response.choices.message | ForEach-Object content
-
+        $response = Invoke-RestMethod -Uri $apiUrl -Method Post -Body $bytes -Headers $headers -OperationTimeoutSeconds (3600 * 24) -ConnectionTimeoutSeconds (3600 * 24)
         [System.Console]::Write("`e[1A`e[2K");
+
+        $response.choices.message | ForEach-Object content
     }
 
     # Main script execution
     Start-LMStudio
-    $loadedModel = LoadLMStudioModel
-    if ($null -eq $loadedModel) { return }
-    $result = QueryLMStudio -loadedModel $loadedModel -instructions $Instructions -query $query -attachments $attachments -temperature $temperature -max_token $max_token
-    Write-Output $result
+    $foundModelLoaded = LoadLMStudioModel
+    if ($null -eq $foundModelLoaded) { return }
+    QueryLMStudio -foundModelLoaded $foundModelLoaded -instructions $Instructions -query $query -attachments $attachments -temperature $temperature -max_token $max_token
 }
 ################################################################################
 
@@ -716,14 +767,14 @@ function Invoke-QueryImageContent {
     [CmdletBinding()]
     param (
         [Parameter(
-            Mandatory = $true,
+            Mandatory,
             Position = 0,
             HelpMessage = "The query string for the LLM."
         )]
         [string]$query,
 
         [Parameter(
-            Mandatory = $true,
+            Mandatory,
             Position = 1,
             HelpMessage = "The file path of the image to send with the query.")]
         [string]$ImagePath,
@@ -818,11 +869,11 @@ function Invoke-ImageKeywordUpdate {
             }
         }
 
-        $image = $_.FullName
+        $image = $PSItem.FullName
 
-        if ($_.Attributes -band [System.IO.FileAttributes]::ReadOnly) {
+        if ($PSItem.Attributes -band [System.IO.FileAttributes]::ReadOnly) {
 
-            $_.Attributes = $_.Attributes -bxor [System.IO.FileAttributes]::ReadOnly
+            $PSItem.Attributes = $PSItem.Attributes -bxor [System.IO.FileAttributes]::ReadOnly
         }
 
         if ((-not $onlyNew) -or (-not [IO.File]::Exists("$($image):description.json") -or ([IO.File]::Exists("$($image):keywords.json")))) {
@@ -865,7 +916,7 @@ function Invoke-ImageKeywordUpdate {
                 $description | ConvertFrom-Json | ConvertTo-Json -Compress -Depth 20 | Out-File -FilePath "$($image):description.json" -Force
             }
             catch {
-                Write-Warning $_
+                Write-Warning $PSItem
             }
         }
 
@@ -905,7 +956,7 @@ The keywords to look for, wildcards allowed.
 .PARAMETER imageDirectory
 The image directory path.
 
-.PARAMETER passthru
+.PARAMETER PassThru
 Don't show the images in the webbrowser, return as object instead.
 
 .EXAMPLE
@@ -925,7 +976,7 @@ function Invoke-ImageKeywordScan {
         [string] $imageDirectory = ".\",
 
         [Parameter(Mandatory = $false, Position = 2, HelpMessage = "Don't show the images in the webbrowser, return as object instead")]
-        [switch] $passthru
+        [switch] $PassThru
     )
 
     $Path = Expand-Path $imageDirectory
@@ -938,7 +989,7 @@ function Invoke-ImageKeywordScan {
 
     $results = Get-ChildItem -Path "$Path\*.jpg", "$Path\*.jpeg", "$Path\*.png" -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
 
-        $image = $_.FullName
+        $image = $PSItem.FullName
         $keywordsFound = @()
         $descriptionFound = $null;
 
@@ -1039,7 +1090,7 @@ function Invoke-ImageKeywordScan {
         }
     };
 
-    if ($passthru) {
+    if ($PassThru) {
 
         $results
     }
@@ -1092,7 +1143,7 @@ function GenerateMasonryLayoutHtml {
 
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true, Position = 0)]
+        [Parameter(Mandatory, Position = 0)]
         [array]$Images,
 
         [Parameter(Mandatory = $false, Position = 1)]
@@ -1195,7 +1246,7 @@ Records audio using the default audio input device and returns the detected text
 .PARAMETER WaveFile
 Path to the 16Khz mono, .WAV file to process.
 
-.PARAMETER Passthru
+.PARAMETER PassThru
 Returns objects instead of strings.
 
 .PARAMETER UseDesktopAudioCapture
@@ -1223,7 +1274,7 @@ Maximum duration of silence before automatically stopping recording.
 Silence detect threshold (0..32767 defaults to 30).
 
 .PARAMETER Language
-Sets the language to detect, defaults to 'auto'.
+Sets the language to detect, defaults to 'English'.
 
 .PARAMETER CpuThreads
 Number of CPU threads to use, defaults to 0 (auto).
@@ -1307,7 +1358,7 @@ function Start-AudioTranscription {
         [switch] $VOX,
 
         [Parameter(Mandatory = $false, HelpMessage = "Returns objects instead of strings")]
-        [switch] $Passthru,
+        [switch] $PassThru,
 
         [Parameter(Mandatory = $false, HelpMessage = "Whether to use desktop audio capture instead of microphone input")]
         [switch] $UseDesktopAudioCapture,
@@ -1334,8 +1385,158 @@ function Start-AudioTranscription {
         [ValidateRange(0, 32767)]
         [int] $SilenceThreshold,
 
-        [Parameter(Mandatory = $false, HelpMessage = "Sets the language to detect, defaults to 'auto'")]
-        [string] $Language = "auto",
+        [Parameter(Mandatory = $false, HelpMessage = "Sets the language to detect, defaults to 'English'")]
+        [ValidateSet(
+            "Afrikaans",
+            "Akan",
+            "Albanian",
+            "Amharic",
+            "Arabic",
+            "Armenian",
+            "Azerbaijani",
+            "Basque",
+            "Belarusian",
+            "Bemba",
+            "Bengali",
+            "Bihari",
+            "Bork, bork, bork!",
+            "Bosnian",
+            "Breton",
+            "Bulgarian",
+            "Cambodian",
+            "Catalan",
+            "Cherokee",
+            "Chichewa",
+            "Chinese (Simplified)",
+            "Chinese (Traditional)",
+            "Corsican",
+            "Croatian",
+            "Czech",
+            "Danish",
+            "Dutch",
+            "Elmer Fudd",
+            "English",
+            "Esperanto",
+            "Estonian",
+            "Ewe",
+            "Faroese",
+            "Filipino",
+            "Finnish",
+            "French",
+            "Frisian",
+            "Ga",
+            "Galician",
+            "Georgian",
+            "German",
+            "Greek",
+            "Guarani",
+            "Gujarati",
+            "Hacker",
+            "Haitian Creole",
+            "Hausa",
+            "Hawaiian",
+            "Hebrew",
+            "Hindi",
+            "Hungarian",
+            "Icelandic",
+            "Igbo",
+            "Indonesian",
+            "Interlingua",
+            "Irish",
+            "Italian",
+            "Japanese",
+            "Javanese",
+            "Kannada",
+            "Kazakh",
+            "Kinyarwanda",
+            "Kirundi",
+            "Klingon",
+            "Kongo",
+            "Korean",
+            "Krio (Sierra Leone)",
+            "Kurdish",
+            "Kurdish (Soranî)",
+            "Kyrgyz",
+            "Laothian",
+            "Latin",
+            "Latvian",
+            "Lingala",
+            "Lithuanian",
+            "Lozi",
+            "Luganda",
+            "Luo",
+            "Macedonian",
+            "Malagasy",
+            "Malay",
+            "Malayalam",
+            "Maltese",
+            "Maori",
+            "Marathi",
+            "Mauritian Creole",
+            "Moldavian",
+            "Mongolian",
+            "Montenegrin",
+            "Nepali",
+            "Nigerian Pidgin",
+            "Northern Sotho",
+            "Norwegian",
+            "Norwegian (Nynorsk)",
+            "Occitan",
+            "Oriya",
+            "Oromo",
+            "Pashto",
+            "Persian",
+            "Pirate",
+            "Polish",
+            "Portuguese (Brazil)",
+            "Portuguese (Portugal)",
+            "Punjabi",
+            "Quechua",
+            "Romanian",
+            "Romansh",
+            "Runyakitara",
+            "Russian",
+            "Scots Gaelic",
+            "Serbian",
+            "Serbo-Croatian",
+            "Sesotho",
+            "Setswana",
+            "Seychellois Creole",
+            "Shona",
+            "Sindhi",
+            "Sinhalese",
+            "Slovak",
+            "Slovenian",
+            "Somali",
+            "Spanish",
+            "Spanish (Latin American)",
+            "Sundanese",
+            "Swahili",
+            "Swedish",
+            "Tajik",
+            "Tamil",
+            "Tatar",
+            "Telugu",
+            "Thai",
+            "Tigrinya",
+            "Tonga",
+            "Tshiluba",
+            "Tumbuka",
+            "Turkish",
+            "Turkmen",
+            "Twi",
+            "Uighur",
+            "Ukrainian",
+            "Urdu",
+            "Uzbek",
+            "Vietnamese",
+            "Welsh",
+            "Wolof",
+            "Xhosa",
+            "Yiddish",
+            "Yoruba",
+            "Zulu")]
+        [string] $Language = "English",
 
         [Parameter(Mandatory = $false, HelpMessage = "Number of CPU threads to use, defaults to 0 (auto)")]
         [int] $CpuThreads = 0,
@@ -1412,7 +1613,6 @@ function Start-AudioTranscription {
 
     process {
 
-
         $ModelFilePath = Expand-Path "$PSScriptRoot\..\..\GenXdev.Local\" -CreateDirectory
 
         if (-not $PSBoundParameters.ContainsKey("ModelFilePath")) {
@@ -1457,11 +1657,15 @@ function Start-AudioTranscription {
                 $PSBoundParameters.Add("CpuThreads", (Get-NumberOfCpuCores)) | Out-Null;
             }
         }
+        if (-not $PSBoundParameters.ContainsKey("Language")) {
+
+            $PSBoundParameters.Add("Language", $Language) | Out-Null;
+        }
 
         # Remove any parameters with $null values
         $PSBoundParameters.GetEnumerator() | ForEach-Object {
-            if ($null -eq $_.Value) {
-                $PSBoundParameters.Remove($_.Key) | Out-Null
+            if ($null -eq $PSItem.Value) {
+                $PSBoundParameters.Remove($PSItem.Key) | Out-Null
             }
         }
 
@@ -1512,9 +1716,9 @@ function Get-TextTranslation {
 
     param (
         [Parameter(
-            Mandatory = $true,
+            Mandatory,
             HelpMessage = "The text to translate",
-            ValueFromPipeline = $true
+            ValueFromPipeline
         )]
         [string] $Text,
 
@@ -1523,7 +1727,157 @@ function Get-TextTranslation {
             HelpMessage = "The language to translate to."
         )]
         [PSDefaultValue(Value = "english")]
-        [string] $Language = "english",
+        [ValidateSet(
+            "Afrikaans",
+            "Akan",
+            "Albanian",
+            "Amharic",
+            "Arabic",
+            "Armenian",
+            "Azerbaijani",
+            "Basque",
+            "Belarusian",
+            "Bemba",
+            "Bengali",
+            "Bihari",
+            "Bork, bork, bork!",
+            "Bosnian",
+            "Breton",
+            "Bulgarian",
+            "Cambodian",
+            "Catalan",
+            "Cherokee",
+            "Chichewa",
+            "Chinese (Simplified)",
+            "Chinese (Traditional)",
+            "Corsican",
+            "Croatian",
+            "Czech",
+            "Danish",
+            "Dutch",
+            "Elmer Fudd",
+            "English",
+            "Esperanto",
+            "Estonian",
+            "Ewe",
+            "Faroese",
+            "Filipino",
+            "Finnish",
+            "French",
+            "Frisian",
+            "Ga",
+            "Galician",
+            "Georgian",
+            "German",
+            "Greek",
+            "Guarani",
+            "Gujarati",
+            "Hacker",
+            "Haitian Creole",
+            "Hausa",
+            "Hawaiian",
+            "Hebrew",
+            "Hindi",
+            "Hungarian",
+            "Icelandic",
+            "Igbo",
+            "Indonesian",
+            "Interlingua",
+            "Irish",
+            "Italian",
+            "Japanese",
+            "Javanese",
+            "Kannada",
+            "Kazakh",
+            "Kinyarwanda",
+            "Kirundi",
+            "Klingon",
+            "Kongo",
+            "Korean",
+            "Krio (Sierra Leone)",
+            "Kurdish",
+            "Kurdish (Soranî)",
+            "Kyrgyz",
+            "Laothian",
+            "Latin",
+            "Latvian",
+            "Lingala",
+            "Lithuanian",
+            "Lozi",
+            "Luganda",
+            "Luo",
+            "Macedonian",
+            "Malagasy",
+            "Malay",
+            "Malayalam",
+            "Maltese",
+            "Maori",
+            "Marathi",
+            "Mauritian Creole",
+            "Moldavian",
+            "Mongolian",
+            "Montenegrin",
+            "Nepali",
+            "Nigerian Pidgin",
+            "Northern Sotho",
+            "Norwegian",
+            "Norwegian (Nynorsk)",
+            "Occitan",
+            "Oriya",
+            "Oromo",
+            "Pashto",
+            "Persian",
+            "Pirate",
+            "Polish",
+            "Portuguese (Brazil)",
+            "Portuguese (Portugal)",
+            "Punjabi",
+            "Quechua",
+            "Romanian",
+            "Romansh",
+            "Runyakitara",
+            "Russian",
+            "Scots Gaelic",
+            "Serbian",
+            "Serbo-Croatian",
+            "Sesotho",
+            "Setswana",
+            "Seychellois Creole",
+            "Shona",
+            "Sindhi",
+            "Sinhalese",
+            "Slovak",
+            "Slovenian",
+            "Somali",
+            "Spanish",
+            "Spanish (Latin American)",
+            "Sundanese",
+            "Swahili",
+            "Swedish",
+            "Tajik",
+            "Tamil",
+            "Tatar",
+            "Telugu",
+            "Thai",
+            "Tigrinya",
+            "Tonga",
+            "Tshiluba",
+            "Tumbuka",
+            "Turkish",
+            "Turkmen",
+            "Twi",
+            "Uighur",
+            "Ukrainian",
+            "Urdu",
+            "Uzbek",
+            "Vietnamese",
+            "Welsh",
+            "Wolof",
+            "Xhosa",
+            "Yiddish",
+            "Yoruba",
+            "Zulu")]
+        [string] $Language = "English",
 
         [Parameter(
             Mandatory = $false,
@@ -1536,8 +1890,8 @@ function Get-TextTranslation {
             Mandatory = $false,
             HelpMessage = "The LM-Studio model to use for generating the response."
         )]
-        [PSDefaultValue(Value = "yi-coder-9b-chat")]
-        [string]$Model = "yi-coder-9b-chat"
+        [PSDefaultValue(Value = "Yi-Coder-9B-Chat")]
+        [string]$Model = "Yi-Coder-9B-Chat"
     )
 
     begin {
@@ -1613,8 +1967,6 @@ function Get-TextTranslation {
     }
 
     end {
-        [System.Console]::Write("`e[1A`e[2K")
-
         # return the translation
         $translation.ToString();
     }
@@ -1632,7 +1984,7 @@ Transcribes an audio or video file to text using the Whisper AI model
 The file path of the audio or video file to transcribe.
 
 .PARAMETER LanguageIn
-The language to expect in the audio. E.g. "en", "fr", "de", "nl"
+The language to expect in the audio. E.g. "English", "French", "German", "Dutch"
 
 .PARAMETER LanguageOut
 The language to translate to. E.g. "french", "german", "dutch"
@@ -1640,7 +1992,7 @@ The language to translate to. E.g. "french", "german", "dutch"
 .PARAMETER SRT
 Output in SRT format.
 
-.PARAMETER Passthru
+.PARAMETER PassThru
 Returns objects instead of strings.
 
 .PARAMETER UseDesktopAudioCapture
@@ -1737,13 +2089,13 @@ Use beam search sampling strategy.
 Prompt to use for the model.
 
 .EXAMPLE
-    Get-MediaFileAudioTranscription -FilePath "C:\path\to\audio.wav" -LanguageIn "en" -LanguageOut "french" -SRT
+    Get-MediaFileAudioTranscription -FilePath "C:\path\to\audio.wav" -LanguageIn "English" -LanguageOut "French" -SRT
 #>
 function Get-MediaFileAudioTranscription {
     [CmdletBinding()]
     param (
         [Parameter(
-            Mandatory = $true,
+            Mandatory,
             Position = 0,
             HelpMessage = "The file path of the audio or video file to transcribe."
         )]
@@ -1752,10 +2104,160 @@ function Get-MediaFileAudioTranscription {
         [Parameter(
             Mandatory = $false,
             Position = 1,
-            HelpMessage = "The language to expect in the audio."
+            HelpMessage = "The language to expect in the audio, defaults to 'English'."
         )]
-        [PSDefaultValue(Value = "auto")]
-        [string] $LanguageIn = "auto",
+        [PSDefaultValue(Value = "English")]
+        [ValidateSet(
+            "Afrikaans",
+            "Akan",
+            "Albanian",
+            "Amharic",
+            "Arabic",
+            "Armenian",
+            "Azerbaijani",
+            "Basque",
+            "Belarusian",
+            "Bemba",
+            "Bengali",
+            "Bihari",
+            "Bork, bork, bork!",
+            "Bosnian",
+            "Breton",
+            "Bulgarian",
+            "Cambodian",
+            "Catalan",
+            "Cherokee",
+            "Chichewa",
+            "Chinese (Simplified)",
+            "Chinese (Traditional)",
+            "Corsican",
+            "Croatian",
+            "Czech",
+            "Danish",
+            "Dutch",
+            "Elmer Fudd",
+            "English",
+            "Esperanto",
+            "Estonian",
+            "Ewe",
+            "Faroese",
+            "Filipino",
+            "Finnish",
+            "French",
+            "Frisian",
+            "Ga",
+            "Galician",
+            "Georgian",
+            "German",
+            "Greek",
+            "Guarani",
+            "Gujarati",
+            "Hacker",
+            "Haitian Creole",
+            "Hausa",
+            "Hawaiian",
+            "Hebrew",
+            "Hindi",
+            "Hungarian",
+            "Icelandic",
+            "Igbo",
+            "Indonesian",
+            "Interlingua",
+            "Irish",
+            "Italian",
+            "Japanese",
+            "Javanese",
+            "Kannada",
+            "Kazakh",
+            "Kinyarwanda",
+            "Kirundi",
+            "Klingon",
+            "Kongo",
+            "Korean",
+            "Krio (Sierra Leone)",
+            "Kurdish",
+            "Kurdish (Soranî)",
+            "Kyrgyz",
+            "Laothian",
+            "Latin",
+            "Latvian",
+            "Lingala",
+            "Lithuanian",
+            "Lozi",
+            "Luganda",
+            "Luo",
+            "Macedonian",
+            "Malagasy",
+            "Malay",
+            "Malayalam",
+            "Maltese",
+            "Maori",
+            "Marathi",
+            "Mauritian Creole",
+            "Moldavian",
+            "Mongolian",
+            "Montenegrin",
+            "Nepali",
+            "Nigerian Pidgin",
+            "Northern Sotho",
+            "Norwegian",
+            "Norwegian (Nynorsk)",
+            "Occitan",
+            "Oriya",
+            "Oromo",
+            "Pashto",
+            "Persian",
+            "Pirate",
+            "Polish",
+            "Portuguese (Brazil)",
+            "Portuguese (Portugal)",
+            "Punjabi",
+            "Quechua",
+            "Romanian",
+            "Romansh",
+            "Runyakitara",
+            "Russian",
+            "Scots Gaelic",
+            "Serbian",
+            "Serbo-Croatian",
+            "Sesotho",
+            "Setswana",
+            "Seychellois Creole",
+            "Shona",
+            "Sindhi",
+            "Sinhalese",
+            "Slovak",
+            "Slovenian",
+            "Somali",
+            "Spanish",
+            "Spanish (Latin American)",
+            "Sundanese",
+            "Swahili",
+            "Swedish",
+            "Tajik",
+            "Tamil",
+            "Tatar",
+            "Telugu",
+            "Thai",
+            "Tigrinya",
+            "Tonga",
+            "Tshiluba",
+            "Tumbuka",
+            "Turkish",
+            "Turkmen",
+            "Twi",
+            "Uighur",
+            "Ukrainian",
+            "Urdu",
+            "Uzbek",
+            "Vietnamese",
+            "Welsh",
+            "Wolof",
+            "Xhosa",
+            "Yiddish",
+            "Yoruba",
+            "Zulu")]
+        [string] $LanguageIn = "English",
 
 
         [Parameter(
@@ -1763,13 +2265,163 @@ function Get-MediaFileAudioTranscription {
             Position = 2,
             HelpMessage = "Sets the language to translate to."
         )]
+        [ValidateSet(
+            "Afrikaans",
+            "Akan",
+            "Albanian",
+            "Amharic",
+            "Arabic",
+            "Armenian",
+            "Azerbaijani",
+            "Basque",
+            "Belarusian",
+            "Bemba",
+            "Bengali",
+            "Bihari",
+            "Bork, bork, bork!",
+            "Bosnian",
+            "Breton",
+            "Bulgarian",
+            "Cambodian",
+            "Catalan",
+            "Cherokee",
+            "Chichewa",
+            "Chinese (Simplified)",
+            "Chinese (Traditional)",
+            "Corsican",
+            "Croatian",
+            "Czech",
+            "Danish",
+            "Dutch",
+            "Elmer Fudd",
+            "English",
+            "Esperanto",
+            "Estonian",
+            "Ewe",
+            "Faroese",
+            "Filipino",
+            "Finnish",
+            "French",
+            "Frisian",
+            "Ga",
+            "Galician",
+            "Georgian",
+            "German",
+            "Greek",
+            "Guarani",
+            "Gujarati",
+            "Hacker",
+            "Haitian Creole",
+            "Hausa",
+            "Hawaiian",
+            "Hebrew",
+            "Hindi",
+            "Hungarian",
+            "Icelandic",
+            "Igbo",
+            "Indonesian",
+            "Interlingua",
+            "Irish",
+            "Italian",
+            "Japanese",
+            "Javanese",
+            "Kannada",
+            "Kazakh",
+            "Kinyarwanda",
+            "Kirundi",
+            "Klingon",
+            "Kongo",
+            "Korean",
+            "Krio (Sierra Leone)",
+            "Kurdish",
+            "Kurdish (Soranî)",
+            "Kyrgyz",
+            "Laothian",
+            "Latin",
+            "Latvian",
+            "Lingala",
+            "Lithuanian",
+            "Lozi",
+            "Luganda",
+            "Luo",
+            "Macedonian",
+            "Malagasy",
+            "Malay",
+            "Malayalam",
+            "Maltese",
+            "Maori",
+            "Marathi",
+            "Mauritian Creole",
+            "Moldavian",
+            "Mongolian",
+            "Montenegrin",
+            "Nepali",
+            "Nigerian Pidgin",
+            "Northern Sotho",
+            "Norwegian",
+            "Norwegian (Nynorsk)",
+            "Occitan",
+            "Oriya",
+            "Oromo",
+            "Pashto",
+            "Persian",
+            "Pirate",
+            "Polish",
+            "Portuguese (Brazil)",
+            "Portuguese (Portugal)",
+            "Punjabi",
+            "Quechua",
+            "Romanian",
+            "Romansh",
+            "Runyakitara",
+            "Russian",
+            "Scots Gaelic",
+            "Serbian",
+            "Serbo-Croatian",
+            "Sesotho",
+            "Setswana",
+            "Seychellois Creole",
+            "Shona",
+            "Sindhi",
+            "Sinhalese",
+            "Slovak",
+            "Slovenian",
+            "Somali",
+            "Spanish",
+            "Spanish (Latin American)",
+            "Sundanese",
+            "Swahili",
+            "Swedish",
+            "Tajik",
+            "Tamil",
+            "Tatar",
+            "Telugu",
+            "Thai",
+            "Tigrinya",
+            "Tonga",
+            "Tshiluba",
+            "Tumbuka",
+            "Turkish",
+            "Turkmen",
+            "Twi",
+            "Uighur",
+            "Ukrainian",
+            "Urdu",
+            "Uzbek",
+            "Vietnamese",
+            "Welsh",
+            "Wolof",
+            "Xhosa",
+            "Yiddish",
+            "Yoruba",
+            "Zulu")]
         [string]$LanguageOut = $null,
 
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The LM Studio model to use for translation."
         )]
-        [string] $TranslateUsingLMStudioModel = "yi-coder-9b-chat",
+        [string] $TranslateUsingLMStudioModel = "Yi-Coder-9B-Chat",
 
         [Parameter(
             Mandatory = $false,
@@ -1778,7 +2430,7 @@ function Get-MediaFileAudioTranscription {
         [switch] $SRT,
 
         [Parameter(Mandatory = $false, HelpMessage = "Returns objects instead of strings")]
-        [switch] $Passthru,
+        [switch] $PassThru,
 
         [Parameter(Mandatory = $false, HelpMessage = "Whether to use desktop audio capture instead of microphone input")]
         [switch] $UseDesktopAudioCapture,
@@ -1991,15 +2643,15 @@ function Get-MediaFileAudioTranscription {
             $PSBoundParameters.Remove("WithTranslate", $true) | Out-Null;
         }
 
-        if (($SRT -eq $true) -and (-not $PSBoundParameters.ContainsKey("Passthru"))) {
+        if (($SRT -eq $true) -and (-not $PSBoundParameters.ContainsKey("PassThru"))) {
 
-            $PSBoundParameters.Add("Passthru", $true) | Out-Null;
+            $PSBoundParameters.Add("PassThru", $true) | Out-Null;
         }
         else {
 
-            if ((-not $SRT) -and $PSBoundParameters.ContainsKey("Passthru")) {
+            if ((-not $SRT) -and $PSBoundParameters.ContainsKey("PassThru")) {
 
-                $PSBoundParameters.Remove("Passthru") | Out-Null
+                $PSBoundParameters.Remove("PassThru") | Out-Null
             }
         }
 
@@ -2032,6 +2684,27 @@ function Get-MediaFileAudioTranscription {
         if (-not $PSBoundParameters.ContainsKey("ErrorAction")) {
 
             $PSBoundParameters.Add("ErrorAction", "Stop") | Out-Null;
+        }
+        if ([string]::IsNullOrWhiteSpace($LanguageIn)) {
+
+            $LanguageIn = "English"
+        }
+
+        $dict = Get-WebLanguageDictionary;
+        $LanguageIn = $dict[$LanguageIn]
+
+        if (-not [string]::IsNullOrWhiteSpace($LanguageOut)) {
+
+            $LanguageOut = $dict[$LanguageOut];
+        }
+
+        if (-not $PSBoundParameters.ContainsKey("Language")) {
+
+            $PSBoundParameters.Add("Language", $LanguageIn) | Out-Null;
+        }
+        else {
+
+            $PSBoundParameters["Language"] = $LanguageIn;
         }
 
         if (-not (Get-HasCapableGpu)) {
@@ -2089,7 +2762,7 @@ function Get-MediaFileAudioTranscription {
             }
 
             #  needs translation?
-            if (-not [string]::IsNullOrWhiteSpace($LanguageOut) -and ![string]::IsNullOrWhiteSpace($TranslateUsingLMStudioModel)) {
+            if (-not [string]::IsNullOrWhiteSpace($LanguageOut)) {
 
                 # transcribe the audio file to text
                 $results = Get-SpeechToText @PSBoundParameters
@@ -2136,7 +2809,7 @@ Default value: "Your an AI assistent that never tells a lie and always answers t
 
 .PARAMETER Model
 The LM-Studio model to use for generating the response.
-Default value: "yi-coder-9b-chat"
+Default value: "Yi-Coder-9B-Chat"
 
 .PARAMETER UseDesktopAudioCapture
 Whether to use desktop audio capture instead of microphone input.
@@ -2145,7 +2818,7 @@ Whether to use desktop audio capture instead of microphone input.
 The temperature parameter for controlling the randomness of the response.
 
 .PARAMETER Language
-Sets the language to detect, defaults to 'auto'.
+Sets the language to detect, defaults to 'English'.
 
 .PARAMETER CpuThreads
 Number of CPU threads to use, defaults to 0 (auto).
@@ -2207,8 +2880,8 @@ function Start-AudioChat {
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The LM-Studio model to use for generating the response.")]
-        [PSDefaultValue(Value = "yi-coder-9b-chat")]
-        [string]$Model = "yi-coder-9b-chat",
+        [PSDefaultValue(Value = "Yi-Coder-9B-Chat")]
+        [string]$Model = "Yi-Coder-9B-Chat",
 
         [Parameter(Mandatory = $false, HelpMessage = "Whether to use desktop audio capture instead of microphone input")]
         [switch] $UseDesktopAudioCapture,
@@ -2220,8 +2893,158 @@ function Start-AudioChat {
         [ValidateRange(0.0, 1.0)]
         [double] $TemperatureResponse = 0.01,
 
-        [Parameter(Mandatory = $false, HelpMessage = "Sets the language to detect, defaults to 'auto'")]
-        [string] $Language = "auto",
+        [Parameter(Mandatory = $false, HelpMessage = "Sets the language to detect, defaults to 'English'")]
+        [ValidateSet(
+            "Afrikaans",
+            "Akan",
+            "Albanian",
+            "Amharic",
+            "Arabic",
+            "Armenian",
+            "Azerbaijani",
+            "Basque",
+            "Belarusian",
+            "Bemba",
+            "Bengali",
+            "Bihari",
+            "Bork, bork, bork!",
+            "Bosnian",
+            "Breton",
+            "Bulgarian",
+            "Cambodian",
+            "Catalan",
+            "Cherokee",
+            "Chichewa",
+            "Chinese (Simplified)",
+            "Chinese (Traditional)",
+            "Corsican",
+            "Croatian",
+            "Czech",
+            "Danish",
+            "Dutch",
+            "Elmer Fudd",
+            "English",
+            "Esperanto",
+            "Estonian",
+            "Ewe",
+            "Faroese",
+            "Filipino",
+            "Finnish",
+            "French",
+            "Frisian",
+            "Ga",
+            "Galician",
+            "Georgian",
+            "German",
+            "Greek",
+            "Guarani",
+            "Gujarati",
+            "Hacker",
+            "Haitian Creole",
+            "Hausa",
+            "Hawaiian",
+            "Hebrew",
+            "Hindi",
+            "Hungarian",
+            "Icelandic",
+            "Igbo",
+            "Indonesian",
+            "Interlingua",
+            "Irish",
+            "Italian",
+            "Japanese",
+            "Javanese",
+            "Kannada",
+            "Kazakh",
+            "Kinyarwanda",
+            "Kirundi",
+            "Klingon",
+            "Kongo",
+            "Korean",
+            "Krio (Sierra Leone)",
+            "Kurdish",
+            "Kurdish (Soranî)",
+            "Kyrgyz",
+            "Laothian",
+            "Latin",
+            "Latvian",
+            "Lingala",
+            "Lithuanian",
+            "Lozi",
+            "Luganda",
+            "Luo",
+            "Macedonian",
+            "Malagasy",
+            "Malay",
+            "Malayalam",
+            "Maltese",
+            "Maori",
+            "Marathi",
+            "Mauritian Creole",
+            "Moldavian",
+            "Mongolian",
+            "Montenegrin",
+            "Nepali",
+            "Nigerian Pidgin",
+            "Northern Sotho",
+            "Norwegian",
+            "Norwegian (Nynorsk)",
+            "Occitan",
+            "Oriya",
+            "Oromo",
+            "Pashto",
+            "Persian",
+            "Pirate",
+            "Polish",
+            "Portuguese (Brazil)",
+            "Portuguese (Portugal)",
+            "Punjabi",
+            "Quechua",
+            "Romanian",
+            "Romansh",
+            "Runyakitara",
+            "Russian",
+            "Scots Gaelic",
+            "Serbian",
+            "Serbo-Croatian",
+            "Sesotho",
+            "Setswana",
+            "Seychellois Creole",
+            "Shona",
+            "Sindhi",
+            "Sinhalese",
+            "Slovak",
+            "Slovenian",
+            "Somali",
+            "Spanish",
+            "Spanish (Latin American)",
+            "Sundanese",
+            "Swahili",
+            "Swedish",
+            "Tajik",
+            "Tamil",
+            "Tatar",
+            "Telugu",
+            "Thai",
+            "Tigrinya",
+            "Tonga",
+            "Tshiluba",
+            "Tumbuka",
+            "Turkish",
+            "Turkmen",
+            "Twi",
+            "Uighur",
+            "Ukrainian",
+            "Urdu",
+            "Uzbek",
+            "Vietnamese",
+            "Welsh",
+            "Wolof",
+            "Xhosa",
+            "Yiddish",
+            "Yoruba",
+            "Zulu")]
+        [string] $Language = "English",
 
         [Parameter(Mandatory = $false, HelpMessage = "Number of CPU threads to use, defaults to 0 (auto)")]
         [int] $CpuThreads = 0,
@@ -2275,7 +3098,20 @@ function Start-AudioChat {
         [switch] $NoTextToSpeech
     )
 
+    begin {
+
+    }
+
     process {
+        if (-not $PSBoundParameters.ContainsKey("Language")) {
+
+            $PSBoundParameters.Add("Language", $Language) | Out-Null;
+        }
+        else {
+
+            $PSBoundParameters["Language"] = $Language;
+        }
+
         if (-not $PSBoundParameters.ContainsKey("VOX")) {
 
             $PSBoundParameters.Add("VOX", $true) | Out-Null;
@@ -2300,7 +3136,10 @@ function Start-AudioChat {
 
             $PSBoundParameters.Remove("TemperatureResponse") | Out-Null;
         }
+        if (-not $PSBoundParameters.ContainsKey("Language")) {
 
+            $PSBoundParameters.Add("Language", $Language) | Out-Null;
+        }
         if (-not $PSBoundParameters.ContainsKey("ErrorAction")) {
 
             $PSBoundParameters.Add("ErrorAction", "Stop") | Out-Null;
@@ -2353,7 +3192,7 @@ function Start-AudioChat {
 
                 if (-not ($true -eq $NoTextToSpeech)) {
 
-                    Start-TextToSpeech -Text $answer
+                    Start-TextToSpeech $answer
                 }
 
                 Write-Host "Press any key to interrupt and start recording or Q to quit"
@@ -2439,7 +3278,7 @@ function Add-EmoticonsToText {
             Position = 0,
             Mandatory = $false,
             HelpMessage = "The text to emojify.",
-            ValueFromPipeline = $true
+            ValueFromPipeline
         )]
         [string] $Text,
 
@@ -2455,8 +3294,8 @@ function Add-EmoticonsToText {
             Mandatory = $false,
             HelpMessage = "The LM-Studio model to use for generating the response."
         )]
-        [PSDefaultValue(Value = "yi-coder-9b-chat")]
-        [string]$Model = "yi-coder-9b-chat",
+        [PSDefaultValue(Value = "Yi-Coder-9B-Chat")]
+        [string]$Model = "Yi-Coder-9B-Chat",
 
         [Parameter(
             Position = 3,
@@ -2523,7 +3362,7 @@ function Get-HasCapableGpu {
     # Check for CUDA-compatible GPU with at least 8 GB of RAM
 
     # Get the list of video controllers
-    $videoControllers = Get-WmiObject Win32_VideoController | Where-Object { $_.AdapterRAM -ge 8GB }
+    $videoControllers = Get-WmiObject Win32_VideoController | Where-Object { $PSItem.AdapterRAM -ge 8GB }
 
     return $null -ne $videoControllers
 }
@@ -2534,7 +3373,612 @@ function Get-NumberOfCpuCores {
 
     $cores = 0;
 
-    Get-WmiObject -Class Win32_Processor | Select-Object -Property NumberOfCores  | ForEach-Object { $cores += $_.NumberOfCores }
+    Get-WmiObject -Class Win32_Processor | Select-Object -Property NumberOfCores  | ForEach-Object { $cores += $PSItem.NumberOfCores }
 
     return $cores * 2;
 }
+
+################################################################################
+
+function AssureWinMergeInstalled {
+
+    function IsWinGetInstalled {
+
+        Import-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
+        $module = Get-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
+
+        if ($null -eq $module) {
+
+            return $false
+        }
+
+        return $true
+    }
+
+    function InstallWinGet {
+
+        Write-Verbose "Installing WinGet PowerShell client.."
+        Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber
+        Import-Module "Microsoft.WinGet.Client"
+    }
+
+    # Check if WinMerge command is available
+    if (@(Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
+
+        # Get the installation directory of WinMerge
+        $winMergePath = Join-Path $env:LOCALAPPDATA "Programs\WinMerge"
+
+        # Add WinMerge's path to the current user's environment PATH
+        $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
+        if ($currentPath -notlike "*$winMergePath*") {
+
+            [Environment]::SetEnvironmentVariable('PATH', "$currentPath;$winMergePath", 'User')
+
+            # Update the PATH for the current session
+            $env:PATH = [Environment]::GetEnvironmentVariable('PATH', 'User')
+        }
+
+        # Check if WinMerge command is available
+        if (@(Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue).Length -gt 0) {
+
+            return;
+        }
+
+        Write-Host "WinMerge not found. Installing WinMerge..."
+
+        if (-not (IsWinGetInstalled)) {
+
+            InstallWinGet
+        }
+
+        Install-WinGetPackage -Id 'WinMerge.WinMerge' -Force
+
+        if (-not (Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue)) {
+
+            Write-Error "WinMerge installation path not found."
+
+            return
+        }
+    }
+}
+
+################################################################################
+function AssureGithubCLIInstalled {
+
+    function IsWinGetInstalled {
+
+        Import-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
+        $module = Get-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
+
+        if ($null -eq $module) {
+
+            return $false
+        }
+
+        return $true
+    }
+
+    function InstallWinGet {
+
+        Write-Verbose "Installing WinGet PowerShell client.."
+        Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber
+        Import-Module "Microsoft.WinGet.Client"
+    }
+
+    # Check if WinMerge command is available
+    if (@(Get-Command 'gh.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
+
+        # Get the installation directory of GithubCLI
+        $GithubCLIPath = "$env:ProgramFiles\GitHub CLI"
+
+        # Add GithubCLI's path to the current user's environment PATH
+        $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
+        if ($currentPath -notlike "*$GithubCLIPath*") {
+
+            [Environment]::SetEnvironmentVariable('PATH', "$currentPath;$GithubCLIPath", 'User')
+
+            # Update the PATH for the current session
+            $env:PATH = [Environment]::GetEnvironmentVariable('PATH', 'User')
+        }
+
+        # Check if GithubCLI command is available
+        if (@(Get-Command 'gh.exe' -ErrorAction SilentlyContinue).Length -gt 0) {
+
+            return;
+        }
+
+        Write-Host "GithubCLI not found. Installing GithubCLI..."
+
+        if (-not (IsWinGetInstalled)) {
+
+            InstallWinGet
+        }
+
+        Install-WinGetPackage -Id 'GitHub.cli' -Force
+
+        if (-not (Get-Command 'gh.exe' -ErrorAction SilentlyContinue)) {
+
+            Write-Error "GithubCLI installation path not found."
+
+            return
+        }
+
+        gh extension install github/gh-copilot
+        gh auth login --web -h github.com
+    }
+}
+
+################################################################################
+
+function Get-FactSheetOfSubject {
+
+    [CmdletBinding()]
+    [Alias("facts")]
+
+    param(
+        [Parameter(
+            Position = 0,
+            Mandatory,
+            HelpMessage = "The subject to create a fact sheet for."
+        )]
+        [string] $query
+    )
+
+    $result = qlms -Instructions "create a fact sheet of the subject that is described in the request. Mention as many facts and properties about the subject that you know, but always keep it factual with well established facts. Each fact must have a single string as name that is used as the key inside the json object you return, it's value is a string with the fact description e.g: `"{`"Color`":`"Light blue`",`"Otherfacts`",`"etc..`"}" -query "$query"
+
+    Write-Verbose $result
+
+    $a = "$result" -split "(\{(.*)`})|(\[(.*)`])";
+
+    for ($i = 0; $i -lt $a.length; $i++) {
+
+        try {
+
+            $newResult = $PSItem | ConvertFrom-Json
+
+            if ($result -is [string]) {
+
+                $result = [list[string]] @($result, $newResult);
+            }
+            else {
+
+                $result.Add($newResult);
+            }
+        }
+        catch {
+        }
+    }
+
+    $result
+}
+
+################################################################################
+<#
+.SYNOPSIS
+Saves transcriptions for all audio and video files located under a directory path.
+
+.DESCRIPTION
+Searches for media files under a directory and uses a local OpenAI Whisper model to
+generate subtitle files in .srt format for each media file.
+
+.PARAMETER DirectoryPath
+The directory path to search for media files.
+
+.PARAMETER Language
+Sets the language to detect, defaults to 'English'.
+
+#>
+function Save-Transcriptions {
+
+    [CmdletBinding()]
+    param(
+        ######################################################################
+        [parameter(
+            Mandatory = $false,
+            Position = 0,
+            HelpMessage = "The directory path to search for media files"
+        )]
+        [string] $DirectoryPath = ".\",
+        ######################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 1,
+            HelpMessage = "The language to expect in the audio, defaults to 'English'."
+        )]
+        [PSDefaultValue(Value = "English")]
+        [ValidateSet(
+            "Afrikaans",
+            "Akan",
+            "Albanian",
+            "Amharic",
+            "Arabic",
+            "Armenian",
+            "Azerbaijani",
+            "Basque",
+            "Belarusian",
+            "Bemba",
+            "Bengali",
+            "Bihari",
+            "Bork, bork, bork!",
+            "Bosnian",
+            "Breton",
+            "Bulgarian",
+            "Cambodian",
+            "Catalan",
+            "Cherokee",
+            "Chichewa",
+            "Chinese (Simplified)",
+            "Chinese (Traditional)",
+            "Corsican",
+            "Croatian",
+            "Czech",
+            "Danish",
+            "Dutch",
+            "Elmer Fudd",
+            "English",
+            "Esperanto",
+            "Estonian",
+            "Ewe",
+            "Faroese",
+            "Filipino",
+            "Finnish",
+            "French",
+            "Frisian",
+            "Ga",
+            "Galician",
+            "Georgian",
+            "German",
+            "Greek",
+            "Guarani",
+            "Gujarati",
+            "Hacker",
+            "Haitian Creole",
+            "Hausa",
+            "Hawaiian",
+            "Hebrew",
+            "Hindi",
+            "Hungarian",
+            "Icelandic",
+            "Igbo",
+            "Indonesian",
+            "Interlingua",
+            "Irish",
+            "Italian",
+            "Japanese",
+            "Javanese",
+            "Kannada",
+            "Kazakh",
+            "Kinyarwanda",
+            "Kirundi",
+            "Klingon",
+            "Kongo",
+            "Korean",
+            "Krio (Sierra Leone)",
+            "Kurdish",
+            "Kurdish (Soranî)",
+            "Kyrgyz",
+            "Laothian",
+            "Latin",
+            "Latvian",
+            "Lingala",
+            "Lithuanian",
+            "Lozi",
+            "Luganda",
+            "Luo",
+            "Macedonian",
+            "Malagasy",
+            "Malay",
+            "Malayalam",
+            "Maltese",
+            "Maori",
+            "Marathi",
+            "Mauritian Creole",
+            "Moldavian",
+            "Mongolian",
+            "Montenegrin",
+            "Nepali",
+            "Nigerian Pidgin",
+            "Northern Sotho",
+            "Norwegian",
+            "Norwegian (Nynorsk)",
+            "Occitan",
+            "Oriya",
+            "Oromo",
+            "Pashto",
+            "Persian",
+            "Pirate",
+            "Polish",
+            "Portuguese (Brazil)",
+            "Portuguese (Portugal)",
+            "Punjabi",
+            "Quechua",
+            "Romanian",
+            "Romansh",
+            "Runyakitara",
+            "Russian",
+            "Scots Gaelic",
+            "Serbian",
+            "Serbo-Croatian",
+            "Sesotho",
+            "Setswana",
+            "Seychellois Creole",
+            "Shona",
+            "Sindhi",
+            "Sinhalese",
+            "Slovak",
+            "Slovenian",
+            "Somali",
+            "Spanish",
+            "Spanish (Latin American)",
+            "Sundanese",
+            "Swahili",
+            "Swedish",
+            "Tajik",
+            "Tamil",
+            "Tatar",
+            "Telugu",
+            "Thai",
+            "Tigrinya",
+            "Tonga",
+            "Tshiluba",
+            "Tumbuka",
+            "Turkish",
+            "Turkmen",
+            "Twi",
+            "Uighur",
+            "Ukrainian",
+            "Urdu",
+            "Uzbek",
+            "Vietnamese",
+            "Welsh",
+            "Wolof",
+            "Xhosa",
+            "Yiddish",
+            "Yoruba",
+            "Zulu")]
+        [string] $LanguageIn = "English",
+        ######################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 2,
+            HelpMessage = "Sets the language to translate to."
+        )]
+        [string]$LanguageOut = $null,
+        ######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The LM Studio model to use for translation."
+        )]
+        [string] $TranslateUsingLMStudioModel = "Yi-Coder-9B-Chat"
+        ######################################################################
+    )
+    begin {
+
+        $Language = (Get-WebLanguageDictionary)[$Language]
+
+        $extensions = @(
+            ".3gp",
+            ".a52",
+            ".aac",
+            ".ac3",
+            ".amr",
+            ".mp3",
+            ".adp",
+            ".aiff",
+            ".amr",
+            ".ape",
+            ".asf",
+            ".avi",
+            ".avif",
+            ".avs",
+            ".bink",
+            ".bmp",
+            ".caf",
+            ".cavs",
+            ".cgm",
+            ".clpi",
+            ".cpx",
+            ".dds",
+            ".dcm",
+            ".dcr",
+            ".dpx",
+            ".dsic",
+            ".dts",
+            ".dtshd",
+            ".dv",
+            ".dvh",
+            ".dvr",
+            ".dxa",
+            ".eac3",
+            ".exr",
+            ".ffm",
+            ".ffmetadata",
+            ".flac",
+            ".flv",
+            ".fmp4",
+            ".gif",
+            ".gsm",
+            ".h261",
+            ".h263",
+            ".h264",
+            ".h265",
+            ".hevc",
+            ".hls",
+            ".ico",
+            ".iff",
+            ".ilbc",
+            ".image2",
+            ".imgut",
+            ".ircam",
+            ".j2k",
+            ".jpeg",
+            ".jpg",
+            ".jps",
+            ".jp2",
+            ".jxr",
+            ".lcov",
+            ".ljpg",
+            ".m1v",
+            ".m2v",
+            ".m4a",
+            ".m4v",
+            ".matroska",
+            ".mgm",
+            ".mkv",
+            ".mlp",
+            ".mmf",
+            ".mov",
+            ".mp1",
+            ".mp2",
+            ".mp3",
+            ".mp4",
+            ".mpc",
+            ".mpeg",
+            ".mpg",
+            ".mpp",
+            ".mrs",
+            ".msf",
+            ".msr",
+            ".mvi",
+            ".mxf",
+            ".nut",
+            ".ogg",
+            ".ogv",
+            ".oma",
+            ".opus",
+            ".paf",
+            ".pbm",
+            ".pcx",
+            ".pgm",
+            ".png",
+            ".ps",
+            ".psd",
+            ".pva",
+            ".qcif",
+            ".qdm2",
+            ".rawvideo",
+            ".rc",
+            ".redspark",
+            ".rl2",
+            ".rm",
+            ".rmvb",
+            ".rso",
+            ".rtp",
+            ".s24be",
+            ".s3m",
+            ".sbg",
+            ".sdp",
+            ".sgi",
+            ".smk",
+            ".sox",
+            ".spx",
+            ".sub",
+            ".swf",
+            ".tak",
+            ".tap",
+            ".tga",
+            ".thp",
+            ".tif",
+            ".tiff",
+            ".trp",
+            ".ts",
+            ".tta",
+            ".txd",
+            ".u8",
+            ".uyvy",
+            ".vc1",
+            ".vob",
+            ".wav",
+            ".webm",
+            ".webp",
+            ".wma",
+            ".wmv",
+            ".wtv",
+            ".x-flv",
+            ".x-matroska",
+            ".x-mkv",
+            ".x-wav",
+            ".xvag",
+            ".yuv4mpegpipe"
+        );
+
+        Push-Location
+    }
+
+    process {
+
+        Set-Location (Expand-Path $DirectoryPath);
+
+        Get-ChildItem -File -rec | ForEach-Object {
+
+            if ($extensions -notcontains $PSItem.Extension.ToLower()) { return }
+
+            $enPathOld = "$($PSItem.FullName).en.srt";
+            $nlPathOld = "$($PSItem.FullName).nl.srt";
+            $nlPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".nl.srt");
+            $enPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".en.srt");
+
+            $lang = [string]::IsNullOrWhiteSpace($LanguageOut) ? $LanguageIn : $LanguageOut
+            $newPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".$lang.srt");
+
+            if ([io.file]::Exists($nlPathOld)) {
+
+                if ([io.file]::Exists($nlPath)) {
+
+                    Remove-Item $nlPathOld -Force
+                }
+                else {
+
+                    Move-Item $nlPathOld $nlPath -Force
+                }
+            }
+
+            if ([io.file]::Exists($enPathOld)) {
+
+                if ([io.file]::Exists($enPath)) {
+
+                    Remove-Item $enPathOld -Force
+                }
+                else {
+
+                    Move-Item $enPathOld $enPath -Force
+                }
+            }
+
+            if ([io.file]::Exists($newPath)) { return }
+
+            try {
+                [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = [System.Diagnostics.ProcessPriorityClass]::Idle;
+                try {
+
+                    "Processing $($PSItem.FullName).."
+
+                    $a = Get-MediaFileAudioTranscription -FilePath $PSItem.FullName -SRT -MaxTokensPerSegment 20 -CpuThreads 4 -LanguageIn:$LanguageIn -LanguageOut:$LanguageOut -TranslateUsingLMStudioModel:$TranslateUsingLMStudioModel
+                }
+                finally {
+                    [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = [System.Diagnostics.ProcessPriorityClass]::Normal;
+                }
+            }
+            catch {
+
+                "Processing of $($PSItem.FullName) failed: $PSItem"
+                "-----------------------------------"
+                return;
+            }
+
+
+            $a | Out-File $newPath -Force
+            "-----------------------------------"
+            $a
+            "-----------------------------------"
+        }
+    }
+
+    end {
+
+        Pop-Location
+    }
+}
+
+################################################################################
+################################################################################

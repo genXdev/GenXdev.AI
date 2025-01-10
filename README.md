@@ -17,12 +17,12 @@
 - Images can be searched for keywords and descriptions and displayed in a webbrowser
 - Allows you to generate transcriptions of audio and video files using the Whisper AI model
 - Allows you to translate text to another language using the LM-Studio API
-- Allows you to start an audio chat session by recording audio and invoking a LLM like yi-coder-9b-chat
+- Allows you to start an audio chat session by recording audio and invoking a LLM like Yi-Coder-9B-Chat
 - Allows you to start an audio transcription session by recording audio using the default audio input device
 - E.g to use your microphone to add spoken and then translated text to your clipboard with emojii's: transcribe | translate -Language "german" | emojify -SetClipboard
 
 ### DEPENDENCIES
-[![WinOS - Windows-10](https://img.shields.io/badge/WinOS-Windows--10--10.0.19041--SP0-brightgreen)](https://www.microsoft.com/en-us/windows/get-windows-10) [![GenXdev.Helpers](https://img.shields.io/powershellgallery/v/GenXdev.Helpers.svg?style=flat-square&label=GenXdev.Helpers)](https://www.powershellgallery.com/packages/GenXdev.Helpers/) [![GenXdev.Webbrowser](https://img.shields.io/powershellgallery/v/GenXdev.Webbrowser.svg?style=flat-square&label=GenXdev.Webbrowser)](https://www.powershellgallery.com/packages/GenXdev.Webbrowser/) [![GenXdev.Queries](https://img.shields.io/powershellgallery/v/GenXdev.Queries.svg?style=flat-square&label=GenXdev.Queries)](https://www.powershellgallery.com/packages/GenXdev.Webbrowser/) [![GenXdev.Console](https://img.shields.io/powershellgallery/v/GenXdev.Console.svg?style=flat-square&label=GenXdev.Console)](https://www.powershellgallery.com/packages/GenXdev.Console/)  [![GenXdev.FileSystem](https://img.shields.io/powershellgallery/v/GenXdev.FileSystem.svg?style=flat-square&label=GenXdev.FileSystem)](https://www.powershellgallery.com/packages/GenXdev.FileSystem/)
+[![WinOS - Windows-10 or later](https://img.shields.io/badge/WinOS-Windows--10--10.0.19041--SP0-brightgreen)](https://www.microsoft.com/en-us/windows/get-windows-10) [![GenXdev.Helpers](https://img.shields.io/powershellgallery/v/GenXdev.Helpers.svg?style=flat-square&label=GenXdev.Helpers)](https://www.powershellgallery.com/packages/GenXdev.Helpers/) [![GenXdev.Webbrowser](https://img.shields.io/powershellgallery/v/GenXdev.Webbrowser.svg?style=flat-square&label=GenXdev.Webbrowser)](https://www.powershellgallery.com/packages/GenXdev.Webbrowser/) [![GenXdev.Queries](https://img.shields.io/powershellgallery/v/GenXdev.Queries.svg?style=flat-square&label=GenXdev.Queries)](https://www.powershellgallery.com/packages/GenXdev.Webbrowser/) [![GenXdev.Console](https://img.shields.io/powershellgallery/v/GenXdev.Console.svg?style=flat-square&label=GenXdev.Console)](https://www.powershellgallery.com/packages/GenXdev.Console/)  [![GenXdev.FileSystem](https://img.shields.io/powershellgallery/v/GenXdev.FileSystem.svg?style=flat-square&label=GenXdev.FileSystem)](https://www.powershellgallery.com/packages/GenXdev.FileSystem/)
 ### INSTALLATION
 ````PowerShell
 Install-Module "GenXdev.AI"
@@ -50,6 +50,10 @@ Update-Module
 | [Add-EmoticonsToText](#Add-EmoticonsToText) | emojify | Add suitable emoticons to a text, which can come from pipeline or parameter or clipboard. |
 | [Get-HasCapableGpu](#Get-HasCapableGpu) |  |  |
 | [Get-NumberOfCpuCores](#Get-NumberOfCpuCores) |  |  |
+| [AssureWinMergeInstalled](#AssureWinMergeInstalled) |  |  |
+| [AssureGithubCLIInstalled](#AssureGithubCLIInstalled) |  |  |
+| [Get-FactSheetOfSubject](#Get-FactSheetOfSubject) | facts |  |
+| [Save-Transcriptions](#Save-Transcriptions) |  | Searches for media files under a directory and uses a local OpenAI Whisper model togenerate subtitle files in .srt format for each media file. |
 
 <br/><hr/><hr/><br/>
 
@@ -107,7 +111,7 @@ Invoke-LMStudioQuery [-query] <String> [[-attachments] <String[]>] [[-Instructio
         The LM-Studio model to use for generating the response.
         Required?                    false
         Position?                    4
-        Default value                yi-coder-9b-chat
+        Default value                Yi-Coder-9B-Chat
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -temperature <Double>
@@ -160,8 +164,8 @@ Invoke-QueryImageContent [-query] <String> [-ImagePath] <String> [[-temperature]
 ````
 
 ### DESCRIPTION
-    The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns 
-    the response.
+    The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns the 
+    response.
 
 ### PARAMETERS
     -query <String>
@@ -257,8 +261,8 @@ Invoke-ImageKeywordScan              --> findimages
 
 ### SYNTAX
 ````PowerShell
-Invoke-ImageKeywordScan [[-keywords] <String[]>] [[-imageDirectory] <String>] 
-[[-passthru]] [<CommonParameters>]
+Invoke-ImageKeywordScan [[-keywords] <String[]>] [[-imageDirectory] <String>] [[-PassThru]] 
+[<CommonParameters>]
 ````
 
 ### DESCRIPTION
@@ -280,7 +284,7 @@ Invoke-ImageKeywordScan [[-keywords] <String[]>] [[-imageDirectory] <String>]
         Default value                .\
         Accept pipeline input?       false
         Accept wildcard characters?  false
-    -passthru [<SwitchParameter>]
+    -PassThru [<SwitchParameter>]
         Do not show the images in the webbrowser, return as object instead.
         Required?                    false
         Position?                    3
@@ -345,7 +349,7 @@ Start-AudioTranscription             --> recordandtranscribe, transcribe
 
 ### SYNTAX
 ````PowerShell
-Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-Passthru] 
+Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-PassThru] 
 [-UseDesktopAudioCapture] [-WithTokenTimestamps] [[-TokenTimestampsSumThreshold] <Single>] 
 [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] [-IgnoreSilence] [[-MaxDurationOfSilence] 
 <TimeSpan>] [[-SilenceThreshold] <Int32>] [[-Language] <String>] [[-CpuThreads] <Int32>] 
@@ -376,7 +380,7 @@ Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-Passthru]
         Default value                False
         Accept pipeline input?       false
         Accept wildcard characters?  false
-    -Passthru [<SwitchParameter>]
+    -PassThru [<SwitchParameter>]
         Returns objects instead of strings.
         Required?                    false
         Position?                    named
@@ -440,10 +444,10 @@ Start-AudioTranscription [[-WaveFile] <String>] [-VOX] [-Passthru]
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -Language <String>
-        Sets the language to detect, defaults to 'auto'.
+        Sets the language to detect, defaults to 'English'.
         Required?                    false
         Position?                    6
-        Default value                auto
+        Default value                English
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -CpuThreads <Int32>
@@ -654,7 +658,7 @@ Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Ob
         The LM-Studio model to use for generating the response.
         Required?                    false
         Position?                    4
-        Default value                yi-coder-9b-chat
+        Default value                Yi-Coder-9B-Chat
         Accept pipeline input?       false
         Accept wildcard characters?  false
     <CommonParameters>
@@ -676,7 +680,7 @@ Get-MediaFileAudioTranscription
 ### SYNTAX
 ````PowerShell
 Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] 
-[[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SRT] [-Passthru] 
+[[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SRT] [-PassThru] 
 [-UseDesktopAudioCapture] [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>] 
 [-SplitOnWord] [-MaxTokensPerSegment <Int32>] [-IgnoreSilence] [-MaxDurationOfSilence 
 <TimeSpan>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] 
@@ -700,10 +704,10 @@ Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>]
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -LanguageIn <String>
-        The language to expect in the audio. E.g. "en", "fr", "de", "nl"
+        The language to expect in the audio. E.g. "English", "French", "German", "Dutch"
         Required?                    false
         Position?                    2
-        Default value                auto
+        Default value                English
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -LanguageOut <String>
@@ -717,7 +721,7 @@ Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>]
         The LM Studio model to use for translation.
         Required?                    false
         Position?                    named
-        Default value                yi-coder-9b-chat
+        Default value                Yi-Coder-9B-Chat
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -SRT [<SwitchParameter>]
@@ -727,7 +731,7 @@ Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>]
         Default value                False
         Accept pipeline input?       false
         Accept wildcard characters?  false
-    -Passthru [<SwitchParameter>]
+    -PassThru [<SwitchParameter>]
         Returns objects instead of strings.
         Required?                    false
         Position?                    named
@@ -979,10 +983,10 @@ Start-AudioChat [[-Instructions] <String>] [[-Model] <String>] [-UseDesktopAudio
         Accept wildcard characters?  false
     -Model <String>
         The LM-Studio model to use for generating the response.
-        Default value: "yi-coder-9b-chat"
+        Default value: "Yi-Coder-9B-Chat"
         Required?                    false
         Position?                    2
-        Default value                yi-coder-9b-chat
+        Default value                Yi-Coder-9B-Chat
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -UseDesktopAudioCapture [<SwitchParameter>]
@@ -1000,10 +1004,10 @@ Start-AudioChat [[-Instructions] <String>] [[-Model] <String>] [-UseDesktopAudio
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -Language <String>
-        Sets the language to detect, defaults to 'auto'.
+        Sets the language to detect, defaults to 'English'.
         Required?                    false
         Position?                    4
-        Default value                auto
+        Default value                English
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -CpuThreads <Int32>
@@ -1156,7 +1160,7 @@ Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <Object>] [[-Model] <Str
         The LM-Studio model to use for generating the response.
         Required?                    false
         Position?                    3
-        Default value                yi-coder-9b-chat
+        Default value                Yi-Coder-9B-Chat
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -SetClipboard [<SwitchParameter>]
@@ -1201,5 +1205,115 @@ Get-NumberOfCpuCores
 
 ### PARAMETERS
     None
+
+<br/><hr/><hr/><br/>
+
+##	AssureWinMergeInstalled
+````PowerShell
+AssureWinMergeInstalled
+````
+
+### SYNTAX
+````PowerShell
+AssureWinMergeInstalled 
+````
+
+### PARAMETERS
+    None
+
+<br/><hr/><hr/><br/>
+
+##	AssureGithubCLIInstalled
+````PowerShell
+AssureGithubCLIInstalled
+````
+
+### SYNTAX
+````PowerShell
+AssureGithubCLIInstalled 
+````
+
+### PARAMETERS
+    None
+
+<br/><hr/><hr/><br/>
+
+##	Get-FactSheetOfSubject
+````PowerShell
+Get-FactSheetOfSubject               --> facts
+````
+
+### SYNTAX
+````PowerShell
+Get-FactSheetOfSubject [-query] <string> [<CommonParameters>]
+````
+
+### PARAMETERS
+    -query <string>
+        The subject to create a fact sheet for.
+        Required?                    true
+        Position?                    0
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
+
+<br/><hr/><hr/><br/>
+
+##	Save-Transcriptions
+````PowerShell
+Save-Transcriptions
+````
+
+### SYNOPSIS
+    Saves transcriptions for all audio and video files located under a directory path.
+
+### SYNTAX
+````PowerShell
+Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut] 
+<String>] [-TranslateUsingLMStudioModel <String>] [<CommonParameters>]
+````
+
+### DESCRIPTION
+    Searches for media files under a directory and uses a local OpenAI Whisper model to
+    generate subtitle files in .srt format for each media file.
+
+### PARAMETERS
+    -DirectoryPath <String>
+        The directory path to search for media files.
+        Required?                    false
+        Position?                    1
+        Default value                .\
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -LanguageIn <String>
+        Required?                    false
+        Position?                    2
+        Default value                English
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -LanguageOut <String>
+        Required?                    false
+        Position?                    3
+        Default value                
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    -TranslateUsingLMStudioModel <String>
+        Required?                    false
+        Position?                    named
+        Default value                Yi-Coder-9B-Chat
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
 
 <br/><hr/><hr/><br/>
