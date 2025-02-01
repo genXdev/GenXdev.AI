@@ -7,7 +7,7 @@
 ### NAME
     GenXdev.AI
 ### SYNOPSIS
-    A Windows PowerShell module for local and online AI related operations
+    A Windows PowerShell module for local AI related operations
 [![GenXdev.AI](https://img.shields.io/powershellgallery/v/GenXdev.AI.svg?style=flat-square&label=GenXdev.AI)](https://www.powershellgallery.com/packages/GenXdev.AI/) [![License](https://img.shields.io/github/license/genXdev/GenXdev.AI?style=flat-square)](./LICENSE)
 
 ### FEATURES
@@ -17,7 +17,7 @@
 - Images can be searched for keywords and descriptions and displayed in a webbrowser
 - Allows you to generate transcriptions of audio and video files using the Whisper AI model
 - Allows you to translate text to another language using the LM-Studio API
-- Allows you to start an audio chat session by recording audio and invoking a LLM like Yi-Coder-9B-Chat
+- Allows you to start an audio chat session by recording audio and invoking a LLM like llama
 - Allows you to start an audio transcription session by recording audio using the default audio input device
 - E.g to use your microphone to add spoken and then translated text to your clipboard with emojii's: transcribe | translate -Language "german" | emojify -SetClipboard
 
@@ -54,6 +54,7 @@ Update-Module
 | [AssureGithubCLIInstalled](#AssureGithubCLIInstalled) |  |  |
 | [Get-FactSheetOfSubject](#Get-FactSheetOfSubject) | facts |  |
 | [Save-Transcriptions](#Save-Transcriptions) |  | Searches for media files under a directory and uses a local OpenAI Whisper model togenerate subtitle files in .srt format for each media file. |
+| [Invoke-AIPowershellCommand](#Invoke-AIPowershellCommand) | hint |  |
 
 <br/><hr/><hr/><br/>
 
@@ -73,14 +74,12 @@ Invoke-LMStudioQuery                 --> qlms
 
 ### SYNTAX
 ````PowerShell
-Invoke-LMStudioQuery [-query] <String> [[-attachments] <String[]>] [[-Instructions] 
-<String>] [[-Model] <String>] [[-temperature] <Double>] [[-max_token] <Int32>] 
-[[-imageDetail] <String>] [[-ShowLMStudioWindow]] [<CommonParameters>]
+Invoke-LMStudioQuery [-query] <String> [[-attachments] <String[]>] [[-Instructions] <String>] [[-Model] <String>] [[-temperature] <Double>] [[-max_token] 
+<Int32>] [[-imageDetail] <String>] [[-ShowLMStudioWindow]] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Invoke-LMStudioQuery` function sends a query to the LM-Studio API and returns the 
-    response.
+    The `Invoke-LMStudioQuery` function sends a query to the LM-Studio API and returns the response.
 
 ### PARAMETERS
     -query <String>
@@ -99,19 +98,18 @@ Invoke-LMStudioQuery [-query] <String> [[-attachments] <String[]>] [[-Instructio
         Accept wildcard characters?  false
     -Instructions <String>
         The system instructions for the LLM.
-        Default value: "Your an AI assistent that never tells a lie and always answers 
-        truthfully, first of all comprehensive and then if possible consice."
+        Default value: "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice."
         Required?                    false
         Position?                    3
-        Default value                Your an AI assistent that never tells a lie and always 
-        answers truthfully, first of all comprehensive and then if possible consice.
+        Default value                Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible 
+        consice.
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -Model <String>
         The LM-Studio model to use for generating the response.
         Required?                    false
         Position?                    4
-        Default value                Yi-Coder-9B-Chat
+        Default value                llama
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -temperature <Double>
@@ -159,13 +157,11 @@ Invoke-QueryImageContent
 
 ### SYNTAX
 ````PowerShell
-Invoke-QueryImageContent [-query] <String> [-ImagePath] <String> [[-temperature] <Double>] 
-[<CommonParameters>]
+Invoke-QueryImageContent [-query] <String> [-ImagePath] <String> [[-temperature] <Double>] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns the 
-    response.
+    The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns the response.
 
 ### PARAMETERS
     -query <String>
@@ -206,13 +202,11 @@ Invoke-ImageKeywordUpdate            --> updateimages
 
 ### SYNTAX
 ````PowerShell
-Invoke-ImageKeywordUpdate [[-imageDirectory] <String>] [[-recurse]] [[-onlyNew]] 
-[[-retryFailed]] [<CommonParameters>]
+Invoke-ImageKeywordUpdate [[-imageDirectory] <String>] [[-recurse]] [[-onlyNew]] [[-retryFailed]] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Invoke-ImageKeywordUpdate` function updates the keywords and description of images in 
-    a directory.
+    The `Invoke-ImageKeywordUpdate` function updates the keywords and description of images in a directory.
 
 ### PARAMETERS
     -imageDirectory <String>
@@ -261,13 +255,11 @@ Invoke-ImageKeywordScan              --> findimages
 
 ### SYNTAX
 ````PowerShell
-Invoke-ImageKeywordScan [[-keywords] <String[]>] [[-imageDirectory] <String>] [[-PassThru]] 
-[<CommonParameters>]
+Invoke-ImageKeywordScan [[-keywords] <String[]>] [[-imageDirectory] <String>] [[-PassThru]] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Invoke-ImageKeywordScan` function scans images in a directory for keywords and 
-    description.
+    The `Invoke-ImageKeywordScan` function scans images in a directory for keywords and description.
 
 ### PARAMETERS
     -keywords <String[]>
@@ -313,8 +305,7 @@ GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [<CommonParam
 ````
 
 ### DESCRIPTION
-    The `GenerateMasonryLayoutHtml` function creates an HTML file with a masonry layout for 
-    displaying images, including their descriptions and keywords.
+    The `GenerateMasonryLayoutHtml` function creates an HTML file with a masonry layout for displaying images, including their descriptions and keywords.
 
 ### PARAMETERS
     -Images <Array>
@@ -349,17 +340,12 @@ Start-AudioTranscription             --> recordandtranscribe, transcribe
 
 ### SYNTAX
 ````PowerShell
-Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX] 
-[-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] 
-[[-TokenTimestampsSumThreshold] <Single>] [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] 
-[-IgnoreSilence] [[-MaxDurationOfSilence] <TimeSpan>] [[-SilenceThreshold] <Int32>] 
-[[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>] [[-TemperatureInc] 
-<Single>] [-WithTranslate] [[-Prompt] <String>] [[-SuppressRegex] <String>] [-WithProgress] 
-[[-AudioContextSize] <Int32>] [-DontSuppressBlank] [[-MaxDuration] <TimeSpan>] [[-Offset] 
-<TimeSpan>] [[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] 
-[[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <TimeSpan>] [[-LengthPenalty] 
-<Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] 
-[[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] 
+Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX] [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] 
+[[-TokenTimestampsSumThreshold] <Single>] [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] [-IgnoreSilence] [[-MaxDurationOfSilence] <TimeSpan>] 
+[[-SilenceThreshold] <Int32>] [[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>] [[-TemperatureInc] <Single>] [-WithTranslate] [[-Prompt] 
+<String>] [[-SuppressRegex] <String>] [-WithProgress] [[-AudioContextSize] <Int32>] [-DontSuppressBlank] [[-MaxDuration] <TimeSpan>] [[-Offset] <TimeSpan>] 
+[[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <TimeSpan>] [[-LengthPenalty] 
+<Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] [[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] 
 [<CommonParameters>]
 ````
 
@@ -628,13 +614,11 @@ Get-TextTranslation                  --> Get-Translation, translate
 
 ### SYNTAX
 ````PowerShell
-Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Object>] 
-[[-Model] <String>] [<CommonParameters>]
+Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Object>] [[-Model] <String>] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Get-TextTranslation` function translates text to another language using the LM-Studio 
-    API.
+    The `Get-TextTranslation` function translates text to another language using the LM-Studio API.
 
 ### PARAMETERS
     -Text <String>
@@ -656,16 +640,15 @@ Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Ob
         Defaults to:
         Required?                    false
         Position?                    3
-        Default value                Translate this partial subtitle text, into the [Language] 
-        language, leave in the same style of writing, and leave the paragraph structure in 
-        tact, ommit only the translation no yapping or chatting.
+        Default value                Translate this partial subtitle text, into the [Language] language, leave in the same style of writing, and leave the paragraph 
+        structure in tact, ommit only the translation no yapping or chatting.
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -Model <String>
         The LM-Studio model to use for generating the response.
         Required?                    false
         Position?                    4
-        Default value                Yi-Coder-9B-Chat
+        Default value                llama
         Accept pipeline input?       false
         Accept wildcard characters?  false
     <CommonParameters>
@@ -686,17 +669,12 @@ Get-MediaFileAudioTranscription
 
 ### SYNTAX
 ````PowerShell
-Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] 
-[[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SRT] [-PassThru] 
-[-UseDesktopAudioCapture] [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>] 
-[-SplitOnWord] [-MaxTokensPerSegment <Int32>] [-IgnoreSilence] [-MaxDurationOfSilence 
-<TimeSpan>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] 
-[-TemperatureInc <Single>] [-Prompt <String>] [-SuppressRegex <String>] [-WithProgress] 
-[-AudioContextSize <Int32>] [-DontSuppressBlank] [-MaxDuration <TimeSpan>] [-Offset 
-<TimeSpan>] [-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] 
-[-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <TimeSpan>] [-LengthPenalty <Single>] 
-[-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] 
-[-NoContext] [-WithBeamSearchSamplingStrategy] [<CommonParameters>]
+Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SRT] 
+[-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>] [-SplitOnWord] [-MaxTokensPerSegment <Int32>] 
+[-IgnoreSilence] [-MaxDurationOfSilence <TimeSpan>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] [-TemperatureInc <Single>] 
+[-Prompt <String>] [-SuppressRegex <String>] [-WithProgress] [-AudioContextSize <Int32>] [-DontSuppressBlank] [-MaxDuration <TimeSpan>] [-Offset <TimeSpan>] 
+[-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <TimeSpan>] [-LengthPenalty <Single>] 
+[-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
@@ -728,7 +706,7 @@ Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>]
         The LM Studio model to use for translation.
         Required?                    false
         Position?                    named
-        Default value                Yi-Coder-9B-Chat
+        Default value                llama
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -SRT [<SwitchParameter>]
@@ -965,13 +943,10 @@ Start-AudioChat                      --> llmchat
 
 ### SYNTAX
 ````PowerShell
-Start-AudioChat [[-Instructions] <String>] [[-Model] <String>] [-UseDesktopAudioCapture] 
-[[-TemperatureResponse] <Double>] [[-Language] <String>] [[-CpuThreads] <Int32>] 
-[[-Temperature] <Single>] [[-TemperatureInc] <Single>] [[-Prompt] <String>] 
-[[-SuppressRegex] <String>] [[-AudioContextSize] <Int32>] [[-MaxDuration] <TimeSpan>] 
-[[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] 
-[[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] 
-[-OnlyResponses] [-NoTextToSpeech] [<CommonParameters>]
+Start-AudioChat [[-Instructions] <String>] [[-Model] <String>] [-UseDesktopAudioCapture] [[-TemperatureResponse] <Double>] [[-Language] <String>] [[-CpuThreads] 
+<Int32>] [[-Temperature] <Single>] [[-TemperatureInc] <Single>] [[-Prompt] <String>] [[-SuppressRegex] <String>] [[-AudioContextSize] <Int32>] [[-MaxDuration] 
+<TimeSpan>] [[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] [[-NoSpeechThreshold] <Single>] [-NoContext] 
+[-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoTextToSpeech] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
@@ -980,20 +955,19 @@ Start-AudioChat [[-Instructions] <String>] [[-Model] <String>] [-UseDesktopAudio
 ### PARAMETERS
     -Instructions <String>
         The system instructions for the responding LLM.
-        Default value: "Your an AI assistent that never tells a lie and always answers 
-        truthfully, first of all comprehensive and then if possible consice."
+        Default value: "Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible consice."
         Required?                    false
         Position?                    1
-        Default value                Your an AI assistent that never tells a lie and always 
-        answers truthfully, first of all comprehensive and then if possible consice.
+        Default value                Your an AI assistent that never tells a lie and always answers truthfully, first of all comprehensive and then if possible 
+        consice.
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -Model <String>
         The LM-Studio model to use for generating the response.
-        Default value: "Yi-Coder-9B-Chat"
+        Default value: "llama"
         Required?                    false
         Position?                    2
-        Default value                Yi-Coder-9B-Chat
+        Default value                llama
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -UseDesktopAudioCapture [<SwitchParameter>]
@@ -1140,8 +1114,7 @@ Add-EmoticonsToText                  --> emojify
 
 ### SYNTAX
 ````PowerShell
-Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <Object>] [[-Model] <String>] 
-[[-SetClipboard]] [<CommonParameters>]
+Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <Object>] [[-Model] <String>] [[-SetClipboard]] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
@@ -1149,8 +1122,7 @@ Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <Object>] [[-Model] <Str
 
 ### PARAMETERS
     -Text <String>
-        Optionally the text to outfit with emoticons, if not specified, will read and set the 
-        clipboard.
+        Optionally the text to outfit with emoticons, if not specified, will read and set the clipboard.
         Required?                    false
         Position?                    1
         Default value                
@@ -1167,7 +1139,7 @@ Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <Object>] [[-Model] <Str
         The LM-Studio model to use for generating the response.
         Required?                    false
         Position?                    3
-        Default value                Yi-Coder-9B-Chat
+        Default value                llama
         Accept pipeline input?       false
         Accept wildcard characters?  false
     -SetClipboard [<SwitchParameter>]
@@ -1283,8 +1255,7 @@ Save-Transcriptions
 
 ### SYNTAX
 ````PowerShell
-Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut] 
-<String>] [-TranslateUsingLMStudioModel <String>] [<CommonParameters>]
+Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
@@ -1314,8 +1285,63 @@ Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-Lang
     -TranslateUsingLMStudioModel <String>
         Required?                    false
         Position?                    named
-        Default value                Yi-Coder-9B-Chat
+        Default value                llama
         Accept pipeline input?       false
+        Accept wildcard characters?  false
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216). 
+
+<br/><hr/><hr/><br/>
+
+##	Invoke-AIPowershellCommand
+````PowerShell
+Invoke-AIPowershellCommand           --> hint
+````
+
+### SYNTAX
+````PowerShell
+Invoke-AIPowershellCommand [-query] <string> [[-Model] <string>] [[-temperature] <double>] [-Clipboard] [<CommonParameters>]
+````
+
+### PARAMETERS
+    -Clipboard
+        Only set clipboard
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+    -Model <string>
+        The LM-Studio model to use for generating the response.
+        Required?                    false
+        Position?                    1
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+    -query <string>
+        The query string for the LLM.
+        Required?                    true
+        Position?                    0
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+    -temperature <double>
+        The temperature parameter for controlling the randomness of the response.
+        Required?                    false
+        Position?                    2
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,

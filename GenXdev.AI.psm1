@@ -29,9 +29,9 @@ The maximum number of tokens to generate in the response.
 The image detail to use for the attachments.
 
 .EXAMPLE
-    Invoke-LMStudioQuery -query "Introduce yourself." -instructions "Always answer in rhymes." -model "lmstudio-community/Yi-Coder-9B-Chat" -temperature 0.9
+Invoke-LMStudioQuery -query "Introduce yourself." -instructions "Always answer in rhymes." -model "lmstudio-community/llama" -temperature 0.9
 
-    qlms "Introduce yourself." "Always answer in rhymes." "lmstudio-community/Yi-Coder-9B-Chat" 0.9
+qlms "Introduce yourself." "Always answer in rhymes." "lmstudio-community/llama" 0.9
 
 .EXAMPLE
 Invoke-LMStudioQuery -query "What is PowerShell?" -temperature 0.7
@@ -75,8 +75,8 @@ function Invoke-LMStudioQuery {
             Position = 3,
             Mandatory = $false,
             HelpMessage = "The LM-Studio model to use for generating the response.")]
-        [PSDefaultValue(Value = "Yi-Coder-9B-Chat")]
-        [string]$Model = "Yi-Coder-9B-Chat",
+        [PSDefaultValue(Value = "llama")]
+        [string]$Model = "llama",
 
         [Parameter(
             Mandatory = $false,
@@ -109,7 +109,8 @@ function Invoke-LMStudioQuery {
         [Switch] $ShowLMStudioWindow
     )
 
-    $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+    $lmStudioPath = (Get-ChildItem "${env:LOCALAPPDATA}\LM-Studio\lm studio.exe", "${env:LOCALAPPDATA}\Programs\LM Studio\lm studio.exe", "${env:LOCALAPPDATA}\Programs\LM-Studio\lm studio.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName;
+    $lmsPath = (Get-ChildItem "${env:LOCALAPPDATA}\LM-Studio\lms.exe", "${env:LOCALAPPDATA}\Programs\LM Studio\lms.exe", "${env:LOCALAPPDATA}\Programs\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
 
     function IsLMStudioInstalled {
 
@@ -131,8 +132,6 @@ function Invoke-LMStudioQuery {
 
                     $w.Maximize();
                     $w.Show();
-                }
-                else {
 
                     (Get-PowershellMainWindow).Focus();
                     wp -Left -Process (Get-PowershellMainWindowProcess)
@@ -172,13 +171,19 @@ function Invoke-LMStudioQuery {
         }
 
         $lmStudio = "ElementLabs.LMStudio"
-        $lmStudioPackage = Get-WinGetPackage -Name $lmStudio
+        $lmStudioPackage = Get-WinGetPackage -Id $lmStudio
 
         if ($null -eq $lmStudioPackage) {
 
             Write-Verbose "Installing LM-Studio.."
-            Install-WinGetPackage -Id $lmStudio -Force
-            $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+            try {
+                Install-WinGetPackage -Id $lmStudio -Force
+            }
+            catch {
+                winget install $lmStudio
+            }
+            $lmStudioPath = (Get-ChildItem "${env:LOCALAPPDATA}\LM-Studio\lm studio.exe", "${env:LOCALAPPDATA}\Programs\LM Studio\lm studio.exe", "${env:LOCALAPPDATA}\Programs\LM-Studio\lm studio.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName;
+            $lmsPath = (Get-ChildItem "${env:LOCALAPPDATA}\LM-Studio\lms.exe", "${env:LOCALAPPDATA}\Programs\LM Studio\lms.exe", "${env:LOCALAPPDATA}\Programs\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
         }
     }
 
@@ -193,9 +198,11 @@ function Invoke-LMStudioQuery {
         if (-not (IsLMStudioRunning)) {
 
             Write-Verbose "Starting LM-Studio..";
-            $lmStudioPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lm studio.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName;
-            Write-Verbose "$((Start-Process -FilePath $lmStudioPath -WindowStyle Minimized)))";
-            $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+
+            $lmStudioPath = (Get-ChildItem "${env:LOCALAPPDATA}\LM-Studio\lm studio.exe", "${env:LOCALAPPDATA}\Programs\LM Studio\lm studio.exe", "${env:LOCALAPPDATA}\Programs\LM-Studio\lm studio.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName;
+            $lmsPath = (Get-ChildItem "${env:LOCALAPPDATA}\LM-Studio\lms.exe", "${env:LOCALAPPDATA}\Programs\LM Studio\lms.exe", "${env:LOCALAPPDATA}\Programs\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+
+            Start-Job { param($lmStudioPath) Start-Process -FilePath $lmStudioPath -WindowStyle Minimized } -ArgumentList @($lmStudioPath) | Out-Null
             Start-Sleep -Seconds 10
             IsLMStudioRunning | Out-Null
         }
@@ -205,13 +212,13 @@ function Invoke-LMStudioQuery {
     function Get-ModelList {
 
         Write-Verbose "Getting installed model list.."
-        $ModelList = & "$lmsPath" ls --yes --json | ConvertFrom-Json
+        $ModelList = & "$lmsPath" ls --json | ConvertFrom-Json
         return $ModelList
     }
     function Get-LoadedModelList {
 
         Write-Verbose "Getting loaded model list.."
-        $ModelList = & "$lmsPath" ps --yes --json | ConvertFrom-Json
+        $ModelList = & "$lmsPath" ps --json | ConvertFrom-Json
         return $ModelList
     }
 
@@ -260,11 +267,11 @@ function Invoke-LMStudioQuery {
 
                 if (-not (Get-HasCapableGpu)) {
 
-                    & "$lmsPath" load "$($foundModel.path)" --yes --gpu off --exact
+                    & "$lmsPath" load "$($foundModel.path)" --gpu off --exact
                 }
                 else {
 
-                    & "$lmsPath" load "$($foundModel.path)" --yes --exact
+                    & "$lmsPath" load "$($foundModel.path)" --exact
                 }
 
                 if ($LASTEXITCODE -ne 0) {
@@ -293,7 +300,7 @@ function Invoke-LMStudioQuery {
 
             if (-not $success) {
 
-                & "$lmsPath" unload --all --yes
+                & "$lmsPath" unload --all
                 $success = $true;
                 try {
 
@@ -302,11 +309,11 @@ function Invoke-LMStudioQuery {
 
                     if (-not (Get-HasCapableGpu)) {
 
-                        & "$lmsPath" load "$($foundModel.path)" --yes --gpu off --exact
+                        & "$lmsPath" load "$($foundModel.path)" --gpu off --exact
                     }
                     else {
 
-                        & "$lmsPath" load "$($foundModel.path)" --yes --exact
+                        & "$lmsPath" load "$($foundModel.path)" --exact
                     }
 
                     if ($LASTEXITCODE -ne 0) {
@@ -715,7 +722,7 @@ function Invoke-LMStudioQuery {
 
         $json = @{
             "stream"      = $false
-            "model"       = "$($foundModelLoaded.identifier)"
+            "model"       = "$($foundModelLoaded.identifier)".trim()
             "messages"    = $messages
             "temperature" = $temperature
             "max_tokens"  = $max_token
@@ -859,14 +866,6 @@ function Invoke-ImageKeywordUpdate {
                     [IO.File]::Delete("$($PSItem):description.json");
                 }
             }
-
-            if ([IO.File]::Exists("$($PSItem):keywords.json")) {
-
-                if ("$([IO.File]::ReadAllText("$($PSItem):keywords.json"))".StartsWith("[]")) {
-
-                    [IO.File]::Delete("$($PSItem):keywords.json");
-                }
-            }
         }
 
         $image = $PSItem.FullName
@@ -876,69 +875,35 @@ function Invoke-ImageKeywordUpdate {
             $PSItem.Attributes = $PSItem.Attributes -bxor [System.IO.FileAttributes]::ReadOnly
         }
 
-        if ((-not $onlyNew) -or (-not [IO.File]::Exists("$($image):description.json") -or ([IO.File]::Exists("$($image):keywords.json")))) {
+        $fileExists = [IO.File]::Exists("$($image):description.json");
 
-            if (-not [IO.File]::Exists("$($image):description.json")) {
+        if ((-not $onlyNew) -or (-not $fileExists)) {
+
+            if (-not $fileExists) {
 
                 "{}" > "$($image):description.json"
             }
 
             Write-Verbose "Getting image description for $image.."
-            $description = Invoke-QueryImageContent -query "Analyze image and return it as a single json object with properties: short_description (max 80 chars), long_description, has_nudity, keywords (array of strings), has_explicit_content, overall_mood_of_image, picture_type, style_type. The filepath of the image is: '$image'" -ImagePath $image -temperature 0.01
+            $description = Invoke-QueryImageContent -query "Analyze image and return a object with properties: 'short_description' (max 80 chars), 'long_description', 'has_nudity, keywords' (array of strings), 'has_explicit_content', 'overall_mood_of_image', 'picture_type' and 'style_type'. Output only json, no markdown or anything other then json." -ImagePath $image -temperature 0.01
             Write-Verbose $description
 
             try {
                 $description = $description.trim();
-                $i0 = $description.IndexOf("{ ")
+                $i0 = $description.IndexOf("{")
                 $i1 = $description.LastIndexOf("}")
                 if ($i0 -ge 0) {
 
                     $description = $description.Substring($i0, $i1 - $i0 + 1)
                 }
 
-                if ([IO.File]::Exists("$($image):keywords.json")) {
-
-                    try {
-                        $keywordsFound = [IO.File]::ReadAllText("$($image):keywords.json") | ConvertFrom-Json
-
-                        if ($null -eq $descriptionFound.keywords) {
-
-                            Add-Member -NotePropertyName "keywords" -InputObject $description -NotePropertyValue $keywordsFound -Force | Out-Null
-
-                            [IO.File]::Delete("$($image):keywords.json")
-                        }
-                    }
-                    catch {
-                        $keywordsFound = @()
-                    }
-                }
-
-                $description | ConvertFrom-Json | ConvertTo-Json -Compress -Depth 20 | Out-File -FilePath "$($image):description.json" -Force
+                [IO.File]::WriteAllText("$($image):description.json", ($description | ConvertFrom-Json | ConvertTo-Json -Compress -Depth 20));
             }
             catch {
-                Write-Warning $PSItem
+
+                Write-Warning "$PSItem`r`n$description"
             }
         }
-
-        # if ($onlyNew -and [IO.File]::Exists("$($image):keywords.json")) {
-
-        #     return
-        # }
-
-        # if (-not [IO.File]::Exists("$($image):keywords.json")) {
-
-        #     "[]" > "$($image):keywords.json"
-        # }
-
-        # $keywords = Invoke-QueryImageKeywords -ImagePath $image
-
-        # if ($null -ne $keywords) {
-
-        #     $keywords = $keywords | ConvertTo-Json -Compress -Depth 20;
-        #     Write-Verbose "$image : $keywords`r`n`r`n"
-
-        #     $keywords | Out-File -FilePath "$($image):keywords.json" -Force
-        # }
     }
 }
 
@@ -1339,13 +1304,13 @@ No speech threshold.
 .PARAMETER NoContext
 Don't use context.
 
-.PARAMETER WithBeamSearchSamplingStrategy
-Use beam search sampling strategy.
+                .PARAMETER WithBeamSearchSamplingStrategy
+                Use beam search sampling strategy.
 
-.EXAMPLE
-    $text = Start-AudioTranscription;
-    $text
-#>
+                .EXAMPLE
+                $text = Start-AudioTranscription;
+                $text
+                #>
 function Start-AudioTranscription {
 
     [Alias("transcribe", "recordandtranscribe")]
@@ -1900,8 +1865,8 @@ function Get-TextTranslation {
             Mandatory = $false,
             HelpMessage = "The LM-Studio model to use for generating the response."
         )]
-        [PSDefaultValue(Value = "Yi-Coder-9B-Chat")]
-        [string]$Model = "Yi-Coder-9B-Chat"
+        [PSDefaultValue(Value = "llama")]
+        [string]$Model = "llama"
     )
 
     begin {
@@ -1957,7 +1922,7 @@ function Get-TextTranslation {
 
             try {
                 # translate the text
-                $translatedPart = qlms -query $nextPart -Instructions $Instructions -Model $Model -temperature 0.02
+                $translatedPart = qlms -query $nextPart -Instructions $Instructions -Model:$Model -temperature 0.02
 
                 # append the translated part
                 $translation.Append("$spaceLeft$translatedPart$spaceRight") | Out-Null
@@ -2266,7 +2231,6 @@ function Get-MediaFileAudioTranscription {
             "Zulu")]
         [string] $LanguageIn = "English",
 
-
         [Parameter(
             Mandatory = $false,
             Position = 2,
@@ -2428,7 +2392,7 @@ function Get-MediaFileAudioTranscription {
             Mandatory = $false,
             HelpMessage = "The LM Studio model to use for translation."
         )]
-        [string] $TranslateUsingLMStudioModel = "Yi-Coder-9B-Chat",
+        [string] $TranslateUsingLMStudioModel = "llama",
 
         [Parameter(
             Mandatory = $false,
@@ -2538,7 +2502,7 @@ function Get-MediaFileAudioTranscription {
 
         $MaxSrtChars = [System.Math]::Min(200, [System.Math]::Max(20, $MaxSrtChars))
 
-        $lmsPath = (Get-ChildItem "$env:LOCALAPPDATA\LM-Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+        $lmsPath = (Get-ChildItem "${env:LOCALAPPDATA}\LM-Studio\lms.exe", "${env:LOCALAPPDATA}\Programs\LM Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
 
         function IsLMStudioInstalled {
 
@@ -2572,7 +2536,7 @@ function Get-MediaFileAudioTranscription {
             Import-Module "Microsoft.WinGet.Client"
         }
 
-        $ffmpegPath = (Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1 | ForEach-Object FullName)
+        $ffmpegPath = (Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1 | ForEach-Object FullName)
 
         function Installffmpeg {
 
@@ -2589,8 +2553,13 @@ function Get-MediaFileAudioTranscription {
             if ($null -ne $ffmpegPackage) {
 
                 Write-Verbose "Installing ffmpeg.."
-                Install-WinGetPackage -Id $ffmpeg -Force
-                $ffmpegPath = (Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+                try {
+                    Install-WinGetPackage -Id $ffmpeg -Force
+                }
+                catch {
+                    winget install $ffmpeg
+                }
+                $ffmpegPath = (Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
             }
         }
 
@@ -2707,14 +2676,6 @@ function Get-MediaFileAudioTranscription {
             $LanguageIn = "English"
         }
 
-        $dict = Get-WebLanguageDictionary;
-        $LanguageIn = $dict[$LanguageIn]
-
-        if (-not [string]::IsNullOrWhiteSpace($LanguageOut)) {
-
-            $LanguageOut = $dict[$LanguageOut];
-        }
-
         if (-not $PSBoundParameters.ContainsKey("Language")) {
 
             $PSBoundParameters.Add("Language", $LanguageIn) | Out-Null;
@@ -2782,7 +2743,7 @@ function Get-MediaFileAudioTranscription {
             if (-not [string]::IsNullOrWhiteSpace($LanguageOut)) {
 
                 # transcribe the audio file to text
-                $results = Get-SpeechToText @PSBoundParameters
+                $results = Start-AudioTranscription @PSBoundParameters
 
                 # delegate
                 Get-TextTranslation -Text "$results" -Language $LanguageOut -Model $TranslateUsingLMStudioModel
@@ -2826,7 +2787,7 @@ Default value: "Your an AI assistent that never tells a lie and always answers t
 
 .PARAMETER Model
 The LM-Studio model to use for generating the response.
-Default value: "Yi-Coder-9B-Chat"
+Default value: "llama"
 
 .PARAMETER UseDesktopAudioCapture
 Whether to use desktop audio capture instead of microphone input.
@@ -2897,8 +2858,8 @@ function Start-AudioChat {
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The LM-Studio model to use for generating the response.")]
-        [PSDefaultValue(Value = "Yi-Coder-9B-Chat")]
-        [string]$Model = "Yi-Coder-9B-Chat",
+        [PSDefaultValue(Value = "llama")]
+        [string]$Model = "llama",
 
         [Parameter(Mandatory = $false, HelpMessage = "Whether to use desktop audio capture instead of microphone input")]
         [switch] $UseDesktopAudioCapture,
@@ -3311,8 +3272,8 @@ function Add-EmoticonsToText {
             Mandatory = $false,
             HelpMessage = "The LM-Studio model to use for generating the response."
         )]
-        [PSDefaultValue(Value = "Yi-Coder-9B-Chat")]
-        [string]$Model = "Yi-Coder-9B-Chat",
+        [PSDefaultValue(Value = "llama")]
+        [string]$Model = "llama",
 
         [Parameter(
             Position = 3,
@@ -3423,7 +3384,7 @@ function AssureWinMergeInstalled {
     if (@(Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
 
         # Get the installation directory of WinMerge
-        $winMergePath = Join-Path $env:LOCALAPPDATA "Programs\WinMerge"
+        $winMergePath = Join-Path ${env:LOCALAPPDATA} "Programs\WinMerge"
 
         # Add WinMerge's path to the current user's environment PATH
         $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
@@ -3541,7 +3502,7 @@ function Get-FactSheetOfSubject {
         [string] $query
     )
 
-    $result = qlms -Instructions "create a fact sheet of the subject that is described in the request. Mention as many facts and properties about the subject that you know, but always keep it factual with well established facts. Each fact must have a single string as name that is used as the key inside the json object you return, it's value is a string with the fact description e.g: `"{`"Color`":`"Light blue`",`"Otherfacts`",`"etc..`"}" -query "$query"
+    $result = qlms -Instructions "create a fact sheet of the subject that is described in the request. Mention as many facts and properties about the subject that you know, but always keep it factual with well established facts. Each fact must have a single string as name that is used as the key inside the json object you return, it's value is a string with the fact description e.g: `"{`"Color`":`"Light blue`",`"Otherfacts`",`"etc..`"} don't add any markdown, just plain json." -query "$query"
 
     Write-Verbose $result
 
@@ -3766,7 +3727,7 @@ function Save-Transcriptions {
             Mandatory = $false,
             HelpMessage = "The LM Studio model to use for translation."
         )]
-        [string] $TranslateUsingLMStudioModel = "Yi-Coder-9B-Chat"
+        [string] $TranslateUsingLMStudioModel = "llama"
         ######################################################################
     )
     begin {
@@ -3998,4 +3959,74 @@ function Save-Transcriptions {
 }
 
 ################################################################################
+
+function Invoke-AIPowershellCommand {
+
+    [CmdletBinding()]
+    [Alias("hint")]
+
+    param (
+        [Parameter(
+            Position = 0,
+            Mandatory,
+            HelpMessage = "The query string for the LLM."
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string]$query,
+        [Parameter(
+            Position = 1,
+            Mandatory = $false,
+            HelpMessage = "The LM-Studio model to use for generating the response.")]
+        [PSDefaultValue(Value = "llama")]
+        [string]$Model = "llama",
+
+        [Parameter(
+            Mandatory = $false,
+            Position = 2,
+            HelpMessage = "The temperature parameter for controlling the randomness of the response."
+        )]
+        [ValidateRange(0.0, 1.0)]
+        [double] $temperature = 0.01,
+
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Only set clipboard"
+        )]
+        [switch] $Clipboard
+    )
+
+    begin {
+        $Instructions = "
+take the user prompt as an instruction to generate a powershell commandline that does exactly what is requested and implement the latest best-practises when it comes to the latest PowerShell Core.
+return nothing like chatter, markdown or anything besides a json string holding an object with a single response string property.
+your output is always in the format: {`"response`":`"# powershell commandline here`"}
+if prompt references the clipboard, use the following clipboard content: $("$(Get-Clipboard)" | ConvertTo-Json -Compress -Depth 1)
+";
+    }
+
+    process {
+
+        $result = (Invoke-LMStudioQuery `
+                -query:$query `
+                -Model:$Model `
+                -temperature:$temperature `
+                -Instructions:$Instructions | `
+
+            ConvertFrom-Json).response
+
+        if ($Clipboard) {
+            $result | Set-Clipboard
+        }
+        else {
+            $w = Get-PowershellMainWindow
+            if ($null -ne $w) {
+
+                $w.SetForeground();
+            }
+
+            Send-Keys ("`r`n$result".Replace("`r`n", " ``+{ENTER}"))
+        }
+    }
+}
+
 ################################################################################

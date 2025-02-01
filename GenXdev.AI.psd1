@@ -6,7 +6,7 @@
   RootModule           = 'GenXdev.AI.psm1'
 
   # Version number of this module.
-  ModuleVersion        = '1.84.2025'
+  ModuleVersion        = '1.90.2025'
   # Supported PSEditions
   # CompatiblePSEditions = @()
 
@@ -23,7 +23,7 @@
   Copyright            = 'Copyright 2021-2025 GenXdev'
 
   # Description of the functionality provided by this module
-  Description          = 'A Windows PowerShell module for local and online AI related operations'
+  Description          = 'A Windows PowerShell module for local AI related operations'
 
   # Minimum version of the PowerShell engine required by this module
   PowerShellVersion    = '7.4.6'
@@ -38,7 +38,7 @@
   # ProcessorArchitecture = ''
 
   # Modules that must be imported into the global environment prior to importing this module
-  RequiredModules      = @(@{ModuleName = 'GenXdev.Helpers'; ModuleVersion = '1.84.2025' }, @{ModuleName = 'GenXdev.Webbrowser'; ModuleVersion = '1.84.2025' }, @{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.84.2025' }, @{ModuleName = 'GenXdev.Webbrowser'; ModuleVersion = '1.84.2025' }, @{ModuleName = 'GenXdev.Console'; ModuleVersion = '1.84.2025' }, @{ModuleName = 'GenXdev.FileSystem'; ModuleVersion = '1.84.2025' });
+  RequiredModules      = @(@{ModuleName = 'GenXdev.Helpers'; ModuleVersion = '1.90.2025' }, @{ModuleName = 'GenXdev.Webbrowser'; ModuleVersion = '1.90.2025' }, @{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.90.2025' }, @{ModuleName = 'GenXdev.Webbrowser'; ModuleVersion = '1.90.2025' }, @{ModuleName = 'GenXdev.Console'; ModuleVersion = '1.90.2025' }, @{ModuleName = 'GenXdev.FileSystem'; ModuleVersion = '1.90.2025' });
 
   # Assemblies that must be loaded prior to importing this module
   RequiredAssemblies   = @()
