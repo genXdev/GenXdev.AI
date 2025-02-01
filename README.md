@@ -74,8 +74,8 @@ Add-EmoticonsToText                  --> emojify
 
 ### SYNTAX
 ````PowerShell
-Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <Object>] [[-Model] <String>] [[-SetClipboard]] 
-[<CommonParameters>]
+Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <Object>] [[-Model] <String>] 
+[[-SetClipboard]] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
@@ -83,7 +83,8 @@ Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <Object>] [[-Model] <Str
 
 ### PARAMETERS
     -Text <String>
-        Optionally the text to outfit with emoticons, if not specified, will read and set the clipboard.
+        Optionally the text to outfit with emoticons, if not specified, will read and set the 
+        clipboard.
         Required?                    false
         Position?                    1
         Default value                
@@ -132,8 +133,8 @@ Save-Transcriptions
 
 ### SYNTAX
 ````PowerShell
-Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut] <String>] 
-[-TranslateUsingLMStudioModel <String>] [<CommonParameters>]
+Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut] 
+<String>] [-TranslateUsingLMStudioModel <String>] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
@@ -188,12 +189,13 @@ Invoke-QueryImageContent
 
 ### SYNTAX
 ````PowerShell
-Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Temperature] <Double>] [[-Max_token] <Int32>] 
-[<CommonParameters>]
+Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Temperature] <Double>] 
+[[-Max_token] <Int32>] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns the response.
+    The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns the 
+    response.
 
 ### PARAMETERS
     -Query <String>
@@ -246,9 +248,9 @@ Invoke-LMStudioQuery                 --> qlms
 
 ### SYNTAX
 ````PowerShell
-Invoke-LMStudioQuery [-Query] <String> [[-Attachments] <String[]>] [[-Instructions] <String>] [[-Model] <String>] 
-[[-Temperature] <Double>] [[-Max_token] <Int32>] [[-ImageDetail] <String>] [-ShowLMStudioWindow] 
-[-IncludeThoughts] [<CommonParameters>]
+Invoke-LMStudioQuery [-Query] <String> [[-Attachments] <String[]>] [[-Instructions] 
+<String>] [[-Model] <String>] [[-Temperature] <Double>] [[-Max_token] <Int32>] 
+[[-ImageDetail] <String>] [-ShowLMStudioWindow] [-IncludeThoughts] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
@@ -276,8 +278,8 @@ Invoke-LMStudioQuery [-Query] <String> [[-Attachments] <String[]>] [[-Instructio
         System instructions for the LLM.
         Required?                    false
         Position?                    3
-        Default value                Your an AI assistent that never tells a lie and always answers truthfully, first 
-        comprehensive then consice.
+        Default value                Your an AI assistent that never tells a lie and always 
+        answers truthfully, first comprehensive then consice.
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -347,12 +349,13 @@ Invoke-ImageKeywordUpdate            --> updateimages
 
 ### SYNTAX
 ````PowerShell
-Invoke-ImageKeywordUpdate [[-ImageDirectory] <String>] [[-Recurse]] [[-OnlyNew]] [[-RetryFailed]] 
-[<CommonParameters>]
+Invoke-ImageKeywordUpdate [[-ImageDirectory] <String>] [[-Recurse]] [[-OnlyNew]] 
+[[-RetryFailed]] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Invoke-ImageKeywordUpdate` function updates the keywords and description of images in a directory.
+    The `Invoke-ImageKeywordUpdate` function updates the keywords and description of images in 
+    a directory.
 
 ### PARAMETERS
     -ImageDirectory <String>
@@ -405,11 +408,13 @@ Invoke-ImageKeywordScan              --> findimages
 
 ### SYNTAX
 ````PowerShell
-Invoke-ImageKeywordScan [[-Keywords] <String[]>] [[-ImageDirectory] <String>] [[-PassThru]] [<CommonParameters>]
+Invoke-ImageKeywordScan [[-Keywords] <String[]>] [[-ImageDirectory] <String>] [[-PassThru]] 
+[<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Invoke-ImageKeywordScan` function scans images in a directory for keywords and description.
+    The `Invoke-ImageKeywordScan` function scans images in a directory for keywords and 
+    description.
 
 ### PARAMETERS
     -Keywords <String[]>
@@ -451,8 +456,8 @@ Invoke-AIPowershellCommand           --> hint
 
 ### SYNTAX
 ````PowerShell
-Invoke-AIPowershellCommand [-Query] <string> [[-Model] <string>] [[-Temperature] <double>] [-Clipboard] 
-[<CommonParameters>]
+Invoke-AIPowershellCommand [-Query] <string> [[-Model] <string>] [[-Temperature] <double>] 
+[-Clipboard] [<CommonParameters>]
 ````
 
 ### PARAMETERS
@@ -510,11 +515,13 @@ Start-AudioChat                      --> llmchat
 
 ### SYNTAX
 ````PowerShell
-Start-AudioChat [[-Instructions] <String>] [[-Model] <String>] [-UseDesktopAudioCapture] [[-TemperatureResponse] 
-<Double>] [[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>] [[-TemperatureInc] <Single>] 
-[[-Prompt] <String>] [[-SuppressRegex] <String>] [[-AudioContextSize] <Int32>] [[-MaxDuration] <TimeSpan>] 
-[[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] [[-NoSpeechThreshold] 
-<Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoTextToSpeech] [<CommonParameters>]
+Start-AudioChat [[-Instructions] <String>] [[-Model] <String>] [-UseDesktopAudioCapture] 
+[[-TemperatureResponse] <Double>] [[-Language] <String>] [[-CpuThreads] <Int32>] 
+[[-Temperature] <Single>] [[-TemperatureInc] <Single>] [[-Prompt] <String>] 
+[[-SuppressRegex] <String>] [[-AudioContextSize] <Int32>] [[-MaxDuration] <TimeSpan>] 
+[[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] 
+[[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] 
+[-OnlyResponses] [-NoTextToSpeech] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
@@ -523,12 +530,12 @@ Start-AudioChat [[-Instructions] <String>] [[-Model] <String>] [-UseDesktopAudio
 ### PARAMETERS
     -Instructions <String>
         The system instructions for the responding LLM.
-        Default value: "Your an AI assistent that never tells a lie and always answers truthfully, first of all 
-        comprehensive and then if possible consice."
+        Default value: "Your an AI assistent that never tells a lie and always answers 
+        truthfully, first of all comprehensive and then if possible consice."
         Required?                    false
         Position?                    1
-        Default value                Your an AI assistent that never tells a lie and always answers truthfully, first 
-        of all comprehensive and then if possible consice.
+        Default value                Your an AI assistent that never tells a lie and always 
+        answers truthfully, first of all comprehensive and then if possible consice.
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -703,12 +710,13 @@ Get-TextTranslation                  --> Get-Translation, translate
 
 ### SYNTAX
 ````PowerShell
-Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Object>] [[-Model] <String>] 
-[<CommonParameters>]
+Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Object>] 
+[[-Model] <String>] [<CommonParameters>]
 ````
 
 ### DESCRIPTION
-    The `Get-TextTranslation` function translates text to another language using the LM-Studio API.
+    The `Get-TextTranslation` function translates text to another language using the LM-Studio 
+    API.
 
 ### PARAMETERS
     -Text <String>
@@ -732,9 +740,9 @@ Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Ob
         Defaults to:
         Required?                    false
         Position?                    3
-        Default value                Translate this partial subtitle text, into the [Language] language, leave in the 
-        same style of writing, and leave the paragraph structure in tact, ommit only the translation no yapping or 
-        chatting.
+        Default value                Translate this partial subtitle text, into the [Language] 
+        language, leave in the same style of writing, and leave the paragraph structure in 
+        tact, ommit only the translation no yapping or chatting.
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -764,14 +772,16 @@ Get-MediaFileAudioTranscription
 
 ### SYNTAX
 ````PowerShell
-Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] [[-LanguageOut] <String>] 
-[-TranslateUsingLMStudioModel <String>] [-SRT] [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] 
-[-TokenTimestampsSumThreshold <Single>] [-SplitOnWord] [-MaxTokensPerSegment <Int32>] [-IgnoreSilence] 
-[-MaxDurationOfSilence <TimeSpan>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] 
-[-TemperatureInc <Single>] [-Prompt <String>] [-SuppressRegex <String>] [-WithProgress] [-AudioContextSize 
-<Int32>] [-DontSuppressBlank] [-MaxDuration <TimeSpan>] [-Offset <TimeSpan>] [-MaxLastTextTokens <Int32>] 
-[-SingleSegmentOnly] [-PrintSpecialTokens] [-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <TimeSpan>] 
-[-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] 
+Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] 
+[[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SRT] [-PassThru] 
+[-UseDesktopAudioCapture] [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>] 
+[-SplitOnWord] [-MaxTokensPerSegment <Int32>] [-IgnoreSilence] [-MaxDurationOfSilence 
+<TimeSpan>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] 
+[-TemperatureInc <Single>] [-Prompt <String>] [-SuppressRegex <String>] [-WithProgress] 
+[-AudioContextSize <Int32>] [-DontSuppressBlank] [-MaxDuration <TimeSpan>] [-Offset 
+<TimeSpan>] [-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] 
+[-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <TimeSpan>] [-LengthPenalty <Single>] 
+[-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] 
 [-NoContext] [-WithBeamSearchSamplingStrategy] [<CommonParameters>]
 ````
 
@@ -1122,8 +1132,8 @@ GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [<CommonParam
 ````
 
 ### DESCRIPTION
-    The `GenerateMasonryLayoutHtml` function creates an HTML file with a masonry layout for displaying images, 
-    including their descriptions and keywords.
+    The `GenerateMasonryLayoutHtml` function creates an HTML file with a masonry layout for 
+    displaying images, including their descriptions and keywords.
 
 ### PARAMETERS
     -Images <Array>
@@ -1205,15 +1215,18 @@ Start-AudioTranscription             --> recordandtranscribe, transcribe
 
 ### SYNTAX
 ````PowerShell
-Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX] [-PassThru] 
-[-UseDesktopAudioCapture] [-WithTokenTimestamps] [[-TokenTimestampsSumThreshold] <Single>] [-SplitOnWord] 
-[[-MaxTokensPerSegment] <Int32>] [-IgnoreSilence] [[-MaxDurationOfSilence] <TimeSpan>] [[-SilenceThreshold] 
-<Int32>] [[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>] [[-TemperatureInc] <Single>] 
-[-WithTranslate] [[-Prompt] <String>] [[-SuppressRegex] <String>] [-WithProgress] [[-AudioContextSize] <Int32>] 
-[-DontSuppressBlank] [[-MaxDuration] <TimeSpan>] [[-Offset] <TimeSpan>] [[-MaxLastTextTokens] <Int32>] 
-[-SingleSegmentOnly] [-PrintSpecialTokens] [[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <TimeSpan>] 
-[[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] [[-NoSpeechThreshold] 
-<Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [<CommonParameters>]
+Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX] 
+[-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] 
+[[-TokenTimestampsSumThreshold] <Single>] [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] 
+[-IgnoreSilence] [[-MaxDurationOfSilence] <TimeSpan>] [[-SilenceThreshold] <Int32>] 
+[[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>] [[-TemperatureInc] 
+<Single>] [-WithTranslate] [[-Prompt] <String>] [[-SuppressRegex] <String>] [-WithProgress] 
+[[-AudioContextSize] <Int32>] [-DontSuppressBlank] [[-MaxDuration] <TimeSpan>] [[-Offset] 
+<TimeSpan>] [[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] 
+[[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <TimeSpan>] [[-LengthPenalty] 
+<Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] 
+[[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] 
+[<CommonParameters>]
 ````
 
 ### DESCRIPTION

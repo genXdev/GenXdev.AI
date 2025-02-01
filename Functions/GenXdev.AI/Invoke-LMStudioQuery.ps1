@@ -69,7 +69,7 @@ function Invoke-LMStudioQuery {
             HelpMessage = "System instructions for LLM"
         )]
         [string] $Instructions = "Your an AI assistent that never tells a lie " +
-            "and always answers truthfully, first comprehensive then consice.",
+        "and always answers truthfully, first comprehensive then consice.",
 
         ################################################################################
         [Parameter(
@@ -122,17 +122,19 @@ function Invoke-LMStudioQuery {
         # get full path expansions for lm studio executables
         $lmStudioPath = Get-ChildItem `
             "${env:LOCALAPPDATA}\LM-Studio\lm studio.exe", `
-            "${env:LOCALAPPDATA}\Programs\LM-Studio\lm studio.exe" `
+            "${env:LOCALAPPDATA}\Programs\LM-Studio\lm studio.exe", `
+            "${env:LOCALAPPDATA}\Programs\LM Studio\lm studio.exe" `
             -File -rec -ErrorAction SilentlyContinue |
-            Select-Object -First 1 |
-            ForEach-Object FullName
+        Select-Object -First 1 |
+        ForEach-Object FullName
 
         $lmsPath = Get-ChildItem `
             "${env:LOCALAPPDATA}\LM-Studio\lms.exe", `
-            "${env:LOCALAPPDATA}\Programs\LM-Studio\lms.exe" `
+            "${env:LOCALAPPDATA}\Programs\LM-Studio\lms.exe", `
+            "${env:LOCALAPPDATA}\Programs\LM Studio\lms.exe" `
             -File -rec -ErrorAction SilentlyContinue |
-            Select-Object -First 1 |
-            ForEach-Object FullName
+        Select-Object -First 1 |
+        ForEach-Object FullName
     }
 
     process {
@@ -191,14 +193,16 @@ function Invoke-LMStudioQuery {
                 # get full path expansions for lm studio executables
                 $lmStudioPath = Get-ChildItem `
                     "${env:LOCALAPPDATA}\LM-Studio\lm studio.exe", `
-                    "${env:LOCALAPPDATA}\Programs\LM-Studio\lm studio.exe" `
+                    "${env:LOCALAPPDATA}\Programs\LM-Studio\lm studio.exe", `
+                    "${env:LOCALAPPDATA}\Programs\LM Studio\lm studio.exe" `
                     -File -rec -ErrorAction SilentlyContinue |
                 Select-Object -First 1 |
                 ForEach-Object FullName
 
                 $lmsPath = Get-ChildItem `
                     "${env:LOCALAPPDATA}\LM-Studio\lms.exe", `
-                    "${env:LOCALAPPDATA}\Programs\LM-Studio\lms.exe" `
+                    "${env:LOCALAPPDATA}\Programs\LM-Studio\lms.exe", `
+                    "${env:LOCALAPPDATA}\Programs\LM Studio\lms.exe" `
                     -File -rec -ErrorAction SilentlyContinue |
                 Select-Object -First 1 |
                 ForEach-Object FullName
@@ -212,17 +216,20 @@ function Invoke-LMStudioQuery {
             }
             if (-not (IsLMStudioRunning)) {
                 Write-Verbose "Starting LM-Studio..";
+
                 # get full path expansions for lm studio executables
                 $lmStudioPath = Get-ChildItem `
                     "${env:LOCALAPPDATA}\LM-Studio\lm studio.exe", `
-                    "${env:LOCALAPPDATA}\Programs\LM-Studio\lm studio.exe" `
+                    "${env:LOCALAPPDATA}\Programs\LM-Studio\lm studio.exe", `
+                    "${env:LOCALAPPDATA}\Programs\LM Studio\lm studio.exe" `
                     -File -rec -ErrorAction SilentlyContinue |
                 Select-Object -First 1 |
                 ForEach-Object FullName
 
                 $lmsPath = Get-ChildItem `
                     "${env:LOCALAPPDATA}\LM-Studio\lms.exe", `
-                    "${env:LOCALAPPDATA}\Programs\LM-Studio\lms.exe" `
+                    "${env:LOCALAPPDATA}\Programs\LM-Studio\lms.exe", `
+                    "${env:LOCALAPPDATA}\Programs\LM Studio\lms.exe" `
                     -File -rec -ErrorAction SilentlyContinue |
                 Select-Object -First 1 |
                 ForEach-Object FullName
