@@ -76,8 +76,8 @@ function Invoke-LMStudioQuery {
             Position = 3,
             Mandatory = $false,
             HelpMessage = "The LM-Studio model to use for generating the response.")]
-        [PSDefaultValue(Value = "llama")]
-        [string]$Model = "llama",
+        [PSDefaultValue(Value = "qwen")]
+        [string]$Model = "qwen",
 
         ################################################################################
         [Parameter(
@@ -257,7 +257,7 @@ function Invoke-LMStudioQuery {
             $ModelList = Get-ModelList
             $foundModel = $ModelList | Where-Object { $PSItem.path -like "*$Model*" } | Select-Object -First 1
             if (-not $foundModel) {
-                $preferredModelList = @("llama", "vicuna", "alpaca", "gpt", "falcon", "mpt", "koala", "wizard", "guanaco", "bloom", "rwkv", "camel", "pythia", "baichuan")
+                $preferredModelList = @("qwen", "vicuna", "alpaca", "gpt", "falcon", "mpt", "koala", "wizard", "guanaco", "bloom", "rwkv", "camel", "pythia", "baichuan")
                 foreach ($preferredModel in $preferredModelList) {
                     $foundModel = $ModelList | Where-Object { $PSItem.path -like "*$preferredModel*" } | Select-Object -First 1
                     if ($foundModel) {
@@ -708,22 +708,29 @@ function Invoke-LMStudioQuery {
             # ansi for cursor up and clear line
             [System.Console]::WriteLine("Quering LM-Studio model '$Model'..");
             $response = Invoke-RestMethod -Uri $apiUrl -Method Post -Body $bytes -Headers $headers -OperationTimeoutSeconds (3600 * 24) -ConnectionTimeoutSeconds (3600 * 24)
+
             [System.Console]::Write("`e[1A`e[2K");
             $response.choices.message | ForEach-Object content | ForEach-Object {
 
+                if (-not $PSItem -is [string]) { return }
+                if ([string]::IsNullOrWhiteSpace($PSItem)) { return }
+
                 if (-not $IncludeThoughts) {
 
-                    $i = $PSItem.IndexOf("<think>")
+                    $i = $PSItem.IndexOf("<think>");
                     if ($i -ge 0) {
-
+                        $i += 7;
                         $i2 = $PSItem.IndexOf("</think>")
                         if ($i2 -ge 0) {
 
-                            $thoughts = $PSItem.Substring($i + 7, $i2 - $i - 7)
-                            $message = $PSItem.Substring(0, $i) + $PSItem.Substring($i2 + 8)
+                            $thoughts = $PSItem.Substring($i, $i2 - $i)
+                            $message = $PSItem.Substring($i2 + 8)
 
-                            Write-Information $thoughts
+                            Write-Host $thoughts -ForegroundColor Yellow
+
                             $message
+
+                            Write-Host "`r`n"
                             return;
                         }
                     }

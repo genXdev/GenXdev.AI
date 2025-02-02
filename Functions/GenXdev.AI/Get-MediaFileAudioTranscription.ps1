@@ -441,7 +441,7 @@ function Get-MediaFileAudioTranscription {
             Mandatory = $false,
             HelpMessage = "The LM Studio model to use for translation."
         )]
-        [string] $TranslateUsingLMStudioModel = "llama",
+        [string] $TranslateUsingLMStudioModel = "qwen",
         ################################################################################
         [Parameter(
             Mandatory = $false,
@@ -547,34 +547,20 @@ function Get-MediaFileAudioTranscription {
         [switch] $WithBeamSearchSamplingStrategy
     )
 
+    begin {
+        $ffmpegPath = (Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1 | ForEach-Object FullName)
+    }
+
     process {
 
         $MaxSrtChars = [System.Math]::Min(200, [System.Math]::Max(20, $MaxSrtChars))
 
-        $lmsPath = (Get-ChildItem "${env:LOCALAPPDATA}\LM-Studio\lms.exe", "${env:LOCALAPPDATA}\Programs\LM Studio\lms.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
-
-        function IsLMStudioInstalled {
-
-            return Test-Path -Path $lmsPath -ErrorAction SilentlyContinue
-        }
-
-        # Function to check if LMStudio is running
-        function IsLMStudioRunning {
-
-            $process = Get-Process -Name "LM Studio" -ErrorAction SilentlyContinue
-            return $null -ne $process
-        }
-
         function IsWinGetInstalled {
-
             Import-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
             $module = Get-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
-
             if ($null -eq $module) {
-
                 return $false
             }
-
             return $true
         }
 
@@ -585,11 +571,9 @@ function Get-MediaFileAudioTranscription {
             Import-Module "Microsoft.WinGet.Client"
         }
 
-        $ffmpegPath = (Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1 | ForEach-Object FullName)
-
         function Installffmpeg {
 
-            if ($null -ne $ffmpegPath) { return }
+            if ([IO.File]::Exists($ffmpegPath)) { return }
 
             if (-not (IsWinGetInstalled)) {
 
@@ -599,7 +583,7 @@ function Get-MediaFileAudioTranscription {
             $ffmpeg = "Gyan.FFmpeg"
             $ffmpegPackage = Get-WinGetPackage -Id $ffmpeg
 
-            if ($null -ne $ffmpegPackage) {
+            if ($null -eq $ffmpegPackage) {
 
                 Write-Verbose "Installing ffmpeg.."
                 try {
@@ -620,12 +604,14 @@ function Get-MediaFileAudioTranscription {
         $outputFile = [IO.Path]::GetTempFileName() + ".wav";
 
         # Construct and execute the ffmpeg command
+        Write-Verbose "Converting the file '$inputFile' to WAV format.."
+
         $job = Start-Job -ArgumentList $ffmpegPath, $inputFile, $outputFile -ScriptBlock {
 
             param($ffmpegPath, $inputFile, $outputFile)
 
+            $ffmpegPath = (Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1 | ForEach-Object FullName)
             try {
-                [System.Console]::WriteLine("Converting the file '$inputFile' to WAV format..");
                 # Convert the file to WAV format
                 & $ffmpegPath -i "$inputFile" -ac 1 -ar 16000 -sample_fmt s16 "$outputFile" -loglevel quiet -y | Out-Null
             }
@@ -653,6 +639,8 @@ function Get-MediaFileAudioTranscription {
 
             return
         }
+
+        Write-Verbose "Transcribing the audio file '$inputFile'.." -Verbose
 
         if (-not $PSBoundParameters.ContainsKey("Language")) {
 

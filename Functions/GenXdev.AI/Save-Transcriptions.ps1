@@ -195,7 +195,7 @@ function Save-Transcriptions {
             Mandatory = $false,
             HelpMessage = "The LM Studio model to use for translation."
         )]
-        [string] $TranslateUsingLMStudioModel = "llama"
+        [string] $TranslateUsingLMStudioModel = "qwen"
         ######################################################################
     )
     begin {

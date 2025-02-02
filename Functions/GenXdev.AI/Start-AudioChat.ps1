@@ -12,7 +12,7 @@ Default value: "Your an AI assistent that never tells a lie and always answers t
 
 .PARAMETER Model
 The LM-Studio model to use for generating the response.
-Default value: "llama"
+Default value: "qwen"
 
 .PARAMETER UseDesktopAudioCapture
 Whether to use desktop audio capture instead of microphone input.
@@ -84,8 +84,8 @@ function Start-AudioChat {
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The LM-Studio model to use for generating the response.")]
-        [PSDefaultValue(Value = "llama")]
-        [string]$Model = "llama",
+        [PSDefaultValue(Value = "qwen")]
+        [string]$Model = "qwen",
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Whether to use desktop audio capture instead of microphone input")]
         [switch] $UseDesktopAudioCapture,

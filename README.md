@@ -103,7 +103,7 @@ Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <Object>] [[-Model] <Str
         The LM-Studio model to use for generating the response.
         Required?                    false
         Position?                    3
-        Default value                llama
+        Default value                qwen
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -167,7 +167,7 @@ Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-Lang
     -TranslateUsingLMStudioModel <String>
         Required?                    false
         Position?                    named
-        Default value                llama
+        Default value                qwen
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -287,7 +287,7 @@ Invoke-LMStudioQuery [-Query] <String> [[-Attachments] <String[]>] [[-Instructio
         The LM-Studio model to use.
         Required?                    false
         Position?                    4
-        Default value                llama
+        Default value                qwen
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -541,10 +541,10 @@ Start-AudioChat [[-Instructions] <String>] [[-Model] <String>] [-UseDesktopAudio
         Accept wildcard characters?  false
     -Model <String>
         The LM-Studio model to use for generating the response.
-        Default value: "llama"
+        Default value: "qwen"
         Required?                    false
         Position?                    2
-        Default value                llama
+        Default value                qwen
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -750,7 +750,7 @@ Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Ob
         The LM-Studio model to use for generating the response.
         Required?                    false
         Position?                    4
-        Default value                llama
+        Default value                qwen
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -817,7 +817,7 @@ Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>]
         The LM Studio model to use for translation.
         Required?                    false
         Position?                    named
-        Default value                llama
+        Default value                qwen
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false

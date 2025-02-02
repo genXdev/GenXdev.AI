@@ -56,8 +56,8 @@ function Add-EmoticonsToText {
             Mandatory = $false,
             HelpMessage = "The LM-Studio model to use for generating the response."
         )]
-        [PSDefaultValue(Value = "llama")]
-        [string]$Model = "llama",
+        [PSDefaultValue(Value = "qwen")]
+        [string]$Model = "qwen",
         ################################################################################
         [Parameter(
             Position = 3,
