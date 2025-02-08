@@ -69,7 +69,7 @@ function Add-EmoticonsToText {
 
     begin {
         [System.Text.StringBuilder] $allResults = New-Object System.Text.StringBuilder;
-        $Instructions = "Add funny or expressive emojii to the text. Don't change the text otherwise.`r`n$Instructions `r`nRespond only in json format, like: {`"response`":`"Hello, how are you? 😊`"}"
+        $Instructions = "Add funny or expressive emojii to the text provided as content of the user-role message. Don't change the text otherwise.`r`n$Instructions `r`nRespond only in json format, like: {`"response`":`"Hello, how are you? 😊`"}"
 
         [Console]::Write("emojifying..")
     }

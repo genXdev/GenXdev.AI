@@ -16,11 +16,11 @@ The file path of the image to send with the query.
 .PARAMETER Temperature
 The temperature parameter for controlling the randomness of the response.
 
-.PARAMETER Max_token
+.PARAMETER MaxToken
 The maximum number of tokens to generate in the response.
 
 .EXAMPLE
-Invoke-QueryImageContent -Query "Analyze this image." -ImagePath "C:\path\to\image.jpg" -Temperature 0.01 -Max_token 100
+Invoke-QueryImageContent -Query "Analyze this image." -ImagePath "C:\path\to\image.jpg" -Temperature 0.01 -MaxToken 100
 
 .EXAMPLE
 Invoke-QueryImageContent "Analyze this image." "C:\path\to\image.jpg"
@@ -63,7 +63,7 @@ function Invoke-QueryImageContent {
             Position = 3,
             HelpMessage = "The maximum number of tokens to generate in the response."
         )]
-        [int]$Max_token = -1
+        [int]$MaxToken = - 1
     )
 
     begin {
@@ -79,7 +79,7 @@ function Invoke-QueryImageContent {
             -Instructions "You are an AI assistant that analyzes images." `
             -Attachments $ImagePath `
             -Temperature $Temperature `
-            -Max_token $Max_token
+            -MaxToken $MaxToken
     }
 
     end {

@@ -6,7 +6,7 @@
   RootModule           = 'GenXdev.AI.psm1'
 
   # Version number of this module.
-  ModuleVersion        = '1.102.2025'
+  ModuleVersion        = '1.104.2025'
   # Supported PSEditions
   # CompatiblePSEditions = @()
 
@@ -38,7 +38,7 @@
   # ProcessorArchitecture = ''
 
   # Modules that must be imported into the global environment prior to importing this module
-  RequiredModules      = @(@{ModuleName = 'GenXdev.Data'; ModuleVersion = '1.102.2025' },@{ModuleName = 'GenXdev.Helpers'; ModuleVersion = '1.102.2025' }, @{ModuleName = 'GenXdev.Webbrowser'; ModuleVersion = '1.102.2025' }, @{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.102.2025' }, @{ModuleName = 'GenXdev.Webbrowser'; ModuleVersion = '1.102.2025' }, @{ModuleName = 'GenXdev.Console'; ModuleVersion = '1.102.2025' }, @{ModuleName = 'GenXdev.FileSystem'; ModuleVersion = '1.102.2025' });
+  RequiredModules      = @(@{ModuleName = 'GenXdev.Data'; ModuleVersion = '1.104.2025' }, @{ModuleName = 'GenXdev.Helpers'; ModuleVersion = '1.104.2025' }, @{ModuleName = 'GenXdev.Webbrowser'; ModuleVersion = '1.104.2025' }, @{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.104.2025' }, @{ModuleName = 'GenXdev.Console'; ModuleVersion = '1.104.2025' }, @{ModuleName = 'GenXdev.FileSystem'; ModuleVersion = '1.104.2025' });
 
   # Assemblies that must be loaded prior to importing this module
   RequiredAssemblies   = @()
@@ -53,7 +53,7 @@
   # FormatsToProcess = @()
 
   # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-  # NestedModules = @()
+  NestedModules        = @("GenXdev.AI.LMStudio.psm1")
 
   # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
   FunctionsToExport    = '*' # @("*")
@@ -78,6 +78,7 @@
 
 
   ".\\Functions\\GenXdev.AI\\Add-EmoticonsToText.ps1",
+  ".\\Functions\\GenXdev.AI\\Approve-NewTextFileContent.ps1",
   ".\\Functions\\GenXdev.AI\\AssureGithubCLIInstalled.ps1",
   ".\\Functions\\GenXdev.AI\\AssureWinMergeInstalled.ps1",
   ".\\Functions\\GenXdev.AI\\GenerateMasonryLayoutHtml.ps1",
@@ -89,16 +90,41 @@
   ".\\Functions\\GenXdev.AI\\Invoke-AIPowershellCommand.ps1",
   ".\\Functions\\GenXdev.AI\\Invoke-ImageKeywordScan.ps1",
   ".\\Functions\\GenXdev.AI\\Invoke-ImageKeywordUpdate.ps1",
-  ".\\Functions\\GenXdev.AI\\Invoke-LMStudioQuery.ps1",
   ".\\Functions\\GenXdev.AI\\Invoke-QueryImageContent.ps1",
+  ".\\Functions\\GenXdev.AI\\Invoke-WinMerge.ps1",
+  ".\\Functions\\GenXdev.AI\\New-AudioLLMChat.ps1",
+  ".\\Functions\\GenXdev.AI\\New-TextLLMChat.ps1",
   ".\\Functions\\GenXdev.AI\\Save-Transcriptions.ps1",
-  ".\\Functions\\GenXdev.AI\\Start-AudioChat.ps1",
+  ".\\Functions\\GenXdev.AI\\Set-GenXdevAICommandNotFoundActions.ps1",
   ".\\Functions\\GenXdev.AI\\Start-AudioTranscription.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\AssureLMStudio.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\Convert-DotNetTypeToLLMType.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\ConvertTo-LMStudioFunctionDefinition.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\Get-LMStudioLoadedModelList.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\Get-LMStudioModelList.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\Get-LMStudioPaths.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\Get-LMStudioWindow.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\Initialize-LMStudioModel.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\Install-LMStudioApplication.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\Invoke-LMStudioQuery.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\Start-LMStudioApplication.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\Test-LMStudioInstallation.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\Test-LMStudioProcess.ps1",
   ".\\Tests\\GenXdev.AI\\Add-EmoticonsToText.Tests.ps1",
   ".\\Tests\\GenXdev.AI\\escalated-quickly.wav",
   ".\\Tests\\GenXdev.AI\\Get-TextTranslation.Tests.ps1",
   ".\\Tests\\GenXdev.AI\\Start-AudioTranscription.Tests.ps1",
+  ".\\Tests\\GenXdev.AI.LMStudio\\ConvertTo-LMStudioFunctionDefinition.Tests.ps1",
+  ".\\Tests\\GenXdev.AI.LMStudio\\Get-LMStudioLoadedModelList.Tests.ps1",
+  ".\\Tests\\GenXdev.AI.LMStudio\\Get-LMStudioModelList.Tests.ps1",
+  ".\\Tests\\GenXdev.AI.LMStudio\\Get-LMStudioPaths.Tests.ps1",
+  ".\\Tests\\GenXdev.AI.LMStudio\\Initialize-LMStudioModel.Tests.ps1",
+  ".\\Tests\\GenXdev.AI.LMStudio\\Invoke-LMStudioQuery.Tests.ps1",
+  ".\\Tests\\GenXdev.AI.LMStudio\\Start-LMStudioApplication.Tests.ps1",
+  ".\\Tests\\GenXdev.AI.LMStudio\\Test-LMStudioInstallation.Tests.ps1",
+  ".\\Tests\\GenXdev.AI.LMStudio\\Test-LMStudioProcess.Tests.ps1",
   ".\\Tests\\TestResults.xml",
+  ".\\GenXdev.AI.LMStudio.psm1",
   ".\\GenXdev.AI.psd1",
   ".\\GenXdev.AI.psm1",
   ".\\LICENSE",
