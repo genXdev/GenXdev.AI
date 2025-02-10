@@ -16,7 +16,13 @@ function global:Invoke-ReverseText {
             Mandatory = $true,
             HelpMessage = "The text to reverse"
         )]
-        [string]$Text
+        [string]$Text,
+
+        [Parameter(
+            Mandatory = $true,
+            HelpMessage = "The text to reverse"
+        )]
+        [string]$Delimiter = "+"
     )
 
     $result = [System.Text.StringBuilder]::new()
@@ -24,10 +30,10 @@ function global:Invoke-ReverseText {
     # reverse the text
     for ($i = $Text.Length - 1; $i -ge 0; $i--) {
 
-        $null = $result.Append($Text[$i] + "_")
+        $null = $result.Append($Text[$i] + $Delimiter)
     }
 
-    return "$($result.ToString())".TrimEnd("_")
+    return "$($result.ToString())".TrimEnd($Delimiter)
 }
 
 ################################################################################
@@ -73,7 +79,7 @@ Describe "Invoke-LMStudioQuery tests" {
             -Instructions "You are a helpful assistant" `
             -Query "Get the magic number using the 'calculateMagicNumber' function, for parameter a use 42 and for b use 9234" `
             -Functions $testFunctions `
-            -NoConfirmationFor calculateMagicNumber `
+            -NoConfirmationToolFunctionNames calculateMagicNumber `
             -MaxToken 32768
 
         "$result".Replace(",", "") | Should -BeLike "*578844*"
@@ -116,7 +122,7 @@ Describe "Invoke-LMStudioQuery tests" {
             -Instructions "You are a helpful assistant" `
             -Query "Get the magic number using the 'calculateMagicNumber' function, for parameter a use 5124 and for b use 134" `
             -Functions $testFunctions `
-            -NoConfirmationFor calculateMagicNumber `
+            -NoConfirmationToolFunctionNames calculateMagicNumber `
             -MaxToken 8192
 
         "$result".Replace(",", "") | Should -BeLike "*823937*"
@@ -126,33 +132,47 @@ Describe "Invoke-LMStudioQuery tests" {
 
     It "Should test the the callback functions on model qwen" {
 
+        $NoConfirmationToolFunctionNames = @("Invoke-ReverseText")
+
+        [System.Collections.Generic.List[GenXdev.Helpers.ExposedCmdletDefinition]] $ExposedCmdLets = New-Object "System.Collections.Generic.List[GenXdev.Helpers.ExposedCmdletDefinition]"
+        $newItem = New-Object "GenXdev.Helpers.ExposedCmdletDefinition";
+        $newItem.Name = "Invoke-ReverseText";
+        $newItem.AllowedParams = @("Text", "Delimiter");
+        $newItem.Confirm = $false;
+        $null = $ExposedCmdLets.Add($newItem);
+
         # execute function with test data
         $result = Invoke-LMStudioQuery `
             -Model "qwen2.5-14b-instruct" `
             -Instructions "You are a helpful assistant" `
-            -Query "Reverse the text using the 'Invoke-ReverseText' tool function, for parameter 'Text' use the value 'Hello world'" `
-            -ExposedCmdLets (Get-Command Invoke-ReverseText) `
-            -NoConfirmationFor Invoke-ReverseText `
+            -Query "Reverse the text using the 'Invoke-ReverseText' tool function, for parameter 'Text' use the value 'Hello world' for parameter 'Delimiter' use '_'"  `
+            -ExposedCmdLets $ExposedCmdLets `
             -MaxToken 32768
 
-        "$result".Replace(",", "") | Should -BeLike "*d_l_r_o_w_ _o_l_l_e_H*"
+        "$result" | Should -BeLike "*d_l_r_o_w_ _o_l_l_e_H*"
 
         Write-Verbose "Result: $result"
     }
 
     It "Should test the the callback functions on model llama-3-groq-8b-tool-use" {
 
+        [System.Collections.Generic.List[GenXdev.Helpers.ExposedCmdletDefinition]] $ExposedCmdLets = New-Object "System.Collections.Generic.List[GenXdev.Helpers.ExposedCmdletDefinition]"
+        $newItem = New-Object "GenXdev.Helpers.ExposedCmdletDefinition";
+        $newItem.Name = "Invoke-ReverseText";
+        $newItem.AllowedParams = @("Text", "Delimiter");
+        $newItem.Confirm = $false
+        $null = $ExposedCmdLets.Add($newItem);
+
         # execute function with test data
         $result = Invoke-LMStudioQuery `
             -Verbose `
             -Model "llama-3-groq-8b-tool-use" `
             -Instructions "You are a helpful assistant" `
-            -Query "Reverse the text using the 'Invoke-ReverseText' tool function, for parameter 'Text' use the value 'Welcome back'" `
-            -ExposedCmdLets (Get-Command Invoke-ReverseText) `
-            -NoConfirmationFor Invoke-ReverseText `
-            -MaxToken 100
+            -Query "Reverse the text using the 'Invoke-ReverseText' tool function, for parameter 'Delimiter' use '=' for parameter 'Text' use the value 'Welcome back'" `
+            -ExposedCmdLets $ExposedCmdLets `
+            -MaxToken 8192
 
-        "$result".Replace(",", "") | Should -BeLike "*k_c_a_b_ _e_m_o_c_l_e_W*"
+        "$result" | Should -BeLike "*k=c=a=b= =e=m=o=c=l=e=W*"
 
         Write-Verbose "Result: $result"
     }

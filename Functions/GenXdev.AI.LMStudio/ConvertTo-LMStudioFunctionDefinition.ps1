@@ -16,7 +16,7 @@ Get-Command Get-Process | ConvertTo-LMStudioFunctionDefinition
 function ConvertTo-LMStudioFunctionDefinition {
 
     [CmdletBinding()]
-    [OutputType([System.Collections.Generic.List[object]])]
+    [OutputType([System.Collections.Generic.List[hashtable]])]
     param(
         ########################################################################
         [Parameter(
@@ -25,29 +25,13 @@ function ConvertTo-LMStudioFunctionDefinition {
             ValueFromPipeline = $true,
             HelpMessage = "PowerShell commands to convert to tool functions"
         )]
-        [System.Management.Automation.CommandInfo[]]
-        $ExposedCmdLets,
-        ########################################################################
-        [Parameter(
-            Position = 1,
-            Mandatory = $false,
-            HelpMessage = "Array of ToolFunction names that don't require user confirmation"
-        )]
-        [string[]] $NoConfirmationFor = @(),
-        ########################################################################
-        [Parameter(
-            Position = 1,
-            Mandatory = $false,
-            HelpMessage = "Add full parameter information"
-        )]
-        [switch] $Full
-
+        [GenXdev.Helpers.ExposedCmdletDefinition[]] $ExposedCmdLets = @()
     )
 
     begin {
 
         # create result collection to store function definitions
-        $result = [System.Collections.Generic.List[object]]::new()
+        [System.Collections.Generic.List[hashtable]] $result = New-Object "System.Collections.Generic.List[System.Collections.Hashtable]"
 
         Write-Verbose "Starting conversion of PowerShell functions to LMStudio format"
     }
@@ -58,97 +42,80 @@ function ConvertTo-LMStudioFunctionDefinition {
 
             foreach ($currentCommand in $ExposedCmdLets) {
 
+                $commandInfo = Get-Command -Name ($currentCommand.Name) -ErrorAction SilentlyContinue | Select-Object -First 1
+
+                if ($null -eq $commandInfo) {
+
+                    Write-Warning "Command $($currentCommand.Name) not found. Skipping."
+                    continue
+                }
+
+                $allowedParams = @($currentCommand.AllowedParams);
+
                 Write-Verbose "Processing command: $($currentCommand.Name)"
 
                 # Handle both function and cmdlet types
-                $commandInfo = $currentCommand -as [System.Management.Automation.CommandInfo]
                 $callback = $commandInfo
 
-                $commandInfo.ParameterSets | ForEach-Object {
+                # initialize collections for parameter processing
+                [System.Collections.Generic.List[string]]$requiredParams = @()
+                $propertiesTable = @{}
 
-                    # initialize collections for parameter processing
-                    [System.Collections.Generic.List[string]]$requiredParams = @()
-                    $parameterSet = $_
-                    $propertiesTable = @{}
+                @($commandInfo.Parameters.GetEnumerator()).Value | ForEach-Object {
+                    $parameter = $_
 
-                    # process each parameter in the set
-                    $parameterSet.Parameters | ForEach-Object {
+                    [System.Management.Automation.ParameterMetadata]$parameter = $_
 
-                        [System.Management.Automation.CommandParameterInfo]$parameter = $_
+                    $found = $false
+                    $typeStr = ""
+                    foreach ($allowedParam in $allowedParams) {
 
-                        # track required parameters
-                        if ($parameter.IsMandatory) {
-                            if ($requiredParams.IndexOf($parameter.Name) -eq -1) {
-                                $null = $requiredParams.Add($parameter.Name)
+                        $parts = "$allowedParam".Split("=");
+                        $name = $parts[0].Trim()
+
+                        if ($parameter.Name -like $name) {
+
+                            $found = $true
+                            if ($parts.Length -gt 1) {
+
+                                $typeStr = $parts[1].Trim()
                             }
-                        }
-                        else {
-                            # Skip common PowerShell parameters
-                            if ($_.Name -in @('Verbose', 'Debug', 'ErrorAction', 'WarningAction', 'InformationAction', 'ErrorVariable', 'WarningVariable', 'InformationVariable', "ProgressAction", 'OutVariable', 'OutBuffer', 'PipelineVariable', 'WhatIf', 'Confirm')) {
-
-                                return;
-                            }
-                        }
-
-                        # build parameter properties
-                        $helpMessage = $null;
-                        if ($Full) {
-                            if ([string]::IsNullOrWhiteSpace($helpMessage)) {
-
-                                try {
-                                    $moduleName = $commandInfo.ModuleName
-                                    if ($moduleName -like "GenXdev.*") {
-
-                                        $moduleName = (($commandInfo.ModuleName.Split(".") | Select-Object -First 2) -Join ".")
-                                    }
-
-                                    if ([string]::IsNullOrWhiteSpace($moduleName)) {
-
-                                        $moduleName = ""
-                                    }
-                                    else {
-
-                                        $moduleName = "$moduleName\"
-                                    }
-
-                                    $help = (Get-Help -Name "$ModuleName$($commandInfo.Name)" -Parameter "$($parameter.name)")
-                                    $paramHelp = $help ? "$(($help.description | Out-String).trim())" : $null
-                                    if (-not [string]::IsNullOrWhiteSpace($paramHelp)) {
-
-                                        $helpMessage = $paramHelp
-                                    }
-                                }
-                                catch {
-
-                                    $helpMessage = $null
-                                    Write-Verbose "Could not get help message for parameter $($parameter.Name)"
-                                }
-                            }
-                        }
-
-                        if ([string]::IsNullOrWhiteSpace($helpMessage )) {
-
-                            $propertiesTable."$($parameter.Name)" = @{
-
-                                type = Convert-DotNetTypeToLLMType -DotNetType $parameter.ParameterType.FullName
-                            }
-                        }
-                        else {
-                            $propertiesTable."$($parameter.Name)" = @{
-
-                                type        = Convert-DotNetTypeToLLMType -DotNetType $parameter.ParameterType.FullName
-                                description = $helpMessage
-                            }
+                            break
                         }
                     }
 
-                    # get command help message
-                    $functionHelpMessage = $commandInfo.Description
+                    if (-not $found) {
 
-                    if ([string]::IsNullOrWhiteSpace($functionHelpMessage)) {
+                        return
+                    }
+
+                    $returnType = "";
+                    $powershell_returnType = "";
+
+                    # track required parameters
+                    $parameter.Attributes | ForEach-Object {
+                        if ($_.TypeId -eq "System.Management.Automation.ParameterAttribute") {
+
+                            if ($_.Mandatory) {
+
+                                $null = $requiredParams.Add($parameter.Name)
+                            }
+                        }
+                        if ($_.TypeId -eq "System.Management.Automation.OutputTypeAttribute") {
+
+                            [System.Management.Automation.OutputTypeAttribute] $p = $_
+
+                            $powershell_returnType = $p.Type
+                            $returnType = Convert-DotNetTypeToLLMType -DotNetType $powershell_returnType.FullName
+                        }
+                    }
+
+                    # build parameter properties
+                    $helpMessage = $null;
+                    if ([string]::IsNullOrWhiteSpace($helpMessage)) {
+
                         try {
-                            $moduleNAme = $commandInfo.ModuleName
-
+                            $moduleName = $commandInfo.ModuleName
                             if ($moduleName -like "GenXdev.*") {
 
                                 $moduleName = (($commandInfo.ModuleName.Split(".") | Select-Object -First 2) -Join ".")
@@ -159,34 +126,110 @@ function ConvertTo-LMStudioFunctionDefinition {
                                 $moduleName = ""
                             }
                             else {
+
                                 $moduleName = "$moduleName\"
                             }
 
-                            $functionHelpMessage = "$((Get-Help ("$ModuleName$($commandInfo.Name)")).description.Text)"
+                            $help = (Get-Help -Name "$ModuleName$($commandInfo.Name)" -Parameter "$($parameter.name)")
+                            $paramHelp = $help ? "$(($help.description | Out-String).trim())" : $null
+                            if (-not [string]::IsNullOrWhiteSpace($paramHelp)) {
+
+                                $helpMessage = $paramHelp
+                            }
                         }
                         catch {
-                            $functionHelpMessage = "No description available."
+
+                            $helpMessage = $null
+                            Write-Verbose "Could not get help message for parameter $($parameter.Name)"
                         }
                     }
 
-                    # build and add function definition
-                    $null = $result.Add(
-                        @{
-                            type     = "function"
-                            function = @{
-                                name                       = $commandInfo.Name
-                                description                = $functionHelpMessage
-                                user_confirmation_required = -not ($NoConfirmationFor -contains $commandInfo.Name)
-                                parameters                 = @{
-                                    type       = 'object'
-                                    properties = $propertiesTable
-                                    required   = $requiredParams
-                                }
-                                callback                   = $callback
-                            }
+                    if ([string]::IsNullOrWhiteSpace($helpMessage )) {
+
+                        $propertiesTable."$($parameter.Name)" = @{
+
+                            type            = [string]::IsNullOrWhiteSpace($typeStr) ? (Convert-DotNetTypeToLLMType -DotNetType $parameter.ParameterType.FullName) : $typeStr
+                            powershell_type = $parameter.ParameterType.FullName
                         }
-                    )
+                    }
+                    else {
+                        $propertiesTable."$($parameter.Name)" = @{
+
+                            type            = [string]::IsNullOrWhiteSpace($typeStr) ? (Convert-DotNetTypeToLLMType -DotNetType $parameter.ParameterType.FullName) : $typeStr
+                            powershell_type = $parameter.ParameterType.FullName
+                            description     = $helpMessage
+                        }
+                    }
                 }
+
+                # get command help message
+                $functionHelpMessage = $commandInfo.Description
+
+                $moduleName = $commandInfo.ModuleName
+
+                if ($moduleName -like "GenXdev.*") {
+
+                    $moduleName = (($commandInfo.ModuleName.Split(".") | Select-Object -First 2) -Join ".")
+                }
+
+                if ([string]::IsNullOrWhiteSpace($moduleName)) {
+
+                    $moduleName = ""
+                }
+                else {
+                    $moduleName = "$moduleName\"
+                }
+                if ([string]::IsNullOrWhiteSpace($functionHelpMessage)) {
+                    try {
+
+                        $functionHelpMessage = "$((Get-Help ("$ModuleName$($commandInfo.Name)")).description.Text)"
+                    }
+                    catch {
+                        $functionHelpMessage = "No description available."
+                    }
+                }
+
+                # build and add function definition
+                $name = $commandInfo.Name
+                $found = $false;
+                $allcmdLetNames = @($name.ToLowerInvariant(), ($moduleName.ToLowerInvariant() + $name.ToLowerInvariant()))
+                $NoConfirmationToolFunctionNames = @($ExposedCmdLets | Where-Object -Property Confirm -EQ $false | Select-Object -ExpandProperty Name)
+
+                foreach ($AllowedCmdLet in $NoConfirmationToolFunctionNames) {
+
+                    if ($AllowedCmdLet.ToLowerInvariant() -in $allcmdLetNames) {
+
+                        $found = $true
+                        break;
+                    }
+                }
+
+                $newFunctionDefinition = @{
+                    type     = "function"
+                    function = @{
+                        name                       = "$name"
+                        description                = "$functionHelpMessage"
+                        user_confirmation_required = (-not $found)
+                        parameters                 = @{
+                            type       = 'object'
+                            properties = $propertiesTable
+                            required   = $requiredParams
+                        }
+                        callback                   = $callback
+                    }
+                }
+
+                if (-not [string]::IsNullOrWhiteSpace($powershell_returnType)) {
+
+                    $newFunctionDefinition.function.powershell_returnType = $powershell_returnType
+                }
+
+                if (-not [string]::IsNullOrWhiteSpace($returnType)) {
+
+                    $newFunctionDefinition.function.returnType = $returnType
+                }
+
+                $null = $result.Add($newFunctionDefinition)
             }
         }
     }
@@ -194,7 +237,7 @@ function ConvertTo-LMStudioFunctionDefinition {
     end {
 
         Write-Verbose "Completed conversion with $($result.Count) function definitions"
-        return $result
+        Write-Output $result
     }
 }
 ################################################################################

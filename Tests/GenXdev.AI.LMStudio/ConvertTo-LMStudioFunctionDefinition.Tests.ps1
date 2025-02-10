@@ -28,7 +28,16 @@ Describe "ConvertTo-LMStudioFunctionDefinition" {
 
     It "Should invoke function properly" {
 
-        $functionDefinition = (ConvertTo-LMStudioFunctionDefinition -ExposedCmdLets (Get-Command -name Get-ChildItem))[0].function
+        $converted = ConvertTo-LMStudioFunctionDefinition `
+            -ExposedCmdLets @(
+            @{
+                Name          = "Get-ChildItem"
+                AllowedParams = @("Path=string")
+                Confirm       = $false
+            }
+        )
+
+        $functionDefinition = $converted.function
 
         $functionDefinition | Should -Not -Be $null
 
@@ -37,7 +46,7 @@ Describe "ConvertTo-LMStudioFunctionDefinition" {
         $callback | Should -BeOfType [System.Management.Automation.CommandInfo]
 
         # Convert dictionary to proper parameter hashtable
-        $params = @{"Path" = "b:\" }
+        $params = @{"Path" = "B:\" }
 
         Write-Verbose "Final parameter hashtable: $($params | ConvertTo-Json)"
 
@@ -45,5 +54,4 @@ Describe "ConvertTo-LMStudioFunctionDefinition" {
         $callbackResult = & $callback @params | ConvertTo-Json -Compress
         $callbackResult | Should -BeLike "*Movies*"
     }
-
 }

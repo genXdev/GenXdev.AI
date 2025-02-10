@@ -119,17 +119,9 @@ function New-AudioLLMChat {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of PowerShell cmdlet or function references " +
-            "to use as tools, use Get-Command to obtain such references"        )]
-        [System.Management.Automation.CommandInfo[]]
+            HelpMessage = "Array of PowerShell command definitions to use as tools")]
+        [GenXdev.Helpers.ExposedCmdletDefinition[]]
         $ExposedCmdLets = @(),
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Array of ToolFunction names that don't require user confirmation"
-        )]
-        [Alias("NoConfirmationFor")]
-        [string[]] $NoConfirmationToolFunctionNames = @(),
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -353,7 +345,12 @@ function New-AudioLLMChat {
         [switch] $WithBeamSearchSamplingStrategy,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Whether to suppress reconized text in the output")]
-        [switch] $OnlyResponses
+        [switch] $OnlyResponses,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Don't store session in session cache")]
+        [switch] $NoSessionCaching
     )
 
     begin {
@@ -376,13 +373,13 @@ function New-AudioLLMChat {
 
                 # copy matching parameters from bound parameters
                 $null = $help.ParameterSets.Parameter.Name |
-                    Select-Object -Unique |
-                    ForEach-Object {
-                        if ($PSBoundParameters.ContainsKey($_)) {
-                            $startAudioTranscriptionParams[$_] = `
-                                $PSBoundParameters[$_]
-                        }
+                Select-Object -Unique |
+                ForEach-Object {
+                    if ($PSBoundParameters.ContainsKey($_)) {
+                        $startAudioTranscriptionParams[$_] = `
+                            $PSBoundParameters[$_]
                     }
+                }
 
                 # configure audio parameters
                 $startAudioTranscriptionParams.VOX = -not $NoVOX
@@ -423,16 +420,11 @@ function New-AudioLLMChat {
 
                 # copy matching parameters
                 $null = $help.ParameterSets.Parameter.Name |
-                    Select-Object -Unique |
-                    ForEach-Object {
-                        if ($PSBoundParameters.ContainsKey($_)) {
-                            $invokeLMStudioParams[$_] = $PSBoundParameters[$_]
-                        }
+                Select-Object -Unique |
+                ForEach-Object {
+                    if ($PSBoundParameters.ContainsKey($_)) {
+                        $invokeLMStudioParams[$_] = $PSBoundParameters[$_]
                     }
-
-                # display question with blue color
-                if (-not $OnlyResponses) {
-                    Write-Host ">> $question" -ForegroundColor Blue
                 }
 
                 # invoke LM Studio
@@ -446,6 +438,7 @@ function New-AudioLLMChat {
 
                 # display response with green color
                 if ($OnlyResponses) {
+
                     Write-Host "$answer" -ForegroundColor Green
                 }
                 else {

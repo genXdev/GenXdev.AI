@@ -173,30 +173,33 @@ function Initialize-LMStudioModel {
 
         # load model if not already active
         if ($null -eq $modelLoaded) {
+
             Write-Verbose "Loading model..."
+            $params = [System.Collections.Generic.List[string]]::new()
+            $params.Add("load")
+            $params.Add($foundModel.path)
+            $params.Add("--exact")
 
-            $success = Start-Job -ArgumentList @($paths, $foundModel.path,
-                $TTLSeconds, $MaxToken) -ScriptBlock {
-                param($paths, $modelPath, $ttl, $maxTokens)
+            if ($TTLSeconds -gt 0) {
+                $null = $params.Add("--ttl")
+                $null = $params.Add($TTLSeconds)
+            }
 
-                $params = [System.Collections.Generic.List[string]]::new()
-                $params.Add("load")
-                $params.Add($modelPath)
-                $params.Add("--exact")
+            if (Get-HasCapableGpu) {
 
-                if ($ttl -gt 0) {
-                    $params.Add("--ttl")
-                    $params.Add($ttl)
-                }
+                $null = $params.Add("--gpu")
+            }
 
-                if (Get-HasCapableGpu) {
-                    $params.Add("--gpu")
-                }
+            if ($maxToken -gt 0) {
 
-                if ($maxTokens -gt 0) {
-                    $params.Add("--context-length")
-                    $params.Add($maxTokens)
-                }
+                $null = $params.Add("--context-length")
+                $null = $params.Add($maxToken)
+            }
+
+            Write-Verbose "Loading model: $modelPath with parameters: $($params|ConvertTo-Json -Compress)"
+
+            $success = Start-Job -ArgumentList @($paths, $params) -ScriptBlock {
+                param($paths, $params)
 
                 Start-Process $paths.LMSExe -ArgumentList $params -Wait -NoNewWindow
                 $LASTEXITCODE -eq 0

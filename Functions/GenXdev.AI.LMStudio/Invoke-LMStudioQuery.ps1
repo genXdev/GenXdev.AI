@@ -144,21 +144,19 @@ function Invoke-LMStudioQuery {
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Array of function definitions")]
-        [PSCustomObject[]] $Functions = @(),
+        [hashtable[]] $Functions = @(),
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of PowerShell cmdlet or function references " +
-            "to use as tools, use Get-Command to obtain such references"        )]
-        [System.Management.Automation.CommandInfo[]]
+            HelpMessage = "Array of PowerShell command definitions to use as tools")]
+        [GenXdev.Helpers.ExposedCmdletDefinition[]]
         $ExposedCmdLets = @(),
         ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Array of ToolFunction names that don't require user confirmation"
-        )]
+        # Array of command names that don't require confirmation
+        [Parameter(Mandatory = $false)]
+        [string[]]
         [Alias("NoConfirmationFor")]
-        [string[]] $NoConfirmationToolFunctionNames = @(),
+        $NoConfirmationToolFunctionNames = @(),
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -193,7 +191,12 @@ function Invoke-LMStudioQuery {
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Used internally, to only invoke chat mode once after the llm invocation")]
-        [switch] $ChatOnce
+        [switch] $ChatOnce,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Don't store session in session cache")]
+        [switch] $NoSessionCaching
     )
 
     begin {
@@ -238,8 +241,13 @@ function Invoke-LMStudioQuery {
         $initializationParams = @{
             Model                 = $Model
             ModelLMSGetIdentifier = $ModelLMSGetIdentifier
-            MaxToken              = $MaxToken
         }
+
+        if ($MaxToken -gt 0) {
+
+            $initializationParams.MaxToken = $MaxToken
+        }
+
         if ($PSBoundParameters.ContainsKey("TTLSeconds")) {
 
             $initializationParams.TTLSeconds = $TTLSeconds
@@ -257,32 +265,55 @@ function Invoke-LMStudioQuery {
         $Model = $modelInfo.identifier
 
         # convert tool functions if needed
+        # or take from global cache if available and user wants to continue last conversation
         if ($ContinueLast -and (-not ($ExposedCmdLets -and $ExposedCmdLets.Count -gt 0)) -and
-            $Global:LMStudioGlobalExposedCmdlets -and
-                ($Global:LMStudioGlobalExposedCmdlets.Count -gt 0)) {
+            $Global:LMStudioGlobalExposedCmdlets -and ($Global:LMStudioGlobalExposedCmdlets.Count -gt 0)) {
 
+            # take from cache
             $ExposedCmdLets = $Global:LMStudioGlobalExposedCmdlets
         }
 
+        # user has provided exposed cmdlet definitions?
         if ($ExposedCmdLets -and $ExposedCmdLets.Count -gt 0) {
 
-            $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
+            # set global cache
+            if (-not $NoSessionCaching) {
+
+                $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
+            }
+
             Write-Verbose "Converting tool functions to LM Studio format"
+
+            # convert them
             $functions = ConvertTo-LMStudioFunctionDefinition `
-                -ExposedCmdLets $ExposedCmdLets `
-                -NoConfirmationFor $NoConfirmationToolFunctionNames
+                -ExposedCmdLets $ExposedCmdLets
         }
 
-        $Global:LMStudioChatHistory = [System.Collections.Generic.List[PSCustomObject]] ((($null -ne $Global:LMStudioChatHistory) -and ($ContinueLast)) ? $Global:LMStudioChatHistory : @())
+        $messages = [System.Collections.Generic.List[PSCustomObject]] (
 
-        # initialize message array for conversation
-        $messages = $Global:LMStudioChatHistory;
+            # from cache if available and user wants to continue last conversation?
+            (($null -ne $Global:LMStudioChatHistory) -and ($ContinueLast)) ?
 
+            # take from cache
+            $Global:LMStudioChatHistory :
+
+            # otherwise, create new
+            @()
+        )
+
+        if (-not $NoSessionCaching) {
+
+            # initialize message array for conversation
+            $Global:LMStudioChatHistory = $messages
+        }
+
+        # add system instructions if provided
         $newMessage = @{
             role    = "system"
             content = $Instructions
         }
 
+        # add if not already present
         $newMessageJson = $newMessage | ConvertTo-Json -Depth 10 -Compress
         $isDuplicate = $false
         foreach ($msg in $messages) {
@@ -304,6 +335,14 @@ function Invoke-LMStudioQuery {
     }
 
     process {
+
+        if ($ChatOnce -or ((-not [string]::IsNullOrWhiteSpace($Chatmode) -and ($ChatMode -ne "none")))) {
+
+            if ($PSBoundParameters.ContainsKey("NoConfirmationToolFunctionNames")) {
+
+                $null = $PSBoundParameters.Remove("NoConfirmationToolFunctionNames")
+            }
+        }
 
         if ($ChatOnce) {
 
@@ -687,6 +726,7 @@ function Invoke-LMStudioQuery {
                 }
             }
             else {
+
                 $newMessage = @{
                     role    = "user"
                     content = @(
@@ -714,7 +754,6 @@ function Invoke-LMStudioQuery {
             }
         }
 
-
         # prepare api payload
         $payload = @{
             stream      = $false
@@ -729,12 +768,17 @@ function Invoke-LMStudioQuery {
             # maintain array structure, create new array with required properties
             $functionsWithoutCallbacks = @(
                 $Functions | ForEach-Object {
-                    @{
+                    [PSCustomObject] @{
                         type     = $_.type
-                        function = @{
-                            name        = $_.function.name
-                            description = $_.function.description
-                            parameters  = $_.function.parameters
+                        function = [PSCustomObject] @{
+                            name                       = $_.function.name
+                            description                = $_.function.description
+                            parameters                 = @{
+                                type       = 'object'
+                                properties = [PSCustomObject] $_.function.parameters.properties
+                                required   = $_.function.parameters.required
+                            }
+                            user_confirmation_required = $_.function.user_confirmation_required -eq $true
                         }
                     }
                 }
@@ -742,7 +786,10 @@ function Invoke-LMStudioQuery {
 
             $payload.tools = $functionsWithoutCallbacks
             $payload.function_call = "auto"
-            $Query = "You now have access to and only to the following Powershell cmdlets: $(($Functions.function.name | Select-Object -Unique | ConvertTo-Json -Compress -Depth 1))`r`n$Query"
+            if (-not [string]::IsNullOrWhiteSpace($Query)) {
+
+                $Query = "You now have access to and only to the following Powershell cmdlets: $(($Functions.function.name | Select-Object -Unique | ConvertTo-Json -Compress -Depth 1))`r`n$Query"
+            }
         }
 
         if (-not [string]::IsNullOrWhiteSpace($Query)) {
@@ -774,166 +821,57 @@ function Invoke-LMStudioQuery {
         if ($response.choices[0].message.tool_calls) {
 
             # Add assistant's tool calls to history
-            $messages.Add($response.choices[0].message) | Out-Null
+            $newMsg = $response.choices[0].message
+            $newMsgJson = $newMsg | ConvertTo-Json -Depth 10 -Compress
+
+            # Only add if it's not a duplicate of the last message
+            if ($messages.Count -eq 0 -or
+                ($messages[-1] | ConvertTo-Json -Depth 10 -Compress) -ne $newMsgJson) {
+                $messages.Add($newMsg) | Out-Null
+            }
 
             # Process all tool calls sequentially
-            foreach ($toolCall in $response.choices[0].message.tool_calls) {
+            foreach ($toolCallCO in $response.choices[0].message.tool_calls) {
+
+                $toolCall = $toolCallCO | ConvertTo-HashTable
 
                 Write-Verbose "Tool call detected: $($toolCall.function.name)"
 
-                $invocationParams = @{}
-                try {
-                    $invocationParams = $toolCall.function.arguments | ConvertFrom-Json
-                }
-                catch {
-                    Write-Error "Failed to parse function arguments: $($_.Exception.Message)"
-                    continue
-                }
+                [GenXdev.Helpers.ExposedToolCallInvocationResult] $invocationResult = Invoke-CommandFromToolCall `
+                    -ToolCall:$toolCall `
+                    -Functions:$Functions `
+                    -ExposedCmdLets:$ExposedCmdLets `
+                    -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames | Select-Object -First 1
 
-                # Find matching function with callback
-                $matchedFunc = $Functions.function | Where-Object { $_.name -eq $toolCall.function.name } | Select-Object -First 1
+                if (-not $invocationResult.CommandExposed) {
 
-                if (-not $matchedFunc) {
-
-                    $messages.Add(@{
+                    # Add tool response to history
+                    $null = $messages.Add(@{
                             role         = "tool"
                             name         = $toolCall.function.name
-                            error        = "Function not found"
+                            content      = $invocationResult.Error ? $invocationResult.Error : $invocationResult.Reason
                             tool_call_id = $toolCall.id
                             id           = $toolCall.id
                             arguments    = $toolCall.function.arguments | ConvertFrom-Json
-                        }) | Out-Null
-                }
-                elseif ($matchedFunc.ContainsKey("callback") -and ($null -ne ($matchedFunc.callback))) {
-
-                    # Execute callback and get result
-                    Write-Verbose "Executing callback for function: $($toolCall.function.name), params = $($invocationParams | ConvertTo-Json)"
-
-                    Write-Verbose "Final parameter hashtable: $($invocationParams | ConvertTo-Json)"
-
-                    # Ensure we're using splatting for the callback
-                    $cb = $matchedFunc.callback;
-                    if ($cb -isnot [System.Management.Automation.ScriptBlock] -and
-                        $cb -isnot [System.Management.Automation.CommandInfo]) {
-
-                        throw "Callback is not a script block or command info, type: $(($cb.GetType().FullName))"
-                    }
-                    $convertedInvocationParams = @{}
-                    foreach ($property in $invocationParams.PSObject.Properties) {
-                        $convertedInvocationParams[$property.Name] = $property.Value
-                    }
-                    $callbackResult = $null
-                    try {
-                        # Execute callback
-                        # Add confirmation prompt for tool functions that require it
-                        if ($NoConfirmationToolFunctionNames.IndexOf($toolCall.function.name) -ge 0) {
-
-                            $callbackResult = &$cb @convertedInvocationParams
-                        }
-                        else {
-
-                            $location = (Get-Location).Path
-                            $functionName = $toolCall.function.Name
-                            $parametersLine = $convertedInvocationParams.GetEnumerator() | ForEach-Object {
-                                "-$($_.Name) ($($_.Value | ConvertTo-Json -Compress -Depth 10))"
-                            } | ForEach-Object {
-                                $_ -join " "
-                            }
-
-                            # Add confirmation prompt for tool functions that require it
-                            switch ($host.ui.PromptForChoice(
-                                    "Confirm",
-                                    "Are you sure you want to ALLOW the LLM to execute: `r`nPS $location> $functionName $parametersLine",
-                                    @(
-                                        "&Allow",
-                                        "&Disallow, reject"), 0)) {
-                                0 {
-                                    $callbackResult = &$cb @convertedInvocationParams
-                                    break;
-                                }
-
-                                1 {
-                                    $callbackResult = @{
-                                        error = "User cancelled execution"
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    catch {
-                        $callbackResult = @{
-
-                            error           = $_.Exception.Message
-                            exceptionThrown = $true
-                            exceptionClass  = $_.Exception.GetType().FullName
-                        }
-                    }
-
-                    # assure that result is a string or an array of objects by converting
-                    # if necessary
-                    if ($null -eq $callbackResult) {
-
-                        $callbackResult = "success (void result)"
-                        Write-Verbose "Function returned: $callbackResult"
-
-                        # Add tool response to history
-                        $null = $messages.Add(@{
-                                role         = "tool"
-                                name         = $toolCall.function.name
-                                content      = "$callbackResult".Trim()
-                                tool_call_id = $toolCall.id
-                                id           = $toolCall.id
-                                arguments    = $toolCall.function.arguments | ConvertFrom-Json
-                            })
-                    }
-                    elseif ($callbackResult -isnot [string]) {
-
-                        $callbackResult = ($callbackResult | ForEach-Object { $_ | Out-String }) | ConvertTo-Json -Depth 99
-                        Write-Verbose "Function returned: $callbackResult"
-
-                        # Add tool response to history
-                        $null = $messages.Add(@{
-                                role         = "tool"
-                                name         = $toolCall.function.name
-                                content      = "$callbackResult".Trim()
-                                content_type = "application/json"
-                                tool_call_id = $toolCall.id
-                                id           = $toolCall.id
-                                arguments    = $toolCall.function.arguments | ConvertFrom-Json
-                            })
-                    }
-                    elseif ($callbackResult -is [string]) {
-
-                        Write-Verbose "Function returned: $callbackResult"
-
-                        # Add tool response to history
-                        $null = $messages.Add(@{
-                                role         = "tool"
-                                name         = $toolCall.function.name
-                                content      = $callbackResult
-                                tool_call_id = $toolCall.id
-                                id           = $toolCall.id
-                                arguments    = $toolCall.function.arguments | ConvertFrom-Json
-                            })
-                    }
+                        })
                 }
                 else {
-
-                    $messages.Add(@{
+                    # Add tool response to history
+                    $null = $messages.Add(@{
                             role         = "tool"
                             name         = $toolCall.function.name
-                            content      = "[Function has no callback assigned]"
+                            content      = "$($invocationResult.Output)".Trim()
+                            content_type = $invocationResult.OutputType
                             tool_call_id = $toolCall.id
                             id           = $toolCall.id
                             arguments    = $toolCall.function.arguments | ConvertFrom-Json
-                        }) | Out-Null
+                        })
                 }
             }
 
             Write-Verbose "Continuing conversation after tool responses"
 
-            if (-not $PSBoundParameters.ContainsKey(('ContinueLast'))) {
+            if (-not $PSBoundParameters.ContainsKey('ContinueLast')) {
 
                 $PSBoundParameters.Add('ContinueLast', $true)
             }
@@ -942,7 +880,7 @@ function Invoke-LMStudioQuery {
                 $PSBoundParameters['ContinueLast'] = $true
             }
 
-            if (-not $PSBoundParameters.ContainsKey(('Query'))) {
+            if (-not $PSBoundParameters.ContainsKey('Query')) {
 
                 $PSBoundParameters.Add('Query', "")
             }
@@ -962,105 +900,93 @@ function Invoke-LMStudioQuery {
 
             $content = $msg.content
 
-            # # Extract and process embedded tool calls
-            # while ($content -match '<tool_call>\s*({[^}]+})\s*</tool_call>') {
+            # Extract and process embedded tool calls
+            while ($content -match '<tool_call>\s*({[^}]+})\s*</tool_call>') {
 
-            #     $toolCallJson = $matches[1]
-            #     $toolCall = $null
+                $toolCallJson = $matches[1]
+                $toolCall = $null
 
-            #     try {
-            #         $toolCall = $toolCallJson | ConvertFrom-Json
+                try {
+                    $toolCall = $toolCallJson | ConvertFrom-Json | ConvertTo-HashTable
 
-            #         # Find matching function
-            #         $matchedFunc = $Functions.function | Where-Object { $_.name -eq $toolCall.name }
+                    Write-Verbose "Tool call detected: $($toolCall.function.name)"
 
-            #         if ($matchedFunc -and $matchedFunc.ContainsKey("callback")) {
+                    # Check if this tool_call_id is already in messages
+                    $existingResponse = $messages | Where-Object {
+                        $_.tool_call_id -eq $toolCall.id
+                    } | Select-Object -First 1
 
-            #             Write-Verbose "Found tool call in content: $($toolCall.name)"
+                    if ($existingResponse) {
+                        # Replace the tool call with existing response
+                        $replacement = [string]::IsNullOrWhiteSpace($existingResponse.Content) ?
+                            ($existingResponse.Error | ConvertTo-Json -Compress -Depth 3) :
+                        $existingResponse.Content;
 
-            #             # Check chat history for recent identical call
-            #             $cachedResult = $null
+                        $content = $content.Replace($matches[0], $replacement)
+                        continue
+                    }
 
-            #             # Look through messages in reverse order
-            #             for ($i = $messages.Count - 1; $i -ge 0; $i--) {
-            #                 $historicMsg = $messages[$i]
-            #                 if ($historicMsg.role -eq "tool" -and
-            #                     $historicMsg.name -eq $toolCall.name) {
+                    [GenXdev.Helpers.ExposedToolCallInvocationResult] $invocationResult = Invoke-CommandFromToolCall `
+                        -ToolCall:$toolCall `
+                        -Functions:$Functions `
+                        -ExposedCmdLets:$ExposedCmdLets `
+                        -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames | Select-Object -First 1
 
-            #                     # Try to match the arguments
-            #                     $historicArgs = $historicMsg.arguments | ConvertTo-Json -Compress
-            #                     if ($historicArgs -eq ($toolCall.arguments | ConvertTo-Json -Compress)) {
-            #                         $cachedResult = $historicMsg.content
-            #                         Write-Verbose "Found cached result for $($toolCall.name)"
-            #                         break
-            #                     }
-            #                 }
-            #             }
+                    if (-not $invocationResult.CommandExposed) {
 
-            #             if ($cachedResult) {
+                        $newMessage = @{
+                            role         = "tool"
+                            name         = $toolCall.function.name
+                            content      = $invocationResult.Error ? ($invocationResult.Error | ConvertTo-Json -Compress -Depth 3) : $invocationResult.Reason
+                            tool_call_id = $toolCall.id
+                            id           = $toolCall.id
+                            arguments    = $toolCall.function.arguments | ConvertFrom-Json
+                        };
 
-            #                 # Use cached result
-            #                 $callbackResult = $cachedResult
-            #             }
-            #             else {
-            #                 # Execute function as before
-            #                 Write-Verbose "Executing new tool call: $($toolCall.name)"
-            #                 $vars = [System.Collections.Generic.List[object]] @($toolCall.arguments)
-            #                 $callbackResult = Invoke-Command -ScriptBlock ($matchedFunc.callback) -ArgumentList $vars
+                        # Add tool response to history
+                        $null = $messages.Add($newMessage)
 
-            #                 if ($null -eq $callbackResult) {
+                        $content = $content.Replace($matches[0], $newMessage.error)
+                    }
+                    else {
 
-            #                     $callbackResult = "success"
-            #                 }
-            #                 elseif ($callbackResult -isnot [string]) {
+                        $newMessage = @{
+                            role         = "tool"
+                            name         = $toolCall.function.name
+                            content      = "$($invocationResult.Output)".Trim()
+                            content_type = $invocationResult.OutputType
+                            tool_call_id = $toolCall.id
+                            id           = $toolCall.id
+                            arguments    = $toolCall.function.arguments | ConvertFrom-Json
+                        };
 
-            #                     $callbackResult = ($callbackResult | ForEach-Object { $_ | Out-String }) | ConvertTo-Json -Depth 99
-            #                 }
+                        # Add tool response to history
+                        $null = $messages.Add($newMessage)
 
-            #                 $id = [guid]::NewGuid().ToString();
+                        $content = $content.Replace($matches[0], $newMessage.content)
+                    }
+                }
+                catch {
 
-            #                 # Add result to history for future caching
-            #                 $null = $messages.Add(
-            #                     @{
-            #                         role         = "assistant"
-            #                         name         = $toolCall.name
-            #                         tool_call_id = $id
-            #                         id           = $id
-            #                         arguments    = $toolCall.arguments
-            #                     }
-            #                 )
+                    $newMessage = @{
+                        role         = "tool"
+                        name         = $toolCall.function.name
+                        error        = @{
+                            error           = $_.Exception.Message
+                            exceptionThrown = $true
+                            exceptionClass  = $_.Exception.GetType().FullName
+                        } | ConvertTo-Json -Compress -Depth 3;
+                        tool_call_id = $toolCall.id
+                        id           = $toolCall.id
+                        arguments    = $toolCall.function.arguments | ConvertFrom-Json
+                    };
 
-            #                 # Add result to history for future caching
-            #                 $null = $messages.Add( @{
-            #                         role      = "tool"
-            #                         name      = $toolCall.name
-            #                         content   = $callbackResult
-            #                         arguments = $toolCall.arguments
-            #                         id        = $id
-            #                     }
-            #                 )
-            #             }
-            #             # Replace the tool call with its result
-            #             $content = $content -replace [regex]::Escape($matches[0]), $callbackResult
-            #         }
-            #         else {
-            #             $content = $content -replace [regex]::Escape($matches[0]), ""
+                    # Add tool response to history
+                    $null = $messages.Add($newMessage)
 
-            #             $messages.Add(@{
-            #                     role         = "tool"
-            #                     name         = $toolCall.function.name
-            #                     content      = "[Function not found, function = $($toolCall.function.name), params = $($toolCall.function.arguments | ConvertTo-Json)]"
-            #                     tool_call_id = $toolCall.id
-            #                     id           = $toolCall.id
-            #                     arguments    = $toolCall.function.arguments | ConvertFrom-Json
-            #                 }) | Out-Null
-            #         }
-            #     }
-            #     catch {
-            #         Write-Error "Failed to process embedded tool call: $($_.Exception.Message)"
-            #         $content = $content -replace [regex]::Escape($matches[0]), ""
-            #     }
-            # }
+                    $content = $content.Replace($matches[0], $newMessage.error)
+                }
+            }
 
             if (-not [string]::IsNullOrWhiteSpace($content)) {
 

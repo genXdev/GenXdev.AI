@@ -6,7 +6,7 @@
   RootModule           = 'GenXdev.AI.psm1'
 
   # Version number of this module.
-  ModuleVersion        = '1.104.2025'
+  ModuleVersion        = '1.106.2025'
   # Supported PSEditions
   # CompatiblePSEditions = @()
 
@@ -38,7 +38,7 @@
   # ProcessorArchitecture = ''
 
   # Modules that must be imported into the global environment prior to importing this module
-  RequiredModules      = @(@{ModuleName = 'GenXdev.Data'; ModuleVersion = '1.104.2025' }, @{ModuleName = 'GenXdev.Helpers'; ModuleVersion = '1.104.2025' }, @{ModuleName = 'GenXdev.Webbrowser'; ModuleVersion = '1.104.2025' }, @{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.104.2025' }, @{ModuleName = 'GenXdev.Console'; ModuleVersion = '1.104.2025' }, @{ModuleName = 'GenXdev.FileSystem'; ModuleVersion = '1.104.2025' });
+  RequiredModules      = @(@{ModuleName = 'GenXdev.Data'; ModuleVersion = '1.106.2025' }, @{ModuleName = 'GenXdev.Helpers'; ModuleVersion = '1.106.2025' }, @{ModuleName = 'GenXdev.Webbrowser'; ModuleVersion = '1.106.2025' }, @{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.106.2025' }, @{ModuleName = 'GenXdev.Console'; ModuleVersion = '1.106.2025' }, @{ModuleName = 'GenXdev.FileSystem'; ModuleVersion = '1.106.2025' });
 
   # Assemblies that must be loaded prior to importing this module
   RequiredAssemblies   = @()
@@ -106,6 +106,7 @@
   ".\\Functions\\GenXdev.AI.LMStudio\\Get-LMStudioWindow.ps1",
   ".\\Functions\\GenXdev.AI.LMStudio\\Initialize-LMStudioModel.ps1",
   ".\\Functions\\GenXdev.AI.LMStudio\\Install-LMStudioApplication.ps1",
+  ".\\Functions\\GenXdev.AI.LMStudio\\Invoke-CommandFromToolCall.ps1",
   ".\\Functions\\GenXdev.AI.LMStudio\\Invoke-LMStudioQuery.ps1",
   ".\\Functions\\GenXdev.AI.LMStudio\\Start-LMStudioApplication.ps1",
   ".\\Functions\\GenXdev.AI.LMStudio\\Test-LMStudioInstallation.ps1",
@@ -113,12 +114,14 @@
   ".\\Tests\\GenXdev.AI\\Add-EmoticonsToText.Tests.ps1",
   ".\\Tests\\GenXdev.AI\\escalated-quickly.wav",
   ".\\Tests\\GenXdev.AI\\Get-TextTranslation.Tests.ps1",
+  ".\\Tests\\GenXdev.AI\\New-TextLLMChat.Tests.ps1",
   ".\\Tests\\GenXdev.AI\\Start-AudioTranscription.Tests.ps1",
   ".\\Tests\\GenXdev.AI.LMStudio\\ConvertTo-LMStudioFunctionDefinition.Tests.ps1",
   ".\\Tests\\GenXdev.AI.LMStudio\\Get-LMStudioLoadedModelList.Tests.ps1",
   ".\\Tests\\GenXdev.AI.LMStudio\\Get-LMStudioModelList.Tests.ps1",
   ".\\Tests\\GenXdev.AI.LMStudio\\Get-LMStudioPaths.Tests.ps1",
   ".\\Tests\\GenXdev.AI.LMStudio\\Initialize-LMStudioModel.Tests.ps1",
+  ".\\Tests\\GenXdev.AI.LMStudio\\Invoke-CommandFromToolCall.Tests.ps1",
   ".\\Tests\\GenXdev.AI.LMStudio\\Invoke-LMStudioQuery.Tests.ps1",
   ".\\Tests\\GenXdev.AI.LMStudio\\Start-LMStudioApplication.Tests.ps1",
   ".\\Tests\\GenXdev.AI.LMStudio\\Test-LMStudioInstallation.Tests.ps1",

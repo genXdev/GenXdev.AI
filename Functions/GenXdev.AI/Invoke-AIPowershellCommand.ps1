@@ -83,9 +83,13 @@ function Invoke-AIPowershellCommand {
         Write-Verbose "Initializing AI command generation with model: $Model"
 
         # simplified instructions focusing on command generation
-        $instructions = "You are a PowerShell expert. Analyze the user's request
-and suggest a PowerShell command that accomplishes their goal. Use the Get-GenXDevCmdlets
-and the Get-Command cmdlets to find the right commands to use.
+        $instructions = "You are a PowerShell expert.
+Although you only have access to a limited set of tool functions to execute
+in your suggested powershell commandline script, you are not limited
+and have access to everything Powershell has to offer.
+Analyze the user's request and suggest a PowerShell command that accomplishes their goal.
+First try basic powershell commands, if that does not solve it then try to use the
+Get-GenXDevCmdlets, Get-Help and the Get-Command cmdlets to find the right commands to use.
 Use the Set-AICommandSuggestion function with the command you suggest. return only what
 Set-AICommandSuggestion returns in json format.
 "
@@ -100,8 +104,36 @@ Set-AICommandSuggestion returns in json format.
             -Model $Model `
             -Temperature $Temperature `
             -Instructions $instructions `
-            -ExposedCmdLets (Get-Command Set-AICommandSuggestion, Get-GenXDevCmdlets, Get-Help) `
-            -NoConfirmationFor @("Set-AICommandSuggestion", "Get-GenXDevCmdlets", "Get-Help") | `
+            -ExposedCmdLets @(
+            @{
+                Name          = "Get-Command"
+                AllowedParams = @("Name=string")
+                Confirm       = $false
+                JsonDepth     = 3
+                OutputText    = $false
+            },
+            @{
+                Name          = "Set-AICommandSuggestion"
+                AllowedParams = @("Command")
+                Confirm       = $false
+            },
+            @{
+                Name          = "Get-GenXDevCmdlets"
+                AllowedParams = @("ModuleName", "Filter")
+                Confirm       = $false
+            },
+            @{
+                Name          = "Get-Help"
+                AllowedParams = @("Name=string")
+                Confirm       = $false
+                ForcedParams  = @(
+                    @{
+                        Name  = "Category"
+                        Value = "Cmdlet"
+                    }
+                )
+            }
+        ) | `
             ConvertFrom-Json
 
         # extract command from result

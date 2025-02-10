@@ -128,17 +128,9 @@ function New-TextLLMChat {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of PowerShell cmdlet or function references " +
-            "to use as tools, use Get-Command to obtain such references"        )]
-
-        [System.Management.Automation.CommandInfo[]] $ExposedCmdLets = $null,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Array of ToolFunction names that don't require user confirmation"
-        )]
-        [Alias("NoConfirmationFor")]
-        [string[]] $NoConfirmationToolFunctionNames = @(),
+            HelpMessage = "Array of PowerShell command definitions to use as tools")]
+        [GenXdev.Helpers.ExposedCmdletDefinition[]]
+        $ExposedCmdLets,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -161,54 +153,101 @@ function New-TextLLMChat {
             Mandatory = $false,
             DontShow = $true,
             HelpMessage = "Used internally, to only invoke chat mode once after the llm invocation")]
-        [switch] $ChatOnce
+        [switch] $ChatOnce,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Don't store session in session cache")]
+        [switch] $NoSessionCaching
     )
 
     begin {
 
         Write-Verbose "Initializing chat session with model: $Model"
 
-        if ($ExposedCmdLets) {
+        if ($null -eq $ExposedCmdLets) {
 
-            $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
-            if ($NoConfirmationToolFunctionNames -and $NoConfirmationToolFunctionNames.Count -gt 0) {
+            if ($ContinueLast -and $Global:LMStudioGlobalExposedCmdlets) {
 
-                $Global:LMStudioGlobalNoConfirmationToolFunctionNames = $NoConfirmationToolFunctionNames
+                $ExposedCmdLets = $Global:LMStudioGlobalExposedCmdlets
             }
             else {
-
-                $NoConfirmationToolFunctionNames = @($Global:LMStudioGlobalNoConfirmationToolFunctionNames)
-            }
-        }
-        else {
-
-            if ($continueLast -and $Global:LMStudioGlobalExposedCmdlets -and $Global:LMStudioGlobalExposedCmdlets.Count -gt 0) {
-
-                $ExposedCmdLets = @($Global:LMStudioGlobalExposedCmdlets)
-                $NoConfirmationToolFunctionNames = @($Global:LMStudioGlobalNoConfirmationToolFunctionNames)
-            }
-            else {
-
                 # initialize array of allowed PowerShell cmdlets
                 $ExposedCmdLets = @(
-                    Get-Command @(
-                        "Get-ChildItem",
-                        "Find-Item",
-                        "Get-Content",
-                        "Approve-NewTextFileContent",
-                        "Invoke-WebRequest",
-                        "Invoke-RestMethod"
-                    )
-                )
-                $NoConfirmationToolFunctionNames = @(
-                    "Get-ChildItem",
-                    "Find-Item",
-                    "Get-Content"
+                    @{
+                        Name          = "Get-ChildItem"
+                        AllowedParams = @("Path=string", "Recurse=boolean", "Filter=array", "Include=array", "Exclude=array", "Force")
+                        OutputText    = $false
+                        Confirm       = $false
+                        JsonDepth     = 3
+                    },
+                    @{
+                        Name          = "Find-Item"
+                        AllowedParams = @("SearchMask", "Pattern", "PassThru")
+                        OutputText    = $false
+                        Confirm       = $false
+                        JsonDepth     = 3
+                    },
+                    @{
+                        Name          = "Get-Content"
+                        AllowedParams = @("Path=string")
+                        OutputText    = $false
+                        Confirm       = $false
+                        JsonDepth     = 2
+                    },
+                    @{
+                        Name          = "Approve-NewTextFileContent"
+                        AllowedParams = @("ContentPath", "NewContent")
+                        OutputText    = $false
+                        Confirm       = $true
+                        JsonDepth     = 2
+                    },
+                    @{
+                        Name          = "Invoke-WebRequest"
+                        AllowedParams = @("Uri=string", "Method=string", "Body", "ContentType=string", "Method=string", "UserAgent=string")
+                        OutputText    = $false
+                        Confirm       = $false
+                        JsonDepth     = 4
+                    },
+                    @{
+                        Name          = "Invoke-RestMethod"
+                        AllowedParams = @("Uri=string", "Method=string", "Body", "ContentType=string", "Method=string", "UserAgent=string")
+                        OutputText    = $false
+                        Confirm       = $false
+                        JsonDepth     = 99
+                    },
+                    @{
+                        Name       = "UTCNow"
+                        OutputText = $true
+                        Confirm    = $false
+                    },
+                    @{
+                        Name       = "Get-LMStudioModelList"
+                        OutputText = $false
+                        Confirm    = $false
+                        JsonDepth  = 2
+                    },
+                    @{
+                        Name       = "Get-LMStudioLoadedModelList"
+                        OutputText = $false
+                        Confirm    = $false
+                        JsonDepth  = 2
+                    },
+                    @{
+                        Name          = "Invoke-LMStudioQuery"
+                        AllowedParams = @("Query", "Model", "Instructions", "Attachments", "IncludeThoughts")
+                        ForcedParams  = @(@{Name = "NoSessionCaching"; Value = $true })
+                        OutputText    = $false
+                        Confirm       = $false
+                        JsonDepth     = 99
+                    }
                 )
             }
+        }
+
+        if (-not $NoSessionCaching) {
 
             $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
-            $Global:LMStudioGlobalNoConfirmationToolFunctionNames = $NoConfirmationToolFunctionNames
         }
 
         Write-Verbose "Initialized with $($ExposedCmdLets.Count) exposed cmdlets"
@@ -239,13 +278,9 @@ function New-TextLLMChat {
             $null = $PSBoundParameters.Remove("ChatOnce")
         }
 
-        if (-not $PSBoundParameters.ContainsKey("NoConfirmationToolFunctionNames")) {
+        if (-not $PSBoundParameters.ContainsKey("ExposedCmdLets")) {
 
-            $null = $PSBoundParameters.Add("NoConfirmationToolFunctionNames", $Global:LMStudioGlobalNoConfirmationToolFunctionNames);
-        }
-        else {
-
-            $NoConfirmationToolFunctionNames = $PSBoundParameters["NoConfirmationToolFunctionNames"]
+            $null = $PSBoundParameters.Add("ExposedCmdLets", $ExposedCmdLets);
         }
 
         $hadAQuery = -not [string]::IsNullOrEmpty($Query)
@@ -258,61 +293,25 @@ function New-TextLLMChat {
             if ($ExposedCmdLets.Count -gt 0) {
 
                 Write-Host -ForegroundColor Green `
-                    "Tool functions now active ($($ExposedCmdLets.Count)) -> " `
-                    "$( ($ExposedCmdLets | ForEach-Object Name | ForEach-Object {
-                        if ($_ -in $NoConfirmationToolFunctionNames) {
-                            "$_*"
+                    @"
+Tool functions now active ($($ExposedCmdLets.Count)) ->
+$( ($ExposedCmdLets | ForEach-Object {
+
+                        if ($_.Confirm) {
+
+                            "$($_.Name)"
                         }
                         else {
-                            "$_"
+
+                            "$($_.Name)*"
                         }
-                     } ) -join ', ')"
+                     } | Select-Object -Unique) -join ', ')
+"@
             }
             else {
 
                 Write-Host -ForegroundColor Yellow `
                     "No tool functions active"
-            }
-        }
-
-        function askForConfirmationSettings {
-
-            param(
-
-                [bool] $add,
-                $updatedCmdLets
-            )
-            if ($updatedCmdLets.Count -gt 0) {
-
-                $updatedNames = @($updatedCmdLets | ForEach-Object Name)
-
-                if ($add) {
-
-                    switch ($host.ui.PromptForChoice(
-                            "Make a choice",
-                            "Allow invocation without confirmation?",
-                            @(
-                                "&No",
-                                "&Yes"
-                            ),
-                            1)) {
-
-                        0 {
-                            $NoConfirmationToolFunctionNames = @(@($NoConfirmationToolFunctionNames | Where-Object -Property Name -NotIn ($updatedNames)))
-                            break;
-                        }
-                        1 {
-                            $NoConfirmationToolFunctionNames = @(@(@($NoConfirmationToolFunctionNames) + @($updatedNames)) | Select-Object -Unique)
-                            break;
-                        }
-                    }
-                }
-                else {
-
-                    $NoConfirmationToolFunctionNames = @($NoConfirmationToolFunctionNames | Where-Object -Property Name -NotIn ($updatedNames))
-                }
-
-                $Global:LMStudioGlobalNoConfirmationToolFunctionNames = $NoConfirmationToolFunctionNames
             }
         }
 
@@ -322,83 +321,7 @@ function New-TextLLMChat {
         $script:isFirst = -not $ContinueLast
         $shouldStop = $hadAQuery -or $ChatOnce
 
-        if ($shouldStop) {
-
-            showToolFunctions
-        }
-        else {
-
-            # display available tools
-            showToolFunctions
-
-            # main menu loop
-            while (-not $shouldStop) {
-
-                # prompt user for action choice
-                $choice = $host.ui.PromptForChoice(
-                    "Make a choice",
-                    "What to start with?",
-                    @(
-                        "&Chat",
-                        "&Add functions",
-                        "&Remove functions",
-                        "&Powershell command",
-                        "&Stop"
-                    ),
-                    0)
-
-                # handle user choice
-                switch ($choice) {
-                    0 {
-                        [Console]::Write("> ")
-                        $shouldStop = $true
-                        break
-                    }
-                    1 {
-                        # add new functions
-                        [Console]::Write("LikeExpression for function name? > ")
-                        $likeExpression = [Console]::ReadLine()
-                        $newCmdLets = @(Get-Command $likeExpression)
-                        $ExposedCmdLets = @($ExposedCmdLets + $newCmdLets)
-                        $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
-                        $Global:LMStudioGlobalNoConfirmationToolFunctionNames = $NoConfirmationToolFunctionNames
-
-                        askForConfirmationSettings $true $newCmdLets
-
-                        $NoConfirmationToolFunctionNames = $Global:LMStudioGlobalNoConfirmationToolFunctionNames
-                        showToolFunctions
-                        break
-                    }
-                    2 {
-                        # remove functions
-                        [Console]::Write("LikeExpression for function name? > ")
-                        $likeExpression = [Console]::ReadLine()
-                        $oldCmdLets = @($ExposedCmdLets | Where-Object -Property Name -Like $likeExpression)
-                        $ExposedCmdLets = @($ExposedCmdLets | Where-Object -Property Name -NotLike $likeExpression)
-                        $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
-                        $Global:LMStudioGlobalNoConfirmationToolFunctionNames = $NoConfirmationToolFunctionNames
-
-                        askForConfirmationSettings $false $oldCmdLets
-
-                        $NoConfirmationToolFunctionNames = $Global:LMStudioGlobalNoConfirmationToolFunctionNames
-
-                        showToolFunctions
-                        break
-                    }
-                    3 {
-                        # execute PowerShell command
-                        [Console]::Write("PS $(Get-Location)> ")
-                        $expression = [Console]::ReadLine()
-                        Invoke-Expression $expression | Out-Host
-                        break
-                    }
-                    4 {
-                        $shouldStop = $true
-                        return
-                    }
-                }
-            }
-        }
+        showToolFunctions
 
         $shouldStop = $false;
 
@@ -409,7 +332,10 @@ function New-TextLLMChat {
             if (-not $ChatOnce -and [string]::IsNullOrWhiteSpace($Query)) {
 
                 # get user input
-                $question = [Console]::ReadLine()
+                [Console]::Write("> ");
+                try { $null = Set-PSReadLineOption -PredictionSource History } catch { }
+                # $question = Read-Host
+                $question = PSConsoleHostReadLine
                 if ($null -eq $question) { $question = [string]::Empty }
             }
             else {
@@ -418,6 +344,7 @@ function New-TextLLMChat {
 
                     $question = $Query
                     $Query = [string]::Empty
+                    [Console]::WriteLine("> $question");
                 }
             }
 
@@ -427,7 +354,7 @@ function New-TextLLMChat {
             $PSBoundParameters["Query"] = $question;
             $PSBoundParameters["ExposedCmdLets"] = $ExposedCmdLets;
 
-            Invoke-LMStudioQuery @PSBoundParameters | ForEach-Object {
+            @(Invoke-LMStudioQuery @PSBoundParameters) | ForEach-Object {
 
                 if (($null -eq $_) -or ([string]::IsNullOrEmpty("$_".trim()))) { return }
 
@@ -441,82 +368,10 @@ function New-TextLLMChat {
 
                     Write-Host -ForegroundColor Yellow "$_"
                 }
-                # post-response menu loop
-                $stopPrompt = $ChatOnce
-                $shouldStop = $ChatOnce
-                while (-not ($stopPrompt -or $shouldStop)) {
-
-                    switch ($host.ui.PromptForChoice(
-                            "Make a choice",
-                            "What to do next?",
-                            @(
-                                "&Chat",
-                                "&Add functions",
-                                "&Remove functions",
-                                "&Powershell command",
-                                "&Stop"
-                            ),
-                            0)) {
-                        0 {
-                            if ($ChatOnce) {
-
-                                $shouldStop = $true
-                                break;
-                            }
-                            else {
-
-                                [Console]::Write("> ");
-                                $stopPrompt = $true;
-                                break;
-                            }
-                        }
-                        1 {
-                            [Console]::Write("LikeExpression for function name? > ")
-                            $likeExpression = [Console]::ReadLine()
-                            $newCmdLets = @(Get-Command $likeExpression)
-                            $ExposedCmdLets = $ExposedCmdLets + $newCmdLets;
-                            $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
-                            $Global:LMStudioGlobalNoConfirmationToolFunctionNames = $NoConfirmationToolFunctionNames
-
-                            askForConfirmationSettings $true $newCmdLets
-
-                            $NoConfirmationToolFunctionNames = $Global:LMStudioGlobalNoConfirmationToolFunctionNames
-
-                            showToolFunctions
-                            break;
-                        }
-                        2 {
-                            [Console]::Write("LikeExpression for function name? > ")
-                            $likeExpression = [Console]::ReadLine()
-                            $oldCmdlets = @($ExposedCmdLets | Where-Object -Property Name -Like $likeExpression)
-                            $ExposedCmdLets = @($ExposedCmdLets | Where-Object -Property Name -NotLike $likeExpression)
-                            $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
-                            $Global:LMStudioGlobalNoConfirmationToolFunctionNames = $NoConfirmationToolFunctionNames
-
-                            askForConfirmationSettings $false $oldCmdlets
-
-                            $NoConfirmationToolFunctionNames = $Global:LMStudioGlobalNoConfirmationToolFunctionNames
-
-                            showToolFunctions
-                            break;
-                        }
-                        3 {
-                            [Console]::Write("PS $(Get-Location)> ")
-                            $expression = [Console]::ReadLine()
-                            Invoke-Expression $expression | Out-Host
-                            break;
-                        }
-                        4 {
-                            if ($ChatOnce) {
-
-                                throw "Stopped"
-                            }
-                            $shouldStop = $true
-                            break;
-                        }
-                    }
-                }
             }
+
+            # post-response menu loop
+            $shouldStop = $ChatOnce
         }
     }
 
