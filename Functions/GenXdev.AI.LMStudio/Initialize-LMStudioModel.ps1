@@ -57,7 +57,7 @@ function Initialize-LMStudioModel {
         [Parameter(
             Mandatory = $false,
             Position = 2,
-            HelpMessage = "Maximum tokens in response (-1 for default)"
+            HelpMessage = "The number of tokens to consider as context when generating text. If not provided, the default value will be used."
         )]
         [Alias("MaxTokens")]
         [int]$MaxToken = -1,
@@ -65,10 +65,16 @@ function Initialize-LMStudioModel {
         [Parameter(
             Mandatory = $false,
             Position = 3,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API"
+            HelpMessage = "TTL (seconds): If provided, when the model is not used for this number of seconds, it will be unloaded."
         )]
         [Alias("ttl")]
         [int]$TTLSeconds = -1,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "How much to offload to the GPU. If `"off`", GPU offloading is disabled. If `"max`", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto "
+        )]
+        [int]$Gpu = -1,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -76,6 +82,12 @@ function Initialize-LMStudioModel {
         )]
         [switch]$ShowWindow,
         ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Force stop LM Studio before initialization"
+        )]
+        [switch]$Force,
+        ################################################################################################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "List of preferred models to try if specified not found"
@@ -90,24 +102,79 @@ function Initialize-LMStudioModel {
 
     begin {
 
+        # force stop LM Studio processes if requested
+        if ($Force) {
+
+            if ($PSBoundParameters.ContainsKey("Force")) {
+
+                $null = $PSBoundParameters.Remove("Force")
+            }
+
+            Write-Verbose "Force parameter specified, stopping LM Studio processes"
+            $null = Get-Process "LM Studio", "LMS" -ErrorAction SilentlyContinue |
+            Stop-Process -Force
+        }
+
+        # no model specified?
+        if ([string]::IsNullOrWhiteSpace($Model)) {
+
+            # but we do have a model get identifier?
+            if (-not [string]::IsNullOrWhiteSpace($ModelLMSGetIdentifier)) {
+
+                # extract model name from get identifier
+                if ($ModelLMSGetIdentifier.ToLowerInvariant() -like "https://huggingface.co/lmstudio-community/*-GGUF") {
+
+                    $Model = $ModelLMSGetIdentifier.Substring($ModelLMSGetIdentifier.LastIndexOf("/") + 1).ToLowerInvariant();
+                }
+                else {
+
+                    $Model = $ModelLMSGetIdentifier
+                }
+            }
+
+            if ([string]::IsNullOrWhiteSpace($Model)) {
+
+                if (-not $PSBoundParameters.ContainsKey("Model")) {
+
+                    $null = $PSBoundParameters.Add("Model", $Model)
+                }
+                else {
+
+                    $PSBoundParameters["Model"] = $Model
+                }
+
+                if (-not $PSBoundParameters.ContainsKey("ModelLMSGetIdentifier")) {
+
+                    $null = $PSBoundParameters.Add("ModelLMSGetIdentifier", $ModelLMSGetIdentifier)
+                }
+                else {
+
+                    $null = $PSBoundParameters["ModelLMSGetIdentifier"] = $ModelLMSGetIdentifier
+                }
+
+                if (-not $PSBoundParameters.ContainsKey("MaxToken")) {
+
+                    $null = $PSBoundParameters.Add("MaxToken", $ModelLMSGetIdentifier)
+                }
+                else {
+
+                    $null = $PSBoundParameters["MaxToken"] = $ModelLMSGetIdentifier
+                }
+            }
+        }
+
         # get lm studio installation paths
         $paths = Get-LMStudioPaths
 
-        # attempt to start the server asynchronously
-        $null = Start-Job -ScriptBlock {
-            param($paths)
-            & $paths.LMSExe server start
-        } -ArgumentList $paths |
-        Wait-Job -Timeout 10 -ErrorAction SilentlyContinue
-
         # verify installation and process status
         $installationOk = Test-LMStudioInstallation
-        $processOk = Test-LMStudioProcess
+        $processOk = Test-LMStudioProcess -ShowWindow:$ShowWindow
 
         # handle installation and process initialization if needed
         if (-not $installationOk -or -not $processOk) {
 
             if (-not $installationOk) {
+
                 $null = Install-LMStudioApplication
                 $installationOk = Test-LMStudioInstallation
 
@@ -116,7 +183,18 @@ function Initialize-LMStudioModel {
                 }
             }
 
-            $null = Start-LMStudioApplication
+            $paths = Get-LMStudioPaths
+
+            if (-not $processOk) {
+
+                # attempt to start the server asynchronously
+                $null = Start-LMStudioApplication -WithVisibleWindow:$ShowWindow
+            }
+        }
+
+        if ($ShowWindow) {
+
+            $null = Get-LMStudioWindow -NoAutoStart -ShowWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         }
 
         Write-Verbose "Using LM Studio CLI executable: $($paths.LMSExe)"
@@ -185,9 +263,30 @@ function Initialize-LMStudioModel {
                 $null = $params.Add($TTLSeconds)
             }
 
-            if (Get-HasCapableGpu) {
+            switch ($Gpu) {
 
-                $null = $params.Add("--gpu")
+                -2 {
+                    if (Get-HasCapableGpu) {
+
+                        $null = $params.Add("--gpu 1")
+                    }
+                    else {
+
+                        $null = $params.Add("--gpu 0")
+                    }
+                    break;
+                }
+                default {
+                    if ($Gpu -lt 0) { break; }
+                    if (($Gpu -eq 0) -and ($Gpu -le 1)) {
+
+                        $null = $params.Add("--gpu $([Math]::Round($Gpu, 2))")
+                    }
+                    else {
+
+                        Write-Warning "Invalid GPU value. Use -2 for autodetect, or 0..1"
+                    }
+                }
             }
 
             if ($maxToken -gt 0) {
@@ -196,13 +295,24 @@ function Initialize-LMStudioModel {
                 $null = $params.Add($maxToken)
             }
 
-            Write-Verbose "Loading model: $modelPath with parameters: $($params|ConvertTo-Json -Compress)"
+            Write-Verbose "Loading model with parameters: $($params|ConvertTo-Json -Compress -WarningAction SilentlyContinue)"
 
             $success = Start-Job -ArgumentList @($paths, $params) -ScriptBlock {
                 param($paths, $params)
 
-                Start-Process $paths.LMSExe -ArgumentList $params -Wait -NoNewWindow
-                $LASTEXITCODE -eq 0
+                try {
+                    # Redirect stderr to stdout to capture all output
+                    $process = Start-Process ($paths.LMSExe) -ArgumentList $params -Wait -NoNewWindow -PassThru `
+                        -RedirectStandardOutput $true
+
+                    # Consider success if process exits with code 0 or if we detect the model is actually loaded
+                    return ($process.ExitCode -eq 0) -or
+                           (& $paths.LMSExe list | Select-String -Pattern $params[1] -Quiet)
+                }
+                catch {
+                    Write-Warning "Error during model load: $_"
+                    return $false
+                }
             } |
             Wait-Job -Timeout 1800 |
             Receive-Job
@@ -211,7 +321,7 @@ function Initialize-LMStudioModel {
             if (-not $success -and $loadedModels.Count -gt 0) {
                 $null = Start-Job -ArgumentList $paths -ScriptBlock {
                     param($paths)
-                    Start-Process $paths.LMSExe -ArgumentList @("unload", "--all") `
+                    $null = Start-Process ($paths.LMSExe) -ArgumentList @("unload", "--all") `
                         -Wait -NoNewWindow
                     $LASTEXITCODE -eq 0
                 } |
@@ -229,7 +339,8 @@ function Initialize-LMStudioModel {
         Select-Object -First 1
 
         if ($null -eq $modelLoaded) {
-            $null = Test-LMStudioProcess
+
+            $null = Test-LMStudioProcess -ShowWindow
             throw "Model failed to load. Check LM-Studio configuration."
         }
 
@@ -237,6 +348,10 @@ function Initialize-LMStudioModel {
     }
 
     end {
+        if ($ShowWindow) {
+
+            $null = Get-LMStudioWindow -NoAutoStart -ShowWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        }
     }
 }
 ################################################################################

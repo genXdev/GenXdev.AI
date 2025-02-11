@@ -24,8 +24,13 @@ function Invoke-CommandFromToolCall {
         [Parameter(Mandatory = $false)]
         [string[]]
         [Alias("NoConfirmationFor")]
-        $NoConfirmationToolFunctionNames = @()
+        $NoConfirmationToolFunctionNames = @(),
         ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Force output as text"
+        )]
+        [switch] $ForceAsText
     )
 
     begin {
@@ -254,7 +259,7 @@ function Invoke-CommandFromToolCall {
                     $functionName = $toolCall.function.Name
                     $filteredArguments = $result.FilteredArguments;
                     $parametersLine = $filteredArguments.GetEnumerator() | ForEach-Object {
-                        "-$($_.Name) ($($_.Value | ConvertTo-Json -Compress -Depth 10))"
+                        "-$($_.Name) ($($_.Value | ConvertTo-Json -Compress -Depth 10 -WarningAction SilentlyContinue))"
                     } | ForEach-Object {
                         $_ -join " "
                     }
@@ -295,20 +300,20 @@ function Invoke-CommandFromToolCall {
 
                         $jsonDepth = $result.ExposedCmdLet.JsonDepth;
                     }
-                    $asText = $result.ExposedCmdLet -and ($result.ExposedCmdLet.OutputText -eq $true);
+                    $asText = $ForceAsText -or ($result.ExposedCmdLet -and ($result.ExposedCmdLet.OutputText -eq $true));
                     if ($asText) {
 
-                        $tmpResult = (@($tmpResult) | ForEach-Object { $_ | Out-String }) | ConvertTo-Json -Depth $jsonDepth
+                        $tmpResult = (@($tmpResult) | ForEach-Object { $_ | Out-String }) | ConvertTo-Json -Depth $jsonDepth -WarningAction SilentlyContinue
                     }
                     else {
 
                         if ($tmpResult -is [System.ValueType]) {
 
-                            $tmpResult = $tmpResult | ConvertTo-Json -Depth $jsonDepth -ErrorAction SilentlyContinue
+                            $tmpResult = $tmpResult | ConvertTo-Json -Depth $jsonDepth -ErrorAction SilentlyContinue  -WarningAction SilentlyContinue
                         }
                         else {
 
-                            $tmpResult = $tmpResult | ConvertTo-HashTable | ConvertTo-Json -Depth $jsonDepth -ErrorAction SilentlyContinue
+                            $tmpResult = $tmpResult | ConvertTo-HashTable | ConvertTo-Json -Depth $jsonDepth -ErrorAction SilentlyContinue  -WarningAction SilentlyContinue
                         }
                     }
                 }
@@ -320,7 +325,7 @@ function Invoke-CommandFromToolCall {
                     error           = $_.Exception.Message
                     exceptionThrown = $true
                     exceptionClass  = $_.Exception.GetType().FullName
-                } | ConvertTo-Json -Compress -Depth 3
+                } | ConvertTo-Json -Compress -Depth 3  -WarningAction SilentlyContinue
             }
 
             # we only execute the first matching function

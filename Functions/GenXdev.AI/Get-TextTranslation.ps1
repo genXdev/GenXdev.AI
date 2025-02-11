@@ -17,8 +17,7 @@ The instructions for the model.
 Defaults to:
 
 .PARAMETER Model
-The LM-Studio model to use for generating the response.
-
+Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search
 .EXAMPLE
     Get-TextTranslation -Text "Hello, how are you?" -Language "french"
 

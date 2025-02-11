@@ -62,7 +62,7 @@ function GenerateMasonryLayoutHtml {
     <title>Masonry Image Layout</title>
     <script type="text/javascript">
         function setClipboard(index) {
-            let imageInfo = JSON.parse($(($images | ConvertTo-Json -Compress -Depth 20 | ConvertTo-Json -Compress -Depth 20)));
+            let imageInfo = JSON.parse($(($images | ConvertTo-Json -Compress -Depth 20 -WarningAction SilentlyContinue | ConvertTo-Json -Compress -Depth 20 -WarningAction SilentlyContinue)));
             while (imageInfo instanceof String) { imageInfo = JSON.parse(imageInfo); }
             path = imageInfo[index].path;
             navigator.clipboard.writeText('"'+path+'"');

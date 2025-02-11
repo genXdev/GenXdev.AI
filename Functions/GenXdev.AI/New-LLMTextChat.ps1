@@ -9,7 +9,8 @@ or remove PowerShell functions during the conversation and execute PowerShell
 commands.
 
 .PARAMETER Model
-The LM-Studio model to use for text generation. Defaults to "qwen*-instruct".
+Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search
+Defaults to "qwen*-instruct".
 
 .PARAMETER ModelLMSGetIdentifier
 The specific LM-Studio model identifier for automatic model downloads. Defaults to "qwen2.5-14b-instruct".
@@ -41,7 +42,7 @@ Array of PowerShell cmdlets to expose as tools.
 .PARAMETER NoConfirmationToolFunctionNames
 Array of tool function names that don't require confirmation.
 
-.PARAMETER ShowLMStudioWindow
+.PARAMETER ShowWindow
 Show the LM Studio interface window.
 
 .PARAMETER Speak
@@ -51,12 +52,12 @@ Enable text-to-speech for AI responses.
 Enable text-to-speech for AI thought process.
 
 .EXAMPLE
-New-TextLLMChat -Model "qwen*-instruct" -Temperature 0.7 -Speak
+New-LLMTextChat -Model "qwen*-instruct" -Temperature 0.7 -Speak
 
 .EXAMPLE
-New-TextLLMChat -ContinueLast
+New-LLMTextChat -ContinueLast
 #>
-function New-TextLLMChat {
+function New-LLMTextChat {
 
     [CmdletBinding()]
     [Alias("llmchat")]
@@ -112,6 +113,29 @@ function New-TextLLMChat {
         ########################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = "Show the LM Studio window")]
+        [switch] $ShowWindow,
+        ########################################################################
+        [Alias("ttl")]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests")]
+        [int] $TTLSeconds = -1,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "How much to offload to the GPU. If `"off`", GPU offloading is disabled. If `"max`", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto "
+        )]
+        [int]$Gpu = -1,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Force stop LM Studio before initialization"
+        )]
+        [switch]$Force,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = "Image detail level")]
         [ValidateSet("low", "medium", "high")]
         [string] $ImageDetail = "low",
@@ -131,11 +155,6 @@ function New-TextLLMChat {
             HelpMessage = "Array of PowerShell command definitions to use as tools")]
         [GenXdev.Helpers.ExposedCmdletDefinition[]]
         $ExposedCmdLets,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Show the LM Studio window")]
-        [switch] $ShowLMStudioWindow,
         ###########################################################################
         [Parameter(
             HelpMessage = "Enable text-to-speech for AI responses",
@@ -266,6 +285,32 @@ function New-TextLLMChat {
         if (-not $PSBoundParameters.ContainsKey("ContinueLast")) {
 
             $null = $PSBoundParameters.Add("ContinueLast", $ContinueLast)
+        }
+
+        $initializationParams = Copy-IdenticalParamValues -BoundParameters $PSBoundParameters `
+            -FunctionName 'Initialize-LMStudioModel'
+
+        $modelInfo = Initialize-LMStudioModel @initializationParams
+        $Model = $modelInfo.identifier
+
+        if ($PSBoundParameters.ContainsKey("Force")) {
+
+            $null = $PSBoundParameters.Remove("Force")
+        }
+
+        if ($PSBoundParameters.ContainsKey("ShowWindow")) {
+
+            $null = $PSBoundParameters.Remove("ShowWindow")
+        }
+
+        if ($PSBoundParameters.ContainsKey("ChatMode")) {
+
+            $null = $PSBoundParameters.Remove("ChatMode")
+
+            if (($ChatMode -ne "none" -or $ChatOnce)) {
+
+                return;
+            }
         }
 
         if (-not $PSBoundParameters.ContainsKey("MaxToken")) {

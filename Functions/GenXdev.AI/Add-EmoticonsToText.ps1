@@ -13,8 +13,7 @@ Optionally the text to outfit with emoticons, if not specified, will read and se
 Addiitional instructions for the model.
 
 .PARAMETER Model
-The LM-Studio model to use for generating the response.
-
+Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search
 .PARAMETER SetClipboard
 Force the result to be set to the clipboard.
 

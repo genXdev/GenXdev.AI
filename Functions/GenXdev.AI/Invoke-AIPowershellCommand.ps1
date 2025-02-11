@@ -7,7 +7,7 @@ function Set-AICommandSuggestion {
     return @{
         command = $Command.Trim()
         success = $true
-    } | ConvertTo-Json
+    } | ConvertTo-Json -WarningAction SilentlyContinue
 }
 
 
@@ -24,7 +24,7 @@ and either sends them to the current PowerShell window or copies to clipboard.
 The natural language query to generate a PowerShell command.
 
 .PARAMETER Model
-The LM-Studio model to use for generating the response. Defaults to "qwen".
+Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search
 
 .PARAMETER Temperature
 Controls randomness in the response (0.0-1.0). Lower values are more focused.

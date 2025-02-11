@@ -100,7 +100,7 @@ function Invoke-ImageKeywordScan {
 
                         [System.IO.File]::Delete("$($image):keywords.json")
 
-                        $descriptionFound | ConvertTo-Json -Depth 99 -Compress | Set-Content "$($image):description.json"
+                        $descriptionFound | ConvertTo-Json -Depth 99 -Compress -WarningAction SilentlyContinue | Set-Content "$($image):description.json"
                     }
                 }
                 catch {
@@ -121,7 +121,7 @@ function Invoke-ImageKeywordScan {
             $found = ($null -eq $Keywords -or ($Keywords.Length -eq 0))
             if (-not $found) {
 
-                $descriptionFound = $null -ne $descriptionFound ? $descriptionFound : "" | ConvertTo-Json -Compress -Depth 10
+                $descriptionFound = $null -ne $descriptionFound ? $descriptionFound : "" | ConvertTo-Json -Compress -Depth 10 -WarningAction SilentlyContinue
 
                 foreach ($requiredKeyword in $Keywords) {
 

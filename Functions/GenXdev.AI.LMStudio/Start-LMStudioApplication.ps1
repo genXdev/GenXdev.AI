@@ -15,7 +15,7 @@ Determines if the LM Studio window should be visible after starting.
 When specified, returns the Process object of the LM Studio application.
 
 .EXAMPLE
-Start-LMStudioApplication -ShowWindow -Passthru
+Start-LMStudioApplication -WithVisibleWindow -Passthru
 #>
 function Start-LMStudioApplication {
 
@@ -28,7 +28,7 @@ function Start-LMStudioApplication {
             HelpMessage = "Show or hide the LM Studio window after starting"
         )]
         [Alias("sw")]
-        [switch]$ShowWindow,
+        [switch]$WithVisibleWindow,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -53,7 +53,7 @@ function Start-LMStudioApplication {
     process {
 
         # check if we need to start or show the process
-        if (-not (Test-LMStudioProcess) -or $ShowWindow) {
+        if (-not (Test-LMStudioProcess -ShowWindow:$ShowWindow) -or $ShowWindow) {
 
             Write-Verbose "Preparing to start or show LM Studio..."
 
@@ -67,7 +67,7 @@ function Start-LMStudioApplication {
 
             # start background job for non-blocking operation
             $jobParams = @{
-                ScriptBlock = {
+                ScriptBlock  = {
                     param($paths, $showWindow)
 
                     # start server component
@@ -76,38 +76,16 @@ function Start-LMStudioApplication {
                         -ArgumentList "server", "start", "--port", "1234" `
                         -NoNewWindow
                     Start-Sleep -Seconds 4
-
-                    if ($showWindow) {
-                        # launch ui component
-                        $null = Start-Process `
-                            -FilePath $paths.LMStudioExe `
-                            -WindowStyle "Normal"
-                        Start-Sleep -Seconds 3
-
-                        # ensure window visibility and focus
-                        Get-Process -Name "LM Studio" -ErrorAction SilentlyContinue |
-                            Where-Object { $_.MainWindowHandle -ne 0 } |
-                            ForEach-Object {
-                                [GenXdev.Helpers.WindowObj]$window = `
-                                    Get-Window -ProcessId $_.Id
-
-                                if ($null -ne $window) {
-                                    $null = $window.Show()
-                                    $null = $window.SetForeground()
-                                }
-
-                                $null = Set-ForegroundWindow `
-                                    -WindowHandle $_.MainWindowHandle
-                            }
-
-                        Start-Sleep -Seconds 2
-                    }
                 }
-                ArgumentList = @($paths, ($true -eq $ShowWindow))
+                ArgumentList = @($paths, ($ShowWindow -eq $true))
             }
 
             $null = Start-Job @jobParams | Wait-Job
-            Start-Sleep -Seconds 6
+
+            if ($showWindow) {
+
+                $null = Get-LMStudioWindow -ShowWindow -NoAutoStart -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            }
 
             # verify process starts within timeout period
             Write-Verbose "Waiting for LM Studio process..."
@@ -116,7 +94,8 @@ function Start-LMStudioApplication {
 
             while (-not (Test-LMStudioProcess) -and
                    ($timer.Elapsed.TotalSeconds -lt $timeout)) {
-                Start-Sleep -Seconds 2
+
+                Start-Sleep -Seconds 1
             }
 
             if (-not (Test-LMStudioProcess)) {
@@ -131,6 +110,10 @@ function Start-LMStudioApplication {
     }
 
     end {
+        if ($ShowWindow) {
+
+            $null = Get-LMStudioWindow -NoAutoStart -ShowWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+        }
     }
 }
 ################################################################################

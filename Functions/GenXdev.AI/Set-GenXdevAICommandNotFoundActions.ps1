@@ -17,7 +17,7 @@ function Set-GenXdevAICommandNotFoundActions {
 
     begin {
         Write-Verbose "Initializing command not found handler"
-        
+
         # store reference to existing handler if it's not already our handler
         $script:originalHandler = $null
         $currentHandler = $ExecutionContext.InvokeCommand.CommandNotFoundAction
@@ -36,15 +36,7 @@ function Set-GenXdevAICommandNotFoundActions {
 
     process {
         try {
-            # append local scripts and modules paths to environment path
-            $scriptsPath = [System.IO.Path]::Combine(
-                [System.IO.Path]::GetDirectoryName($profile),
-                "Scripts")
-            $modulesPath = [System.IO.Path]::Combine(
-                [System.IO.Path]::GetDirectoryName($profile),
-                "Modules\GenXdev.Local")
-            $env:Path = "$scriptsPath;$modulesPath;$($env:Path);C:\Program Files\7-Zip\"
-
+           
             # initialize last command tracker
             $global:lastCmd = ""
 

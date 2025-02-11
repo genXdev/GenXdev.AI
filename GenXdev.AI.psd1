@@ -6,7 +6,7 @@
   RootModule           = 'GenXdev.AI.psm1'
 
   # Version number of this module.
-  ModuleVersion        = '1.106.2025'
+  ModuleVersion        = '1.110.2025'
   # Supported PSEditions
   # CompatiblePSEditions = @()
 
@@ -38,7 +38,7 @@
   # ProcessorArchitecture = ''
 
   # Modules that must be imported into the global environment prior to importing this module
-  RequiredModules      = @(@{ModuleName = 'GenXdev.Data'; ModuleVersion = '1.106.2025' }, @{ModuleName = 'GenXdev.Helpers'; ModuleVersion = '1.106.2025' }, @{ModuleName = 'GenXdev.Webbrowser'; ModuleVersion = '1.106.2025' }, @{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.106.2025' }, @{ModuleName = 'GenXdev.Console'; ModuleVersion = '1.106.2025' }, @{ModuleName = 'GenXdev.FileSystem'; ModuleVersion = '1.106.2025' });
+  RequiredModules      = @(@{ModuleName = 'GenXdev.Data'; ModuleVersion = '1.110.2025' }, @{ModuleName = 'GenXdev.Helpers'; ModuleVersion = '1.110.2025' }, @{ModuleName = 'GenXdev.Webbrowser'; ModuleVersion = '1.110.2025' }, @{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.110.2025' }, @{ModuleName = 'GenXdev.Console'; ModuleVersion = '1.110.2025' }, @{ModuleName = 'GenXdev.FileSystem'; ModuleVersion = '1.110.2025' });
 
   # Assemblies that must be loaded prior to importing this module
   RequiredAssemblies   = @()
@@ -92,8 +92,8 @@
   ".\\Functions\\GenXdev.AI\\Invoke-ImageKeywordUpdate.ps1",
   ".\\Functions\\GenXdev.AI\\Invoke-QueryImageContent.ps1",
   ".\\Functions\\GenXdev.AI\\Invoke-WinMerge.ps1",
-  ".\\Functions\\GenXdev.AI\\New-AudioLLMChat.ps1",
-  ".\\Functions\\GenXdev.AI\\New-TextLLMChat.ps1",
+  ".\\Functions\\GenXdev.AI\\New-LLMAudioChat.ps1",
+  ".\\Functions\\GenXdev.AI\\New-LLMTextChat.ps1",
   ".\\Functions\\GenXdev.AI\\Save-Transcriptions.ps1",
   ".\\Functions\\GenXdev.AI\\Set-GenXdevAICommandNotFoundActions.ps1",
   ".\\Functions\\GenXdev.AI\\Start-AudioTranscription.ps1",
@@ -114,7 +114,7 @@
   ".\\Tests\\GenXdev.AI\\Add-EmoticonsToText.Tests.ps1",
   ".\\Tests\\GenXdev.AI\\escalated-quickly.wav",
   ".\\Tests\\GenXdev.AI\\Get-TextTranslation.Tests.ps1",
-  ".\\Tests\\GenXdev.AI\\New-TextLLMChat.Tests.ps1",
+  ".\\Tests\\GenXdev.AI\\New-LLMTextChat.Tests.ps1",
   ".\\Tests\\GenXdev.AI\\Start-AudioTranscription.Tests.ps1",
   ".\\Tests\\GenXdev.AI.LMStudio\\ConvertTo-LMStudioFunctionDefinition.Tests.ps1",
   ".\\Tests\\GenXdev.AI.LMStudio\\Get-LMStudioLoadedModelList.Tests.ps1",

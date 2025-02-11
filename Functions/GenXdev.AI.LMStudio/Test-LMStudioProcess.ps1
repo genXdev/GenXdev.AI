@@ -15,6 +15,8 @@ function Test-LMStudioProcess {
     [CmdletBinding()]
     [OutputType([bool])]
     param (
+        [Parameter(Mandatory = $false)]
+        [switch] $ShowWindow
     )
 
     begin {
@@ -25,7 +27,20 @@ function Test-LMStudioProcess {
     process {
 
         # get lm studio process with a valid window handle
-        $process = Get-Process -Name "LM Studio" -ErrorAction SilentlyContinue
+        $process = Get-Process -Name "LM Studio" -ErrorAction SilentlyContinue | ForEach-Object {
+
+            if ($ShowWindow) {
+
+                if ($PSItem.MainWindowHandle -ne 0) {
+
+                    $PSItem
+                }
+            }
+            else {
+
+                $PSItem
+            }
+        }
 
         # return true if process exists, false otherwise
         $exists = $null -ne $process

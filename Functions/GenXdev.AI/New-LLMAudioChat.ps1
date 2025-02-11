@@ -12,7 +12,8 @@ and customization parameters.
 Initial query text to send to the model.
 
 .PARAMETER Model
-The LM-Studio model to use. Defaults to "qwen*-instruct".
+Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search
+Defaults to "qwen*-instruct".
 
 .PARAMETER ModelLMSGetIdentifier
 The specific LM-Studio model identifier. Defaults to "qwen2.5-14b-instruct".
@@ -36,12 +37,12 @@ Maximum tokens in response (-1 for default).
 Image detail level (low/medium/high).
 
 .EXAMPLE
-New-AudioLLMChat -Query "Tell me about AI" -Model "qwen*-instruct" -Temperature 0.7
+New-LLMAudioChat -Query "Tell me about AI" -Model "qwen*-instruct" -Temperature 0.7
 
 .EXAMPLE
 llmaudiochat "What is PowerShell?" -DontSpeak
 #>
-function New-AudioLLMChat {
+function New-LLMAudioChat {
 
     [CmdletBinding()]
     [Alias("llmaudiochat")]
@@ -103,6 +104,29 @@ function New-AudioLLMChat {
         ########################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = "Show the LM Studio window")]
+        [switch] $ShowWindow,
+        ########################################################################
+        [Alias("ttl")]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests")]
+        [int] $TTLSeconds = -1,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "How much to offload to the GPU. If `"off`", GPU offloading is disabled. If `"max`", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto "
+        )]
+        [int]$Gpu = -1,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Force stop LM Studio before initialization"
+        )]
+        [switch]$Force,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = "Image detail level")]
         [ValidateSet("low", "medium", "high")]
         [string] $ImageDetail = "low",
@@ -122,11 +146,6 @@ function New-AudioLLMChat {
             HelpMessage = "Array of PowerShell command definitions to use as tools")]
         [GenXdev.Helpers.ExposedCmdletDefinition[]]
         $ExposedCmdLets = @(),
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Show the LM Studio window")]
-        [switch] $ShowLMStudioWindow,
         ###########################################################################
         [Parameter(
             HelpMessage = "Disable text-to-speech for AI responses",
@@ -358,6 +377,155 @@ function New-AudioLLMChat {
         # initialize stopping flag
         $stopping = $false
         Write-Verbose "Starting new audio LLM chat session"
+
+        Write-Verbose "Initializing chat session with model: $Model"
+
+        if ($null -eq $ExposedCmdLets) {
+
+            if ($ContinueLast -and $Global:LMStudioGlobalExposedCmdlets) {
+
+                $ExposedCmdLets = $Global:LMStudioGlobalExposedCmdlets
+            }
+            else {
+                # initialize array of allowed PowerShell cmdlets
+                $ExposedCmdLets = @(
+                    @{
+                        Name          = "Get-ChildItem"
+                        AllowedParams = @("Path=string", "Recurse=boolean", "Filter=array", "Include=array", "Exclude=array", "Force")
+                        OutputText    = $false
+                        Confirm       = $false
+                        JsonDepth     = 3
+                    },
+                    @{
+                        Name          = "Find-Item"
+                        AllowedParams = @("SearchMask", "Pattern", "PassThru")
+                        OutputText    = $false
+                        Confirm       = $false
+                        JsonDepth     = 3
+                    },
+                    @{
+                        Name          = "Get-Content"
+                        AllowedParams = @("Path=string")
+                        OutputText    = $false
+                        Confirm       = $false
+                        JsonDepth     = 2
+                    },
+                    @{
+                        Name          = "Approve-NewTextFileContent"
+                        AllowedParams = @("ContentPath", "NewContent")
+                        OutputText    = $false
+                        Confirm       = $true
+                        JsonDepth     = 2
+                    },
+                    @{
+                        Name          = "Invoke-WebRequest"
+                        AllowedParams = @("Uri=string", "Method=string", "Body", "ContentType=string", "Method=string", "UserAgent=string")
+                        OutputText    = $false
+                        Confirm       = $false
+                        JsonDepth     = 4
+                    },
+                    @{
+                        Name          = "Invoke-RestMethod"
+                        AllowedParams = @("Uri=string", "Method=string", "Body", "ContentType=string", "Method=string", "UserAgent=string")
+                        OutputText    = $false
+                        Confirm       = $false
+                        JsonDepth     = 99
+                    },
+                    @{
+                        Name       = "UTCNow"
+                        OutputText = $true
+                        Confirm    = $false
+                    },
+                    @{
+                        Name       = "Get-LMStudioModelList"
+                        OutputText = $false
+                        Confirm    = $false
+                        JsonDepth  = 2
+                    },
+                    @{
+                        Name       = "Get-LMStudioLoadedModelList"
+                        OutputText = $false
+                        Confirm    = $false
+                        JsonDepth  = 2
+                    },
+                    @{
+                        Name          = "Invoke-LMStudioQuery"
+                        AllowedParams = @("Query", "Model", "Instructions", "Attachments", "IncludeThoughts")
+                        ForcedParams  = @(@{Name = "NoSessionCaching"; Value = $true })
+                        OutputText    = $false
+                        Confirm       = $false
+                        JsonDepth     = 99
+                    }
+                )
+            }
+        }
+
+        if (-not $NoSessionCaching) {
+
+            $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
+        }
+
+        Write-Verbose "Initialized with $($ExposedCmdLets.Count) exposed cmdlets"
+
+        # ensure required parameters are present in bound parameters
+        if (-not $PSBoundParameters.ContainsKey("Model")) {
+            $null = $PSBoundParameters.Add("Model", $Model)
+        }
+
+        if (-not $PSBoundParameters.ContainsKey("ModelLMSGetIdentifier") -and
+            $PSBoundParameters.ContainsKey("Model")) {
+            $null = $PSBoundParameters.Add("ModelLMSGetIdentifier",
+                $ModelLMSGetIdentifier)
+        }
+
+        if (-not $PSBoundParameters.ContainsKey("ContinueLast")) {
+
+            $null = $PSBoundParameters.Add("ContinueLast", $ContinueLast)
+        }
+
+
+        $initializationParams = Copy-IdenticalParamValues -BoundParameters $PSBoundParameters `
+            -FunctionName 'Initialize-LMStudioModel'
+
+        $modelInfo = Initialize-LMStudioModel @initializationParams
+        $Model = $modelInfo.identifier
+
+        if ($PSBoundParameters.ContainsKey("Force")) {
+
+            $null = $PSBoundParameters.Remove("Force")
+        }
+
+        if ($PSBoundParameters.ContainsKey("ShowWindow")) {
+
+            $null = $PSBoundParameters.Remove("ShowWindow")
+        }
+
+        if ($PSBoundParameters.ContainsKey("ChatMode")) {
+
+            $null = $PSBoundParameters.Remove("ChatMode")
+
+            if (($ChatMode -ne "none" -or $ChatOnce)) {
+
+                return;
+            }
+        }
+
+        if (-not $PSBoundParameters.ContainsKey("MaxToken")) {
+
+            $null = $PSBoundParameters.Add("MaxToken", $MaxToken)
+        }
+
+        if ($PSBoundParameters.ContainsKey("ChatOnce")) {
+
+            $null = $PSBoundParameters.Remove("ChatOnce")
+        }
+
+        if (-not $PSBoundParameters.ContainsKey("ExposedCmdLets")) {
+
+            $null = $PSBoundParameters.Add("ExposedCmdLets", $ExposedCmdLets);
+        }
+
+        $hadAQuery = -not [string]::IsNullOrEmpty($Query)
     }
 
     process {
@@ -366,46 +534,51 @@ function New-AudioLLMChat {
 
         while (-not $stopping) {
 
-            try {
-                # prepare audio transcription parameters
-                $startAudioTranscriptionParams = @{}
-                $help = Get-Command "GenXdev.AI\Start-AudioTranscription"
+            if ($hadAQuery) {
 
-                # copy matching parameters from bound parameters
-                $null = $help.ParameterSets.Parameter.Name |
-                Select-Object -Unique |
-                ForEach-Object {
-                    if ($PSBoundParameters.ContainsKey($_)) {
-                        $startAudioTranscriptionParams[$_] = `
-                            $PSBoundParameters[$_]
-                    }
-                }
+                $hadAQuery = $false
+                $Query = [string]::Empty
+                if ($PSBoundParameters.ContainsKey("Query")) {
 
-                # configure audio parameters
-                $startAudioTranscriptionParams.VOX = -not $NoVOX
-                $startAudioTranscriptionParams.Temperature = $AudioTemperature
-                $startAudioTranscriptionParams.ModelFilePath = `
-                    Expand-Path "..\..\..\..\GenXdev.Local\" -CreateDirectory
-
-                # handle query text
-                $text = $Query ? $Query.Trim() : [string]::Empty
-
-                if (-not [string]::IsNullOrWhiteSpace($text)) {
-                    $Query = [string]::Empty
-                }
-                else {
-                    Write-Verbose "Starting audio transcription"
-                    $text = Start-AudioTranscription @startAudioTranscriptionParams
+                    $null = $PSBoundParameters.Remove("Query")
                 }
             }
-            catch {
-                if ("$PSItem" -notlike "*aborted*") {
-                    Write-Error $PSItem
+            else {
+
+                Write-Host "Press any key to start recording or Q to quit"
+
+                try {
+                    # prepare audio transcription parameters
+                    $startAudioTranscriptionParams = Copy-IdenticalParamValues `
+                        -BoundParameters $PSBoundParameters `
+                        -FunctionName "GenXdev.AI\Start-AudioTranscription" `
+
+                    # configure audio parameters
+                    $startAudioTranscriptionParams.VOX = -not $NoVOX
+                    $startAudioTranscriptionParams.Temperature = $AudioTemperature
+                    $startAudioTranscriptionParams.ModelFilePath = `
+                        Expand-Path "..\..\..\..\GenXdev.Local\" -CreateDirectory
+
+                    # handle query text
+                    $text = $Query ? $Query.Trim() : [string]::Empty
+
+                    if (-not [string]::IsNullOrWhiteSpace($text)) {
+                        $Query = [string]::Empty
+                    }
+                    else {
+                        Write-Verbose "Starting audio transcription"
+                        $text = Start-AudioTranscription @startAudioTranscriptionParams
+                    }
                 }
-                Write-Verbose "Audio transcription failed"
-                $Query = [string]::Empty
-                $text = [string]::Empty
-                return
+                catch {
+                    if ("$PSItem" -notlike "*aborted*") {
+                        Write-Error $PSItem
+                    }
+                    Write-Verbose "Audio transcription failed"
+                    $Query = [string]::Empty
+                    $text = [string]::Empty
+                    continue
+                }
             }
 
             # process recognized text
@@ -415,17 +588,9 @@ function New-AudioLLMChat {
                 Write-Verbose "Processing question: $question"
 
                 # prepare LM Studio parameters
-                $invokeLMStudioParams = @{}
-                $help = Get-Command "GenXdev.AI\Invoke-LMStudioQuery"
-
-                # copy matching parameters
-                $null = $help.ParameterSets.Parameter.Name |
-                Select-Object -Unique |
-                ForEach-Object {
-                    if ($PSBoundParameters.ContainsKey($_)) {
-                        $invokeLMStudioParams[$_] = $PSBoundParameters[$_]
-                    }
-                }
+                $invokeLMStudioParams = Copy-IdenticalParamValues `
+                    -BoundParameters $PSBoundParameters `
+                    -FunctionName "GenXdev.AI\Invoke-LMStudioQuery"
 
                 # invoke LM Studio
                 $invokeLMStudioParams.Query = $question
@@ -434,7 +599,7 @@ function New-AudioLLMChat {
                 $invokeLMStudioParams.ChatOnce = $true
 
                 Write-Verbose "Invoking LM Studio query"
-                $answer = New-TextLLMChat @invokeLMStudioParams
+                $answer = New-LLMTextChat @invokeLMStudioParams
 
                 # display response with green color
                 if ($OnlyResponses) {

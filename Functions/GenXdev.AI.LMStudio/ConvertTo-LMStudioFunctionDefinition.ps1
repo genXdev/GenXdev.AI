@@ -1,4 +1,8 @@
 ################################################################################
+# Module: GenXdev.AI.LMStudio
+# Purpose: Converts PowerShell function definitions into a format compatible with LMStudio's
+#          function calling interface. This enables seamless integration between PowerShell
+#          commands and LMStudio's AI capabilities.
 <#
 .SYNOPSIS
 Converts PowerShell functions to LMStudio function definitions.
@@ -13,12 +17,15 @@ One or more PowerShell function info objects to convert to LMStudio definitions.
 .EXAMPLE
 Get-Command Get-Process | ConvertTo-LMStudioFunctionDefinition
 #>
+
+# Main function that handles the conversion process from PowerShell to LMStudio format
 function ConvertTo-LMStudioFunctionDefinition {
 
     [CmdletBinding()]
     [OutputType([System.Collections.Generic.List[hashtable]])]
     param(
         ########################################################################
+        # Array of custom objects containing function definitions and their allowed parameters
         [Parameter(
             Mandatory = $false,
             Position = 0,
@@ -30,7 +37,7 @@ function ConvertTo-LMStudioFunctionDefinition {
 
     begin {
 
-        # create result collection to store function definitions
+        # Initialize collection to store the converted function definitions
         [System.Collections.Generic.List[hashtable]] $result = New-Object "System.Collections.Generic.List[System.Collections.Hashtable]"
 
         Write-Verbose "Starting conversion of PowerShell functions to LMStudio format"
@@ -42,34 +49,40 @@ function ConvertTo-LMStudioFunctionDefinition {
 
             foreach ($currentCommand in $ExposedCmdLets) {
 
+                # Retrieve detailed command information from PowerShell
                 $commandInfo = Get-Command -Name ($currentCommand.Name) -ErrorAction SilentlyContinue | Select-Object -First 1
 
+                # Skip if command doesn't exist in the current session
                 if ($null -eq $commandInfo) {
 
                     Write-Warning "Command $($currentCommand.Name) not found. Skipping."
                     continue
                 }
 
+                # Extract allowed parameters for this command
                 $allowedParams = @($currentCommand.AllowedParams);
 
                 Write-Verbose "Processing command: $($currentCommand.Name)"
 
-                # Handle both function and cmdlet types
+                # Store command info for callback handling
                 $callback = $commandInfo
 
-                # initialize collections for parameter processing
+                # Collections to track parameter metadata
                 [System.Collections.Generic.List[string]]$requiredParams = @()
                 $propertiesTable = @{}
 
+                # Process each parameter of the command
                 @($commandInfo.Parameters.GetEnumerator()).Value | ForEach-Object {
                     $parameter = $_
 
                     [System.Management.Automation.ParameterMetadata]$parameter = $_
 
+                    # Check if parameter is in allowed list and extract type information
                     $found = $false
                     $typeStr = ""
                     foreach ($allowedParam in $allowedParams) {
 
+                        # Parse parameter name and optional type override
                         $parts = "$allowedParam".Split("=");
                         $name = $parts[0].Trim()
 
@@ -84,16 +97,19 @@ function ConvertTo-LMStudioFunctionDefinition {
                         }
                     }
 
+                    # Skip parameters not in allowed list
                     if (-not $found) {
 
                         return
                     }
 
+                    # Track return type information
                     $returnType = "";
                     $powershell_returnType = "";
 
-                    # track required parameters
+                    # Process parameter attributes
                     $parameter.Attributes | ForEach-Object {
+                        # Handle mandatory parameters
                         if ($_.TypeId -eq "System.Management.Automation.ParameterAttribute") {
 
                             if ($_.Mandatory) {
@@ -101,6 +117,7 @@ function ConvertTo-LMStudioFunctionDefinition {
                                 $null = $requiredParams.Add($parameter.Name)
                             }
                         }
+                        # Extract return type information
                         if ($_.TypeId -eq "System.Management.Automation.OutputTypeAttribute") {
 
                             [System.Management.Automation.OutputTypeAttribute] $p = $_
@@ -110,41 +127,48 @@ function ConvertTo-LMStudioFunctionDefinition {
                         }
                     }
 
-                    # build parameter properties
+                    # Attempt to get parameter help message from command documentation
                     $helpMessage = $null;
-                    if ([string]::IsNullOrWhiteSpace($helpMessage)) {
 
-                        try {
-                            $moduleName = $commandInfo.ModuleName
-                            if ($moduleName -like "GenXdev.*") {
+                    try {
+                        $moduleName = $commandInfo.ModuleName
+                        if ($moduleName -like "GenXdev.*") {
 
-                                $moduleName = (($commandInfo.ModuleName.Split(".") | Select-Object -First 2) -Join ".")
-                            }
+                            $moduleName = (($commandInfo.ModuleName.Split(".") | Select-Object -First 2) -Join ".")
+                        }
 
-                            if ([string]::IsNullOrWhiteSpace($moduleName)) {
+                        if ([string]::IsNullOrWhiteSpace($moduleName)) {
 
-                                $moduleName = ""
-                            }
-                            else {
+                            $moduleName = ""
+                        }
+                        else {
 
-                                $moduleName = "$moduleName\"
-                            }
+                            $moduleName = "$moduleName\"
+                        }
 
-                            $help = (Get-Help -Name "$ModuleName$($commandInfo.Name)" -Parameter "$($parameter.name)")
+                        $help = Get-Help -Name "$ModuleName$($commandInfo.Name)" -Parameter ($parameter.Name) -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+                        if ($null -eq $help) {
+
+                            $help = Get-Help -Name ($commandInfo.Name) -Parameter ($parameter.Name) -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+                        }
+
+                        if ($null -ne $help) {
+
                             $paramHelp = $help ? "$(($help.description | Out-String).trim())" : $null
                             if (-not [string]::IsNullOrWhiteSpace($paramHelp)) {
 
                                 $helpMessage = $paramHelp
                             }
                         }
-                        catch {
+                    }
+                    catch {
 
-                            $helpMessage = $null
-                            Write-Verbose "Could not get help message for parameter $($parameter.Name)"
-                        }
+                        $helpMessage = $null
+                        Write-Verbose "Could not get help message for parameter $($parameter.Name)"
                     }
 
-                    if ([string]::IsNullOrWhiteSpace($helpMessage )) {
+                    # Build parameter property dictionary with type information and description
+                    if ([string]::IsNullOrWhiteSpace($helpMessage)) {
 
                         $propertiesTable."$($parameter.Name)" = @{
 
@@ -160,9 +184,16 @@ function ConvertTo-LMStudioFunctionDefinition {
                             description     = $helpMessage
                         }
                     }
+
+                    if ($parameter.ParameterType.IsEnum) {
+
+                        $paramDefinition = $propertiesTable."$($parameter.Name)"
+                        $paramDefinition.type = "string"
+                        $paramDefinition.enum = @($parameter.ParameterType.GetEnumNames())
+                    }
                 }
 
-                # get command help message
+                # Get function-level help message and normalize module name
                 $functionHelpMessage = $commandInfo.Description
 
                 $moduleName = $commandInfo.ModuleName
@@ -179,7 +210,12 @@ function ConvertTo-LMStudioFunctionDefinition {
                 else {
                     $moduleName = "$moduleName\"
                 }
-                if ([string]::IsNullOrWhiteSpace($functionHelpMessage)) {
+
+                if (-not ([string]::IsNullOrWhiteSpace($currentCommand.Description))) {
+
+                    $functionHelpMessage = $currentCommand.Description
+                }
+                elseif ([string]::IsNullOrWhiteSpace($functionHelpMessage)) {
                     try {
 
                         $functionHelpMessage = "$((Get-Help ("$ModuleName$($commandInfo.Name)")).description.Text)"
@@ -189,7 +225,7 @@ function ConvertTo-LMStudioFunctionDefinition {
                     }
                 }
 
-                # build and add function definition
+                # Check if function requires confirmation based on configuration
                 $name = $commandInfo.Name
                 $found = $false;
                 $allcmdLetNames = @($name.ToLowerInvariant(), ($moduleName.ToLowerInvariant() + $name.ToLowerInvariant()))
@@ -204,6 +240,7 @@ function ConvertTo-LMStudioFunctionDefinition {
                     }
                 }
 
+                # Construct the final function definition object
                 $newFunctionDefinition = @{
                     type     = "function"
                     function = @{
@@ -219,6 +256,7 @@ function ConvertTo-LMStudioFunctionDefinition {
                     }
                 }
 
+                # Add return type information if available
                 if (-not [string]::IsNullOrWhiteSpace($powershell_returnType)) {
 
                     $newFunctionDefinition.function.powershell_returnType = $powershell_returnType
@@ -229,6 +267,7 @@ function ConvertTo-LMStudioFunctionDefinition {
                     $newFunctionDefinition.function.returnType = $returnType
                 }
 
+                # Add the completed function definition to results
                 $null = $result.Add($newFunctionDefinition)
             }
         }
@@ -236,6 +275,7 @@ function ConvertTo-LMStudioFunctionDefinition {
 
     end {
 
+        # Return the collection of converted function definitions
         Write-Verbose "Completed conversion with $($result.Count) function definitions"
         Write-Output $result
     }

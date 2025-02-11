@@ -8,7 +8,7 @@ Describe "ConvertTo-LMStudioFunctionDefinition" {
 
             param($a, $b, $c)
 
-            return (@($a, $b, $c, $number) | ConvertTo-Json -Compress)
+            return (@($a, $b, $c, $number) | ConvertTo-Json -Compress -WarningAction SilentlyContinue)
 
         }.GetNewClosure();
 
@@ -23,7 +23,7 @@ Describe "ConvertTo-LMStudioFunctionDefinition" {
 
         $result = & $callback @params
 
-        $result | Should -Be (@(1, $null, 3, $number) | ConvertTo-Json -Compress)
+        $result | Should -Be (@(1, $null, 3, $number) | ConvertTo-Json -Compress -WarningAction SilentlyContinue)
     }
 
     It "Should invoke function properly" {
@@ -48,10 +48,10 @@ Describe "ConvertTo-LMStudioFunctionDefinition" {
         # Convert dictionary to proper parameter hashtable
         $params = @{"Path" = "B:\" }
 
-        Write-Verbose "Final parameter hashtable: $($params | ConvertTo-Json)"
+        Write-Verbose "Final parameter hashtable: $($params | ConvertTo-Json -WarningAction SilentlyContinue)"
 
         # Use $functionDefinition instead of undefined $matchedFunc
-        $callbackResult = & $callback @params | ConvertTo-Json -Compress
+        $callbackResult = & $callback @params | ConvertTo-Json -Compress  -WarningAction SilentlyContinue
         $callbackResult | Should -BeLike "*Movies*"
     }
 }

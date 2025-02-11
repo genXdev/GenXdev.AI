@@ -8,7 +8,8 @@ Initializes or reinitializes LM Studio with a specified model, handling process
 management and configuration settings.
 
 .PARAMETER Model
-Name or partial path of the model to initialize.
+Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search
+Defaults to "qwen*-instruct".
 
 .PARAMETER ModelLMSGetIdentifier
 The specific LM-Studio model identifier to use.
@@ -86,11 +87,6 @@ function AssureLMStudio {
 
         Write-Verbose "Starting AssureLMStudio with Model: $Model"
 
-        # remove force parameter if present as it's handled separately
-        if ($PSBoundParameters.ContainsKey("Force")) {
-            $null = $PSBoundParameters.Remove("Force")
-        }
-
         # ensure default model parameter is set
         if (-not $PSBoundParameters.ContainsKey("Model")) {
             $null = $PSBoundParameters.Add("Model", "qwen*-instruct")
@@ -99,26 +95,19 @@ function AssureLMStudio {
         # ensure default model identifier is set
         if (-not $PSBoundParameters.ContainsKey("ModelLMSGetIdentifier")) {
             $null = $PSBoundParameters.Add("ModelLMSGetIdentifier", `
-                "qwen2.5-14b-instruct")
+                    "qwen2.5-14b-instruct")
         }
 
         # ensure default max token is set
         if (-not $PSBoundParameters.ContainsKey("MaxToken")) {
             $null = $PSBoundParameters.Add("MaxToken", 32768)
         }
-
-        # force stop LM Studio processes if requested
-        if ($Force) {
-            Write-Verbose "Force parameter specified, stopping LM Studio processes"
-            $null = Get-Process "LM Studio", "LMS" -ErrorAction SilentlyContinue |
-                Stop-Process -Force
-        }
     }
 
     process {
 
         Write-Verbose "Initializing LM Studio model with parameters"
-        Initialize-LMStudioModel @PSBoundParameters
+        $null = Initialize-LMStudioModel @PSBoundParameters
     }
 
     end {

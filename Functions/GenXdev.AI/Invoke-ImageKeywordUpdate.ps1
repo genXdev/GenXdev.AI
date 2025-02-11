@@ -131,7 +131,7 @@ function Invoke-ImageKeywordUpdate {
                     }
 
                     # write the description to the json file
-                    [System.IO.File]::WriteAllText("$($image):description.json", ($description | ConvertFrom-Json | ConvertTo-Json -Compress -Depth 20))
+                    [System.IO.File]::WriteAllText("$($image):description.json", ($description | ConvertFrom-Json | ConvertTo-Json -Compress -Depth 20 -WarningAction SilentlyContinue))
                 }
                 catch {
 

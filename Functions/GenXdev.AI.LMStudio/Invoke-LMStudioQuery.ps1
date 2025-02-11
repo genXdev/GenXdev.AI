@@ -12,7 +12,7 @@ definitions.
 Text query to send to the model.
 
 .PARAMETER Model
-The LM-Studio model to use. Defaults to "qwen".
+Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search
 
 .PARAMETER ModelLMSGetIdentifier
 Identifier used for getting specific model from LM Studio.
@@ -47,7 +47,7 @@ Array of PowerShell commands to use as tools.
 .PARAMETER NoConfirmationFor
 Array of ToolFunction names that don't require user confirmation.
 
-.PARAMETER ShowLMStudioWindow
+.PARAMETER ShowWindow
 Show the LM Studio window.
 
 .PARAMETER TTLSeconds
@@ -127,6 +127,29 @@ function Invoke-LMStudioQuery {
         ########################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = "Show the LM Studio window")]
+        [switch] $ShowWindow,
+        ########################################################################
+        [Alias("ttl")]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests")]
+        [int] $TTLSeconds = -1,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "How much to offload to the GPU. If `"off`", GPU offloading is disabled. If `"max`", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto "
+        )]
+        [int]$Gpu = -1,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Force stop LM Studio before initialization"
+        )]
+        [switch]$Force,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = "Image detail level")]
         [ValidateSet("low", "medium", "high")]
         [string] $ImageDetail = "low",
@@ -157,17 +180,6 @@ function Invoke-LMStudioQuery {
         [string[]]
         [Alias("NoConfirmationFor")]
         $NoConfirmationToolFunctionNames = @(),
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Show the LM Studio window")]
-        [switch] $ShowLMStudioWindow,
-        ########################################################################
-        [Alias("ttl")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests")]
-        [int] $TTLSeconds = -1,
         ###########################################################################
         [Parameter(
             HelpMessage = "Enable text-to-speech for AI responses",
@@ -201,6 +213,23 @@ function Invoke-LMStudioQuery {
 
     begin {
 
+        $initializationParams = Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName 'Initialize-LMStudioModel'
+
+        if ($PSBoundParameters.ContainsKey("Force")) {
+
+            $null = $PSBoundParameters.Remove("Force")
+        }
+
+        $modelInfo = Initialize-LMStudioModel @initializationParams
+        $Model = $modelInfo.identifier
+
+        if ($PSBoundParameters.ContainsKey("ShowWindow")) {
+
+            $null = $PSBoundParameters.Remove("ShowWindow")
+        }
+
         if ($PSBoundParameters.ContainsKey("ChatMode")) {
 
             $null = $PSBoundParameters.Remove("ChatMode")
@@ -210,59 +239,6 @@ function Invoke-LMStudioQuery {
                 return;
             }
         }
-
-        if ([string]::IsNullOrWhiteSpace($Model)) {
-
-            if (-not [string]::IsNullOrWhiteSpace($ModelLMSGetIdentifier)) {
-
-                if ($ModelLMSGetIdentifier.ToLowerInvariant() -like "https://huggingface.co/lmstudio-community/*-GGUF") {
-
-                    $Model = $ModelLMSGetIdentifier.Substring($ModelLMSGetIdentifier.LastIndexOf("/") + 1).ToLowerInvariant();
-                }
-                else {
-
-                    $Model = $ModelLMSGetIdentifier
-                }
-            }
-            else {
-
-                $Model = "qwen*-instruct"
-                $ModelLMSGetIdentifier = "qwen2.5-14b-instruct"
-            }
-        }
-
-        # initialize lm studio application
-        Write-Verbose "Starting LM Studio application"
-        $null = Start-LMStudioApplication -ShowWindow:$ShowLMStudioWindow
-
-        # initialize model
-        Write-Verbose "Initializing model: $Model"
-
-        $initializationParams = @{
-            Model                 = $Model
-            ModelLMSGetIdentifier = $ModelLMSGetIdentifier
-        }
-
-        if ($MaxToken -gt 0) {
-
-            $initializationParams.MaxToken = $MaxToken
-        }
-
-        if ($PSBoundParameters.ContainsKey("TTLSeconds")) {
-
-            $initializationParams.TTLSeconds = $TTLSeconds
-        }
-        if ($PSBoundParameters.ContainsKey("ShowLMStudioWindow")) {
-
-            $initializationParams.ShowWindow = $ShowLMStudioWindow
-        }
-        if ($PreferredModels -and $PreferredModels.Count -gt 0) {
-
-            $initializationParams.Add("PreferredModels", $PreferredModels)
-        }
-
-        $modelInfo = Initialize-LMStudioModel @initializationParams 2> $null
-        $Model = $modelInfo.identifier
 
         # convert tool functions if needed
         # or take from global cache if available and user wants to continue last conversation
@@ -314,10 +290,10 @@ function Invoke-LMStudioQuery {
         }
 
         # add if not already present
-        $newMessageJson = $newMessage | ConvertTo-Json -Depth 10 -Compress
+        $newMessageJson = $newMessage | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
         $isDuplicate = $false
         foreach ($msg in $messages) {
-            if (($msg | ConvertTo-Json -Depth 10 -Compress) -eq $newMessageJson) {
+            if (($msg | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) -eq $newMessageJson) {
                 $isDuplicate = $true
                 break
             }
@@ -346,18 +322,30 @@ function Invoke-LMStudioQuery {
 
         if ($ChatOnce) {
 
-            return (New-TextLLMChat @PSBoundParameters)
+            $invocationArgs = Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName 'New-LLMTextChat'
+
+            return (New-LLMTextChat @invocationArgs)
         }
 
         switch ($ChatMode) {
 
             "textprompt" {
 
-                return (New-TextLLMChat @PSBoundParameters)
+                $invocationArgs = Copy-IdenticalParamValues `
+                    -BoundParameters $PSBoundParameters `
+                    -FunctionName 'New-LLMTextChat'
+
+                return (New-LLMTextChat @invocationArgs)
             }
             "default audioinput device" {
 
-                return (New-AudioLLMChat @PSBoundParameters)
+                $invocationArgs = Copy-IdenticalParamValues `
+                    -BoundParameters $PSBoundParameters `
+                    -FunctionName 'New-LLMAudioChat'
+
+                return (New-LLMAudioChat @invocationArgs)
             }
             "desktop audio" {
 
@@ -366,7 +354,11 @@ function Invoke-LMStudioQuery {
                     $null = $PSBoundParameters.Add("DesktopAudio", $true)
                 }
 
-                return (New-AudioLLMChat @PSBoundParameters)
+                $invocationArgs = Copy-IdenticalParamValues `
+                    -BoundParameters $PSBoundParameters `
+                    -FunctionName 'New-LLMAudioChat'
+
+                return (New-LLMAudioChat @invocationArgs)
             }
         }
 
@@ -712,7 +704,7 @@ function Invoke-LMStudioQuery {
                         bytes        = "data:$mimeType;base64,$base64Data"
                     }
                 }
-                $newMessageJson = $newMessage | ConvertTo-Json -Depth 10 -Compress
+                $newMessageJson = $newMessage | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
                 $isDuplicate = $false
                 foreach ($msg in $messages) {
                     if (($msg | ConvertTo-Json -Depth 10 -Compress) -eq $newMessageJson) {
@@ -739,10 +731,10 @@ function Invoke-LMStudioQuery {
                         }
                     )
                 }
-                $newMessageJson = $newMessage | ConvertTo-Json -Depth 10 -Compress
+                $newMessageJson = $newMessage | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
                 $isDuplicate = $false
                 foreach ($msg in $messages) {
-                    if (($msg | ConvertTo-Json -Depth 10 -Compress) -eq $newMessageJson) {
+                    if (($msg | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) -eq $newMessageJson) {
                         $isDuplicate = $true
                         break
                     }
@@ -788,7 +780,7 @@ function Invoke-LMStudioQuery {
             $payload.function_call = "auto"
             if (-not [string]::IsNullOrWhiteSpace($Query)) {
 
-                $Query = "You now have access to and only to the following Powershell cmdlets: $(($Functions.function.name | Select-Object -Unique | ConvertTo-Json -Compress -Depth 1))`r`n$Query"
+                $Query = "You now have access to and only to the following Powershell cmdlets: $(($Functions.function.name | Select-Object -Unique | ConvertTo-Json -Compress -Depth 1 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue))`r`n$Query"
             }
         }
 
@@ -804,7 +796,7 @@ function Invoke-LMStudioQuery {
         }
 
         # convert payload to json
-        $json = $payload | ConvertTo-Json -Depth 60 -Compress
+        $json = $payload | ConvertTo-Json -Depth 60 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
 
         Write-Verbose "Querying LM-Studio model '$Model"
@@ -822,11 +814,11 @@ function Invoke-LMStudioQuery {
 
             # Add assistant's tool calls to history
             $newMsg = $response.choices[0].message
-            $newMsgJson = $newMsg | ConvertTo-Json -Depth 10 -Compress
+            $newMsgJson = $newMsg | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
 
             # Only add if it's not a duplicate of the last message
             if ($messages.Count -eq 0 -or
-                ($messages[-1] | ConvertTo-Json -Depth 10 -Compress) -ne $newMsgJson) {
+                ($messages[-1] | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) -ne $newMsgJson) {
                 $messages.Add($newMsg) | Out-Null
             }
 
@@ -919,7 +911,7 @@ function Invoke-LMStudioQuery {
                     if ($existingResponse) {
                         # Replace the tool call with existing response
                         $replacement = [string]::IsNullOrWhiteSpace($existingResponse.Content) ?
-                            ($existingResponse.Error | ConvertTo-Json -Compress -Depth 3) :
+                            ($existingResponse.Error | ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) :
                         $existingResponse.Content;
 
                         $content = $content.Replace($matches[0], $replacement)
@@ -930,14 +922,15 @@ function Invoke-LMStudioQuery {
                         -ToolCall:$toolCall `
                         -Functions:$Functions `
                         -ExposedCmdLets:$ExposedCmdLets `
-                        -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames | Select-Object -First 1
+                        -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames `
+                        -ForceAsText | Select-Object -First 1
 
                     if (-not $invocationResult.CommandExposed) {
 
                         $newMessage = @{
                             role         = "tool"
                             name         = $toolCall.function.name
-                            content      = $invocationResult.Error ? ($invocationResult.Error | ConvertTo-Json -Compress -Depth 3) : $invocationResult.Reason
+                            content      = $invocationResult.Error ? ($invocationResult.Error | ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) : $invocationResult.Reason
                             tool_call_id = $toolCall.id
                             id           = $toolCall.id
                             arguments    = $toolCall.function.arguments | ConvertFrom-Json
@@ -975,7 +968,7 @@ function Invoke-LMStudioQuery {
                             error           = $_.Exception.Message
                             exceptionThrown = $true
                             exceptionClass  = $_.Exception.GetType().FullName
-                        } | ConvertTo-Json -Compress -Depth 3;
+                        } | ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue;
                         tool_call_id = $toolCall.id
                         id           = $toolCall.id
                         arguments    = $toolCall.function.arguments | ConvertFrom-Json
@@ -994,23 +987,28 @@ function Invoke-LMStudioQuery {
 
                     $finalOutput += $content + "`n"
                 }
-                else {
 
-                    # Process thoughts as before
-                    $i = $content.IndexOf("<think>")
-                    if ($i -ge 0) {
-                        $i += 7
-                        $i2 = $content.IndexOf("</think>")
-                        if ($i2 -ge 0) {
-                            $thoughts = $content.Substring($i, $i2 - $i)
+                # Process thoughts as before
+                $i = $content.IndexOf("<think>")
+                if ($i -ge 0) {
+                    $i += 7
+                    $i2 = $content.IndexOf("</think>")
+                    if ($i2 -ge 0) {
+
+                        $thoughts = $content.Substring($i, $i2 - $i)
+
+                        if (-not $IncludeThoughts) {
+
                             Write-Host $thoughts -ForegroundColor Yellow
-                            if ($SpeakThoughts) {
+                        }
 
-                                $null = Start-TextToSpeech $thoughts
-                            }
+                        if ($SpeakThoughts) {
+
+                            $null = Start-TextToSpeech $thoughts
                         }
                     }
                 }
+
                 # Remove <think> patterns
                 $cleaned = [regex]::Replace($content, "<think>.*?</think>", "")
                 $finalOutput += $cleaned + "`n"
