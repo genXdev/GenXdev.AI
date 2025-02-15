@@ -9,7 +9,7 @@ management and configuration settings.
 
 .PARAMETER Model
 Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search
-Defaults to "qwen*-instruct".
+Defaults to "*-tool-use".
 
 .PARAMETER ModelLMSGetIdentifier
 The specific LM-Studio model identifier to use.
@@ -27,10 +27,10 @@ Shows the LM Studio window during initialization when specified.
 Forces LM Studio to stop before initialization when specified.
 
 .EXAMPLE
-AssureLMStudio -Model "qwen2.5-14b-instruct" -MaxToken 32768 -ShowWindow
+AssureLMStudio -Model "llama-3-groq-8b-tool-use" -MaxToken 8192 -ShowWindow
 
 .EXAMPLE
-AssureLMStudio "qwen2.5-14b-instruct" -ttl 3600 -Force
+AssureLMStudio "llama-3-groq-8b-tool-use" -ttl 3600 -Force
 #>
 function AssureLMStudio {
 
@@ -44,14 +44,14 @@ function AssureLMStudio {
             HelpMessage = "Name or partial path of the model to initialize"
         )]
         [ValidateNotNullOrEmpty()]
-        [string]$Model = "qwen*-instruct",
+        [string]$Model = "*-tool-use",
         ########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 1,
             HelpMessage = "The LM-Studio model to use"
         )]
-        [string]$ModelLMSGetIdentifier = "qwen2.5-14b-instruct",
+        [string]$ModelLMSGetIdentifier = "llama-3-groq-8b-tool-use",
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -59,7 +59,7 @@ function AssureLMStudio {
             HelpMessage = "Maximum tokens in response (-1 for default)"
         )]
         [Alias("MaxTokens")]
-        [int]$MaxToken = 32768,
+        [int]$MaxToken = 8192,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -89,25 +89,30 @@ function AssureLMStudio {
 
         # ensure default model parameter is set
         if (-not $PSBoundParameters.ContainsKey("Model")) {
-            $null = $PSBoundParameters.Add("Model", "qwen*-instruct")
+            $null = $PSBoundParameters.Add("Model", "*-tool-use")
         }
 
         # ensure default model identifier is set
         if (-not $PSBoundParameters.ContainsKey("ModelLMSGetIdentifier")) {
             $null = $PSBoundParameters.Add("ModelLMSGetIdentifier", `
-                    "qwen2.5-14b-instruct")
+                    "llama-3-groq-8b-tool-use")
         }
 
         # ensure default max token is set
         if (-not $PSBoundParameters.ContainsKey("MaxToken")) {
-            $null = $PSBoundParameters.Add("MaxToken", 32768)
+            $null = $PSBoundParameters.Add("MaxToken", 8192)
         }
     }
 
     process {
 
+        $invocationArguments = Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "Initialize-LMStudioModel" `
+            -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+
         Write-Verbose "Initializing LM Studio model with parameters"
-        $null = Initialize-LMStudioModel @PSBoundParameters
+        $null = Initialize-LMStudioModel @invocationArguments
     }
 
     end {

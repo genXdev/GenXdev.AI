@@ -1,14 +1,38 @@
 ################################################################################
 <#
 .SYNOPSIS
-Gets the a window helper for the LM Studio application.
+Gets a window helper for the LM Studio application.
 
 .DESCRIPTION
-Gets the a window helper for the LM Studio application. If LM Studio is not
-running, it will be started automatically.
+Gets a window helper for the LM Studio application. If LM Studio is not running,
+it will be started automatically unless prevented by NoAutoStart switch.
+
+.PARAMETER Model
+Name or partial path of the model to initialize.
+
+.PARAMETER ModelLMSGetIdentifier
+The LM-Studio model identifier to use.
+
+.PARAMETER MaxToken
+Maximum tokens in response. Use -1 for default value.
+
+.PARAMETER TTLSeconds
+Set a Time To Live (in seconds) for models loaded via API.
+
+.PARAMETER ShowWindow
+Switch to show LM Studio window during initialization.
+
+.PARAMETER Force
+Switch to force stop LM Studio before initialization.
+
+.PARAMETER NoAutoStart
+Switch to prevent automatic start of LM Studio if not running.
 
 .EXAMPLE
-Get-LMStudioWindow
+Get-LMStudioWindow -Model "llama-2" -MaxToken 4096 -ShowWindow
+
+.EXAMPLE
+Get-LMStudioWindow "*-tool-use" -ttl 3600
 #>
 function Get-LMStudioWindow {
 
@@ -22,14 +46,14 @@ function Get-LMStudioWindow {
             HelpMessage = "Name or partial path of the model to initialize"
         )]
         [ValidateNotNullOrEmpty()]
-        [string]$Model = "qwen*-instruct",
+        [string]$Model = "*-tool-use",
         ########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 1,
             HelpMessage = "The LM-Studio model to use"
         )]
-        [string]$ModelLMSGetIdentifier = "qwen2.5-14b-instruct",
+        [string]$ModelLMSGetIdentifier = "llama-3-groq-8b-tool-use",
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -37,7 +61,7 @@ function Get-LMStudioWindow {
             HelpMessage = "Maximum tokens in response (-1 for default)"
         )]
         [Alias("MaxTokens")]
-        [int]$MaxToken = 32768,
+        [int]$MaxToken = 8192,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -68,36 +92,48 @@ function Get-LMStudioWindow {
 
     begin {
 
-        Write-Verbose "Starting to look for LM Studio window"
+        Write-Verbose "Starting search for LM Studio window"
 
         if ($Force -and (-not $NoAutoStart)) {
 
-            $null = AssureLMStudio @PSBoundParameters
+            # copy matching parameters to AssureLMStudio function call
+            $invocationArguments = Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName "GenXdev.AI\AssureLMStudio" `
+                -DefaultValues (Get-Variable -Scope Local -Name * `
+                    -ErrorAction SilentlyContinue)
+
+            $null = AssureLMStudio @invocationArguments
         }
 
-        $process = Get-Process "LM Studio" |
+        # get main lm studio process if running
+        $process = Get-Process "LM Studio" -ErrorAction SilentlyContinue |
         Where-Object { $_.MainWindowHandle -ne 0 } |
         Select-Object -First 1
     }
 
     process {
 
-        function checkOthers {
+        function CheckRunningInstances {
 
+            # get all running lm studio processes
             $others = @(Get-Process "LM Studio" -ErrorAction SilentlyContinue)
 
             if ($others.Count -gt 0) {
 
+                # start new job to handle window initialization
                 $null = Start-Job -ScriptBlock {
 
                     param($paths)
 
+                    # launch lm studio normally
                     $null = Start-Process `
                         -FilePath ($paths.LMStudioExe) `
                         -WindowStyle "Normal"
 
                     Start-Sleep 3
 
+                    # launch second instance
                     $null = Start-Process `
                         -FilePath ($paths.LMStudioExe) `
                         -WindowStyle "Normal"
@@ -106,30 +142,38 @@ function Get-LMStudioWindow {
 
                 Start-Sleep -Seconds 3
 
+                # get process with main window
                 $process = Get-Process "LM Studio" |
                 Where-Object { $_.MainWindowHandle -ne 0 } |
                 Select-Object -First 1
             }
         }
 
-        # try to find running LM Studio process with a main window
+        # try to find running process with main window
         if ($null -eq $process) {
 
-            checkOthers
+            CheckRunningInstances
         }
 
         if ($null -eq $process) {
 
             if ($NoAutoStart) {
-
                 Write-Error "No running LM Studio found"
-                return;
+                return
             }
 
-            Write-Verbose "No running LM Studio found, starting new instance"
-            # start LM Studio and try again
-            $null = AssureLMStudio @PSBoundParameters
+            Write-Verbose "Starting new LM Studio instance"
 
+            # prepare parameters for AssureLMStudio
+            $invocationArguments = Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName "GenXdev.AI\AssureLMStudio" `
+                -DefaultValues (Get-Variable -Scope Local -Name * `
+                    -ErrorAction SilentlyContinue)
+
+            $null = AssureLMStudio @invocationArguments
+
+            # get newly started process
             $process = Get-Process "LM Studio" |
             Where-Object { $_.MainWindowHandle -ne 0 } |
             Select-Object -First 1
@@ -137,37 +181,40 @@ function Get-LMStudioWindow {
 
         if ($null -eq $process) {
 
-            checkOthers
+            CheckRunningInstances
         }
 
         if ($process) {
 
-            Write-Verbose "Found running LM Studio process with ID: $($process.Id)"
+            Write-Verbose "Found LM Studio process (PID: $($process.Id))"
 
-            # return a window helper for the found process
+            # get window helper for process
             $result = Get-Window -ProcessId ($process.Id)
 
             if ($ShowWindow -and $null -ne $result) {
 
+                # position windows and set focus
                 $null = Set-WindowPosition -Left -Monitor 0
-                Get-Process "LM Studio" -ErrorAction SilentlyContinue | Where-Object -Property MainWindowHandle -NE 0 | ForEach-Object {
 
-                    $null = Set-WindowPosition -Process $PSItem -Right -Monitor 0
+                Get-Process "LM Studio" -ErrorAction SilentlyContinue |
+                Where-Object -Property MainWindowHandle -NE 0 |
+                ForEach-Object {
+                    $null = Set-WindowPosition -Process $_ -Right -Monitor 0
                 }
-                $result.SetForeground();
-                Send-Keys "^2";
-                (Get-PowershellMainWindow).SetForeground();
+
+                $result.SetForeground()
+                Send-Keys "^2"
+                (Get-PowershellMainWindow).SetForeground()
             }
 
             Write-Output $result
-            return;
+            return
         }
 
         Write-Error "Failed to start LM Studio"
     }
 
     end {
-
     }
 }
 ################################################################################

@@ -1,80 +1,81 @@
 ################################################################################
 <#
 .SYNOPSIS
-Sends queries to LM Studio and processes responses.
+Sends queries to an OpenAI compatible Large Language Chat completion API and
+processes responses.
 
 .DESCRIPTION
-Interacts with LM Studio to process queries, handle tool calls, and manage
-conversation history. Supports attachments, system instructions, and function
-definitions.
+This function sends queries to an OpenAI compatible Large Language Chat completion
+API and processes responses. It supports text and image inputs, handles tool
+function calls, and can operate in various chat modes including text and audio.
 
 .PARAMETER Query
-Text query to send to the model.
+The text query to send to the model. Can be empty for chat modes.
 
 .PARAMETER Model
-Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search
+The name or identifier of the LM Studio model to use.
 
 .PARAMETER ModelLMSGetIdentifier
-Identifier used for getting specific model from LM Studio.
+Alternative identifier for getting a specific model from LM Studio.
 
 .PARAMETER Instructions
-System instructions for the model.
+System instructions to provide context to the model.
 
 .PARAMETER Attachments
-Array of file paths to attach to the query.
+Array of file paths to attach to the query. Supports images and text files.
 
 .PARAMETER Temperature
-Temperature for response randomness (0.0-1.0). Default is 0.0.
+Controls response randomness (0.0-1.0). Lower values are more deterministic.
 
 .PARAMETER MaxToken
-Maximum tokens in response (-1 for default).
+Maximum tokens allowed in the response. Use -1 for model default.
 
 .PARAMETER ImageDetail
-Image detail level (low/medium/high). Default is "low".
+Detail level for image processing (low/medium/high).
 
 .PARAMETER IncludeThoughts
-Include model's thoughts in output.
+Include model's thought process in output.
 
 .PARAMETER ContinueLast
-Continue from last conversation.
+Continue from the last conversation context.
 
 .PARAMETER Functions
-Array of function definitions.
+Array of function definitions that the model can call.
 
 .PARAMETER ExposedCmdLets
-Array of PowerShell commands to use as tools.
+PowerShell commands to expose as tools to the model.
 
 .PARAMETER NoConfirmationFor
-Array of ToolFunction names that don't require user confirmation.
+Tool functions that don't require user confirmation.
 
 .PARAMETER ShowWindow
-Show the LM Studio window.
+Show the LM Studio window during processing.
 
 .PARAMETER TTLSeconds
-Set a TTL (in seconds) for models loaded via API requests.
+Time-to-live in seconds for loaded models.
 
 .PARAMETER Speak
 Enable text-to-speech for AI responses.
 
 .PARAMETER SpeakThoughts
-Enable text-to-speech for AI thought responses.
+Enable text-to-speech for AI thought process.
 
 .PARAMETER ChatMode
-Enable chat mode.
+Enable interactive chat mode with specified input method.
 
 .PARAMETER ChatOnce
-Used internally to only invoke chat mode once after the llm invocation.
+Internal parameter to control chat mode invocation.
 
 .EXAMPLE
-Invoke-LMStudioQuery -Query "What is 2+2?" -Model "qwen" -Temperature 0.7
+Invoke-LLMQuery -Query "What is 2+2?" -Model "qwen" -Temperature 0.7
 
 .EXAMPLE
-qlms "What is 2+2?" -Model "qwen"
+qllm "What is 2+2?" -Model "qwen"
 #>
-function Invoke-LMStudioQuery {
+function Invoke-LLMQuery {
 
     [CmdletBinding()]
-    [Alias("qlms", "qllm", "llm")]
+    [Alias("qllm", "llm", "Invoke-LMStudioQuery", "qlms")]
 
     param(
         ########################################################################
@@ -86,6 +87,7 @@ function Invoke-LMStudioQuery {
         )]
         [AllowEmptyString()]
         [string] $Query = "",
+
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -208,26 +210,44 @@ function Invoke-LMStudioQuery {
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Don't store session in session cache")]
-        [switch] $NoSessionCaching
+        [switch] $NoSessionCaching,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Api endpoint url, defaults to http://localhost:1234/v1/chat/completions")]
+        [string] $ApiEndpoint = $null,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key to use for the request")]
+        [string] $ApiKey = $null
+        ########################################################################
     )
 
     begin {
+        # initialize lm studio if using localhost
+        if ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or
+            $ApiEndpoint.Contains("localhost")) {
 
-        $initializationParams = Copy-IdenticalParamValues `
-            -BoundParameters $PSBoundParameters `
-            -FunctionName 'Initialize-LMStudioModel'
+            $initParams = Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
+                -DefaultValues (Get-Variable -Scope Local -Name * `
+                    -ErrorAction SilentlyContinue)
 
-        if ($PSBoundParameters.ContainsKey("Force")) {
+            if ($PSBoundParameters.ContainsKey("Force")) {
+                $null = $PSBoundParameters.Remove("Force")
+                $Force = $false
+            }
 
-            $null = $PSBoundParameters.Remove("Force")
+            $modelInfo = Initialize-LMStudioModel @initParams
+            $Model = $modelInfo.identifier
         }
-
-        $modelInfo = Initialize-LMStudioModel @initializationParams
-        $Model = $modelInfo.identifier
 
         if ($PSBoundParameters.ContainsKey("ShowWindow")) {
 
             $null = $PSBoundParameters.Remove("ShowWindow")
+            $ShowWindow = $false
         }
 
         if ($PSBoundParameters.ContainsKey("ChatMode")) {
@@ -304,27 +324,31 @@ function Invoke-LMStudioQuery {
         }
 
         # prepare api endpoint
+
         $apiUrl = "http://localhost:1234/v1/chat/completions"
+
+        if (-not [string]::IsNullOrWhiteSpace($ApiEndpoint)) {
+
+            $apiUrl = $ApiEndpoint
+        }
+
         $headers = @{ "Content-Type" = "application/json" }
+        if (-not [string]::IsNullOrWhiteSpace($ApiKey)) {
+
+            $headers."Authorization" = "Bearer $ApiKey"
+        }
 
         Write-Verbose "Initialized conversation with system instructions"
     }
 
     process {
 
-        if ($ChatOnce -or ((-not [string]::IsNullOrWhiteSpace($Chatmode) -and ($ChatMode -ne "none")))) {
-
-            if ($PSBoundParameters.ContainsKey("NoConfirmationToolFunctionNames")) {
-
-                $null = $PSBoundParameters.Remove("NoConfirmationToolFunctionNames")
-            }
-        }
-
         if ($ChatOnce) {
 
             $invocationArgs = Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName 'New-LLMTextChat'
+                -FunctionName 'GenXdev.AI\New-LLMTextChat' `
+                -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
             return (New-LLMTextChat @invocationArgs)
         }
@@ -335,7 +359,8 @@ function Invoke-LMStudioQuery {
 
                 $invocationArgs = Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
-                    -FunctionName 'New-LLMTextChat'
+                    -FunctionName 'GenXdev.AI\New-LLMTextChat' `
+                    -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
                 return (New-LLMTextChat @invocationArgs)
             }
@@ -343,20 +368,18 @@ function Invoke-LMStudioQuery {
 
                 $invocationArgs = Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
-                    -FunctionName 'New-LLMAudioChat'
+                    -FunctionName 'GenXdev.AI\New-LLMAudioChat' `
+                    -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
                 return (New-LLMAudioChat @invocationArgs)
             }
             "desktop audio" {
 
-                if (-not $PSBoundParameters.ContainsKey("DesktopAudio")) {
-
-                    $null = $PSBoundParameters.Add("DesktopAudio", $true)
-                }
-
+                $DesktopAudio = $true
                 $invocationArgs = Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
-                    -FunctionName 'New-LLMAudioChat'
+                    -FunctionName 'GenXdev.AI\New-LLMAudioChat' `
+                    -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
                 return (New-LLMAudioChat @invocationArgs)
             }
@@ -747,12 +770,21 @@ function Invoke-LMStudioQuery {
         }
 
         # prepare api payload
+
         $payload = @{
             stream      = $false
-            model       = "$Model"
             messages    = $messages
             temperature = $Temperature
-            max_tokens  = $MaxToken
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($Model)) {
+
+            $payload.model = $Model
+        }
+
+        if ($MaxToken -gt 0) {
+
+            $payload.max_tokens = $MaxToken
         }
 
         if ($Functions -and $Functions.Count -gt 0) {
@@ -763,14 +795,13 @@ function Invoke-LMStudioQuery {
                     [PSCustomObject] @{
                         type     = $_.type
                         function = [PSCustomObject] @{
-                            name                       = $_.function.name
-                            description                = $_.function.description
-                            parameters                 = @{
+                            name        = $_.function.name
+                            description = $_.function.description
+                            parameters  = @{
                                 type       = 'object'
                                 properties = [PSCustomObject] $_.function.parameters.properties
                                 required   = $_.function.parameters.required
                             }
-                            user_confirmation_required = $_.function.user_confirmation_required -eq $true
                         }
                     }
                 }
@@ -881,7 +912,7 @@ function Invoke-LMStudioQuery {
                 $PSBoundParameters['Query'] = ""
             }
 
-            Invoke-LMStudioQuery @PSBoundParameters
+            Invoke-LLMQuery @PSBoundParameters
 
             return;
         }

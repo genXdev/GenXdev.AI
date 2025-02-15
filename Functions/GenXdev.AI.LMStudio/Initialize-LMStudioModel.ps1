@@ -109,6 +109,7 @@ function Initialize-LMStudioModel {
 
                 $null = $PSBoundParameters.Remove("Force")
             }
+            $Force = $false
 
             Write-Verbose "Force parameter specified, stopping LM Studio processes"
             $null = Get-Process "LM Studio", "LMS" -ErrorAction SilentlyContinue |

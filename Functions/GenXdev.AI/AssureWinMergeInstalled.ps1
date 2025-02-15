@@ -1,15 +1,16 @@
 ################################################################################
 <#
 .SYNOPSIS
-Ensures WinMerge is installed and available in the system PATH.
+Ensures WinMerge is installed and available for file comparison operations.
 
 .DESCRIPTION
-This function checks if WinMerge is installed and accessible via command line.
-If not found, it will install WinMerge using WinGet and configure the system
-PATH accordingly.
+Verifies if WinMerge is installed and properly configured in the system PATH.
+If not found, installs WinMerge using WinGet and adds it to the user's PATH.
+Handles the complete installation and configuration process automatically.
 
 .EXAMPLE
 AssureWinMergeInstalled
+Ensures WinMerge is installed and properly configured.
 #>
 function AssureWinMergeInstalled {
 
@@ -18,47 +19,79 @@ function AssureWinMergeInstalled {
 
     begin {
 
+        ########################################################################
+        <#
+        .SYNOPSIS
+        Checks if the WinGet PowerShell module is installed.
+
+        .DESCRIPTION
+        Attempts to import the Microsoft.WinGet.Client module and verifies its
+        presence.
+
+        .EXAMPLE
+        IsWinGetInstalled
+        #>
         function IsWinGetInstalled {
 
-            # attempt to import the winget module
-            Import-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
+            # attempt to load the winget module silently
+            Import-Module "Microsoft.WinGet.Client" `
+                -ErrorAction SilentlyContinue
+
+            # verify if module was loaded successfully
             $module = Get-Module "Microsoft.WinGet.Client" `
                 -ErrorAction SilentlyContinue
 
             return $null -ne $module
         }
 
+        ########################################################################
+        <#
+        .SYNOPSIS
+        Installs the WinGet PowerShell module.
+
+        .DESCRIPTION
+        Installs and imports the Microsoft.WinGet.Client module for package
+        management.
+
+        .EXAMPLE
+        InstallWinGet
+        #>
         function InstallWinGet {
 
+            # install and import winget module with force to ensure success
             Write-Verbose "Installing WinGet PowerShell client..."
-            Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber
+            $null = Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber
+
+            # load the newly installed module
             Import-Module "Microsoft.WinGet.Client"
         }
     }
 
     process {
 
-        # check if winmerge command is available
+        # verify if winmerge is available in current session
         if (@(Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
 
-            # get the default winmerge installation path
+            # define the standard installation location for winmerge
             $winMergePath = Join-Path $env:LOCALAPPDATA "Programs\WinMerge"
 
-            # add winmerge path to user environment if not present
+            # get the current user's path environment variable
             $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
+
+            # ensure winmerge path exists in user's path variable
             if ($currentPath -notlike "*$winMergePath*") {
 
-                Write-Verbose "Adding WinMerge to PATH..."
+                Write-Verbose "Adding WinMerge to system PATH..."
                 [Environment]::SetEnvironmentVariable(
                     'PATH',
                     "$currentPath;$winMergePath",
                     'User')
 
-                # update current session path
+                # update current session's path
                 $env:PATH = [Environment]::GetEnvironmentVariable('PATH', 'User')
             }
 
-            # verify if winmerge is now available
+            # check if winmerge is now accessible
             if (@(Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue).Length -gt 0) {
                 return
             }
@@ -70,17 +103,17 @@ function AssureWinMergeInstalled {
                 InstallWinGet
             }
 
-            # install winmerge using winget
-            Install-WinGetPackage -Id 'WinMerge.WinMerge' -Force
+            # install winmerge using winget package manager
+            $null = Install-WinGetPackage -Id 'WinMerge.WinMerge' -Force
 
-            # verify installation success
+            # verify successful installation
             if (-not (Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue)) {
-                Write-Error "WinMerge installation failed."
-                return
+                throw "WinMerge installation failed."
             }
         }
     }
 
-    end {}
+    end {
+    }
 }
 ################################################################################

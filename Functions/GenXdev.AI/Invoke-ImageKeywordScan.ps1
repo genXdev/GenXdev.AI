@@ -1,25 +1,29 @@
 ################################################################################
 <#
 .SYNOPSIS
-Scans images in a directory for keywords and description.
+Scans image files for keywords and descriptions using metadata files.
 
 .DESCRIPTION
-The `Invoke-ImageKeywordScan` function scans images in a directory for keywords and description.
+Searches for image files (jpg, jpeg, png) in the specified directory and its
+subdirectories. For each image, checks associated description.json and
+keywords.json files for metadata. Can filter images based on keyword matches and
+display results in a masonry layout web view or return as objects.
 
 .PARAMETER Keywords
-The keywords to look for, wildcards allowed.
+Array of keywords to search for. Supports wildcards. If empty, returns all images
+with any metadata.
 
 .PARAMETER ImageDirectory
-The image directory path.
+Directory path to search for images. Defaults to current directory.
 
 .PARAMETER PassThru
-Don't show the images in the web browser, return as object instead.
+Switch to return image data as objects instead of displaying in browser.
 
 .EXAMPLE
-Invoke-ImageKeywordScan -Keywords "cat" -ImageDirectory "C:\path\to\images"
+Invoke-ImageKeywordScan -Keywords "cat","dog" -ImageDirectory "C:\Photos"
 
 .EXAMPLE
-findimages -Keywords "cat" -ImageDirectory "C:\path\to\images"
+findimages cat,dog "C:\Photos"
 #>
 function Invoke-ImageKeywordScan {
 
@@ -54,53 +58,70 @@ function Invoke-ImageKeywordScan {
 
     begin {
 
-        # expand the image directory path to its full path
-        $Path = Expand-Path $ImageDirectory
+        # convert relative path to absolute path
+        $path = Expand-Path $ImageDirectory
 
-        # check if the directory exists
-        if (-not [System.IO.Directory]::Exists($Path)) {
+        Write-Verbose "Scanning directory: $path"
 
-            Write-Host "The directory '$Path' does not exist."
+        # validate directory exists before proceeding
+        if (-not [System.IO.Directory]::Exists($path)) {
+
+            Write-Host "The directory '$path' does not exist."
             return
         }
     }
 
     process {
 
-        # get all image files in the directory
-        $results = Get-ChildItem -Path "$Path\*.jpg", "$Path\*.jpeg", "$Path\*.png" -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+        # search for jpg/jpeg/png files and process each one
+        $results = Get-ChildItem -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
+            -Recurse -File -ErrorAction SilentlyContinue |
+        ForEach-Object {
 
             $image = $PSItem.FullName
+            Write-Verbose "Processing image: $image"
+
             $keywordsFound = @()
             $descriptionFound = $null
 
-            # check if description file exists
+            # try to load description metadata if it exists
             if ([System.IO.File]::Exists("$($image):description.json")) {
 
                 try {
-                    # read and parse the description file
-                    $descriptionFound = [System.IO.File]::ReadAllText("$($image):description.json") | ConvertFrom-Json
-                    $keywordsFound = ($null -eq $descriptionFound.keywords) ? @() : $descriptionFound.keywords
+                    $descriptionFound = [System.IO.File]::ReadAllText(
+                        "$($image):description.json") |
+                    ConvertFrom-Json
+
+                    $keywordsFound = ($null -eq $descriptionFound.keywords) ?
+                    @() : $descriptionFound.keywords
                 }
                 catch {
                     $descriptionFound = $null
                 }
             }
 
-            # check if keywords file exists
+            # try to load and merge keywords metadata if it exists
             if ([System.IO.File]::Exists("$($image):keywords.json")) {
 
                 try {
-                    # read and parse the keywords file
-                    $keywordsFound = [System.IO.File]::ReadAllText("$($image):keywords.json") | ConvertFrom-Json
+                    $keywordsFound = [System.IO.File]::ReadAllText(
+                        "$($image):keywords.json") |
+                    ConvertFrom-Json
 
+                    # merge keywords into description if needed
                     if ($null -eq $descriptionFound.keywords) {
 
-                        Add-Member -NotePropertyName "keywords" -InputObject $descriptionFound -NotePropertyValue $keywordsFound -Force | Out-Null
+                        Add-Member -NotePropertyName "keywords" `
+                            -InputObject $descriptionFound `
+                            -NotePropertyValue $keywordsFound -Force |
+                        Out-Null
 
                         [System.IO.File]::Delete("$($image):keywords.json")
 
-                        $descriptionFound | ConvertTo-Json -Depth 99 -Compress -WarningAction SilentlyContinue | Set-Content "$($image):description.json"
+                        $descriptionFound |
+                        ConvertTo-Json -Depth 99 -Compress `
+                            -WarningAction SilentlyContinue |
+                        Set-Content "$($image):description.json"
                     }
                 }
                 catch {
@@ -108,7 +129,7 @@ function Invoke-ImageKeywordScan {
                 }
             }
 
-            # check if no keywords specified or no keywords found
+            # skip if no metadata and no search keywords
             if (
                 ($null -eq $Keywords -or ($Keywords.Length -eq 0)) -and
                 ($null -eq $keywordsFound -or ($keywordsFound.length -eq 0)) -and
@@ -117,11 +138,13 @@ function Invoke-ImageKeywordScan {
                 return
             }
 
-            # check if any of the keywords are found in the description or keywords
+            # check if keywords match metadata
             $found = ($null -eq $Keywords -or ($Keywords.Length -eq 0))
             if (-not $found) {
 
-                $descriptionFound = $null -ne $descriptionFound ? $descriptionFound : "" | ConvertTo-Json -Compress -Depth 10 -WarningAction SilentlyContinue
+                $descriptionFound = $null -ne $descriptionFound ?
+                $descriptionFound : "" |
+                ConvertTo-Json -Compress -Depth 10 -WarningAction SilentlyContinue
 
                 foreach ($requiredKeyword in $Keywords) {
 
@@ -129,7 +152,9 @@ function Invoke-ImageKeywordScan {
 
                     if (-not $found) {
 
-                        if ($null -eq $keywordsFound -or ($keywordsFound.Length -eq 0)) { continue }
+                        if ($null -eq $keywordsFound -or ($keywordsFound.Length -eq 0)) {
+                            continue
+                        }
 
                         foreach ($imageKeyword in $keywordsFound) {
 
@@ -145,8 +170,10 @@ function Invoke-ImageKeywordScan {
                 }
             }
 
+            # return matching image data
             if ($found) {
 
+                Write-Verbose "Found matching image: $image"
                 @{
                     path        = $image
                     keywords    = $keywordsFound
@@ -178,11 +205,22 @@ function Invoke-ImageKeywordScan {
                 return
             }
 
+            # generate unique temp file path for masonry layout
             $filePath = Expand-Path "$env:TEMP\$([DateTime]::Now.Ticks)_images-masonry.html"
-            try { Set-ItemProperty -Path $filePath -Name Attributes -Value ([System.IO.FileAttributes]::Temporary -bor [System.IO.FileAttributes]::Hidden) -ErrorAction SilentlyContinue } catch {}
-            GenerateMasonryLayoutHtml -Images $results -FilePath $filePath
 
+            # set file attributes to temporary and hidden
+            try {
+                Set-ItemProperty -Path $filePath -Name Attributes `
+                    -Value ([System.IO.FileAttributes]::Temporary -bor `
+                        [System.IO.FileAttributes]::Hidden) `
+                    -ErrorAction SilentlyContinue
+            }
+            catch {}
+
+            # generate and display results in browser
+            GenerateMasonryLayoutHtml -Images $results -FilePath $filePath
             Open-Webbrowser -NewWindow -Url $filePath -FullScreen
         }
     }
 }
+################################################################################

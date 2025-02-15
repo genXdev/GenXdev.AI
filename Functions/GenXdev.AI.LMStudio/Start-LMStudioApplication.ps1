@@ -27,7 +27,7 @@ function Start-LMStudioApplication {
             Position = 0,
             HelpMessage = "Show or hide the LM Studio window after starting"
         )]
-        [Alias("sw")]
+        [Alias("sw", "ShowWindow")]
         [switch]$WithVisibleWindow,
         ########################################################################
         [Parameter(

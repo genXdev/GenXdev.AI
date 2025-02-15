@@ -738,7 +738,12 @@ function Get-MediaFileAudioTranscription {
                 # initialize srt counter
                 $i = 1
 
-                Start-AudioTranscription @PSBoundParameters | ForEach-Object {
+                $invocationArguments = Copy-IdenticalParamValues `
+                    -BoundParameters $PSBoundParameters `
+                    -FunctionName "Start-AudioTranscription" `
+                    -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+
+                Start-AudioTranscription @invocationArguments | ForEach-Object {
 
                     $result = $PSItem;
 
@@ -779,8 +784,13 @@ function Get-MediaFileAudioTranscription {
             #  needs translation?
             if (-not [string]::IsNullOrWhiteSpace($LanguageOut)) {
 
+                $invocationArguments = Copy-IdenticalParamValues `
+                    -BoundParameters $PSBoundParameters `
+                    -FunctionName "Start-AudioTranscription" `
+                    -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+
                 # transcribe the audio file to text
-                $results = Start-AudioTranscription @PSBoundParameters
+                $results = Start-AudioTranscription @invocationArguments
 
                 # delegate
                 Get-TextTranslation -Text "$results" -Language $LanguageOut -Model $TranslateUsingLMStudioModel
@@ -790,7 +800,12 @@ function Get-MediaFileAudioTranscription {
             }
 
             # return the text results without translation
-            Start-AudioTranscription @PSBoundParameters
+            $invocationArguments = Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName "Start-AudioTranscription" `
+                -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+
+            Start-AudioTranscription @invocationArguments
         }
         catch {
 

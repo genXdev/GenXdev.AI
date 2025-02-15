@@ -9,13 +9,13 @@ Describe "Initialize-LMStudioModel integration tests" {
 
     It "Should initialize a model by name" {
         # test with default model name that should be available
-        $result = Initialize-LMStudioModel -Model "qwen*-instruct" -ModelLMSGetIdentifier "qwen2.5-14b-instruct"
+        $result = Initialize-LMStudioModel -Model "*-tool-use" -ModelLMSGetIdentifier "llama-3-groq-8b-tool-use"
         $result | Should -Not -Be $null
         $result.path | Should -Not -BeNullOrEmpty
     }
 
     It "Should initialize with window visible" {
-        $result = Initialize-LMStudioModel -Model "qwen*-instruct" -ModelLMSGetIdentifier "qwen2.5-14b-instruct" -ShowWindow
+        $result = Initialize-LMStudioModel -Model "*-tool-use" -ModelLMSGetIdentifier "llama-3-groq-8b-tool-use" -ShowWindow
         $result | Should -Not -Be $null
         $result.path | Should -Not -BeNullOrEmpty
 
@@ -29,7 +29,7 @@ Describe "Initialize-LMStudioModel integration tests" {
         # test with non-existent model name to trigger fallback
         $result = Initialize-LMStudioModel `
             -Model "nonexistent_model_12345" `
-            -PreferredModels @("qwen*-instruct", "mistral")
+            -PreferredModels @("*-tool-use", "mistral")
         $result | Should -Not -BeNullOrEmpty
     }
 }

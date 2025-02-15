@@ -20,7 +20,6 @@ function Test-LMStudioInstallation {
 
     [CmdletBinding()]
     [OutputType([bool])]
-    [Alias("tlms")]
     param()
 
     begin {

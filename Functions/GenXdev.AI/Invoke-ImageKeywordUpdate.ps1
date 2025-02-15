@@ -2,28 +2,35 @@
 
 <#
 .SYNOPSIS
-Updates the keywords and description of images in a directory.
+Updates image metadata with AI-generated descriptions and keywords.
 
 .DESCRIPTION
-The `Invoke-ImageKeywordUpdate` function updates the keywords and description of images in a directory.
+The Invoke-ImageKeywordUpdate function analyzes images using AI to generate
+descriptions, keywords, and other metadata. It creates a companion JSON file for
+each image containing this information. The function can process new images only
+or update existing metadata, and supports recursive directory scanning.
 
 .PARAMETER ImageDirectory
-The directory path of the images to update.
+Specifies the directory containing images to process. Defaults to current
+directory if not specified.
 
 .PARAMETER Recurse
-Recursively search for images in subdirectories.
+When specified, searches for images in the specified directory and all
+subdirectories.
 
 .PARAMETER OnlyNew
-Only update images that do not have keywords and description.
+When specified, only processes images that don't already have metadata JSON
+files.
 
 .PARAMETER RetryFailed
-Retry previously failed images.
+When specified, reprocesses images where previous metadata generation attempts
+failed.
 
 .EXAMPLE
-Invoke-ImageKeywordUpdate -ImageDirectory "C:\path\to\images" -Recurse -OnlyNew -RetryFailed
+Invoke-ImageKeywordUpdate -ImageDirectory "C:\Photos" -Recurse -OnlyNew
 
 .EXAMPLE
-updateimages "C:\path\to\images"
+updateimages -Recurse -RetryFailed
 #>
 function Invoke-ImageKeywordUpdate {
 
@@ -66,28 +73,32 @@ function Invoke-ImageKeywordUpdate {
 
     begin {
 
-        # expand the image directory path to its full path
-        $Path = Expand-Path $ImageDirectory
+        # convert relative path to absolute path
+        $path = Expand-Path $ImageDirectory
 
-        # check if the directory exists
-        if (-not [System.IO.Directory]::Exists($Path)) {
+        # verify directory exists before proceeding
+        if (-not [System.IO.Directory]::Exists($path)) {
 
-            Write-Host "The directory '$Path' does not exist."
+            Write-Host "The directory '$path' does not exist."
             return
         }
     }
 
     process {
 
-        # get all image files in the directory
-        Get-ChildItem -Path "$Path\*.jpg", "$Path\*.jpeg", "$Path\*.png" -Recurse:$Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
+        # get all supported image files from the specified directory
+        Get-ChildItem -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
+            -Recurse:$Recurse -File -ErrorAction SilentlyContinue |
+        ForEach-Object {
 
-            # retry failed images if specified
+            # handle retry logic for previously failed images
             if ($RetryFailed) {
 
                 if ([System.IO.File]::Exists("$($PSItem):description.json")) {
 
-                    if ("$([System.IO.File]::ReadAllText("$($PSItem):description.json"))".StartsWith("{}")) {
+                    # delete empty metadata files to force reprocessing
+                    if ("$([System.IO.File]::ReadAllText(`
+                        "$($PSItem):description.json"))".StartsWith("{}")) {
 
                         [System.IO.File]::Delete("$($PSItem):description.json")
                     }
@@ -96,32 +107,41 @@ function Invoke-ImageKeywordUpdate {
 
             $image = $PSItem.FullName
 
-            # remove read-only attribute if present
+            # ensure image is writable by removing read-only flag if present
             if ($PSItem.Attributes -band [System.IO.FileAttributes]::ReadOnly) {
 
-                $PSItem.Attributes = $PSItem.Attributes -bxor [System.IO.FileAttributes]::ReadOnly
+                $PSItem.Attributes = $PSItem.Attributes -bxor `
+                    [System.IO.FileAttributes]::ReadOnly
             }
 
             $fileExists = [System.IO.File]::Exists("$($image):description.json")
 
-            # update image description if not already present or if OnlyNew is not specified
+            # process image if new or update requested
             if ((-not $OnlyNew) -or (-not $fileExists)) {
 
+                # create empty metadata file if needed
                 if (-not $fileExists) {
 
                     "{}" > "$($image):description.json"
                 }
 
-                Write-Verbose "Getting image description for $image.."
+                Write-Verbose "Analyzing image content: $image"
 
-                # invoke the query to get image description
-                $description = Invoke-QueryImageContent -Query "Analyze image and return a object with properties: 'short_description' (max 80 chars), 'long_description', 'has_nudity, keywords' (array of strings), 'has_explicit_content', 'overall_mood_of_image', 'picture_type' and 'style_type'. Output only json, no markdown or anything other then json." -ImagePath $image -Temperature 0.01
+                # get AI-generated image description and metadata
+                $description = Invoke-QueryImageContent `
+                    -Query "Analyze image and return a object with properties: " + `
+                    "'short_description' (max 80 chars), 'long_description', " + `
+                    "'has_nudity, keywords' (array of strings), " + `
+                    "'has_explicit_content', 'overall_mood_of_image', " + `
+                    "'picture_type' and 'style_type'. " + `
+                    "Output only json, no markdown or anything other then json." `
+                    -ImagePath $image -Temperature 0.01
 
-                Write-Verbose $description
+                Write-Verbose "Received analysis: $description"
 
                 try {
 
-                    # trim and extract the json part of the description
+                    # extract just the JSON portion of the response
                     $description = $description.trim()
                     $i0 = $description.IndexOf("{")
                     $i1 = $description.LastIndexOf("}")
@@ -130,8 +150,12 @@ function Invoke-ImageKeywordUpdate {
                         $description = $description.Substring($i0, $i1 - $i0 + 1)
                     }
 
-                    # write the description to the json file
-                    [System.IO.File]::WriteAllText("$($image):description.json", ($description | ConvertFrom-Json | ConvertTo-Json -Compress -Depth 20 -WarningAction SilentlyContinue))
+                    # save formatted JSON metadata
+                    [System.IO.File]::WriteAllText(
+                        "$($image):description.json",
+                        ($description | ConvertFrom-Json |
+                        ConvertTo-Json -Compress -Depth 20 `
+                            -WarningAction SilentlyContinue))
                 }
                 catch {
 
@@ -142,6 +166,7 @@ function Invoke-ImageKeywordUpdate {
     }
 
     end {
-
     }
 }
+
+################################################################################

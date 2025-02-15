@@ -1,18 +1,36 @@
 ################################################################################
 <#
 .SYNOPSIS
-Saves transcriptions for all audio and video files located under a directory path.
+Generates subtitle files for audio and video files using OpenAI Whisper.
 
 .DESCRIPTION
-Searches for media files under a directory and uses a local OpenAI Whisper model to
-generate subtitle files in .srt format for each media file.
+Recursively searches for media files in the specified directory and uses a local
+OpenAI Whisper model to generate subtitle files in SRT format. The function
+supports multiple audio/video formats and can optionally translate subtitles to
+a different language using LM Studio. File naming follows a standardized pattern
+with language codes (e.g., video.mp4.en.srt).
 
 .PARAMETER DirectoryPath
-The directory path to search for media files.
+The root directory to search for media files. Defaults to the current directory.
+Will recursively process all supported media files in subfolders.
 
-.PARAMETER Language
-Sets the language to detect, defaults to 'English'.
+.PARAMETER LanguageIn
+The expected source language of the audio content. Used to improve transcription
+accuracy. Defaults to English. Supports 150+ languages.
 
+.PARAMETER LanguageOut
+Optional target language for translation. If specified, the generated subtitles
+will be translated from LanguageIn to this language using LM Studio.
+
+.PARAMETER TranslateUsingLMStudioModel
+The LM Studio model name to use for translation. Defaults to "qwen". Only used
+when LanguageOut is specified.
+
+.EXAMPLE
+Save-Transcriptions -DirectoryPath "C:\Videos" -LanguageIn "English"
+
+.EXAMPLE
+Save-Transcriptions "C:\Media" "Japanese" "English" "qwen"
 #>
 function Save-Transcriptions {
 
@@ -200,6 +218,7 @@ function Save-Transcriptions {
     )
     begin {
 
+        # define array of supported media file extensions for processing
         $extensions = @(
             ".3gp",
             ".a52",
@@ -344,59 +363,74 @@ function Save-Transcriptions {
             ".x-wav",
             ".xvag",
             ".yuv4mpegpipe"
-        );
+        )
 
+        # store current location to restore at end of processing
         Push-Location
+        Write-Verbose "Current working directory stored for later restoration"
     }
 
     process {
 
-        Set-Location (Expand-Path $DirectoryPath);
+        # change to target directory for file processing
+        Set-Location (Expand-Path $DirectoryPath)
+        Write-Verbose "Changed working directory to: $DirectoryPath"
 
+        # recursively process each file in directory and subdirectories
         Get-ChildItem -File -rec | ForEach-Object {
 
-            if ($extensions -notcontains $PSItem.Extension.ToLower()) { return }
+            # skip files that don't have a supported media extension
+            if ($extensions -notcontains $PSItem.Extension.ToLower()) {
+                Write-Verbose "Skipping file with unsupported extension: $($PSItem.Name)"
+                return
+            }
 
-            $enPathOld = "$($PSItem.FullName).en.srt";
-            $nlPathOld = "$($PSItem.FullName).nl.srt";
-            $nlPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".nl.srt");
-            $enPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".en.srt");
+            # construct paths for old and new subtitle file naming patterns
+            $enPathOld = "$($PSItem.FullName).en.srt"
+            $nlPathOld = "$($PSItem.FullName).nl.srt"
+            $nlPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".nl.srt")
+            $enPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".en.srt")
 
-            $lang = [string]::IsNullOrWhiteSpace($LanguageOut) ? $LanguageIn : $LanguageOut
-            $newPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".$lang.srt");
+            # determine target language and output path for new subtitle file
+            $lang = [string]::IsNullOrWhiteSpace($LanguageOut) ? $LanguageIn : `
+                $LanguageOut
+            $newPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".$lang.srt")
 
+            # handle legacy Dutch subtitle file naming convention
             if ([io.file]::Exists($nlPathOld)) {
-
                 if ([io.file]::Exists($nlPath)) {
-
                     Remove-Item $nlPathOld -Force
                 }
                 else {
-
                     Move-Item $nlPathOld $nlPath -Force
                 }
             }
 
+            # handle legacy English subtitle file naming convention
             if ([io.file]::Exists($enPathOld)) {
-
                 if ([io.file]::Exists($enPath)) {
-
                     Remove-Item $enPathOld -Force
                 }
                 else {
-
                     Move-Item $enPathOld $enPath -Force
                 }
             }
 
-            if ([io.file]::Exists($newPath)) { return }
+            # skip if subtitle file already exists for target language
+            if ([io.file]::Exists($newPath)) {
+                Write-Verbose "Subtitle file already exists: $newPath"
+                return
+            }
 
             try {
-                [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = [System.Diagnostics.ProcessPriorityClass]::Idle;
+                # reduce CPU priority to minimize system impact during processing
+                [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = `
+                    [System.Diagnostics.ProcessPriorityClass]::Idle
+
                 try {
+                    Write-Verbose "Generating transcription for: $($PSItem.FullName)"
 
-                    "Processing $($PSItem.FullName).."
-
+                    # prepare parameters for transcription generation
                     $params = @{
                         FilePath                    = $PSItem.FullName
                         SRT                         = $true
@@ -405,43 +439,42 @@ function Save-Transcriptions {
                         TranslateUsingLMStudioModel = $TranslateUsingLMStudioModel
                     }
 
+                    # add source language if specified
                     if (-not [String]::IsNullOrWhiteSpace($LanguageIn)) {
-
-                        $params += @{
-                            LanguageIn = $LanguageIn
-                        }
+                        $params += @{ LanguageIn = $LanguageIn }
                     }
 
+                    # add target language if translation requested
                     if (-not [String]::IsNullOrWhiteSpace($LanguageOut)) {
-
-                        $params += @{
-                            LanguageOut = $LanguageOut
-                        }
+                        $params += @{ LanguageOut = $LanguageOut }
                     }
 
-                    $a = Get-MediaFileAudioTranscription @params
+                    # generate transcription using whisper model
+                    $transcription = Get-MediaFileAudioTranscription @params
                 }
                 finally {
-                    [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = [System.Diagnostics.ProcessPriorityClass]::Normal;
+                    # restore normal CPU priority after processing
+                    [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = `
+                        [System.Diagnostics.ProcessPriorityClass]::Normal
                 }
             }
             catch {
-
-                "Processing of $($PSItem.FullName) failed: $PSItem"
-                "-----------------------------------"
-                return;
+                Write-Verbose "Failed to process file: $($PSItem.FullName)"
+                Write-Verbose "Error details: $PSItem"
+                return
             }
 
-
-            $a | Out-File $newPath -Force
-            "-----------------------------------"
-            $a
-            "-----------------------------------"
+            # save generated transcription to subtitle file
+            $transcription | Out-File $newPath -Force
+            Write-Verbose "Transcription saved to: $newPath"
+            $transcription
         }
     }
 
     end {
-
+        # restore original working directory
         Pop-Location
+        Write-Verbose "Original working directory restored"
     }
 }
+################################################################################

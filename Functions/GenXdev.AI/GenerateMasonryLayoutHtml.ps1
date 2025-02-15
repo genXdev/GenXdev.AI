@@ -1,30 +1,42 @@
 ################################################################################
 <#
 .SYNOPSIS
-Generates an HTML file with a masonry layout for displaying images.
+Generates a responsive masonry layout HTML gallery from image data.
 
 .DESCRIPTION
-The `GenerateMasonryLayoutHtml` function creates an HTML file with a masonry layout for displaying images, including their descriptions and keywords.
+Creates an interactive HTML gallery with responsive masonry grid layout for
+displaying images. Features include:
+- Responsive grid layout that adapts to screen size
+- Image tooltips showing descriptions and keywords
+- Click-to-copy image path functionality
+- Clean modern styling with hover effects
 
 .PARAMETER Images
-An array of image objects containing path, keywords, and description.
+Array of image objects containing metadata. Each object requires:
+- path: String with full filesystem path to image
+- keywords: String array of descriptive tags
+- description: Object containing short_description and long_description
 
 .PARAMETER FilePath
-The file path where the HTML file will be saved.
+Optional output path for the HTML file. If omitted, returns HTML as string.
 
 .EXAMPLE
+# Create gallery from image array and save to file
 $images = @(
-    @{ path = "C:\path\to\image1.jpg"; keywords = @("keyword1", "keyword2"); description = @{ short_description = "Short description"; long_description = "Long description" } },
-    @{ path = "C:\path\to\image2.jpg"; keywords = @("keyword3", "keyword4"); description = @{ short_description = "Short description"; long_description = "Long description" } }
+    @{
+        path = "C:\photos\sunset.jpg"
+        keywords = @("nature", "sunset", "landscape")
+        description = @{
+            short_description = "Mountain sunset"
+            long_description = "Beautiful sunset over mountain range"
+        }
+    }
 )
-GenerateMasonryLayoutHtml -Images $images -FilePath "C:\path\to\output.html"
+GenerateMasonryLayoutHtml -Images $images -FilePath "C:\output\gallery.html"
 
 .EXAMPLE
-$images = @(
-    @{ path = "C:\path\to\image1.jpg"; keywords = @("keyword1", "keyword2"); description = @{ short_description = "Short description"; long_description = "Long description" } },
-    @{ path = "C:\path\to\image2.jpg"; keywords = @("keyword3", "keyword4"); description = @{ short_description = "Short description"; long_description = "Long description" } }
-)
-GenerateMasonryLayoutHtml $images "C:\path\to\output.html"
+# Generate HTML string without saving
+$html = GenerateMasonryLayoutHtml $images
 #>
 function GenerateMasonryLayoutHtml {
 
@@ -35,24 +47,28 @@ function GenerateMasonryLayoutHtml {
         [Parameter(
             Mandatory = $true,
             Position = 0,
-            HelpMessage = "An array of image objects containing path, keywords, and description."
+            ValueFromPipeline = $true,
+            HelpMessage = "Array of image objects with path, keywords and description"
         )]
         [array]$Images,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             Position = 1,
-            HelpMessage = "The file path where the HTML file will be saved."
+            HelpMessage = "Output path for the generated HTML file"
         )]
         [string]$FilePath = $null
+        ###############################################################################
     )
 
     begin {
-        # add each image to the HTML content
+
+        # load system.web for html encoding
         Add-Type -AssemblyName System.Web
 
-        # initialize the HTML content with the header
+        Write-Verbose "Starting HTML generation for $($Images.Count) images"
+
+        # initialize html template with styles and javascript
         $html = @"
 <!DOCTYPE html>
 <html lang="en">
@@ -62,7 +78,9 @@ function GenerateMasonryLayoutHtml {
     <title>Masonry Image Layout</title>
     <script type="text/javascript">
         function setClipboard(index) {
-            let imageInfo = JSON.parse($(($images | ConvertTo-Json -Compress -Depth 20 -WarningAction SilentlyContinue | ConvertTo-Json -Compress -Depth 20 -WarningAction SilentlyContinue)));
+            let imageInfo = JSON.parse($(($Images | ConvertTo-Json -Compress -Depth 20 `
+                -WarningAction SilentlyContinue | ConvertTo-Json -Compress -Depth 20 `
+                -WarningAction SilentlyContinue)));
             while (imageInfo instanceof String) { imageInfo = JSON.parse(imageInfo); }
             path = imageInfo[index].path;
             navigator.clipboard.writeText('"'+path+'"');
@@ -72,10 +90,7 @@ function GenerateMasonryLayoutHtml {
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            padding-left:1em;
-            padding-top:1em;
-            padding-bottom:1em;
+            padding: 1em;
         }
         .masonry {
             column-count: 3;
@@ -107,41 +122,55 @@ function GenerateMasonryLayoutHtml {
 <body>
     <div class="masonry">
 "@
-
     }
 
     process {
 
-        $i = 0
+        Write-Verbose "Generating HTML elements for image gallery"
+
+        # track image index for javascript callbacks
+        $index = 0
+
+        # generate html for each image with tooltips and click handlers
         foreach ($image in $Images) {
+
+            # combine keywords into single tooltip string
             $keywords = $image.keywords -join ", "
+
+            # create container div with image and interactive elements
             $html += @"
-        <div class="item" id="img$i">
-            <a href="$($image.path)" target="_blank" onclick="setClipboard($i)">
-                <img src="$($image.path)" alt="$($image.description.short_description)" title='$(([System.Web.HttpUtility]::HtmlAttributeEncode("$($image.description.long_description)`r`n$keywords")))' />
+        <div class="item" id="img$index">
+            <a href="$($image.path)" target="_blank" onclick="setClipboard($index)">
+                <img src="$($image.path)"
+                    alt="$($image.description.short_description)"
+                    title='$(([System.Web.HttpUtility]::HtmlAttributeEncode(
+                        "$($image.description.long_description)`r`n$keywords")))' />
             </a>
         </div>
 "@
-            $i++
+            $index++
         }
-
     }
 
     end {
 
-        # finalize the HTML content
+        # close html document structure
         $html += @"
     </div>
 </body>
 </html>
 "@
 
-        # output the HTML content or save to file
+        # either return html string or save to file based on parameters
         if ($null -eq $FilePath) {
+            Write-Verbose "Returning HTML as string output"
             $html
         }
         else {
-            $html | Out-File -FilePath (Expand-Path $FilePath -CreateDirectory) -Encoding utf8
+            Write-Verbose "Saving HTML gallery to: $FilePath"
+            $html | Out-File -FilePath (Expand-Path $FilePath -CreateDirectory) `
+                -Encoding utf8
         }
     }
 }
+################################################################################

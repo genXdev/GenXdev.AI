@@ -76,7 +76,7 @@ Update-Module
 | [Initialize-LMStudioModel](#Initialize-LMStudioModel) |  | Searches for and loads a specified AI model in LM Studio. The function handlesinstallation verification, process management, and model loading with GPUsupport when available. |
 | [Install-LMStudioApplication](#Install-LMStudioApplication) |  | Ensures LM Studio is installed on the system by checking WinGet dependencies andinstalling LM Studio if not already present. Uses WinGet module with CLI fallback. |
 | [Invoke-CommandFromToolCall](#Invoke-CommandFromToolCall) |  |  |
-| [Invoke-LMStudioQuery](#Invoke-LMStudioQuery) | llm, qllm, qlms | Interacts with LM Studio to process queries, handle tool calls, and manageconversation history. Supports attachments, system instructions, and functiondefinitions. |
+| [Invoke-LLMQuery](#Invoke-LLMQuery) | llm, qllm, qlms | Interacts with LM Studio to process queries, handle tool calls, and manageconversation history. Supports attachments, system instructions, and functiondefinitions. |
 | [Start-LMStudioApplication](#Start-LMStudioApplication) |  | This function checks if LM Studio is installed and running. If not installed, itwill install it. If not running, it will start it with the specified windowvisibility. |
 | [Test-LMStudioInstallation](#Test-LMStudioInstallation) | tlms | Verifies the LMStudio installation by checking if the executable exists at theexpected path location. Uses Get-LMStudioPaths helper function to determine theinstallation path and validates the executable's existence. |
 | [Test-LMStudioProcess](#Test-LMStudioProcess) |  | Checks if LM Studio is running, and if so, returns true. If not running, itreturns false. |
@@ -2382,9 +2382,9 @@ Invoke-CommandFromToolCall [-ToolCall] <hashtable> [-Functions <hashtable[]>] [-
 
 <br/><hr/><hr/><br/>
 
-##	Invoke-LMStudioQuery
+##	Invoke-LLMQuery
 ````PowerShell
-Invoke-LMStudioQuery                 --> llm, qllm, qlms
+Invoke-LLMQuery                 --> llm, qllm, qlms
 ````
 
 ### SYNOPSIS
@@ -2392,7 +2392,7 @@ Invoke-LMStudioQuery                 --> llm, qllm, qlms
 
 ### SYNTAX
 ````PowerShell
-Invoke-LMStudioQuery [[-Query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] 
+Invoke-LLMQuery [[-Query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] 
 [[-Instructions] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-MaxToken <Int32>] 
 [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] 
 [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] 

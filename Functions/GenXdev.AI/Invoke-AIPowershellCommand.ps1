@@ -1,15 +1,24 @@
+################################################################################
+# helper function to process AI command suggestions
 function Set-AICommandSuggestion {
+
+    [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
+        ########################################################################
+        [Parameter(
+            Mandatory = $true,
+            HelpMessage = "The PowerShell command to process"
+        )]
         [string]$Command
+        ########################################################################
     )
 
+    # convert the command suggestion to json format
     return @{
         command = $Command.Trim()
         success = $true
     } | ConvertTo-Json -WarningAction SilentlyContinue
 }
-
 
 ################################################################################
 <#
@@ -17,20 +26,25 @@ function Set-AICommandSuggestion {
 Generates and executes PowerShell commands using AI assistance.
 
 .DESCRIPTION
-Uses LM-Studio to generate PowerShell commands based on natural language queries
-and either sends them to the current PowerShell window or copies to clipboard.
+Uses LM-Studio to generate PowerShell commands based on natural language queries.
+The function can either send commands directly to the PowerShell window or copy
+them to the clipboard. It leverages AI models to interpret natural language and
+convert it into executable PowerShell commands.
 
 .PARAMETER Query
-The natural language query to generate a PowerShell command.
+The natural language description of what you want to accomplish. The AI will
+convert this into an appropriate PowerShell command.
 
 .PARAMETER Model
-Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search
+The LM-Studio model to use for command generation. Can be a name or partial path.
+Supports -like pattern matching for model selection.
 
 .PARAMETER Temperature
-Controls randomness in the response (0.0-1.0). Lower values are more focused.
+Controls the randomness in the AI's response generation. Values range from 0.0
+(more focused/deterministic) to 1.0 (more creative/random).
 
 .PARAMETER Clipboard
-Switch to copy the generated command to clipboard instead of executing it.
+When specified, copies the generated command to clipboard.
 
 .EXAMPLE
 Invoke-AIPowershellCommand -Query "list all running processes" -Model "qwen"
@@ -42,14 +56,13 @@ function Invoke-AIPowershellCommand {
 
     [CmdletBinding()]
     [Alias("hint")]
-
     param (
         ########################################################################
         [Parameter(
             Position = 0,
             Mandatory = $true,
             ValueFromPipeline = $true,
-            HelpMessage = "The query string for the LLM."
+            HelpMessage = "The natural language query to generate a command for"
         )]
         [ValidateNotNullOrEmpty()]
         [string] $Query,
@@ -57,22 +70,23 @@ function Invoke-AIPowershellCommand {
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = "The LM-Studio model to use for generating the response"
+            HelpMessage = "The LM-Studio model name or path to use"
         )]
+        [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Value = "qwen")]
         [string] $Model = "qwen",
         ########################################################################
         [Parameter(
             Position = 2,
             Mandatory = $false,
-            HelpMessage = "Temperature parameter for response randomness"
+            HelpMessage = "Temperature for controlling response randomness"
         )]
         [ValidateRange(0.0, 1.0)]
         [double] $Temperature = 0.01,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Only set clipboard"
+            HelpMessage = "Copy command to clipboard"
         )]
         [switch] $Clipboard
         ########################################################################
@@ -82,29 +96,28 @@ function Invoke-AIPowershellCommand {
 
         Write-Verbose "Initializing AI command generation with model: $Model"
 
-        # simplified instructions focusing on command generation
-        $instructions = "You are a PowerShell expert.
+        # define the AI system prompt with instructions
+        $instructions = @"
+You are a PowerShell expert.
 Although you only have access to a limited set of tool functions to execute
 in your suggested powershell commandline script, you are not limited
 and have access to everything Powershell has to offer.
-Analyze the user's request and suggest a PowerShell command that accomplishes their goal.
-First try basic powershell commands, if that does not solve it then try to use the
-Get-GenXDevCmdlets, Get-Help and the Get-Command cmdlets to find the right commands to use.
-Use the Set-AICommandSuggestion function with the command you suggest. return only what
-Set-AICommandSuggestion returns in json format.
-"
+Analyze the user's request and suggest a PowerShell command that accomplishes
+their goal.
+First try basic powershell commands, if that does not solve it then try to use
+the Get-GenXDevCmdlets, Get-Help and the Get-Command cmdlets to find the right
+commands to use.
+Use the Set-AICommandSuggestion function with the command you suggest. return
+only what Set-AICommandSuggestion returns in json format.
+"@
     }
 
     process {
+
         Write-Verbose "Generating PowerShell command for query: $Query"
 
-        # generate command using LM-Studio with exposed cmdlet
-        $result = Invoke-LMStudioQuery `
-            -Query $Query `
-            -Model $Model `
-            -Temperature $Temperature `
-            -Instructions $instructions `
-            -ExposedCmdLets @(
+        # define the cmdlets that will be available to the AI model
+        $exposedCmdlets = @(
             @{
                 Name          = "Get-Command"
                 AllowedParams = @("Name=string")
@@ -133,33 +146,46 @@ Set-AICommandSuggestion returns in json format.
                     }
                 )
             }
-        ) | `
+        )
+
+        # generate the command using the AI model
+        $result = Invoke-LLMQuery `
+            -Query $Query `
+            -Model $Model `
+            -Temperature $Temperature `
+            -Instructions $instructions `
+            -ExposedCmdLets $exposedCmdlets | `
             ConvertFrom-Json
 
-        # extract command from result
-        $command = ($result | ConvertFrom-Json).Command
+        # parse the AI response and extract the command
+        $commandResult = ($result | ConvertFrom-Json)
 
-        if (-not $command.success) {
-
-            Write-Warning "Failed to generate command: $command"
+        # verify the command generation was successful
+        if (-not $commandResult.success) {
+            Write-Warning "Failed to generate command: $($commandResult.command)"
             return
         }
 
-        if ($Clipboard) {
+        $command = $commandResult.command
 
-            # copy to clipboard
+        if ($Clipboard) {
+            # copy the generated command to clipboard
             $command | Set-Clipboard
             Write-Verbose "Command copied to clipboard"
         }
         else {
-            # get main window and send command
-            $window = Get-PowershellMainWindow
-            if ($null -ne $window) {
-
-                $window.SetForeground()
+            # get the main powershell window for command input
+            $mainWindow = Get-PowershellMainWindow
+            if ($null -ne $mainWindow) {
+                $mainWindow.SetForeground()
             }
+
+            # send the command with proper line break handling
             Send-Keys ("`r`n$command".Replace("`r`n", " ``+{ENTER}"))
         }
+    }
+
+    end {
     }
 }
 ################################################################################

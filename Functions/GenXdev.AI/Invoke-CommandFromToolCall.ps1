@@ -1,27 +1,67 @@
-########################################################################
+################################################################################
+<#
+.SYNOPSIS
+Executes a tool call function with validation and parameter filtering.
+
+.DESCRIPTION
+This function processes tool calls by validating arguments, filtering parameters,
+and executing callbacks with proper confirmation handling. It supports both script
+block and command info callbacks.
+
+.PARAMETER ToolCall
+A hashtable containing the function details and arguments to be executed.
+
+.PARAMETER Functions
+Array of function definitions that can be called as tools.
+
+.PARAMETER ExposedCmdLets
+Array of PowerShell command definitions available as tools.
+
+.PARAMETER NoConfirmationToolFunctionNames
+Array of command names that can execute without user confirmation.
+
+.PARAMETER ForceAsText
+Forces the output to be formatted as text.
+
+.EXAMPLE
+Invoke-CommandFromToolCall -ToolCall $toolCall -Functions $functions `
+    -ExposedCmdLets $exposedCmdlets
+
+.EXAMPLE
+$result = Invoke-CommandFromToolCall $toolCall $functions -ForceAsText
+#>
 function Invoke-CommandFromToolCall {
+
     [CmdletBinding()]
     param(
         ########################################################################
-        # Tool call object containing function details and arguments
-        [Parameter(Mandatory = $true, Position = 0)]
+        [Parameter(
+            Mandatory = $true,
+            Position = 0,
+            HelpMessage = "Tool call object containing function details and args"
+        )]
         [ValidateNotNull()]
         [hashtable]
         $ToolCall,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of function definitions")]
-        [hashtable[]] $Functions = @(),
+            HelpMessage = "Array of function definitions"
+        )]
+        [hashtable[]]
+        $Functions = @(),
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of PowerShell command definitions to use as tools")]
+            HelpMessage = "Array of PowerShell command definitions to use as tools"
+        )]
         [GenXdev.Helpers.ExposedCmdletDefinition[]]
         $ExposedCmdLets = @(),
         ########################################################################
-        # Array of command names that don't require confirmation
-        [Parameter(Mandatory = $false)]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Array of command names that don't require confirmation"
+        )]
         [string[]]
         [Alias("NoConfirmationFor")]
         $NoConfirmationToolFunctionNames = @(),
@@ -30,23 +70,33 @@ function Invoke-CommandFromToolCall {
             Mandatory = $false,
             HelpMessage = "Force output as text"
         )]
-        [switch] $ForceAsText
+        [switch]
+        $ForceAsText
     )
 
     begin {
 
+        # initialize the result object with default values
         $result = [GenXdev.Helpers.ExposedToolCallInvocationResult] @{}
         $result.CommandExposed = $false
-        $result.Reason = "Function not found, check spellling, use fullname and check if function is advertised as tool function."
+        $result.Reason = "Function not found, check spelling and availability"
         $result.Output = $null
         $result.OutputType = $null
         $result.FullName = $null
-        $result.UnfilteredArguments = $ToolCall.function.arguments | ConvertFrom-Json -ErrorAction SilentlyContinue | ConvertTo-HashTable | Select-Object -First 1
-        $result.UnfilteredArguments[0]
+
+        # extract and convert arguments from the tool call
+        $result.UnfilteredArguments = $ToolCall.function.arguments |
+        ConvertFrom-Json -ErrorAction SilentlyContinue |
+        ConvertTo-HashTable |
+        Select-Object -First 1
+
+        Write-Verbose "Processing tool call: $($ToolCall.function.name)"
+        Write-Verbose "Unfiltered arguments: $($result.UnfilteredArguments |
+            ConvertTo-Json)"
+
         $result.FilteredArguments = [hashtable] @{}
         $result.ExposedCmdLet = $null
-        $result.Error = $null`
-
+        $result.Error = $null
     }
 
     process {
@@ -95,13 +145,13 @@ function Invoke-CommandFromToolCall {
         )
 
         # process each matched function
-        foreach ($function in $matchedFunctions) {
+        foreach ($matchedFunction in $matchedFunctions) {
 
             # start optimistic
             $result.CommandExposed = $true
 
             # start by checking if all required parameters are present
-            $function.parameters.required | ForEach-Object {
+            $matchedFunction.parameters.required | ForEach-Object {
 
                 # reference next required parameter's name
                 $definedParamName = $_
@@ -135,7 +185,7 @@ function Invoke-CommandFromToolCall {
             }
 
             # check if all parameters are valid
-            [Hashtable] $properies = $function.parameters.properties
+            [Hashtable] $properies = $matchedFunction.parameters.properties
 
             foreach ($unfilteredArgument in $result.UnfilteredArguments.GetEnumerator()) {
 
@@ -179,8 +229,9 @@ function Invoke-CommandFromToolCall {
                 Sort-Object -Property Name -Descending |
                 ForEach-Object {
                     if (
-                        ($_.Name -EQ ($function.name)) -or
-                        ($function.name -like "*\$($_.Name)")
+                        ($_.Name -EQ ($matchedFunction.name)) -or
+                        ($_.Name -like "*\$($matchedFunction.name)") -or
+                        ($matchedFunction.name -like "*\$($_.Name)")
                     ) { $_ }
                 }
             );
@@ -235,7 +286,7 @@ function Invoke-CommandFromToolCall {
             $result.Output = $null
             $result.FullName = $ToolCall.function.name
 
-            $cb = $function.callback;
+            $cb = $matchedFunction.callback;
             if ($cb -isnot [System.Management.Automation.ScriptBlock] -and
                 $cb -isnot [System.Management.Automation.CommandInfo]) {
 
@@ -259,8 +310,32 @@ function Invoke-CommandFromToolCall {
                     $functionName = $toolCall.function.Name
                     $filteredArguments = $result.FilteredArguments;
                     $parametersLine = $filteredArguments.GetEnumerator() | ForEach-Object {
-                        "-$($_.Name) ($($_.Value | ConvertTo-Json -Compress -Depth 10 -WarningAction SilentlyContinue))"
+
+                        $skip = $false;
+                        $filteredArgumentName = $_.Name
+
+                        if ($result.ExposedCmdlet) {
+
+                            foreach ($name in $result.ExposedCmdLet.DontShowDuringConfirmationParamNames) {
+
+                                if ($filteredArgumentName -like $name) {
+
+                                    $skip = $true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (-not $skip) {
+
+                            "-$($_.Name) ($($_.Value | ConvertTo-Json -Compress -Depth 10 -WarningAction SilentlyContinue))"
+                        }
+                        else {
+
+                            "-$($_.Name) [value]"
+                        }
                     } | ForEach-Object {
+
                         $_ -join " "
                     }
 
@@ -309,11 +384,11 @@ function Invoke-CommandFromToolCall {
 
                         if ($tmpResult -is [System.ValueType]) {
 
-                            $tmpResult = $tmpResult | ConvertTo-Json -Depth $jsonDepth -ErrorAction SilentlyContinue  -WarningAction SilentlyContinue
+                            $tmpResult = $tmpResult | ConvertTo-Json -Depth $jsonDepth -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
                         }
                         else {
 
-                            $tmpResult = $tmpResult | ConvertTo-HashTable | ConvertTo-Json -Depth $jsonDepth -ErrorAction SilentlyContinue  -WarningAction SilentlyContinue
+                            $tmpResult = $tmpResult | ConvertTo-HashTable | ConvertTo-Json -Depth $jsonDepth -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
                         }
                     }
                 }
@@ -325,7 +400,7 @@ function Invoke-CommandFromToolCall {
                     error           = $_.Exception.Message
                     exceptionThrown = $true
                     exceptionClass  = $_.Exception.GetType().FullName
-                } | ConvertTo-Json -Compress -Depth 3  -WarningAction SilentlyContinue
+                } | ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue
             }
 
             # we only execute the first matching function
@@ -338,3 +413,4 @@ function Invoke-CommandFromToolCall {
         Write-Output $result
     }
 }
+################################################################################

@@ -1,46 +1,131 @@
 ################################################################################
 <#
 .SYNOPSIS
-Creates a new audio-based chat session with an LLM model.
+Creates an interactive audio chat session with an LLM model.
 
 .DESCRIPTION
-Initiates an interactive chat session using audio input and output with a
-specified LLM model. Supports various language models, audio processing options,
-and customization parameters.
+Initiates a voice-based conversation with a language model, supporting audio input
+and output. The function handles audio recording, transcription, model queries,
+and text-to-speech responses. Supports multiple language models and various
+configuration options.
 
 .PARAMETER Query
-Initial query text to send to the model.
+Initial text query to send to the model. Can be empty to start with voice input.
 
 .PARAMETER Model
-Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search
-Defaults to "qwen*-instruct".
+The model name/path to use. Supports -like pattern matching. Default: "*-tool-use"
 
 .PARAMETER ModelLMSGetIdentifier
-The specific LM-Studio model identifier. Defaults to "qwen2.5-14b-instruct".
+Model identifier for LM Studio. Default: "llama-3-groq-8b-tool-use"
 
 .PARAMETER Instructions
-System instructions for the model.
+System instructions/prompt to guide the model's behavior.
 
 .PARAMETER Attachments
-Array of file paths to attach to the conversation.
+Array of file paths to attach to the conversation for context.
 
 .PARAMETER AudioTemperature
-Temperature for audio input recognition (0.0-1.0).
+Temperature setting for audio input recognition. Range: 0.0-1.0. Default: 0.0
 
 .PARAMETER Temperature
-Temperature for response randomness (0.0-1.0).
+Temperature for response randomness. Range: 0.0-1.0. Default: 0.0
 
 .PARAMETER MaxToken
-Maximum tokens in response (-1 for default).
+Maximum tokens in model response. Default: 8192
+
+.PARAMETER ShowWindow
+Switch to show the LM Studio window during operation.
+
+.PARAMETER TTLSeconds
+Time-to-live in seconds for models loaded via API requests. Default: -1
+
+.PARAMETER Gpu
+GPU offloading configuration. -2=Auto, -1=LM Studio decides, 0-1=fraction of layers
+Default: -1
+
+.PARAMETER Force
+Switch to force stop LM Studio before initialization.
 
 .PARAMETER ImageDetail
-Image detail level (low/medium/high).
+Image detail level setting. Options: "low", "medium", "high". Default: "low"
+
+.PARAMETER IncludeThoughts
+Switch to include model's thought process in output.
+
+.PARAMETER ContinueLast
+Switch to continue from last conversation context.
+
+.PARAMETER ExposedCmdLets
+Array of PowerShell command definitions available as tools to the model.
+
+.PARAMETER DontSpeak
+Switch to disable text-to-speech for AI responses.
+
+.PARAMETER DontSpeakThoughts
+Switch to disable text-to-speech for AI thought responses.
+
+.PARAMETER NoVOX
+Switch to disable silence detection for automatic recording stop.
+
+.PARAMETER UseDesktopAudioCapture
+Switch to use desktop audio capture instead of microphone input.
+
+.PARAMETER TemperatureResponse
+Temperature for controlling response randomness. Range: 0.0-1.0. Default: 0.01
+
+.PARAMETER Language
+Language to detect in audio input. Default: "English"
+
+.PARAMETER CpuThreads
+Number of CPU threads to use. 0=auto. Default: 0
+
+.PARAMETER SuppressRegex
+Regex pattern to suppress tokens from output.
+
+.PARAMETER AudioContextSize
+Size of the audio context window.
+
+.PARAMETER SilenceThreshold
+Threshold for silence detection. Range: 0.0-1.0. Default: 0.3
+
+.PARAMETER LengthPenalty
+Penalty factor for response length. Range: 0-1
+
+.PARAMETER EntropyThreshold
+Threshold for entropy in responses. Range: 0-1
+
+.PARAMETER LogProbThreshold
+Threshold for log probability in responses. Range: 0-1
+
+.PARAMETER NoSpeechThreshold
+Threshold for no-speech detection. Range: 0-1. Default: 0.1
+
+.PARAMETER NoContext
+Switch to disable context usage in conversation.
+
+.PARAMETER WithBeamSearchSamplingStrategy
+Switch to enable beam search sampling strategy.
+
+.PARAMETER OnlyResponses
+Switch to suppress recognized text in output.
+
+.PARAMETER NoSessionCaching
+Switch to disable session caching.
+
+.PARAMETER ApiEndpoint
+API endpoint URL. Default: http://localhost:1234/v1/chat/completions
+
+.PARAMETER ApiKey
+API key for authentication.
 
 .EXAMPLE
-New-LLMAudioChat -Query "Tell me about AI" -Model "qwen*-instruct" -Temperature 0.7
+New-LLMAudioChat -Query "Tell me about PowerShell" `
+    -Model "*-tool-use" `
+    -Temperature 0.7 `
+    -MaxToken 4096
 
 .EXAMPLE
-llmaudiochat "What is PowerShell?" -DontSpeak
+llmaudiochat "What's the weather?" -DontSpeak
 #>
 function New-LLMAudioChat {
 
@@ -56,21 +141,21 @@ function New-LLMAudioChat {
             HelpMessage = "Initial query text to send to the model"
         )]
         [AllowEmptyString()]
-        [string] $Query = "",
+        [string] $query = "",
         ########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 1,
             HelpMessage = "The LM-Studio model to use"
         )]
-        [string] $Model = "qwen*-instruct",
+        [string] $Model = "*-tool-use",
         ########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 2,
             HelpMessage = "The LM-Studio model identifier"
         )]
-        [string] $ModelLMSGetIdentifier = "qwen2.5-14b-instruct",
+        [string] $ModelLMSGetIdentifier = "llama-3-groq-8b-tool-use",
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -100,7 +185,7 @@ function New-LLMAudioChat {
             Mandatory = $false,
             HelpMessage = "Maximum tokens in response (-1 for default)")]
         [Alias("MaxTokens")]
-        [int] $MaxToken = 32768,
+        [int] $MaxToken = 8192,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -369,25 +454,35 @@ function New-LLMAudioChat {
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Don't store session in session cache")]
-        [switch] $NoSessionCaching
+        [switch] $NoSessionCaching,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Api endpoint url, defaults to http://localhost:1234/v1/chat/completions")]
+        [string] $ApiEndpoint = $null,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key to use for the request")]
+        [string] $ApiKey = $null
+        ########################################################################
     )
 
     begin {
-
-        # initialize stopping flag
+        # initialize stopping flag for chat loop
         $stopping = $false
-        Write-Verbose "Starting new audio LLM chat session"
+        Write-Verbose "Starting new audio LLM chat session with model $Model"
 
-        Write-Verbose "Initializing chat session with model: $Model"
-
+        # handle exposed cmdlets configuration
+        Write-Verbose "Configuring exposed cmdlets..."
         if ($null -eq $ExposedCmdLets) {
-
             if ($ContinueLast -and $Global:LMStudioGlobalExposedCmdlets) {
-
+                Write-Verbose "Using existing exposed cmdlets from last session"
                 $ExposedCmdLets = $Global:LMStudioGlobalExposedCmdlets
             }
             else {
-                # initialize array of allowed PowerShell cmdlets
+                Write-Verbose "Initializing default exposed cmdlets"
+                # initialize default allowed PowerShell cmdlets
                 $ExposedCmdLets = @(
                     @{
                         Name          = "Get-ChildItem"
@@ -449,7 +544,7 @@ function New-LLMAudioChat {
                         JsonDepth  = 2
                     },
                     @{
-                        Name          = "Invoke-LMStudioQuery"
+                        Name          = "Invoke-LLMQuery"
                         AllowedParams = @("Query", "Model", "Instructions", "Attachments", "IncludeThoughts")
                         ForcedParams  = @(@{Name = "NoSessionCaching"; Value = $true })
                         OutputText    = $false
@@ -460,14 +555,17 @@ function New-LLMAudioChat {
             }
         }
 
+        # cache exposed cmdlets if session caching is enabled
         if (-not $NoSessionCaching) {
-
+            Write-Verbose "Caching exposed cmdlets for future sessions"
             $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
         }
 
-        Write-Verbose "Initialized with $($ExposedCmdLets.Count) exposed cmdlets"
+        Write-Verbose "Successfully initialized with $($ExposedCmdLets.Count) exposed cmdlets"
 
-        # ensure required parameters are present in bound parameters
+        # ensure required parameters are properly set
+        Write-Verbose "Validating and setting required parameters"
+        # ensure required parameters exist
         if (-not $PSBoundParameters.ContainsKey("Model")) {
             $null = $PSBoundParameters.Add("Model", $Model)
         }
@@ -483,36 +581,26 @@ function New-LLMAudioChat {
             $null = $PSBoundParameters.Add("ContinueLast", $ContinueLast)
         }
 
+        if ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or $ApiEndpoint.Contains("localhost")) {
 
-        $initializationParams = Copy-IdenticalParamValues -BoundParameters $PSBoundParameters `
-            -FunctionName 'Initialize-LMStudioModel'
+            $initializationParams = Copy-IdenticalParamValues -BoundParameters $PSBoundParameters `
+                -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
+                -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
-        $modelInfo = Initialize-LMStudioModel @initializationParams
-        $Model = $modelInfo.identifier
+            $modelInfo = Initialize-LMStudioModel @initializationParams
+            $Model = $modelInfo.identifier
+        }
 
         if ($PSBoundParameters.ContainsKey("Force")) {
 
             $null = $PSBoundParameters.Remove("Force")
+            $Force = $false
         }
 
         if ($PSBoundParameters.ContainsKey("ShowWindow")) {
 
             $null = $PSBoundParameters.Remove("ShowWindow")
-        }
-
-        if ($PSBoundParameters.ContainsKey("ChatMode")) {
-
-            $null = $PSBoundParameters.Remove("ChatMode")
-
-            if (($ChatMode -ne "none" -or $ChatOnce)) {
-
-                return;
-            }
-        }
-
-        if (-not $PSBoundParameters.ContainsKey("MaxToken")) {
-
-            $null = $PSBoundParameters.Add("MaxToken", $MaxToken)
+            $ShowWindow = $false
         }
 
         if ($PSBoundParameters.ContainsKey("ChatOnce")) {
@@ -525,85 +613,86 @@ function New-LLMAudioChat {
             $null = $PSBoundParameters.Add("ExposedCmdLets", $ExposedCmdLets);
         }
 
-        $hadAQuery = -not [string]::IsNullOrEmpty($Query)
+        $hadAQuery = -not [string]::IsNullOrEmpty($query)
     }
 
     process {
-
-        [string] $text = $Query
+        [string] $recognizedText = $query
 
         while (-not $stopping) {
-
+            # handle initial query vs subsequent voice input
             if ($hadAQuery) {
-
+                Write-Verbose "Processing initial query: $query"
                 $hadAQuery = $false
-                $Query = [string]::Empty
+                $query = [string]::Empty
                 if ($PSBoundParameters.ContainsKey("Query")) {
-
                     $null = $PSBoundParameters.Remove("Query")
                 }
             }
             else {
-
                 Write-Host "Press any key to start recording or Q to quit"
 
                 try {
                     # prepare audio transcription parameters
-                    $startAudioTranscriptionParams = Copy-IdenticalParamValues `
+                    Write-Verbose "Preparing audio transcription parameters"
+                    $audioParams = Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
                         -FunctionName "GenXdev.AI\Start-AudioTranscription" `
+                        -DefaultValues (Get-Variable -Scope Local -Name * `
+                            -ErrorAction SilentlyContinue)
 
-                    # configure audio parameters
-                    $startAudioTranscriptionParams.VOX = -not $NoVOX
-                    $startAudioTranscriptionParams.Temperature = $AudioTemperature
-                    $startAudioTranscriptionParams.ModelFilePath = `
-                        Expand-Path "..\..\..\..\GenXdev.Local\" -CreateDirectory
+                    # configure and execute audio recording
+                    Write-Verbose "Configuring audio settings"
+                    $audioParams.VOX = -not $NoVOX
+                    $audioParams.Temperature = $AudioTemperature
+                    $audioParams.ModelFilePath = Expand-Path "..\..\..\..\GenXdev.Local\" `
+                        -CreateDirectory
 
-                    # handle query text
-                    $text = $Query ? $Query.Trim() : [string]::Empty
+                    # process text input or start recording
+                    $recognizedText = $query ? $query.Trim() : [string]::Empty
 
-                    if (-not [string]::IsNullOrWhiteSpace($text)) {
-                        $Query = [string]::Empty
-                    }
-                    else {
-                        Write-Verbose "Starting audio transcription"
-                        $text = Start-AudioTranscription @startAudioTranscriptionParams
+                    if ([string]::IsNullOrWhiteSpace($recognizedText)) {
+                        Write-Verbose "Starting audio recording and transcription"
+                        $recognizedText = Start-AudioTranscription @audioParams
                     }
                 }
                 catch {
+                    # handle audio recording errors
                     if ("$PSItem" -notlike "*aborted*") {
                         Write-Error $PSItem
                     }
-                    Write-Verbose "Audio transcription failed"
-                    $Query = [string]::Empty
-                    $text = [string]::Empty
+                    Write-Verbose "Audio transcription failed or was aborted"
+                    $query = [string]::Empty
+                    $recognizedText = [string]::Empty
                     continue
                 }
             }
 
-            # process recognized text
-            if (-not [string]::IsNullOrWhiteSpace($text)) {
+            # process recognized input if not empty
+            if (-not [string]::IsNullOrWhiteSpace($recognizedText)) {
+                $question = $recognizedText
+                Write-Verbose "Processing recognized input: $question"
 
-                $question = $text
-                Write-Verbose "Processing question: $question"
-
-                # prepare LM Studio parameters
+                # prepare LM Studio query parameters
+                Write-Verbose "Preparing LM Studio parameters"
                 $invokeLMStudioParams = Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
-                    -FunctionName "GenXdev.AI\Invoke-LMStudioQuery"
+                    -FunctionName "GenXdev.AI\New-LLMTextChat" `
+                    -DefaultValues (Get-Variable -Scope Local -Name * `
+                        -ErrorAction SilentlyContinue)
 
-                # invoke LM Studio
+                # configure and execute LM Studio query
+                Write-Verbose "Configuring LM Studio query parameters"
                 $invokeLMStudioParams.Query = $question
                 $invokeLMSTudioParams.Speak = -not $DontSpeak
                 $invokeLMStudioParams.SpeakThoughts = -not $DontSpeakThoughts
                 $invokeLMStudioParams.ChatOnce = $true
 
-                Write-Verbose "Invoking LM Studio query"
+                Write-Verbose "Executing LM Studio query"
                 $answer = New-LLMTextChat @invokeLMStudioParams
 
-                # display response with green color
+                # display formatted response
                 if ($OnlyResponses) {
-
                     Write-Host "$answer" -ForegroundColor Green
                 }
                 else {
@@ -616,7 +705,8 @@ function New-LLMAudioChat {
                 Write-Host "Too short or only silence recorded`r`n"
             }
 
-            # wait for key press while speaking
+            # monitor for key presses during speech output
+            Write-Verbose "Monitoring for key presses during speech output"
             $continueWaiting = $true
             while ($continueWaiting -and (Get-IsSpeaking)) {
 
@@ -650,6 +740,7 @@ function New-LLMAudioChat {
     }
 
     end {
+        Write-Verbose "Audio chat session completed"
     }
 }
 ################################################################################

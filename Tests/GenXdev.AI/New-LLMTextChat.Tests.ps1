@@ -6,12 +6,12 @@ Describe "New-LLMTextChat - Test default ExposedCmdlets" {
 
     It "Should test basic functionality" {
 
-        $query = "Please check the content of https://powershell.genxdev.net/  and like the website BuildWith tell me everything there is to now about the technologies used. Also fetch referenced scripts and styles, etc. before jumping to conclusions."
+        $query = "Please check the content of https://powershell.genxdev.net/ using the Invoke-WebRequest tool and tell me what web server is running."
 
-        $result = New-LLMTextChat -Query $query -ChatOnce
+        $result = New-LLMTextChat -Query $query -ChatOnce -Model "llama-3-groq-8b-tool-use"
 
         $result | Should -Not -BeNullOrEmpty
 
-        $result | Should -BeLike "*Microsoft-IIS/10.0*"
+        $result | Should -BeLike "*Internet Information Services*"
     }
 }

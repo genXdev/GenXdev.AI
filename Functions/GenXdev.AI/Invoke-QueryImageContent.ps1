@@ -1,83 +1,110 @@
 ################################################################################
-
 <#
 .SYNOPSIS
-Sends an image to the LM-Studio API and returns the response.
+Analyzes image content using AI vision capabilities through the LM-Studio API.
 
 .DESCRIPTION
-The `Invoke-QueryImageContent` function sends an image to the LM-Studio API and returns the response.
+Processes images using the MiniCPM model via LM-Studio API to analyze content and
+answer queries about the image. The function supports various analysis parameters
+including temperature control for response randomness and token limits for output
+length.
 
 .PARAMETER Query
-The query string for the LLM.
+Specifies the question or prompt to analyze the image content. This drives the
+AI's analysis focus and determines what aspects of the image to examine.
 
 .PARAMETER ImagePath
-The file path of the image to send with the query.
+The path to the image file for analysis. Supports both relative and absolute
+paths. The file must exist and be accessible.
 
 .PARAMETER Temperature
-The temperature parameter for controlling the randomness of the response.
+Controls the randomness in the AI's response generation. Lower values (closer
+to 0) produce more focused and deterministic responses, while higher values
+increase creativity and variability. Valid range: 0.0 to 1.0.
 
 .PARAMETER MaxToken
-The maximum number of tokens to generate in the response.
+Limits the length of the generated response by specifying maximum tokens.
+Use -1 for unlimited response length. Valid range: -1 to MaxInt.
 
 .EXAMPLE
-Invoke-QueryImageContent -Query "Analyze this image." -ImagePath "C:\path\to\image.jpg" -Temperature 0.01 -MaxToken 100
+Invoke-QueryImageContent `
+    -Query "What objects are in this image?" `
+    -ImagePath "C:\Images\sample.jpg" `
+    -Temperature 0.01 `
+    -MaxToken 100
 
 .EXAMPLE
-Invoke-QueryImageContent "Analyze this image." "C:\path\to\image.jpg"
+Query-Image "Describe this image" "C:\Images\photo.jpg"
 #>
 function Invoke-QueryImageContent {
 
     [CmdletBinding()]
+    [Alias("Query-Image", "Analyze-Image")]
 
     param (
-        ################################################################################
+        ########################################################################
         [Parameter(
             Mandatory = $true,
             Position = 0,
-            HelpMessage = "The query string for the LLM."
+            HelpMessage = "The query string for analyzing the image"
         )]
         [ValidateNotNullOrEmpty()]
         [string]$Query,
 
-        ################################################################################
+        ########################################################################
         [Parameter(
             Mandatory = $true,
             Position = 1,
-            HelpMessage = "The file path of the image to send with the query."
+            HelpMessage = "Path to the image file for analysis"
         )]
         [ValidateNotNullOrEmpty()]
         [string]$ImagePath,
 
-        ################################################################################
+        ########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 2,
-            HelpMessage = "The temperature parameter for controlling the randomness of the response."
+            HelpMessage = "Temperature for controlling response randomness"
         )]
         [ValidateRange(0.0, 1.0)]
         [double]$Temperature = 0.01,
 
-        ################################################################################
+        ########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 3,
-            HelpMessage = "The maximum number of tokens to generate in the response."
+            HelpMessage = "Maximum tokens in the generated response"
         )]
-        [int]$MaxToken = - 1
+        [ValidateRange(-1, [int]::MaxValue)]
+        [int]$MaxToken = -1
     )
 
     begin {
-        # expand the image path to its full path
-        $ImagePath = Expand-Path $ImagePath
+
+        # log the initiation of image analysis process
+        Write-Verbose "Starting image analysis with query: $Query"
+
+        # convert any relative or partial path to full path for reliability
+        $imagePath = Expand-Path $ImagePath
+
+        # ensure the specified image file exists before proceeding
+        if (-not (Test-Path $imagePath)) {
+            throw "Image file not found: $imagePath"
+        }
     }
 
     process {
-        # invoke the query to get image content analysis
-        Invoke-LMStudioQuery `
+
+        # log the start of actual image processing
+        Write-Verbose "Processing image: $imagePath"
+
+        # invoke the ai model with image analysis configuration
+        $null = Invoke-LLMQuery `
             -Model "MiniCPM" `
+            -ModelLMSGetIdentifier "minicpm-v-2_6" `
             -Query $Query `
             -Instructions "You are an AI assistant that analyzes images." `
-            -Attachments $ImagePath `
+            -Attachments $imagePath `
             -Temperature $Temperature `
             -MaxToken $MaxToken
     }
@@ -85,3 +112,4 @@ function Invoke-QueryImageContent {
     end {
     }
 }
+################################################################################

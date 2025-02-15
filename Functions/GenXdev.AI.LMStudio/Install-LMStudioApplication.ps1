@@ -74,8 +74,8 @@ function Install-LMStudioApplication {
                 }
 
                 # reset cached paths after install
-                $script:lmStudioExePath = $null
-                $script:lmsExePath = $null
+                $script:LMStudioExe = $null
+                $script:LMSExe = $null
                 Get-LMStudioPaths
             }
             else {

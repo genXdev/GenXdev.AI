@@ -1,23 +1,30 @@
 ################################################################################
 <#
 .SYNOPSIS
-Allows the LLM to suggest new content by comparing it with existing content using WinMerge.
+Interactive file content comparison and approval using WinMerge.
 
 .DESCRIPTION
-This function allows the user to review and approve changes through the WinMerge interface.
-This function returns an object with one or more of the following properties:
-[bool] approved, [bool?] approvedAsIs, [string?] savedContent, [bool?] userDeletedFile
-If the user made final changes. approveAsIs will be false and the savedContent will
-contain the final changes the user made.
+Facilitates content comparison and merging through WinMerge by creating a
+temporary file with proposed changes. The user can interactively review and
+modify changes before approving. Returns approval status and final content.
 
 .PARAMETER ContentPath
-The path to the existing content file on users computer.
+The path to the target file for comparison and potential update. If the file
+doesn't exist, it will be created.
 
 .PARAMETER NewContent
-The content the LLM suggest to the user.
+The proposed new content to compare against the existing file content.
 
 .EXAMPLE
-Approve-NewTextFileContent -ContentPath "C:\temp\file.txt" -NewContent "New text content"
+$result = Approve-NewTextFileContent -ContentPath "C:\temp\myfile.txt" `
+    -NewContent "New file content"
+
+.NOTES
+Returns a hashtable with these properties:
+- approved: True if changes were saved, False if discarded
+- approvedAsIs: True if content was accepted without modifications
+- savedContent: Final content if modified by user
+- userDeletedFile: True if user deleted existing file
 #>
 function Approve-NewTextFileContent {
 
@@ -27,66 +34,74 @@ function Approve-NewTextFileContent {
         [Parameter(
             Mandatory = $true,
             Position = 0,
-            HelpMessage = "Path to the existing content file"
+            HelpMessage = "Path to the target file for comparison"
         )]
+        [ValidateNotNullOrEmpty()]
         [string]$ContentPath,
         ########################################################################
         [Parameter(
             Mandatory = $true,
             Position = 1,
-            HelpMessage = "New content to compare and merge"
+            HelpMessage = "New content to compare against existing file"
         )]
+        [ValidateNotNullOrEmpty()]
         [string]$NewContent
         ########################################################################
     )
 
     begin {
 
-        $ContentPath = Expand-Path $contentPath -CreateFile
+        # ensure content path exists, create if missing
+        $contentPath = Expand-Path $ContentPath -CreateFile
+
+        Write-Verbose "Target file path: $contentPath"
     }
 
     process {
 
-        # is new content
-        $existed = [System.IO.File]::Exists($ContentPath)
+        # check initial file existence for tracking deletion
+        $existed = [System.IO.File]::Exists($contentPath)
 
-        # create a temporary file with the new content
+        Write-Verbose "File existed before comparison: $existed"
+
+        # create temporary file with matching extension for comparison
         $tempFile = Expand-Path ([System.IO.Path]::GetTempFileName() + `
-            ([System.IO.Path]::GetExtension($ContentPath))) -CreateDirectory
+                [System.IO.Path]::GetExtension($contentPath)) `
+            -CreateDirectory
 
-        Write-Verbose "Created temporary file: $tempFile"
+        Write-Verbose "Created temp comparison file: $tempFile"
 
-        # write new content to temporary file
+        # write proposed content to temp file
         $NewContent | Out-File -FilePath $tempFile -Force
 
-        # launch winmerge and wait for completion
+        # launch winmerge for interactive comparison
         $null = Invoke-WinMerge `
             -SourcecodeFilePath $tempFile `
-            -TargetcodeFilePath $ContentPath `
+            -TargetcodeFilePath $contentPath `
             -Wait
 
+        # prepare result tracking object
         $result = @{
-            approved = [System.IO.File]::Exists($ContentPath)
+            approved = [System.IO.File]::Exists($contentPath)
         }
 
         if ($result.approved) {
 
-            # read the content of the file
-            $content = Get-Content -Path $ContentPath
+            # check if content was modified during comparison
+            $content = Get-Content -Path $contentPath -Raw
             $changed = $content.Trim() -ne $NewContent.Trim()
 
-            $result.approvedAsIs = $changed
+            $result.approvedAsIs = -not $changed
 
             if ($changed) {
-
-                $result.savedContent = $content;
+                $result.savedContent = $content
             }
         }
         elseif ($existed) {
-
             $result.userDeletedFile = $true
         }
 
+        Write-Verbose "Comparison result: $($result | ConvertTo-Json)"
         return $result
     }
 

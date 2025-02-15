@@ -7,8 +7,6 @@
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Get-LMStudioWindow.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Initialize-LMStudioModel.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Install-LMStudioApplication.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Invoke-CommandFromToolCall.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Invoke-LMStudioQuery.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Start-LMStudioApplication.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Test-LMStudioInstallation.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Test-LMStudioProcess.ps1"

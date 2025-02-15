@@ -15,13 +15,13 @@ Describe "Get-LMStudioLoadedModelList basic functionality test" {
         $result | Should -Not -BeNullOrEmpty
     }
 
-    It "Should have qwen*-instruct model present" {
+    It "Should have *-tool-use model present" {
 
-        Initialize-LMStudioModel -Model "qwen*-instruct" -ModelLMSGetIdentifier "qwen2.5-14b-instruct"
+        Initialize-LMStudioModel -Model "*-tool-use" -ModelLMSGetIdentifier "llama-3-groq-8b-tool-use"
         $result = Get-LMStudioLoadedModelList
 
         # verify qwen-7b model exists
-        $qwenModel = $result | Where-Object { $_.path -like "*qwen*-instruct*" }
+        $qwenModel = $result | Where-Object { $_.path -like "**-tool-use*" }
         $qwenModel | Should -Not -BeNull
     }
 }

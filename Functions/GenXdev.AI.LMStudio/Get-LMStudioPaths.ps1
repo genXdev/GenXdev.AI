@@ -1,15 +1,22 @@
 ################################################################################
 <#
 .SYNOPSIS
-Retrieves the file paths for LM Studio executables.
+Retrieves file paths for LM Studio executables.
 
 .DESCRIPTION
 Searches common installation locations for LM Studio executables and returns their
-full paths. The function caches found paths to avoid repeated searches.
+paths. The function maintains a cache of found paths to optimize performance on
+subsequent calls.
+
+.OUTPUTS
+System.Collections.Hashtable
+    Returns a hashtable with two keys:
+    - LMStudioExe: Path to main LM Studio executable
+    - LMSExe: Path to LMS command-line executable
 
 .EXAMPLE
-Get-LMStudioPaths
-Returns a hashtable containing paths to LM Studio executables.
+$paths = Get-LMStudioPaths
+Write-Output "LM Studio path: $($paths.LMStudioExe)"
 #>
 function Get-LMStudioPaths {
 
@@ -18,12 +25,14 @@ function Get-LMStudioPaths {
 
     begin {
 
-        # define common installation paths to search
+        # define search paths for the main LM Studio executable
         $searchPathsLMStudio = @(
             "${env:LOCALAPPDATA}\LM-Studio\lm studio.exe",
             "${env:LOCALAPPDATA}\Programs\LM-Studio\lm studio.exe",
             "${env:LOCALAPPDATA}\Programs\LM Studio\lm studio.exe"
         )
+
+        # define search paths for the LMS command-line tool
         $searchPathsLMSexe = @(
             "${env:LOCALAPPDATA}\LM-Studio\lms.exe",
             "${env:LOCALAPPDATA}\Programs\LM-Studio\lms.exe",
@@ -32,13 +41,14 @@ function Get-LMStudioPaths {
     }
 
     process {
-        # only search if paths haven't been found yet
-        if (-not $script:lmStudioExePath -or -not $script:lmsExePath) {
+
+        # check if paths need to be discovered
+        if (-not $script:LMStudioExe -or -not $script:LMSExe) {
 
             Write-Verbose "Searching for LM Studio executables..."
 
-            # search for the main LM Studio executable
-            $script:lmStudioExePath = Get-ChildItem `
+            # find main LM Studio executable
+            $script:LMStudioExe = Get-ChildItem `
                 -Path $searchPathsLMStudio `
                 -File `
                 -Recurse `
@@ -46,25 +56,26 @@ function Get-LMStudioPaths {
             Select-Object -First 1 |
             ForEach-Object FullName
 
-            # search for the LMS command-line executable
-            $script:lmsExePath = Get-ChildItem `
+            # find LMS command-line executable
+            $script:LMSExe = Get-ChildItem `
                 -Path $searchPathsLMSexe `
-                -File `
                 -Recurse `
+                -File `
                 -ErrorAction SilentlyContinue |
             Select-Object -First 1 |
             ForEach-Object FullName
 
-            Write-Verbose "Found LM Studio: $script:lmStudioExePath"
-            Write-Verbose "Found LMS: $script:lmsExePath"
+            Write-Verbose "Found LM Studio: $script:LMStudioExe"
+            Write-Verbose "Found LMS: $script:LMSExe"
         }
     }
 
     end {
-        # return paths as hashtable
+
+        # return paths in a hashtable
         return @{
-            LMStudioExe = $script:lmStudioExePath
-            LMSExe      = $script:lmsExePath
+            LMStudioExe = $script:LMStudioExe
+            LMSExe      = $script:LMSExe
         }
     }
 }

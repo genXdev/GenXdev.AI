@@ -246,7 +246,6 @@ function ConvertTo-LMStudioFunctionDefinition {
                     function = @{
                         name                       = "$name"
                         description                = "$functionHelpMessage"
-                        user_confirmation_required = (-not $found)
                         parameters                 = @{
                             type       = 'object'
                             properties = $propertiesTable

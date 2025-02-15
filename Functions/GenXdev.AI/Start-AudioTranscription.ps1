@@ -1,13 +1,25 @@
 ################################################################################
 <#
 .SYNOPSIS
-Transcribes audio to text using the default audio input device.
+Transcribes audio to text using various input methods and advanced configuration
+options.
 
 .DESCRIPTION
-Records audio using the default audio input device and returns the detected text
+This function provides comprehensive audio transcription capabilities, supporting
+both real-time recording and file-based transcription. It offers extensive
+configuration options for language detection, audio processing, and output
+formatting.
+
+Key features:
+- Multiple audio input sources (microphone, desktop audio, wav files)
+- Automatic silence detection (VOX)
+- Multi-language support
+- Token timestamp generation
+- CPU/GPU processing optimization
+- Advanced audio processing parameters
 
 .PARAMETER ModelFilePath
-Path where model files are stored.
+Path to store model files. Defaults to local GenXdev folder.
 
 .PARAMETER WaveFile
 Path to the 16Khz mono, .WAV file to process.
@@ -106,13 +118,19 @@ Don't use context.
 Use beam search sampling strategy.
 
 .EXAMPLE
-$text = Start-AudioTranscription;
-$text
+# Basic transcription using default settings
+$text = Start-AudioTranscription
+Write-Output $text
+
+.EXAMPLE
+# Advanced transcription with silence detection and desktop audio
+$result = Start-AudioTranscription -VOX -UseDesktopAudioCapture `
+    -Language "English" -WithTokenTimestamps
 #>
 function Start-AudioTranscription {
 
     [Alias("transcribe", "recordandtranscribe")]
-
+    [CmdletBinding()]
     param (
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Path where model files are stored")]
@@ -381,20 +399,30 @@ function Start-AudioTranscription {
         [switch] $WithBeamSearchSamplingStrategy
     )
 
+    begin {
+
+        Write-Verbose "Initializing audio transcription with selected options"
+    }
+
     process {
 
-        $ModelFilePath = Expand-Path "$PSScriptRoot\..\..\..\..\GenXdev.Local\" -CreateDirectory
+        # ensure model path exists and is properly set
+        $ModelFilePath = Expand-Path "$PSScriptRoot\..\..\..\..\GenXdev.Local\" `
+            -CreateDirectory
 
+        Write-Verbose "Using model path: $ModelFilePath"
+
+        # add or update model path parameter
         if (-not $PSBoundParameters.ContainsKey("ModelFilePath")) {
-
-            $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Out-Null;
+            $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Out-Null
         }
         else {
-
-            $PSBoundParameters["ModelFilePath"] = $ModelFilePath;
+            $PSBoundParameters["ModelFilePath"] = $ModelFilePath
         }
 
+        # configure voice activation detection (VOX) settings
         if ($VOX -eq $true) {
+            Write-Verbose "Configuring VOX settings"
 
             if (-not $PSBoundParameters.ContainsKey("MaxDurationOfSilence")) {
 
@@ -419,39 +447,57 @@ function Start-AudioTranscription {
             }
         }
 
+        # ensure error action is set
         if (-not $PSBoundParameters.ContainsKey("ErrorAction")) {
-
-            $PSBoundParameters.Add("ErrorAction", "Stop") | Out-Null;
+            $PSBoundParameters.Add("ErrorAction", "Stop") | Out-Null
         }
 
+        # optimize for CPU when no capable GPU is present
         if (-not (Get-HasCapableGpu)) {
+            Write-Verbose "No capable GPU detected, optimizing for CPU"
 
             if (-not $PSBoundParameters.ContainsKey("CpuThreads")) {
-
-                $PSBoundParameters.Add("CpuThreads", (Get-NumberOfCpuCores)) | Out-Null;
+                $PSBoundParameters.Add("CpuThreads", (Get-NumberOfCpuCores)) `
+                | Out-Null
             }
         }
-        if (-not $PSBoundParameters.ContainsKey("Language")) {
 
-            $PSBoundParameters.Add("Language", $Language) | Out-Null;
+        # ensure language parameter is set
+        if (-not $PSBoundParameters.ContainsKey("Language")) {
+            $PSBoundParameters.Add("Language", $Language) | Out-Null
         }
 
-        # Remove any parameters with $null values
+        # clean up null parameters
+        Write-Verbose "Cleaning up null parameters"
         $PSBoundParameters.GetEnumerator() | ForEach-Object {
             if ($null -eq $PSItem.Value) {
                 $PSBoundParameters.Remove($PSItem.Key) | Out-Null
             }
         }
 
+        # preserve error handling state
         $oldErrorActionPreference = $ErrorActionPreference
         $ErrorActionPreference = "Stop"
-        try {
 
-            Get-SpeechToText @PSBoundParameters
+        try {
+            Write-Verbose "Preparing transcription parameters"
+
+            # prepare invocation arguments matching target function parameters
+            $invocationArguments = Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName "GenXdev.Helpers\Get-SpeechToText" `
+                -DefaultValues (Get-Variable -Scope Local -Name * `
+                    -ErrorAction SilentlyContinue)
+
+            Write-Verbose "Starting speech to text conversion"
+            Get-SpeechToText @invocationArguments
         }
         finally {
-
             $ErrorActionPreference = $oldErrorActionPreference
         }
     }
+
+    end {
+    }
 }
+################################################################################

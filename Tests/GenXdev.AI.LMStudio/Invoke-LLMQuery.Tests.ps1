@@ -38,7 +38,7 @@ function global:Invoke-ReverseText {
 
 ################################################################################
 
-Describe "Invoke-LMStudioQuery tests" {
+Describe "Invoke-LLMQuery tests" {
     BeforeAll {
 
         Import-Module -Name GenXdev.AI -Force
@@ -73,14 +73,14 @@ Describe "Invoke-LMStudioQuery tests" {
         )
 
         # execute function with test data
-        $result = Invoke-LMStudioQuery `
+        $result = Invoke-LLMQuery `
             -Verbose `
-            -Model "qwen2.5-14b-instruct" `
+            -Model "llama-3-groq-8b-tool-use" `
             -Instructions "You are a helpful assistant" `
             -Query "Get the magic number using the 'calculateMagicNumber' function, for parameter a use 42 and for b use 9234" `
             -Functions $testFunctions `
             -NoConfirmationToolFunctionNames calculateMagicNumber `
-            -MaxToken 32768
+            -MaxToken 8192
 
         "$result".Replace(",", "") | Should -BeLike "*578844*"
 
@@ -116,7 +116,7 @@ Describe "Invoke-LMStudioQuery tests" {
         )
 
         # execute function with test data
-        $result = Invoke-LMStudioQuery `
+        $result = Invoke-LLMQuery `
             -Verbose `
             -Model "llama-3-groq-8b-tool-use" `
             -Instructions "You are a helpful assistant" `
@@ -142,12 +142,12 @@ Describe "Invoke-LMStudioQuery tests" {
         $null = $ExposedCmdLets.Add($newItem);
 
         # execute function with test data
-        $result = Invoke-LMStudioQuery `
-            -Model "qwen2.5-14b-instruct" `
+        $result = Invoke-LLMQuery `
+            -Model "llama-3-groq-8b-tool-use" `
             -Instructions "You are a helpful assistant" `
             -Query "Reverse the text using the 'Invoke-ReverseText' tool function, for parameter 'Text' use the value 'Hello world' for parameter 'Delimiter' use '_'"  `
             -ExposedCmdLets $ExposedCmdLets `
-            -MaxToken 32768
+            -MaxToken 8192
 
         "$result" | Should -BeLike "*d_l_r_o_w_ _o_l_l_e_H*"
 
@@ -164,7 +164,7 @@ Describe "Invoke-LMStudioQuery tests" {
         $null = $ExposedCmdLets.Add($newItem);
 
         # execute function with test data
-        $result = Invoke-LMStudioQuery `
+        $result = Invoke-LLMQuery `
             -Verbose `
             -Model "llama-3-groq-8b-tool-use" `
             -Instructions "You are a helpful assistant" `
