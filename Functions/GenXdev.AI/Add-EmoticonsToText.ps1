@@ -76,9 +76,9 @@ function Add-EmoticonsToText {
         $resultBuilder = [System.Text.StringBuilder]::new()
 
         # prepare instructions for the AI model with specific formatting requirements
-        $modelPrompt = "Add funny or expressive emojii to the text " + `
-            "provided as content of the user-role message. Don't change the " + `
-            "text otherwise.`r`n$Instructions`r`nRespond only in json format," + `
+        $modelPrompt = "Add funny or expressive emojii to the text " +
+            "provided as content of the user-role message. Don't change the " +
+            "text otherwise.`r`n$Instructions`r`nRespond only in json format," +
             " like: {`"response`":`"Hello, how are you? 😊`"}"
 
         # display processing indicator to user

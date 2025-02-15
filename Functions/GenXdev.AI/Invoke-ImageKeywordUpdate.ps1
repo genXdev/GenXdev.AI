@@ -129,13 +129,14 @@ function Invoke-ImageKeywordUpdate {
 
                 # get AI-generated image description and metadata
                 $description = Invoke-QueryImageContent `
-                    -Query "Analyze image and return a object with properties: " + `
-                    "'short_description' (max 80 chars), 'long_description', " + `
-                    "'has_nudity, keywords' (array of strings), " + `
-                    "'has_explicit_content', 'overall_mood_of_image', " + `
-                    "'picture_type' and 'style_type'. " + `
-                    "Output only json, no markdown or anything other then json." `
-                    -ImagePath $image -Temperature 0.01
+                    -Query (
+                    "Analyze image and return a object with properties: " +
+                    "'short_description' (max 80 chars), 'long_description', " +
+                    "'has_nudity, keywords' (array of strings), " +
+                    "'has_explicit_content', 'overall_mood_of_image', " +
+                    "'picture_type' and 'style_type'. " +
+                    "Output only json, no markdown or anything other then json."
+                    )  -ImagePath $image -Temperature 0.01
 
                 Write-Verbose "Received analysis: $description"
 

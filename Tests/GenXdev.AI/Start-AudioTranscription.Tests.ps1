@@ -1,7 +1,5 @@
 ################################################################################
 BeforeAll {
-    # store original verbose preference
-    $script:originalVerbosePreference = $VerbosePreference
 
     # create test paths
     $script:testRoot = Expand-Path "${env:TEMP}\Start-AudioTranscriptionTests\" -CreateDirectory

@@ -208,12 +208,12 @@ function Get-TextTranslation {
             Mandatory = $false,
             HelpMessage = "Custom instructions for the translation model"
         )]
-        [PSDefaultValue(Value = "Translate this partial subtitle text, into the " + `
-                "[Language] language, leave in the same style of writing, and leave " + `
-                "the paragraph structure in tact, ommit only the translation no " + `
+        [PSDefaultValue(Value = "Translate this partial subtitle text, into the " +
+                "[Language] language, leave in the same style of writing, and leave " +
+                "the paragraph structure in tact, ommit only the translation no " +
                 "yapping or chatting.")]
-        $Instructions = "Translate this partial subtitle text, into the [Language] " + `
-            "language, leave in the same style of writing, and leave the paragraph " + `
+        $Instructions = "Translate this partial subtitle text, into the [Language] " +
+            "language, leave in the same style of writing, and leave the paragraph " +
             "structure in tact, ommit only the translation no yapping or chatting.",
 
 

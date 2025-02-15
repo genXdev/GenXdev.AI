@@ -65,7 +65,7 @@ function Approve-NewTextFileContent {
         Write-Verbose "File existed before comparison: $existed"
 
         # create temporary file with matching extension for comparison
-        $tempFile = Expand-Path ([System.IO.Path]::GetTempFileName() + `
+        $tempFile = Expand-Path ([System.IO.Path]::GetTempFileName() +
                 [System.IO.Path]::GetExtension($contentPath)) `
             -CreateDirectory
 
