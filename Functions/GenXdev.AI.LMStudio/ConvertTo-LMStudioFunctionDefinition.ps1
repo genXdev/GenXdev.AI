@@ -23,6 +23,7 @@ function ConvertTo-LMStudioFunctionDefinition {
 
     [CmdletBinding()]
     [OutputType([System.Collections.Generic.List[hashtable]])]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "")]
     param(
         ########################################################################
         # Array of custom objects containing function definitions and their allowed parameters
@@ -228,12 +229,12 @@ function ConvertTo-LMStudioFunctionDefinition {
                 # Check if function requires confirmation based on configuration
                 $name = $commandInfo.Name
                 $found = $false;
-                $allcmdLetNames = @($name.ToLowerInvariant(), ($moduleName.ToLowerInvariant() + $name.ToLowerInvariant()))
+                $allCmdletNames = @($name.ToLowerInvariant(), ($moduleName.ToLowerInvariant() + $name.ToLowerInvariant()))
                 $NoConfirmationToolFunctionNames = @($ExposedCmdLets | Where-Object -Property Confirm -EQ $false | Select-Object -ExpandProperty Name)
 
                 foreach ($AllowedCmdLet in $NoConfirmationToolFunctionNames) {
 
-                    if ($AllowedCmdLet.ToLowerInvariant() -in $allcmdLetNames) {
+                    if ($AllowedCmdLet.ToLowerInvariant() -in $allCmdletNames) {
 
                         $found = $true
                         break;
@@ -244,14 +245,14 @@ function ConvertTo-LMStudioFunctionDefinition {
                 $newFunctionDefinition = @{
                     type     = "function"
                     function = @{
-                        name                       = "$name"
-                        description                = "$functionHelpMessage"
-                        parameters                 = @{
+                        name        = "$name"
+                        description = "$functionHelpMessage"
+                        parameters  = @{
                             type       = 'object'
                             properties = $propertiesTable
                             required   = $requiredParams
                         }
-                        callback                   = $callback
+                        callback    = $callback
                     }
                 }
 

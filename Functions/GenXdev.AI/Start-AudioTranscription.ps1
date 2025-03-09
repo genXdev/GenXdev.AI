@@ -52,7 +52,7 @@ Maximum duration of silence before automatically stopping recording.
 Silence detect threshold (0..32767 defaults to 30).
 
 .PARAMETER Language
-Sets the language to detect, defaults to 'English'.
+Sets the language to detect.
 
 .PARAMETER CpuThreads
 Number of CPU threads to use, defaults to 0 (auto).
@@ -130,7 +130,7 @@ $result = Start-AudioTranscription -VOX -UseDesktopAudioCapture `
 function Start-AudioTranscription {
 
     [Alias("transcribe", "recordandtranscribe")]
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param (
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Path where model files are stored")]
@@ -167,13 +167,13 @@ function Start-AudioTranscription {
         [switch] $IgnoreSilence,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Maximum duration of silence before automatically stopping recording")]
-        [timespan] $MaxDurationOfSilence,
+        [object] $MaxDurationOfSilence,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Silence detect threshold (0..32767 defaults to 30)")]
         [ValidateRange(0, 32767)]
         [int] $SilenceThreshold,
         ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Sets the language to detect, defaults to 'English'")]
+        [Parameter(Mandatory = $false, HelpMessage = "Sets the language to detect")]
         [ValidateSet(
             "Afrikaans",
             "Akan",
@@ -356,10 +356,10 @@ function Start-AudioTranscription {
         [switch] $DontSuppressBlank,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Maximum duration of the audio")]
-        [timespan] $MaxDuration,
+        [object] $MaxDuration,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Offset for the audio")]
-        [timespan] $Offset,
+        [object] $Offset,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Maximum number of last text tokens")]
         [int] $MaxLastTextTokens,
@@ -374,7 +374,7 @@ function Start-AudioTranscription {
         [int] $MaxSegmentLength,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Start timestamps at this moment")]
-        [timespan] $MaxInitialTimestamp,
+        [object] $MaxInitialTimestamp,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Length penalty")]
         [ValidateRange(0, 1)]
@@ -402,13 +402,39 @@ function Start-AudioTranscription {
     begin {
 
         Write-Verbose "Initializing audio transcription with selected options"
+
+        if ($PSBoundParameters.ContainsKey("MaxDurationOfSilence") -and (-not ($MaxDurationOfSilence -is [System.TimeSpan]))) {
+
+            $MaxDurationOfSilence = [System.TimeSpan]::FromSeconds($MaxDurationOfSilence)
+            $PSBoundParameters["MaxDurationOfSilence"] = $MaxDurationOfSilence
+        }
+
+        if ($PSBoundParameters.ContainsKey("MaxDuration") -and (-not ($MaxDuration -is [System.TimeSpan]))) {
+
+            $MaxDuration = [System.TimeSpan]::FromSeconds($MaxDuration)
+            $PSBoundParameters["MaxDuration"] = $MaxDuration
+        }
+
+        if ($PSBoundParameters.ContainsKey("Offset") -and (-not ($Offset -is [System.TimeSpan]))) {
+
+            $Offset = [System.TimeSpan]::FromSeconds($Offset)
+            $PSBoundParameters["Offset"] = $Offset
+        }
+
+        if ($PSBoundParameters.ContainsKey("MaxInitialTimestamp") -and (-not ($MaxInitialTimestamp -is [System.TimeSpan]))) {
+
+            $MaxInitialTimestamp = [System.TimeSpan]::FromSeconds($MaxInitialTimestamp)
+            $PSBoundParameters["MaxInitialTimestamp"] = $MaxInitialTimestamp
+        }
     }
 
     process {
 
-        # ensure model path exists and is properly set
-        $ModelFilePath = Expand-Path "$PSScriptRoot\..\..\..\..\GenXdev.Local\" `
-            -CreateDirectory
+        if ([string]::IsNullOrWhiteSpace($ModelFilePath) -or (-not ([IO.Directory]::Exists($ModelFilePath)))) {
+
+            $ModelFilePath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\..\..\GenXdev.Local\" `
+                -CreateDirectory
+        }
 
         Write-Verbose "Using model path: $ModelFilePath"
 
@@ -426,11 +452,11 @@ function Start-AudioTranscription {
 
             if (-not $PSBoundParameters.ContainsKey("MaxDurationOfSilence")) {
 
-                $PSBoundParameters.Add("MaxDurationOfSilence", [timespan]::FromSeconds(4)) | Out-Null;
+                $PSBoundParameters.Add("MaxDurationOfSilence", [System.TimeSpan]::FromSeconds(4)) | Out-Null;
             }
             else {
 
-                $PSBoundParameters["MaxDurationOfSilence"] = [timespan]::FromSeconds(4);
+                $PSBoundParameters["MaxDurationOfSilence"] = [System.TimeSpan]::FromSeconds(4);
             }
 
             if (-not $PSBoundParameters.ContainsKey("IgnoreSilence")) {
@@ -462,15 +488,10 @@ function Start-AudioTranscription {
             }
         }
 
-        # ensure language parameter is set
-        if (-not $PSBoundParameters.ContainsKey("Language")) {
-            $PSBoundParameters.Add("Language", $Language) | Out-Null
-        }
-
         # clean up null parameters
         Write-Verbose "Cleaning up null parameters"
         $PSBoundParameters.GetEnumerator() | ForEach-Object {
-            if ($null -eq $PSItem.Value) {
+            if ($null -eq $PSItem.Value -or ($PSItem.Value -eq -1)) {
                 $PSBoundParameters.Remove($PSItem.Key) | Out-Null
             }
         }
@@ -483,14 +504,34 @@ function Start-AudioTranscription {
             Write-Verbose "Preparing transcription parameters"
 
             # prepare invocation arguments matching target function parameters
-            $invocationArguments = Copy-IdenticalParamValues `
+            $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "GenXdev.Helpers\Get-SpeechToText" `
-                -DefaultValues (Get-Variable -Scope Local -Name * `
-                    -ErrorAction SilentlyContinue)
+                -FunctionName "GenXdev.Helpers\Get-SpeechToText"
+
+            # ensure language parameter is set
+            if ($PSBoundParameters.ContainsKey("Language")) {
+
+                $invocationArguments.Language = (Get-WebLanguageDictionary)[$Language]
+            }
+
+            # determine the appropriate target description based on input type
+            $targetDescription = "audio transcription"
+            if ($PSBoundParameters.ContainsKey("WaveFile") -and (-not [string]::IsNullOrWhiteSpace($WaveFile))) {
+                $targetDescription = "transcription of file '$WaveFile'"
+            }
+            elseif ($PSBoundParameters.ContainsKey("UseDesktopAudioCapture") -and $UseDesktopAudioCapture) {
+                $targetDescription = "desktop audio transcription"
+            }
+            else {
+                $targetDescription = "microphone audio transcription"
+            }
 
             Write-Verbose "Starting speech to text conversion"
-            Get-SpeechToText @invocationArguments
+
+            # add ShouldProcess check before executing the operation
+            if ($PSCmdlet.ShouldProcess($targetDescription, "Start")) {
+                Get-SpeechToText @invocationArguments
+            }
         }
         finally {
             $ErrorActionPreference = $oldErrorActionPreference

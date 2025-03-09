@@ -57,9 +57,8 @@ function Invoke-ImageKeywordScan {
     )
 
     begin {
-
         # convert relative path to absolute path
-        $path = Expand-Path $ImageDirectory
+        $path = GenXdev.FileSystem\Expand-Path $ImageDirectory
 
         Write-Verbose "Scanning directory: $path"
 
@@ -116,7 +115,7 @@ function Invoke-ImageKeywordScan {
                             -NotePropertyValue $keywordsFound -Force |
                         Out-Null
 
-                        [System.IO.File]::Delete("$($image):keywords.json")
+                                        $null = [System.IO.File]::Delete("$($image):keywords.json")
 
                         $descriptionFound |
                         ConvertTo-Json -Depth 99 -Compress `
@@ -206,7 +205,7 @@ function Invoke-ImageKeywordScan {
             }
 
             # generate unique temp file path for masonry layout
-            $filePath = Expand-Path "$env:TEMP\$([DateTime]::Now.Ticks)_images-masonry.html"
+            $filePath = GenXdev.FileSystem\Expand-Path "$env:TEMP\$([DateTime]::Now.Ticks)_images-masonry.html"
 
             # set file attributes to temporary and hidden
             try {

@@ -1,38 +1,31 @@
 ################################################################################
-BeforeAll {
-
-    # create test paths
-    $script:testRoot = Expand-Path "${env:TEMP}\Start-AudioTranscriptionTests\" -CreateDirectory
-    $script:testWaveFile = Expand-Path "$PSScriptRoot\escalated-quickly.wav"
-
-    # ensure test directory exists
-    if (-not (Test-Path ($Script:testRoot))) {
-        New-Item -ItemType Directory -Path ($Script:testRoot) | Out-Null
-    }
-
-    # Mock the module
-    Mock -CommandName Get-SpeechToText -ModuleName GenXdev.AI
-}
-
-################################################################################
-AfterAll {
-    # cleanup test directory
-    if (Test-Path ($Script:testRoot)) {
-
-        Remove-AllItems ($Script:testRoot) -DeleteFolder
-    }
-}
-
-################################################################################
 Describe "Start-AudioTranscription" {
 
-    It "Should use default language when not specified" {
-        # Call the function with explicit module scope
-        & "GenXdev.AI\Start-AudioTranscription"
+    It "should pass PSScriptAnalyzer rules" {
 
-        Should -Invoke Get-SpeechToText -ModuleName GenXdev.AI -ParameterFilter {
-            $Language -eq "English"
+        # get the script path for analysis
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\Start-AudioTranscription.ps1"
+
+        # run analyzer with explicit settings
+        $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
+            -Path $scriptPath
+
+        [string] $message = ""
+        $analyzerResults | ForEach-Object {
+
+            $message = $message + @"
+--------------------------------------------------
+Rule: $($_.RuleName)`
+Description: $($_.Description)
+Message: $($_.Message)
+`r`n
+"@
         }
+
+        $analyzerResults.Count | Should -Be 0 -Because @"
+The following PSScriptAnalyzer rules are being violated:
+$message
+"@;
     }
 }
 ################################################################################

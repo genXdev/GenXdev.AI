@@ -129,9 +129,10 @@ llmaudiochat "What's the weather?" -DontSpeak
 #>
 function New-LLMAudioChat {
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "")]
     [Alias("llmaudiochat")]
-
     param(
         ########################################################################
         [Parameter(
@@ -148,6 +149,7 @@ function New-LLMAudioChat {
             Position = 1,
             HelpMessage = "The LM-Studio model to use"
         )]
+        [SupportsWildcards()]
         [string] $Model = "*-tool-use",
         ########################################################################
         [Parameter(
@@ -223,6 +225,11 @@ function New-LLMAudioChat {
         ########################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = "Include model's thoughts in output")]
+        [switch] $DontAddThoughtsToHistory,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = "Continue from last conversation")]
         [switch] $ContinueLast,
         ########################################################################
@@ -260,7 +267,7 @@ function New-LLMAudioChat {
         [ValidateRange(0.0, 1.0)]
         [double] $TemperatureResponse = 0.01,
         ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Sets the language to detect, defaults to 'English'")]
+        [Parameter(Mandatory = $false, HelpMessage = "Sets the language to detect")]
         [ValidateSet(
             "Afrikaans",
             "Akan",
@@ -440,7 +447,7 @@ function New-LLMAudioChat {
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "No speech threshold")]
         [ValidateRange(0, 1)]
-        [float] $NoSpeechThreshold = 0.1,
+        [float] $NoSpeechThreshold,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Don't use context")]
         [switch] $NoContext,
@@ -583,7 +590,7 @@ function New-LLMAudioChat {
 
         if ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or $ApiEndpoint.Contains("localhost")) {
 
-            $initializationParams = Copy-IdenticalParamValues -BoundParameters $PSBoundParameters `
+            $initializationParams = GenXdev.Helpers\Copy-IdenticalParamValues -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
                 -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
@@ -623,10 +630,12 @@ function New-LLMAudioChat {
             # handle initial query vs subsequent voice input
             if ($hadAQuery) {
                 Write-Verbose "Processing initial query: $query"
-                $hadAQuery = $false
-                $query = [string]::Empty
-                if ($PSBoundParameters.ContainsKey("Query")) {
-                    $null = $PSBoundParameters.Remove("Query")
+                if ($PSCmdlet.ShouldProcess("Process initial query: $query", "Process Query", "New-LLMAudioChat")) {
+                    $hadAQuery = $false
+                    $query = [string]::Empty
+                    if ($PSBoundParameters.ContainsKey("Query")) {
+                        $null = $PSBoundParameters.Remove("Query")
+                    }
                 }
             }
             else {
@@ -635,7 +644,7 @@ function New-LLMAudioChat {
                 try {
                     # prepare audio transcription parameters
                     Write-Verbose "Preparing audio transcription parameters"
-                    $audioParams = Copy-IdenticalParamValues `
+                    $audioParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
                         -FunctionName "GenXdev.AI\Start-AudioTranscription" `
                         -DefaultValues (Get-Variable -Scope Local -Name * `
@@ -645,7 +654,7 @@ function New-LLMAudioChat {
                     Write-Verbose "Configuring audio settings"
                     $audioParams.VOX = -not $NoVOX
                     $audioParams.Temperature = $AudioTemperature
-                    $audioParams.ModelFilePath = Expand-Path "..\..\..\..\GenXdev.Local\" `
+                    $audioParams.ModelFilePath = GenXdev.FileSystem\Expand-Path "..\..\..\..\GenXdev.Local\" `
                         -CreateDirectory
 
                     # process text input or start recording
@@ -653,7 +662,9 @@ function New-LLMAudioChat {
 
                     if ([string]::IsNullOrWhiteSpace($recognizedText)) {
                         Write-Verbose "Starting audio recording and transcription"
-                        $recognizedText = Start-AudioTranscription @audioParams
+                        if ($PSCmdlet.ShouldProcess("Start audio recording and transcription", "Record Audio", "New-LLMAudioChat")) {
+                            $recognizedText = Start-AudioTranscription @audioParams
+                        }
                     }
                 }
                 catch {
@@ -675,7 +686,7 @@ function New-LLMAudioChat {
 
                 # prepare LM Studio query parameters
                 Write-Verbose "Preparing LM Studio parameters"
-                $invokeLMStudioParams = Copy-IdenticalParamValues `
+                $invokeLMStudioParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName "GenXdev.AI\New-LLMTextChat" `
                     -DefaultValues (Get-Variable -Scope Local -Name * `
@@ -689,14 +700,16 @@ function New-LLMAudioChat {
                 $invokeLMStudioParams.ChatOnce = $true
 
                 Write-Verbose "Executing LM Studio query"
-                $answer = New-LLMTextChat @invokeLMStudioParams
+                if ($PSCmdlet.ShouldProcess("Execute LM Studio query: $question", "Query LM Studio", "New-LLMAudioChat")) {
+                    $answer = New-LLMTextChat @invokeLMStudioParams
 
-                # display formatted response
-                if ($OnlyResponses) {
-                    Write-Host "$answer" -ForegroundColor Green
-                }
-                else {
-                    Write-Host "<< $answer" -ForegroundColor Green
+                    # display formatted response
+                    if ($OnlyResponses) {
+                        Write-Host "$answer" -ForegroundColor Green
+                    }
+                    else {
+                        Write-Host "<< $answer" -ForegroundColor Green
+                    }
                 }
 
                 Write-Host "Press any key to interrupt and start recording or Q to quit"
@@ -716,7 +729,7 @@ function New-LLMAudioChat {
                     [System.Console]::Write("`e[1G`e[2K")
 
                     if ($key -eq [ConsoleKey]::Q) {
-                        sst
+                        Stop-TextToSpeech
                         Write-Host "---------------"
                         $continueWaiting = $false
                         $stopping = $true
@@ -734,7 +747,7 @@ function New-LLMAudioChat {
             # clear previous prompt
             [System.Console]::Write("`e[1A`e[2K")
 
-            sst
+            Stop-TextToSpeech
             Write-Host "---------------"
         }
     }

@@ -70,8 +70,8 @@ function Invoke-WinMerge {
 
 
         # convert any relative paths to full paths for reliability
-        $sourcePath = Expand-Path $SourcecodeFilePath
-        $targetPath = Expand-Path $TargetcodeFilePath
+        $sourcePath = GenXdev.FileSystem\Expand-Path $SourcecodeFilePath
+        $targetPath = GenXdev.FileSystem\Expand-Path $TargetcodeFilePath
 
 
         # log the resolved file paths for troubleshooting

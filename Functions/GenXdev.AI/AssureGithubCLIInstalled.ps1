@@ -116,10 +116,6 @@ function AssureGithubCLIInstalled {
                     return
                 }
 
-                # install required extension
-                Write-Verbose "Installing GitHub Copilot extension..."
-                $null = gh extension install github/gh-copilot
-
                 # setup github authentication
                 Write-Verbose "Initiating GitHub authentication..."
                 $null = gh auth login --web -h github.com

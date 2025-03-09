@@ -52,7 +52,7 @@ function Approve-NewTextFileContent {
     begin {
 
         # ensure content path exists, create if missing
-        $contentPath = Expand-Path $ContentPath -CreateFile
+        $contentPath = GenXdev.FileSystem\Expand-Path $ContentPath -CreateFile
 
         Write-Verbose "Target file path: $contentPath"
     }
@@ -65,7 +65,7 @@ function Approve-NewTextFileContent {
         Write-Verbose "File existed before comparison: $existed"
 
         # create temporary file with matching extension for comparison
-        $tempFile = Expand-Path ([System.IO.Path]::GetTempFileName() +
+        $tempFile = GenXdev.FileSystem\Expand-Path ([System.IO.Path]::GetTempFileName() +
                 [System.IO.Path]::GetExtension($contentPath)) `
             -CreateDirectory
 

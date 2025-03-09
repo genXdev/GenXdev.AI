@@ -75,7 +75,6 @@ function Invoke-CommandFromToolCall {
     )
 
     begin {
-
         # initialize the result object with default values
         $result = [GenXdev.Helpers.ExposedToolCallInvocationResult] @{}
         $result.CommandExposed = $false
@@ -86,9 +85,9 @@ function Invoke-CommandFromToolCall {
 
         # extract and convert arguments from the tool call
         $result.UnfilteredArguments = $ToolCall.function.arguments |
-        ConvertFrom-Json -ErrorAction SilentlyContinue |
-        ConvertTo-HashTable |
-        Select-Object -First 1
+            ConvertFrom-Json -ErrorAction SilentlyContinue |
+            ConvertTo-HashTable |
+            Select-Object -First 1
 
         Write-Verbose "Processing tool call: $($ToolCall.function.name)"
         Write-Verbose "Unfiltered arguments: $($result.UnfilteredArguments |
@@ -226,14 +225,14 @@ function Invoke-CommandFromToolCall {
             # check if there are any forced parameters
             $foundCmdlets = @(
                 $ExposedCmdLets |
-                Sort-Object -Property Name -Descending |
-                ForEach-Object {
-                    if (
+                    Sort-Object -Property Name -Descending |
+                    ForEach-Object {
+                        if (
                         ($_.Name -EQ ($matchedFunction.name)) -or
                         ($_.Name -like "*\$($matchedFunction.name)") -or
                         ($matchedFunction.name -like "*\$($_.Name)")
-                    ) { $_ }
-                }
+                        ) { $_ }
+                    }
             );
 
             foreach ($exposedCmdLet in $foundCmdlets) {
@@ -347,7 +346,73 @@ function Invoke-CommandFromToolCall {
                                 "&Allow",
                                 "&Disallow, reject"), 0)) {
                         0 {
-                            $tmpResult = &$cb @filteredArguments
+                            # Create a string builder to capture verbose output (warnings)
+                            $verboseOutput = [System.Text.StringBuilder]::new()
+                            $errorOutput = [System.Text.StringBuilder]::new()
+                            $warningOutput = [System.Text.StringBuilder]::new()
+
+                            # Create a scriptblocks
+                            $verboseScriptBlock = {
+                                param($Message)
+                                $null = $verboseOutput.AppendLine($Message)
+                            }
+                            $errorScriptBlock = {
+                                param($Message)
+                                $null = $errorOutput.AppendLine($Message)
+                            }
+                            $warningScriptBlock = {
+                                param($Message)
+                                $null = $warningOutput.AppendLine($Message)
+                            }
+
+                            # Save the current VerbosePreference and register the temporary handler
+                            $oldVerbosePreference = $VerbosePreference
+                            $oldErrorActionPreference = $ErrorActionPreference
+                            $oldWarningPreference = $WarningPreference
+                            $VerbosePreference = 'Continue'
+                            $ErrorActionPreference = 'Continue'
+                            $WarningPreference = 'Continue'
+                            $null = Register-EngineEvent -SourceIdentifier "Verbose" -Action $verboseScriptBlock
+                            $null = Register-EngineEvent -SourceIdentifier "Error" -Action $errorScriptBlock
+                            $null = Register-EngineEvent -SourceIdentifier "Warning" -Action $warningScriptBlock
+
+                            try {
+                                $tmpResult = &$cb @filteredArguments
+                            }
+                            catch {
+                                $result.ExecutionErrors = $_.Exception.Message
+                                $tmpResult = $null
+                            }
+                            finally {
+                                $null = Unregister-Event -SourceIdentifier "Verbose" -ErrorAction SilentlyContinue
+                                $null = Unregister-Event -SourceIdentifier "Error" -ErrorAction SilentlyContinue
+                                $null = Unregister-Event -SourceIdentifier "Warning" -ErrorAction SilentlyContinue
+                                $VerbosePreference = $oldVerbosePreference
+                                $ErrorActionPreference = $oldErrorActionPreference
+                                $WarningPreference = $oldWarningPreference
+                            }
+
+                            if ($verboseOutput.Length -gt 0) {
+
+                                $warnings = $verboseOutput.ToString().Trim().Split("`n")
+                                $result.Warnings = $warnings
+                            }
+
+                            if (!!$result.ExecutionErrors) {
+
+                                $errorOutput.Append($result.ExecutionErrors)
+                            }
+
+                            if ($errorOutput.Length -gt 0) {
+                                $errors = $errorOutput.ToString().Trim().Split("`n")
+                                $result.Errors = $errors
+                            }
+
+                            if ($warningOutput.Length -gt 0) {
+                                $warnings = $warningOutput.ToString().Trim().Split("`n")
+                                $result.Warnings = $warnings
+                            }
+
                             break;
                         }
 
@@ -360,40 +425,96 @@ function Invoke-CommandFromToolCall {
 
                 if ($null -eq $tmpResult) {
 
-                    $tmpResult = "null # No output (success, void return)"
+                    if ($result.Errors -and $result.Errors.Count -gt 0) {
+
+                        $tmpResult = @{
+                            success  = $false
+                            errors   = $result.Errors
+                            warnings = $result.Warnings
+                            verbose  = $result.Verbose
+                        }
+                    }
+                    else {
+                        $tmpResult = "null # No output (success, void return)"
+                    }
                 }
                 else {
 
-                    $result.OutputType = "string"
-                }
-
-                if ($tmpResult -isnot [string]) {
-
-                    $result.OutputType = "application/json"
-                    $jsonDepth = 2;
-                    if ($result.ExposedCmdLet -and $result.ExposedCmdLet.JsonDepth) {
-
-                        $jsonDepth = $result.ExposedCmdLet.JsonDepth;
+                    # check if the tmpResult is already a valid JSON string
+                    # this can happen if the callback already converts to JSON
+                    $isAlreadyJson = $false
+                    try {
+                        if ($tmpResult -is [string]) {
+                            $jsonTest = $tmpResult |
+                                ConvertFrom-Json -ErrorAction Stop
+                            if ($jsonTest) {
+                                $isAlreadyJson = $true
+                                $result.OutputType = "application/json"
+                            }
+                        }
                     }
-                    $asText = $ForceAsText -or ($result.ExposedCmdLet -and ($result.ExposedCmdLet.OutputText -eq $true));
-                    if ($asText) {
+                    catch {
+                        # not valid JSON, continue with normal processing
+                        $isAlreadyJson = $false
+                    }
 
-                        $tmpResult = (@($tmpResult) | ForEach-Object { $_ | Out-String }) | ConvertTo-Json -Depth $jsonDepth -WarningAction SilentlyContinue
+                    if ($isAlreadyJson) {
+                        # already JSON, use it as is
+                        $result.Output = $tmpResult
                     }
                     else {
+                        # handle non-JSON output
+                        $result.OutputType = "string"
 
-                        if ($tmpResult -is [System.ValueType]) {
+                        if ($tmpResult -isnot [string]) {
 
-                            $tmpResult = $tmpResult | ConvertTo-Json -Depth $jsonDepth -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+                            $result.OutputType = "application/json"
+                            $jsonDepth = 2;
+                            if ($result.ExposedCmdLet -and $result.ExposedCmdLet.JsonDepth) {
+
+                                $jsonDepth = $result.ExposedCmdLet.JsonDepth;
+                            }
+                            $asText = $ForceAsText -or
+                                ($result.ExposedCmdLet -and
+                                ($result.ExposedCmdLet.OutputText -eq $true));
+                            if ($asText) {
+
+                                $tmpResult = (@($tmpResult) |
+                                    ForEach-Object { $_ | Out-String }) |
+                                    ConvertTo-Json -Depth $jsonDepth `
+                                        -WarningAction SilentlyContinue
+                            }
+                            else {
+
+                                if ($tmpResult -is [System.ValueType] -or
+                                    $tmpResult -is [string]) {
+
+                                    $tmpResult = $tmpResult |
+                                        ConvertTo-Json -Depth $jsonDepth `
+                                            -ErrorAction SilentlyContinue `
+                                            -WarningAction SilentlyContinue
+                                }
+                                else {
+
+                                    $tmpResult = $tmpResult | ForEach-Object {
+                                        $_ | ConvertTo-Json `
+                                            -ErrorAction SilentlyContinue `
+                                            -WarningAction SilentlyContinue `
+                                            -Depth ($jsonDepth - 1) |
+                                            ConvertFrom-Json `
+                                                -ErrorAction SilentlyContinue `
+                                                -WarningAction SilentlyContinue |
+                                            ConvertTo-HashTable
+                                        } | ConvertTo-Json -Depth $jsonDepth `
+                                            -ErrorAction SilentlyContinue `
+                                            -WarningAction SilentlyContinue
+                                }
+                            }
                         }
-                        else {
 
-                            $tmpResult = $tmpResult | ConvertTo-HashTable | ConvertTo-Json -Depth $jsonDepth -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
-                        }
+                        $result.Output = $tmpResult
                     }
                 }
-
-                $result.Output = $tmpResult
             }
             catch {
                 $result.Error = [PSCustomObject]@{

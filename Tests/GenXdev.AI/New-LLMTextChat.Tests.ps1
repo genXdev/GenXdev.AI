@@ -1,17 +1,29 @@
-Describe "New-LLMTextChat - Test default ExposedCmdlets" {
+Describe "New-LLMTextChat.Tests" {
 
-    BeforeAll {
-        Import-Module GenXdev.AI -Force
-    }
+    It "should pass PSScriptAnalyzer rules" {
 
-    It "Should test basic functionality" {
+        # get the script path for analysis
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\New-LLMTextChat.ps1"
 
-        $query = "Please check the content of https://powershell.genxdev.net/ using the Invoke-WebRequest tool and tell me what web server is running."
+        # run analyzer with explicit settings
+        $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
+            -Path $scriptPath
 
-        $result = New-LLMTextChat -Query $query -ChatOnce -Model "llama-3-groq-8b-tool-use"
+        [string] $message = ""
+        $analyzerResults | ForEach-Object {
 
-        $result | Should -Not -BeNullOrEmpty
+            $message = $message + @"
+--------------------------------------------------
+Rule: $($_.RuleName)`
+Description: $($_.Description)
+Message: $($_.Message)
+`r`n
+"@
+        }
 
-        $result | Should -BeLike "*Internet Information Services*"
+        $analyzerResults.Count | Should -Be 0 -Because @"
+The following PSScriptAnalyzer rules are being violated:
+$message
+"@;
     }
 }

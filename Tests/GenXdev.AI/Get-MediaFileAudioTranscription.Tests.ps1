@@ -1,11 +1,11 @@
-################################################################################
 
-Describe "Test-LMStudioInstallation function tests" {
+################################################################################
+Describe "Get-MediaFileAudioTranscription" {
 
     It "should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Test-LMStudioInstallation.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\Get-MediaFileAudioTranscription.ps1"
 
         # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
@@ -29,14 +29,13 @@ $message
 "@;
     }
 
-    It "Should verify LM Studio is properly installed and accessible" {
-        # attempt to detect lm studio installation
-        $result = Test-LMStudioInstallation
 
-        # test should pass only if lm studio is actually installed
-        $result | Should -Be $true -Because "LM Studio should be installed
-            for these tests to work"
-    }
+    # It "Should get audio transcription from a media file" -Skip:(-not ($Global:AllowLongRunningTests -eq $true)) {
+
+    #     # test with default model name that should be available
+    #     $result = Get-MediaFileAudioTranscription -FilePath "$PSScriptRoot\escalated-quickly.mp3" -Verbose
+    #     $result | Should -Not -BeNullOrEmpty
+    #     $result | Should -Contain "escalated quickly"
+    # }
 }
-
 ################################################################################

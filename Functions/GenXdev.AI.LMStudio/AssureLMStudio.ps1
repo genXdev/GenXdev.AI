@@ -44,6 +44,7 @@ function AssureLMStudio {
             HelpMessage = "Name or partial path of the model to initialize"
         )]
         [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [string]$Model = "*-tool-use",
         ########################################################################
         [Parameter(
@@ -106,7 +107,7 @@ function AssureLMStudio {
 
     process {
 
-        $invocationArguments = Copy-IdenticalParamValues `
+        $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "Initialize-LMStudioModel" `
             -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)

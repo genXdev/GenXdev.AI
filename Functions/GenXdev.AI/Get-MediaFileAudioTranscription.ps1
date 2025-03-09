@@ -113,6 +113,7 @@ Use beam search sampling strategy.
 #>
 function Get-MediaFileAudioTranscription {
     [CmdletBinding()]
+    [Alias("transcribefile")]
     param (
         ################################################################################
         [Parameter(
@@ -125,7 +126,7 @@ function Get-MediaFileAudioTranscription {
         [Parameter(
             Mandatory = $false,
             Position = 1,
-            HelpMessage = "The language to expect in the audio, defaults to 'English'."
+            HelpMessage = "The language to expect in the audio."
         )]
         [PSDefaultValue(Value = "English")]
         [ValidateSet(
@@ -441,6 +442,7 @@ function Get-MediaFileAudioTranscription {
             Mandatory = $false,
             HelpMessage = "The LM Studio model to use for translation."
         )]
+        [SupportsWildcards()]
         [string] $TranslateUsingLMStudioModel = "qwen",
         ################################################################################
         [Parameter(
@@ -471,7 +473,7 @@ function Get-MediaFileAudioTranscription {
         [switch] $IgnoreSilence,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Maximum duration of silence before automatically stopping recording")]
-        [timespan] $MaxDurationOfSilence,
+        [object] $MaxDurationOfSilence,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Silence detect threshold (0..32767 defaults to 30)")]
         [ValidateRange(0, 32767)]
@@ -504,10 +506,10 @@ function Get-MediaFileAudioTranscription {
         [switch] $DontSuppressBlank,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Maximum duration of the audio")]
-        [timespan] $MaxDuration,
+        [object] $MaxDuration,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Offset for the audio")]
-        [timespan] $Offset,
+        [object] $Offset,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Maximum number of last text tokens")]
         [int] $MaxLastTextTokens,
@@ -522,7 +524,7 @@ function Get-MediaFileAudioTranscription {
         [int] $MaxSegmentLength,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Start timestamps at this moment")]
-        [timespan] $MaxInitialTimestamp,
+        [object] $MaxInitialTimestamp,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Length penalty")]
         [ValidateRange(0, 1)]
@@ -548,6 +550,31 @@ function Get-MediaFileAudioTranscription {
     )
 
     begin {
+
+        if ($PSBoundParameters.ContainsKey("MaxDurationOfSilence") -and (-not ($MaxDurationOfSilence -is [System.TimeSpan]))) {
+
+            $MaxDurationOfSilence = [System.TimeSpan]::FromSeconds($MaxDurationOfSilence)
+            $PSBoundParameters["MaxDurationOfSilence"] = $MaxDurationOfSilence
+        }
+
+        if ($PSBoundParameters.ContainsKey("MaxDuration") -and (-not ($MaxDuration -is [System.TimeSpan]))) {
+
+            $MaxDuration = [System.TimeSpan]::FromSeconds($MaxDuration)
+            $PSBoundParameters["MaxDuration"] = $MaxDuration
+        }
+
+        if ($PSBoundParameters.ContainsKey("Offset") -and (-not ($Offset -is [System.TimeSpan]))) {
+
+            $Offset = [System.TimeSpan]::FromSeconds($Offset)
+            $PSBoundParameters["Offset"] = $Offset
+        }
+
+        if ($PSBoundParameters.ContainsKey("MaxInitialTimestamp") -and (-not ($MaxInitialTimestamp -is [System.TimeSpan]))) {
+
+            $MaxInitialTimestamp = [System.TimeSpan]::FromSeconds($MaxInitialTimestamp)
+            $PSBoundParameters["MaxInitialTimestamp"] = $MaxInitialTimestamp
+        }
+
         $ffmpegPath = (Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1 | ForEach-Object FullName)
     }
 
@@ -600,7 +627,7 @@ function Get-MediaFileAudioTranscription {
         Installffmpeg | Out-Null
 
         # Replace these paths with your actual file paths
-        $inputFile = Expand-Path $FilePath
+        $inputFile = GenXdev.FileSystem\Expand-Path $FilePath
         $outputFile = [IO.Path]::GetTempFileName() + ".wav";
 
         # Construct and execute the ffmpeg command
@@ -640,93 +667,54 @@ function Get-MediaFileAudioTranscription {
             return
         }
 
-        Write-Verbose "Transcribing the audio file '$inputFile'.." -Verbose
+        Write-Verbose "Transcribing the audio file '$inputFile'.."
 
-        if (-not $PSBoundParameters.ContainsKey("Language")) {
+        if ($PSBoundParameters.ContainsKey("LanguageIn")) {
 
-            $PSBoundParameters.Add("Language", $LanguageIn) | Out-Null;
-        }
-        else {
-
-            $PSBoundParameters["Language"] = $LanguageIn;
+            $null = $PSBoundParameters.Add("Language", $LanguageIn) | Out-Null;
         }
 
         if ($PSBoundParameters.ContainsKey("WithTranslate")) {
 
-            $PSBoundParameters.Remove("WithTranslate", $true) | Out-Null;
+            $null = $PSBoundParameters.Remove("WithTranslate", $true) | Out-Null;
         }
 
         if (($SRT -eq $true) -and (-not $PSBoundParameters.ContainsKey("PassThru"))) {
 
-            $PSBoundParameters.Add("PassThru", $true) | Out-Null;
+            $null = $PSBoundParameters.Add("PassThru", $true) | Out-Null;
         }
         else {
 
             if ((-not $SRT) -and $PSBoundParameters.ContainsKey("PassThru")) {
 
-                $PSBoundParameters.Remove("PassThru") | Out-Null
+                $null = $PSBoundParameters.Remove("PassThru") | Out-Null
             }
-        }
-
-        if ($PSBoundParameters.ContainsKey("FilePath")) {
-
-            $PSBoundParameters.Remove("FilePath") | Out-Null
-        }
-        if ($PSBoundParameters.ContainsKey("LanguageIn")) {
-
-            $PSBoundParameters.Remove("LanguageIn") | Out-Null
-        }
-        if ($PSBoundParameters.ContainsKey("LanguageOut")) {
-
-            $PSBoundParameters.Remove("LanguageOut") | Out-Null
-        }
-        if ($PSBoundParameters.ContainsKey("SRT")) {
-
-            $PSBoundParameters.Remove("SRT") | Out-Null
-        }
-        if ($PSBoundParameters.ContainsKey("TranslateUsingLMStudioModel")) {
-
-            $PSBoundParameters.Remove("TranslateUsingLMStudioModel") | Out-Null
         }
 
         if (-not $PSBoundParameters.ContainsKey("WaveFile")) {
 
-            $PSBoundParameters.Add("WaveFile", $outputFile) | Out-Null;
+            $null = $PSBoundParameters.Add("WaveFile", $outputFile) | Out-Null;
         }
 
         if (-not $PSBoundParameters.ContainsKey("ErrorAction")) {
 
-            $PSBoundParameters.Add("ErrorAction", "Stop") | Out-Null;
+            $null = $PSBoundParameters.Add("ErrorAction", "Stop") | Out-Null;
         }
 
         if (-not $PSBoundParameters.ContainsKey("ModelFilePath")) {
 
-            $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Out-Null;
+            $null = $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Out-Null;
         }
         else {
 
             $PSBoundParameters["ModelFilePath"] = $ModelFilePath;
         }
 
-        if ([string]::IsNullOrWhiteSpace($LanguageIn)) {
-
-            $LanguageIn = "English"
-        }
-
-        if (-not $PSBoundParameters.ContainsKey("Language")) {
-
-            $PSBoundParameters.Add("Language", $LanguageIn) | Out-Null;
-        }
-        else {
-
-            $PSBoundParameters["Language"] = $LanguageIn;
-        }
-
         if (-not (Get-HasCapableGpu)) {
 
             if (-not $PSBoundParameters.ContainsKey("CpuThreads")) {
 
-                $PSBoundParameters.Add("CpuThreads", (Get-NumberOfCpuCores)) | Out-Null;
+                $null = $PSBoundParameters.Add("CpuThreads", (Get-NumberOfCpuCores)) | Out-Null;
             }
         }
 
@@ -737,11 +725,9 @@ function Get-MediaFileAudioTranscription {
 
                 # initialize srt counter
                 $i = 1
-
-                $invocationArguments = Copy-IdenticalParamValues `
+                $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
-                    -FunctionName "Start-AudioTranscription" `
-                    -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+                    -FunctionName "Start-AudioTranscription"
 
                 Start-AudioTranscription @invocationArguments | ForEach-Object {
 
@@ -784,10 +770,9 @@ function Get-MediaFileAudioTranscription {
             #  needs translation?
             if (-not [string]::IsNullOrWhiteSpace($LanguageOut)) {
 
-                $invocationArguments = Copy-IdenticalParamValues `
+                $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
-                    -FunctionName "Start-AudioTranscription" `
-                    -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+                    -FunctionName "Start-AudioTranscription"
 
                 # transcribe the audio file to text
                 $results = Start-AudioTranscription @invocationArguments
@@ -800,10 +785,9 @@ function Get-MediaFileAudioTranscription {
             }
 
             # return the text results without translation
-            $invocationArguments = Copy-IdenticalParamValues `
+            $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "Start-AudioTranscription" `
-                -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+                -FunctionName "Start-AudioTranscription"
 
             Start-AudioTranscription @invocationArguments
         }

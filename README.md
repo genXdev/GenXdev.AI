@@ -20,7 +20,7 @@
      * ✅ Chat mode will by default exposes the following cmdlets:
 
 ````PowerShell
-        Microsoft.PowerShell.Management\Get-ChildItem*, GenXdev.FileSystem\Find-Item*, Microsoft.PowerShell.Management\Get-Content*, GenXdev.AI\Approve-NewTextFileContent, Microsoft.PowerShell.Utility\Invoke-WebRequest*, Microsoft.PowerShell.Utility\Invoke-RestMethod*, GenXdev.Console\UtcNow*, GenXdev.AI\Get-LMStudioModelList*, GenXdev.AI\Get-LMStudioLoadedModelList*, GenXdev.AI\Invoke-LLMQuery*
+        Microsoft.PowerShell.Management\Get-ChildItem*, GenXdev.FileSystem\Find-Item*, Microsoft.PowerShell.Management\Get-Content*, CimCmdlets\Get-CimInstance*, GenXdev.AI\Approve-NewTextFileContent, Microsoft.PowerShell.Utility\Invoke-WebRequest*, Microsoft.PowerShell.Utility\Invoke-RestMethod*, GenXdev.Console\UtcNow*,        GenXdev.Console\Start-TextToSpeech*, Microsoft.PowerShell.Management\Get-Clipboard*, Microsoft.PowerShell.Management\Set-Clipboard*, GenXdev.AI\Get-LMStudioModelList*, GenXdev.AI\Get-LMStudioLoadedModelList*, GenXdev.AI\Invoke-LLMQuery*
 ````
         These cmdlets can not change anything on the system except for Approve-NewTextFileContent which can create empty files
         when invoked by the LLM, but the user will have to approve the invocation.
@@ -54,28 +54,28 @@ Update-Module
 ### GenXdev.AI<hr/>
 | Command&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | aliases&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Description |
 | --- | --- | --- |
-| [Add-EmoticonsToText](#Add-EmoticonsToText) | emojify | This function processes input text to add emoticons that match the emotionalcontext. It can accept input from parameters, pipeline, or clipboard. The functionleverages AI models to analyze the text and select appropriate emoticons, makingthe text more expressive and engaging. |
-| [Approve-NewTextFileContent](#Approve-NewTextFileContent) |  | Facilitates content comparison and merging through WinMerge by creating atemporary file with proposed changes. The user can interactively review andmodify changes before approving. Returns approval status and final content. |
-| [AssureGithubCLIInstalled](#AssureGithubCLIInstalled) |  | Performs comprehensive checks and setup for GitHub CLI (gh):- Verifies if GitHub CLI is installed and accessible in PATH- Installs GitHub CLI via WinGet if not present- Configures system PATH environment variable- Installs GitHub Copilot extension- Sets up GitHub authenticationThe function handles all prerequisites and ensures a working GitHub CLI setup. |
-| [AssureWinMergeInstalled](#AssureWinMergeInstalled) |  | Verifies if WinMerge is installed and properly configured in the system PATH.If not found, installs WinMerge using WinGet and adds it to the user's PATH.Handles the complete installation and configuration process automatically. |
-| [GenerateMasonryLayoutHtml](#GenerateMasonryLayoutHtml) |  | Creates an interactive HTML gallery with responsive masonry grid layout fordisplaying images. Features include:- Responsive grid layout that adapts to screen size- Image tooltips showing descriptions and keywords- Click-to-copy image path functionality- Clean modern styling with hover effects |
-| [Get-HasCapableGpu](#Get-HasCapableGpu) |  | This function checks the system for CUDA-compatible GPUs with at least 4GB ofvideo RAM. It uses Windows Management Instrumentation (WMI) to query installedvideo controllers and verify their memory capacity. This check is essential forAI workloads that require significant GPU memory. |
-| [Get-MediaFileAudioTranscription](#Get-MediaFileAudioTranscription) |  | Transcribes an audio or video file to text using the Whisper AI model |
-| [Get-NumberOfCpuCores](#Get-NumberOfCpuCores) |  | Queries the system hardware through Windows Management Instrumentation (WMI) todetermine the total number of logical CPU cores. The function accounts forhyperthreading by multiplying the physical core count by 2. This information isuseful for optimizing parallel processing tasks and understanding systemcapabilities.The calculation process:1. Queries WMI for all physical processors2. Sums up the number of physical cores across all processors3. Multiplies by 2 to account for hyperthreading4. Returns the total logical core count |
-| [Get-TextTranslation](#Get-TextTranslation) | Get-Translation, translate | The Get-TextTranslation function translates text into a specified target languageusing LM-Studio's API. It processes text in chunks to handle large inputsefficiently and maintains formatting. |
-| [Invoke-AIPowershellCommand](#Invoke-AIPowershellCommand) | hint | Uses LM-Studio to generate PowerShell commands based on natural language queries.The function can either send commands directly to the PowerShell window or copythem to the clipboard. It leverages AI models to interpret natural language andconvert it into executable PowerShell commands. |
-| [Invoke-CommandFromToolCall](#Invoke-CommandFromToolCall) |  | This function processes tool calls by validating arguments, filtering parameters,and executing callbacks with proper confirmation handling. It supports both scriptblock and command info callbacks. |
-| [Invoke-ImageKeywordScan](#Invoke-ImageKeywordScan) | findimages | Searches for image files (jpg, jpeg, png) in the specified directory and itssubdirectories. For each image, checks associated description.json andkeywords.json files for metadata. Can filter images based on keyword matches anddisplay results in a masonry layout web view or return as objects. |
-| [Invoke-ImageKeywordUpdate](#Invoke-ImageKeywordUpdate) | updateimages | The Invoke-ImageKeywordUpdate function analyzes images using AI to generatedescriptions, keywords, and other metadata. It creates a companion JSON file foreach image containing this information. The function can process new images onlyor update existing metadata, and supports recursive directory scanning. |
-| [Invoke-LLMQuery](#Invoke-LLMQuery) | Invoke-LMStudioQuery, llm, qllm, qlms | This function sends queries to an OpenAI compatible Large Language Chat completionAPI and processes responses. It supports text and image inputs, handles toolfunction calls, and can operate in various chat modes including text and audio. |
-| [Invoke-QueryImageContent](#Invoke-QueryImageContent) | Analyze-Image, Query-Image | Processes images using the MiniCPM model via LM-Studio API to analyze content andanswer queries about the image. The function supports various analysis parametersincluding temperature control for response randomness and token limits for outputlength. |
-| [Invoke-WinMerge](#Invoke-WinMerge) |  | Launches the WinMerge application to compare source and target files in a side byside diff view. The function validates the existence of both input files andensures WinMerge is properly installed before launching. Provides optionalwait functionality to pause execution until WinMerge closes. |
-| [New-LLMAudioChat](#New-LLMAudioChat) | llmaudiochat | Initiates a voice-based conversation with a language model, supporting audio inputand output. The function handles audio recording, transcription, model queries,and text-to-speech responses. Supports multiple language models and variousconfiguration options. |
-| [New-LLMTextChat](#New-LLMTextChat) | llmchat | Initiates an interactive chat session with AI capabilities, allowing users to addor remove PowerShell functions during the conversation and execute PowerShellcommands. |
-| [Save-Transcriptions](#Save-Transcriptions) |  | Recursively searches for media files in the specified directory and uses a localOpenAI Whisper model to generate subtitle files in SRT format. The functionsupports multiple audio/video formats and can optionally translate subtitles toa different language using LM Studio. File naming follows a standardized patternwith language codes (e.g., video.mp4.en.srt). |
-| [Set-AICommandSuggestion](#Set-AICommandSuggestion) |  |  |
-| [Set-GenXdevAICommandNotFoundActions](#Set-GenXdevAICommandNotFoundActions) |  | Configures PowerShell to handle unknown commands by either navigating todirectories or using AI to interpret user intent. The handler first tries anyexisting command not found handler, then checks if the command is a valid pathfor navigation, and finally offers AI assistance for unknown commands. |
-| [Start-AudioTranscription](#Start-AudioTranscription) | recordandtranscribe, transcribe | This function provides comprehensive audio transcription capabilities, supportingboth real-time recording and file-based transcription. It offers extensiveconfiguration options for language detection, audio processing, and outputformatting.Key features:- Multiple audio input sources (microphone, desktop audio, wav files)- Automatic silence detection (VOX)- Multi-language support- Token timestamp generation- CPU/GPU processing optimization- Advanced audio processing parameters |
+| [Add-EmoticonsToText](#Add-EmoticonsToText) | emojify | Enhances text by adding contextually appropriate emoticons using AI. |
+| [Approve-NewTextFileContent](#Approve-NewTextFileContent) |  | Interactive file content comparison and approval using WinMerge. |
+| [AssureGithubCLIInstalled](#AssureGithubCLIInstalled) |  | Ensures GitHub CLI is properly installed and configured on the system. |
+| [AssureWinMergeInstalled](#AssureWinMergeInstalled) |  | Ensures WinMerge is installed and available for file comparison operations. |
+| [GenerateMasonryLayoutHtml](#GenerateMasonryLayoutHtml) |  | Generates a responsive masonry layout HTML gallery from image data. |
+| [Get-CpuCore](#Get-CpuCore) |  | Calculates and returns the total number of logical CPU cores in the system. |
+| [Get-HasCapableGpu](#Get-HasCapableGpu) |  | Determines if a CUDA-capable GPU with sufficient memory is present. |
+| [Get-MediaFileAudioTranscription](#Get-MediaFileAudioTranscription) | transcribefile | Transcribes an audio or video file to text.. |
+| [Get-NumberOfCpuCores](#Get-NumberOfCpuCores) |  | Calculates and returns the total number of logical CPU cores in the system. |
+| [Get-TextTranslation](#Get-TextTranslation) | translate, get-translation | Translates text to another language using the LM-Studio API. |
+| [Invoke-AIPowershellCommand](#Invoke-AIPowershellCommand) | hint | Generates and executes PowerShell commands using AI assistance. |
+| [Invoke-CommandFromToolCall](#Invoke-CommandFromToolCall) |  | Executes a tool call function with validation and parameter filtering. |
+| [Invoke-ImageKeywordScan](#Invoke-ImageKeywordScan) | findimages | Scans image files for keywords and descriptions using metadata files. |
+| [Invoke-ImageKeywordUpdate](#Invoke-ImageKeywordUpdate) | updateimages | Updates image metadata with AI-generated descriptions and keywords. |
+| [Invoke-LLMQuery](#Invoke-LLMQuery) | qllm, llm, invoke-lmstudioquery, qlms |  |
+| [Invoke-QueryImageContent](#Invoke-QueryImageContent) | query-image, analyze-image | Analyzes image content using AI vision capabilities through the LM-Studio API. |
+| [Invoke-WinMerge](#Invoke-WinMerge) |  | Launches WinMerge to compare two files side by side. |
+| [New-LLMAudioChat](#New-LLMAudioChat) | llmaudiochat | Creates an interactive audio chat session with an LLM model. |
+| [New-LLMTextChat](#New-LLMTextChat) | llmchat | Starts an interactive text chat session with AI capabilities. |
+| [Save-Transcriptions](#Save-Transcriptions) |  | Generates subtitle files for audio and video files using OpenAI Whisper. |
+| [Set-GenXdevAICommandNotFoundAction](#Set-GenXdevAICommandNotFoundAction) |  | Sets up custom command not found handling with AI assistance. |
+| [Start-AudioTranscription](#Start-AudioTranscription) | transcribe, recordandtranscribe |  |
 
 <hr/>
 &nbsp;
@@ -83,18 +83,18 @@ Update-Module
 ### GenXdev.AI.LMStudio</hr>
 | Command&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | aliases&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Description |
 | --- | --- | --- |
-| [AssureLMStudio](#AssureLMStudio) |  | Initializes or reinitializes LM Studio with a specified model, handling processmanagement and configuration settings. |
-| [Convert-DotNetTypeToLLMType](#Convert-DotNetTypeToLLMType) |  | This function takes a .NET type name as input and returns the correspondingsimplified type name used in Language Models. It handles common .NET typesand provides appropriate type mappings. |
-| [ConvertTo-LMStudioFunctionDefinition](#ConvertTo-LMStudioFunctionDefinition) |  |  |
-| [Get-LMStudioLoadedModelList](#Get-LMStudioLoadedModelList) |  | Gets a list of all models that are currently loaded in LM Studio by queryingthe LM Studio process. Returns null if no models are loaded or if an erroroccurs. Requires LM Studio to be installed and accessible. |
-| [Get-LMStudioModelList](#Get-LMStudioModelList) |  | Gets a list of all models installed in LM Studio by executing the LM Studio CLIcommand and parsing its JSON output. Returns an array of model objects containingdetails about each installed model. |
-| [Get-LMStudioPaths](#Get-LMStudioPaths) |  | Searches common installation locations for LM Studio executables and returns theirpaths. The function maintains a cache of found paths to optimize performance onsubsequent calls. |
-| [Get-LMStudioWindow](#Get-LMStudioWindow) |  | Gets a window helper for the LM Studio application. If LM Studio is not running,it will be started automatically unless prevented by NoAutoStart switch. |
-| [Initialize-LMStudioModel](#Initialize-LMStudioModel) |  | Searches for and loads a specified AI model in LM Studio. The function handlesinstallation verification, process management, and model loading with GPUsupport when available. |
-| [Install-LMStudioApplication](#Install-LMStudioApplication) |  | Ensures LM Studio is installed on the system by checking WinGet dependencies andinstalling LM Studio if not already present. Uses WinGet module with CLI fallback. |
-| [Start-LMStudioApplication](#Start-LMStudioApplication) |  | This function checks if LM Studio is installed and running. If not installed, itwill install it. If not running, it will start it with the specified windowvisibility. |
-| [Test-LMStudioInstallation](#Test-LMStudioInstallation) |  | Verifies the LMStudio installation by checking if the executable exists at theexpected path location. Uses Get-LMStudioPaths helper function to determine theinstallation path and validates the executable's existence. |
-| [Test-LMStudioProcess](#Test-LMStudioProcess) |  | Checks if LM Studio is running, and if so, returns true. If not running, itreturns false. |
+| [AssureLMStudio](#AssureLMStudio) |  | Ensures LM Studio is properly initialized with the specified model. |
+| [Convert-DotNetTypeToLLMType](#Convert-DotNetTypeToLLMType) |  | Converts .NET type names to LLM (Language Model) type names. |
+| [ConvertTo-LMStudioFunctionDefinition](#ConvertTo-LMStudioFunctionDefinition) |  | Converts PowerShell functions to LMStudio function definitions. |
+| [Get-LMStudioLoadedModelList](#Get-LMStudioLoadedModelList) |  | Retrieves the list of currently loaded models from LM Studio. |
+| [Get-LMStudioModelList](#Get-LMStudioModelList) |  | Retrieves a list of installed LM Studio models. |
+| [Get-LMStudioPaths](#Get-LMStudioPaths) |  | Retrieves file paths for LM Studio executables. |
+| [Get-LMStudioWindow](#Get-LMStudioWindow) |  | Gets a window helper for the LM Studio application. |
+| [Initialize-LMStudioModel](#Initialize-LMStudioModel) |  | Initializes and loads an AI model in LM Studio. |
+| [Install-LMStudioApplication](#Install-LMStudioApplication) |  | Installs LM Studio application using WinGet package manager. |
+| [Start-LMStudioApplication](#Start-LMStudioApplication) |  | Starts the LM Studio application if it's not already running. |
+| [Test-LMStudioInstallation](#Test-LMStudioInstallation) |  | Tests if LMStudio is installed and accessible on the system. |
+| [Test-LMStudioProcess](#Test-LMStudioProcess) |  | Tests if LM Studio process is running and configures its window state. |
 
 <br/><hr/><hr/><br/>
 
@@ -102,2342 +102,122 @@ Update-Module
 # Cmdlets
 
 &nbsp;<hr/>
-###	GenXdev.AI.LMStudio<hr/>
+###	GenXdev.AI<hr/> 
 
-##	AssureLMStudio
-````PowerShell
+##	Add-EmoticonsToText 
+````PowerShell 
 
-   AssureLMStudio 
-````
+   Add-EmoticonsToText                  --> emojify  
+```` 
 
-### SYNOPSIS
-    Ensures LM Studio is properly initialized with the specified model. 
+### SYNOPSIS 
+    Enhances text by adding contextually appropriate emoticons using AI.  
 
-### SYNTAX
-````PowerShell
+### SYNTAX 
+````PowerShell 
 
-   AssureLMStudio [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow]   
-   [-Force] [<CommonParameters>] 
-````
+   Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-SetClipboard] [<CommonParameters>]  
+```` 
 
-### DESCRIPTION
-    Initializes or reinitializes LM Studio with a specified model, handling process 
-    management and configuration settings. 
+### DESCRIPTION 
+    This function processes input text to add emoticons that match the emotional  
+    context. It can accept input directly through parameters, from the pipeline, or  
+    from the system clipboard. The function leverages AI models to analyze the text  
+    and select appropriate emoticons, making messages more expressive and engaging.  
 
-### PARAMETERS
-    -Model <String> 
-        Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search 
-        Defaults to "*-tool-use". 
-        Required?                    false 
-        Position?                    1 
-        Default value                *-tool-use 
-        Accept pipeline input?       true (ByValue) 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ModelLMSGetIdentifier <String> 
-        The specific LM-Studio model identifier to use. 
-        Required?                    false 
-        Position?                    2 
-        Default value                llama-3-groq-8b-tool-use 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxToken <Int32> 
-        Maximum number of tokens in response. Use -1 for default setting. 
-        Required?                    false 
-        Position?                    3 
-        Default value                8192 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TTLSeconds <Int32> 
-        Time-to-live in seconds for models loaded via API requests. 
-        Required?                    false 
-        Position?                    4 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ShowWindow [<SwitchParameter>] 
-        Shows the LM Studio window during initialization when specified. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Force [<SwitchParameter>] 
-        Forces LM Studio to stop before initialization when specified. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+### PARAMETERS 
+    -Text <String>  
+        The input text to enhance with emoticons. If not provided, the function will  
+        read from the system clipboard. Multiple lines of text are supported.  
+        Required?                    false  
+        Position?                    1  
+        Default value                  
+        Accept pipeline input?       true (ByValue)  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Instructions <String>  
+        Additional instructions to guide the AI model in selecting and placing emoticons.  
+        These can help fine-tune the emotional context and style of added emoticons.  
+        Required?                    false  
+        Position?                    2  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Model <String>  
+        Specifies which AI model to use for emoticon selection and placement. Different  
+        models may produce varying results in terms of emoticon selection and context  
+        understanding. Defaults to "qwen".  
+        Required?                    false  
+        Position?                    3  
+        Default value                qwen  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  true  
+    -SetClipboard [<SwitchParameter>]  
+        When specified, copies the enhanced text back to the system clipboard after  
+        processing is complete.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>
-
-##	Get-LMStudioPaths
-````PowerShell
-
-   Get-LMStudioPaths 
-````
-
-### SYNOPSIS
-    Retrieves file paths for LM Studio executables. 
-
-### SYNTAX
-````PowerShell
-
-   Get-LMStudioPaths [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Searches common installation locations for LM Studio executables and returns their 
-    paths. The function maintains a cache of found paths to optimize performance on 
-    subsequent calls. 
-
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Get-LMStudioWindow
-````PowerShell
-
-   Get-LMStudioWindow 
-````
-
-### SYNOPSIS
-    Gets a window helper for the LM Studio application. 
-
-### SYNTAX
-````PowerShell
-
-   Get-LMStudioWindow [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>]   
-   [-ShowWindow] [-Force] [-NoAutoStart] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Gets a window helper for the LM Studio application. If LM Studio is not running, 
-    it will be started automatically unless prevented by NoAutoStart switch. 
-
-### PARAMETERS
-    -Model <String> 
-        Name or partial path of the model to initialize. 
-        Required?                    false 
-        Position?                    1 
-        Default value                *-tool-use 
-        Accept pipeline input?       true (ByValue) 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ModelLMSGetIdentifier <String> 
-        The LM-Studio model identifier to use. 
-        Required?                    false 
-        Position?                    2 
-        Default value                llama-3-groq-8b-tool-use 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxToken <Int32> 
-        Maximum tokens in response. Use -1 for default value. 
-        Required?                    false 
-        Position?                    3 
-        Default value                8192 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TTLSeconds <Int32> 
-        Set a Time To Live (in seconds) for models loaded via API. 
-        Required?                    false 
-        Position?                    4 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ShowWindow [<SwitchParameter>] 
-        Switch to show LM Studio window during initialization. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Force [<SwitchParameter>] 
-        Switch to force stop LM Studio before initialization. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoAutoStart [<SwitchParameter>] 
-        Switch to prevent automatic start of LM Studio if not running. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Test-LMStudioProcess
-````PowerShell
-
-   Test-LMStudioProcess 
-````
-
-### SYNOPSIS
-    Tests if LM Studio process is running and configures its window state. 
-
-### SYNTAX
-````PowerShell
-
-   Test-LMStudioProcess [-ShowWindow] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Checks if LM Studio is running, and if so, returns true. If not running, it 
-    returns false. 
-
-### PARAMETERS
-    -ShowWindow [<SwitchParameter>] 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Get-LMStudioModelList
-````PowerShell
-
-   Get-LMStudioModelList 
-````
-
-### SYNOPSIS
-    Retrieves a list of installed LM Studio models. 
-
-### SYNTAX
-````PowerShell
-
-   Get-LMStudioModelList [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Gets a list of all models installed in LM Studio by executing the LM Studio CLI 
-    command and parsing its JSON output. Returns an array of model objects containing 
-    details about each installed model. 
-
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Initialize-LMStudioModel
-````PowerShell
-
-   Initialize-LMStudioModel 
-````
-
-### SYNOPSIS
-    Initializes and loads an AI model in LM Studio. 
-
-### SYNTAX
-````PowerShell
-
-   Initialize-LMStudioModel [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>]   
-   [-Gpu <Int32>] [-ShowWindow] [-Force] [-PreferredModels <String[]>] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Searches for and loads a specified AI model in LM Studio. The function handles 
-    installation verification, process management, and model loading with GPU 
-    support when available. 
-
-### PARAMETERS
-    -Model <String> 
-        Name or partial path of the model to initialize. Searched against available 
-        models. 
-        Required?                    false 
-        Position?                    1 
-        Default value                [string]::Empty 
-        Accept pipeline input?       true (ByValue) 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ModelLMSGetIdentifier <String> 
-        The specific LM-Studio model identifier to use for download/initialization. 
-        Required?                    false 
-        Position?                    2 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxToken <Int32> 
-        Maximum number of tokens allowed in the response. Use -1 for default limit. 
-        Required?                    false 
-        Position?                    3 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TTLSeconds <Int32> 
-        Time-to-live in seconds for models loaded via API requests. Use -1 for no TTL. 
-        Required?                    false 
-        Position?                    4 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Gpu <Int32> 
-        Required?                    false 
-        Position?                    named 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ShowWindow [<SwitchParameter>] 
-        Shows the LM Studio window during initialization if specified. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Force [<SwitchParameter>] 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -PreferredModels <String[]> 
-        Array of model names to try if specified model is not found. 
-        Required?                    false 
-        Position?                    named 
-        Default value                @( 
-                    "qwen-7b", "vicuna", "alpaca", "gpt", "mistral", "falcon", "mpt", 
-                    "koala", "wizard", "guanaco", "bloom", "rwkv", "camel", "pythia", 
-                    "baichuan" 
-                ) 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Start-LMStudioApplication
-````PowerShell
-
-   Start-LMStudioApplication 
-````
-
-### SYNOPSIS
-    Starts the LM Studio application if it's not already running. 
-
-### SYNTAX
-````PowerShell
-
-   Start-LMStudioApplication [[-WithVisibleWindow]] [-Passthru] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    This function checks if LM Studio is installed and running. If not installed, it 
-    will install it. If not running, it will start it with the specified window 
-    visibility. 
-
-### PARAMETERS
-    -WithVisibleWindow [<SwitchParameter>] 
-        Required?                    false 
-        Position?                    1 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Passthru [<SwitchParameter>] 
-        When specified, returns the Process object of the LM Studio application. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Test-LMStudioInstallation
-````PowerShell
-
-   Test-LMStudioInstallation 
-````
-
-### SYNOPSIS
-    Tests if LMStudio is installed and accessible on the system. 
-
-### SYNTAX
-````PowerShell
-
-   Test-LMStudioInstallation [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Verifies the LMStudio installation by checking if the executable exists at the 
-    expected path location. Uses Get-LMStudioPaths helper function to determine the 
-    installation path and validates the executable's existence. 
-
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Convert-DotNetTypeToLLMType
-````PowerShell
-
-   Convert-DotNetTypeToLLMType 
-````
-
-### SYNOPSIS
-    Converts .NET type names to LLM (Language Model) type names. 
-
-### SYNTAX
-````PowerShell
-
-   Convert-DotNetTypeToLLMType [-DotNetType] <String> [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    This function takes a .NET type name as input and returns the corresponding 
-    simplified type name used in Language Models. It handles common .NET types 
-    and provides appropriate type mappings. 
-
-### PARAMETERS
-    -DotNetType <String> 
-        The .NET type name to convert to an LLM type name. 
-        Required?                    true 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Get-LMStudioLoadedModelList
-````PowerShell
-
-   Get-LMStudioLoadedModelList 
-````
-
-### SYNOPSIS
-    Retrieves the list of currently loaded models from LM Studio. 
-
-### SYNTAX
-````PowerShell
-
-   Get-LMStudioLoadedModelList [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Gets a list of all models that are currently loaded in LM Studio by querying 
-    the LM Studio process. Returns null if no models are loaded or if an error 
-    occurs. Requires LM Studio to be installed and accessible. 
-
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Install-LMStudioApplication
-````PowerShell
-
-   Install-LMStudioApplication 
-````
-
-### SYNOPSIS
-    Installs LM Studio application using WinGet package manager. 
-
-### SYNTAX
-````PowerShell
-
-   Install-LMStudioApplication [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Ensures LM Studio is installed on the system by checking WinGet dependencies and 
-    installing LM Studio if not already present. Uses WinGet module with CLI fallback. 
-
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	ConvertTo-LMStudioFunctionDefinition
-````PowerShell
-
-   ConvertTo-LMStudioFunctionDefinition 
-````
-
-### SYNTAX
-````PowerShell
-
-   ConvertTo-LMStudioFunctionDefinition [[-ExposedCmdLets] <ExposedCmdletDefinition[]>] [<CommonParameters>] 
-````
-
-### PARAMETERS
-    -ExposedCmdLets <ExposedCmdletDefinition[]> 
-        PowerShell commands to convert to tool functions 
-        Required?                    false 
-        Position?                    0 
-        Accept pipeline input?       true (ByValue) 
-        Parameter set name           (All) 
-        Aliases                      None 
-        Dynamic?                     false 
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-&nbsp;<hr/>
-###	GenXdev.AI<hr/>
-
-##	Invoke-LLMQuery
-````PowerShell
-
-   Invoke-LLMQuery                      --> Invoke-LMStudioQuery, llm, qllm, qlms 
-````
-
-### SYNOPSIS
-    Sends queries to an OpenAI compatible Large Language Chat completion API and 
-    processes responses. 
-
-### SYNTAX
-````PowerShell
-
-   Invoke-LLMQuery [[-Query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-Instructions] <String>]   
-   [[-Attachments] <String[]>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>]   
-   [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets   
-   <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-ChatMode <String>]   
-   [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    This function sends queries to an OpenAI compatible Large Language Chat completion 
-    API and processes responses. It supports text and image inputs, handles tool 
-    function calls, and can operate in various chat modes including text and audio. 
-
-### PARAMETERS
-    -Query <String> 
-        The text query to send to the model. Can be empty for chat modes. 
-        Required?                    false 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       true (ByValue) 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Model <String> 
-        The name or identifier of the LM Studio model to use. 
-        Required?                    false 
-        Position?                    2 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ModelLMSGetIdentifier <String> 
-        Alternative identifier for getting a specific model from LM Studio. 
-        Required?                    false 
-        Position?                    2 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Instructions <String> 
-        System instructions to provide context to the model. 
-        Required?                    false 
-        Position?                    3 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Attachments <String[]> 
-        Array of file paths to attach to the query. Supports images and text files. 
-        Required?                    false 
-        Position?                    4 
-        Default value                @() 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Temperature <Double> 
-        Controls response randomness (0.0-1.0). Lower values are more deterministic. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxToken <Int32> 
-        Maximum tokens allowed in the response. Use -1 for model default. 
-        Required?                    false 
-        Position?                    named 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ShowWindow [<SwitchParameter>] 
-        Show the LM Studio window during processing. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TTLSeconds <Int32> 
-        Time-to-live in seconds for loaded models. 
-        Required?                    false 
-        Position?                    named 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Gpu <Int32> 
-        Required?                    false 
-        Position?                    named 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Force [<SwitchParameter>] 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ImageDetail <String> 
-        Detail level for image processing (low/medium/high). 
-        Required?                    false 
-        Position?                    named 
-        Default value                low 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -IncludeThoughts [<SwitchParameter>] 
-        Include model's thought process in output. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ContinueLast [<SwitchParameter>] 
-        Continue from the last conversation context. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Functions <Hashtable[]> 
-        Array of function definitions that the model can call. 
-        Required?                    false 
-        Position?                    named 
-        Default value                @() 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ExposedCmdLets <ExposedCmdletDefinition[]> 
-        PowerShell commands to expose as tools to the model. 
-        Required?                    false 
-        Position?                    named 
-        Default value                @() 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoConfirmationToolFunctionNames <String[]> 
-        Array of command names that do not require confirmation 
-        Required?                    false 
-        Position?                    named 
-        Default value                @() 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Speak [<SwitchParameter>] 
-        Enable text-to-speech for AI responses. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SpeakThoughts [<SwitchParameter>] 
-        Enable text-to-speech for AI thought process. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ChatMode <String> 
-        Enable interactive chat mode with specified input method. 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ChatOnce [<SwitchParameter>] 
-        Internal parameter to control chat mode invocation. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoSessionCaching [<SwitchParameter>] 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ApiEndpoint <String> 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ApiKey <String> 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Invoke-WinMerge
-````PowerShell
-
-   Invoke-WinMerge 
-````
-
-### SYNOPSIS
-    Launches WinMerge to compare two files side by side. 
-
-### SYNTAX
-````PowerShell
-
-   Invoke-WinMerge [-SourcecodeFilePath] <String> [-TargetcodeFilePath] <String> [[-Wait]] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Launches the WinMerge application to compare source and target files in a side by 
-    side diff view. The function validates the existence of both input files and 
-    ensures WinMerge is properly installed before launching. Provides optional 
-    wait functionality to pause execution until WinMerge closes. 
-
-### PARAMETERS
-    -SourcecodeFilePath <String> 
-        Full or relative path to the source file for comparison. The file must exist and 
-        be accessible. 
-        Required?                    true 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TargetcodeFilePath <String> 
-        Full or relative path to the target file for comparison. The file must exist and 
-        be accessible. 
-        Required?                    true 
-        Position?                    2 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Wait [<SwitchParameter>] 
-        Switch parameter that when specified will cause the function to wait for the 
-        WinMerge application to close before continuing execution. 
-        Required?                    false 
-        Position?                    3 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	New-LLMTextChat
-````PowerShell
-
-   New-LLMTextChat                      --> llmchat 
-````
-
-### SYNOPSIS
-    Starts an interactive text chat session with AI capabilities. 
-
-### SYNTAX
-````PowerShell
-
-   New-LLMTextChat [[-Query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-Instructions] <String>]   
-   [[-Attachments] <String[]>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>]   
-   [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Speak]   
-   [-SpeakThoughts] [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Initiates an interactive chat session with AI capabilities, allowing users to add 
-    or remove PowerShell functions during the conversation and execute PowerShell 
-    commands. 
-
-### PARAMETERS
-    -Query <String> 
-        Initial text to send to the model. 
-        Required?                    false 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       true (ByValue) 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Model <String> 
-        The LM-Studio model to use, defaults to "*-tool-use". 
-        Required?                    false 
-        Position?                    2 
-        Default value                *-tool-use 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ModelLMSGetIdentifier <String> 
-        The specific LM-Studio model identifier for automatic model downloads. 
-        Required?                    false 
-        Position?                    3 
-        Default value                llama-3-groq-8b-tool-use 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Instructions <String> 
-        System instructions to provide context to the AI model. 
-        Required?                    false 
-        Position?                    4 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Attachments <String[]> 
-        Array of file paths to attach to the conversation. 
-        Required?                    false 
-        Position?                    5 
-        Default value                @() 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Temperature <Double> 
-        Controls randomness in responses (0.0-1.0). Lower values are more deterministic. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxToken <Int32> 
-        Maximum number of tokens in the response. Default is 8192. 
-        Required?                    false 
-        Position?                    named 
-        Default value                8192 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ShowWindow [<SwitchParameter>] 
-        Show the LM Studio interface window. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TTLSeconds <Int32> 
-        Set a TTL (in seconds) for models loaded via API requests. 
-        Required?                    false 
-        Position?                    named 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Gpu <Int32> 
-        GPU offloading control (-2=Auto, -1=LM Studio decides, 0-1=fraction, off=disabled). 
-        Required?                    false 
-        Position?                    named 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Force [<SwitchParameter>] 
-        Force stop LM Studio before initialization. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ImageDetail <String> 
-        Level of detail for image generation (low, medium, high). 
-        Required?                    false 
-        Position?                    named 
-        Default value                low 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -IncludeThoughts [<SwitchParameter>] 
-        Include the model's thought process in responses. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ContinueLast [<SwitchParameter>] 
-        Continue from the last conversation instead of starting new. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ExposedCmdLets <ExposedCmdletDefinition[]> 
-        Array of PowerShell cmdlets to expose as tools. 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Speak [<SwitchParameter>] 
-        Enable text-to-speech for AI responses. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SpeakThoughts [<SwitchParameter>] 
-        Enable text-to-speech for AI thought process. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ChatOnce [<SwitchParameter>] 
-        Used internally to invoke chat mode once after llm invocation. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoSessionCaching [<SwitchParameter>] 
-        Do not store session in session cache. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ApiEndpoint <String> 
-        Api endpoint url, defaults to http://localhost:1234/v1/chat/completions. 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ApiKey <String> 
-        The API key to use for the request. 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	New-LLMAudioChat
-````PowerShell
-
-   New-LLMAudioChat                     --> llmaudiochat 
-````
-
-### SYNOPSIS
-    Creates an interactive audio chat session with an LLM model. 
-
-### SYNTAX
-````PowerShell
-
-   New-LLMAudioChat [[-query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-Instructions] <String>]   
-   [[-Attachments] <String[]>] [-AudioTemperature <Double>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds   
-   <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-ContinueLast] [-ExposedCmdLets   
-   <ExposedCmdletDefinition[]>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-TemperatureResponse <Double>]   
-   [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Single>]   
-   [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext]   
-   [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>]   
-   [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Initiates a voice-based conversation with a language model, supporting audio input 
-    and output. The function handles audio recording, transcription, model queries, 
-    and text-to-speech responses. Supports multiple language models and various 
-    configuration options. 
-
-### PARAMETERS
-    -query <String> 
-        Initial text query to send to the model. Can be empty to start with voice input. 
-        Required?                    false 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       true (ByValue) 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Model <String> 
-        The model name/path to use. Supports -like pattern matching. Default: "*-tool-use" 
-        Required?                    false 
-        Position?                    2 
-        Default value                *-tool-use 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ModelLMSGetIdentifier <String> 
-        Model identifier for LM Studio. Default: "llama-3-groq-8b-tool-use" 
-        Required?                    false 
-        Position?                    3 
-        Default value                llama-3-groq-8b-tool-use 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Instructions <String> 
-        System instructions/prompt to guide the model's behavior. 
-        Required?                    false 
-        Position?                    4 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Attachments <String[]> 
-        Array of file paths to attach to the conversation for context. 
-        Required?                    false 
-        Position?                    5 
-        Default value                @() 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -AudioTemperature <Double> 
-        Temperature setting for audio input recognition. Range: 0.0-1.0. Default: 0.0 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Temperature <Double> 
-        Temperature for response randomness. Range: 0.0-1.0. Default: 0.0 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxToken <Int32> 
-        Maximum tokens in model response. Default: 8192 
-        Required?                    false 
-        Position?                    named 
-        Default value                8192 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ShowWindow [<SwitchParameter>] 
-        Switch to show the LM Studio window during operation. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TTLSeconds <Int32> 
-        Time-to-live in seconds for models loaded via API requests. Default: -1 
-        Required?                    false 
-        Position?                    named 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Gpu <Int32> 
-        GPU offloading configuration. -2=Auto, -1=LM Studio decides, 0-1=fraction of layers 
-        Default: -1 
-        Required?                    false 
-        Position?                    named 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Force [<SwitchParameter>] 
-        Switch to force stop LM Studio before initialization. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ImageDetail <String> 
-        Image detail level setting. Options: "low", "medium", "high". Default: "low" 
-        Required?                    false 
-        Position?                    named 
-        Default value                low 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -IncludeThoughts [<SwitchParameter>] 
-        Switch to include model's thought process in output. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ContinueLast [<SwitchParameter>] 
-        Switch to continue from last conversation context. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ExposedCmdLets <ExposedCmdletDefinition[]> 
-        Array of PowerShell command definitions available as tools to the model. 
-        Required?                    false 
-        Position?                    named 
-        Default value                @() 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -DontSpeak [<SwitchParameter>] 
-        Switch to disable text-to-speech for AI responses. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -DontSpeakThoughts [<SwitchParameter>] 
-        Switch to disable text-to-speech for AI thought responses. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoVOX [<SwitchParameter>] 
-        Switch to disable silence detection for automatic recording stop. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -UseDesktopAudioCapture [<SwitchParameter>] 
-        Switch to use desktop audio capture instead of microphone input. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TemperatureResponse <Double> 
-        Temperature for controlling response randomness. Range: 0.0-1.0. Default: 0.01 
-        Required?                    false 
-        Position?                    named 
-        Default value                0.01 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Language <String> 
-        Language to detect in audio input. Default: "English" 
-        Required?                    false 
-        Position?                    named 
-        Default value                English 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -CpuThreads <Int32> 
-        Number of CPU threads to use. 0=auto. Default: 0 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SuppressRegex <String> 
-        Regex pattern to suppress tokens from output. 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -AudioContextSize <Int32> 
-        Size of the audio context window. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SilenceThreshold <Single> 
-        Threshold for silence detection. Range: 0.0-1.0. Default: 0.3 
-        Required?                    false 
-        Position?                    named 
-        Default value                0.3 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -LengthPenalty <Single> 
-        Penalty factor for response length. Range: 0-1 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -EntropyThreshold <Single> 
-        Threshold for entropy in responses. Range: 0-1 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -LogProbThreshold <Single> 
-        Threshold for log probability in responses. Range: 0-1 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoSpeechThreshold <Single> 
-        Threshold for no-speech detection. Range: 0-1. Default: 0.1 
-        Required?                    false 
-        Position?                    named 
-        Default value                0.1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoContext [<SwitchParameter>] 
-        Switch to disable context usage in conversation. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -WithBeamSearchSamplingStrategy [<SwitchParameter>] 
-        Switch to enable beam search sampling strategy. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -OnlyResponses [<SwitchParameter>] 
-        Switch to suppress recognized text in output. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoSessionCaching [<SwitchParameter>] 
-        Switch to disable session caching. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ApiEndpoint <String> 
-        API endpoint URL. Default: http://localhost:1234/v1/chat/completions 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ApiKey <String> 
-        API key for authentication. 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Get-HasCapableGpu
-````PowerShell
-
-   Get-HasCapableGpu 
-````
-
-### SYNOPSIS
-    Determines if a CUDA-capable GPU with sufficient memory is present. 
-
-### SYNTAX
-````PowerShell
-
-   Get-HasCapableGpu [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    This function checks the system for CUDA-compatible GPUs with at least 4GB of 
-    video RAM. It uses Windows Management Instrumentation (WMI) to query installed 
-    video controllers and verify their memory capacity. This check is essential for 
-    AI workloads that require significant GPU memory. 
-
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Add-EmoticonsToText
-````PowerShell
-
-   Add-EmoticonsToText                  --> emojify 
-````
-
-### SYNOPSIS
-    Enhances text by adding contextually appropriate emoticons using AI. 
-
-### SYNTAX
-````PowerShell
-
-   Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [[-SetClipboard]] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    This function processes input text to add emoticons that match the emotional 
-    context. It can accept input from parameters, pipeline, or clipboard. The function 
-    leverages AI models to analyze the text and select appropriate emoticons, making 
-    the text more expressive and engaging. 
-
-### PARAMETERS
-    -Text <String> 
-        The input text to enhance with emoticons. If not provided, the function will read 
-        from the system clipboard. 
-        Required?                    false 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       true (ByValue) 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Instructions <String> 
-        Optional instructions to guide the AI model in selecting emoticons. These can help 
-        fine-tune the emotional context and style of added emoticons. 
-        Required?                    false 
-        Position?                    2 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Model <String> 
-        The AI model to use for emoticon selection. Defaults to "qwen". Different models 
-        may produce varying results in emoticon selection and placement. 
-        Required?                    false 
-        Position?                    3 
-        Default value                qwen 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SetClipboard [<SwitchParameter>] 
-        When specified, the enhanced text will be copied back to the system clipboard 
-        after processing. 
-        Required?                    false 
-        Position?                    4 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Get-TextTranslation
-````PowerShell
-
-   Get-TextTranslation                  --> Get-Translation, translate 
-````
-
-### SYNOPSIS
-    Translates text to another language using the LM-Studio API. 
-
-### SYNTAX
-````PowerShell
-
-   Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Object>] [[-Model] <String>] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    The Get-TextTranslation function translates text into a specified target language 
-    using LM-Studio's API. It processes text in chunks to handle large inputs 
-    efficiently and maintains formatting. 
-
-### PARAMETERS
-    -Text <String> 
-        The source text to be translated. Can be provided via pipeline. 
-        Required?                    true 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       true (ByValue) 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Language <String> 
-        The target language for translation. Defaults to "English". 
-        Supports 140+ languages including major world languages and fun variants. 
-        Required?                    false 
-        Position?                    2 
-        Default value                english 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Instructions <Object> 
-        Custom instructions for the LLM model about how to perform the translation. 
-        Defaults to maintaining style and paragraph structure while translating. 
-        Required?                    false 
-        Position?                    3 
-        Default value                Translate this partial subtitle text, into the [Language] language, leave in the same style of  
-        writing, and leave the paragraph structure in tact, ommit only the translation no yapping or chatting. 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Model <String> 
-        The LM-Studio model to use for translation. Defaults to "qwen". 
-        Required?                    false 
-        Position?                    4 
-        Default value                qwen 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Save-Transcriptions
-````PowerShell
-
-   Save-Transcriptions 
-````
-
-### SYNOPSIS
-    Generates subtitle files for audio and video files using OpenAI Whisper. 
-
-### SYNTAX
-````PowerShell
-
-   Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel   
-   <String>] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Recursively searches for media files in the specified directory and uses a local 
-    OpenAI Whisper model to generate subtitle files in SRT format. The function 
-    supports multiple audio/video formats and can optionally translate subtitles to 
-    a different language using LM Studio. File naming follows a standardized pattern 
-    with language codes (e.g., video.mp4.en.srt). 
-
-### PARAMETERS
-    -DirectoryPath <String> 
-        The root directory to search for media files. Defaults to the current directory. 
-        Will recursively process all supported media files in subfolders. 
-        Required?                    false 
-        Position?                    1 
-        Default value                .\ 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -LanguageIn <String> 
-        The expected source language of the audio content. Used to improve transcription 
-        accuracy. Defaults to English. Supports 150+ languages. 
-        Required?                    false 
-        Position?                    2 
-        Default value                English 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -LanguageOut <String> 
-        Optional target language for translation. If specified, the generated subtitles 
-        will be translated from LanguageIn to this language using LM Studio. 
-        Required?                    false 
-        Position?                    3 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TranslateUsingLMStudioModel <String> 
-        The LM Studio model name to use for translation. Defaults to "qwen". Only used 
-        when LanguageOut is specified. 
-        Required?                    false 
-        Position?                    named 
-        Default value                qwen 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Get-NumberOfCpuCores
-````PowerShell
-
-   Get-NumberOfCpuCores 
-````
-
-### SYNOPSIS
-    Calculates and returns the total number of logical CPU cores in the system. 
-
-### SYNTAX
-````PowerShell
-
-   Get-NumberOfCpuCores [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Queries the system hardware through Windows Management Instrumentation (WMI) to 
-    determine the total number of logical CPU cores. The function accounts for 
-    hyperthreading by multiplying the physical core count by 2. This information is 
-    useful for optimizing parallel processing tasks and understanding system 
-    capabilities. 
-    The calculation process: 
-    1. Queries WMI for all physical processors 
-    2. Sums up the number of physical cores across all processors 
-    3. Multiplies by 2 to account for hyperthreading 
-    4. Returns the total logical core count 
-
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-### NOTES
-````PowerShell
-
-       - Assumes all processors support hyperthreading  
-       - Requires WMI access permissions  
-       - Works on Windows systems only  
-   -------------------------- EXAMPLE 1 --------------------------  
-   PS C:\> # Get the total number of logical CPU cores  
-   $cores = Get-NumberOfCpuCores  
-   Write-Host "System has $cores logical CPU cores available" 
-````
-
-<br/><hr/><hr/><br/>
-
-##	AssureWinMergeInstalled
-````PowerShell
-
-   AssureWinMergeInstalled 
-````
-
-### SYNOPSIS
-    Ensures WinMerge is installed and available for file comparison operations. 
-
-### SYNTAX
-````PowerShell
-
-   AssureWinMergeInstalled [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Verifies if WinMerge is installed and properly configured in the system PATH. 
-    If not found, installs WinMerge using WinGet and adds it to the user's PATH. 
-    Handles the complete installation and configuration process automatically. 
-
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Invoke-ImageKeywordScan
-````PowerShell
-
-   Invoke-ImageKeywordScan              --> findimages 
-````
-
-### SYNOPSIS
-    Scans image files for keywords and descriptions using metadata files. 
-
-### SYNTAX
-````PowerShell
-
-   Invoke-ImageKeywordScan [[-Keywords] <String[]>] [[-ImageDirectory] <String>] [[-PassThru]] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Searches for image files (jpg, jpeg, png) in the specified directory and its 
-    subdirectories. For each image, checks associated description.json and 
-    keywords.json files for metadata. Can filter images based on keyword matches and 
-    display results in a masonry layout web view or return as objects. 
-
-### PARAMETERS
-    -Keywords <String[]> 
-        Array of keywords to search for. Supports wildcards. If empty, returns all images 
-        with any metadata. 
-        Required?                    false 
-        Position?                    1 
-        Default value                @() 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ImageDirectory <String> 
-        Directory path to search for images. Defaults to current directory. 
-        Required?                    false 
-        Position?                    2 
-        Default value                .\ 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -PassThru [<SwitchParameter>] 
-        Switch to return image data as objects instead of displaying in browser. 
-        Required?                    false 
-        Position?                    3 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Set-AICommandSuggestion
-````PowerShell
-
-   Set-AICommandSuggestion 
-````
-
-### SYNTAX
-````PowerShell
-
-   Set-AICommandSuggestion [-Command] <string> [<CommonParameters>] 
-````
-
-### PARAMETERS
-    -Command <string> 
-        The PowerShell command to process 
-        Required?                    true 
-        Position?                    0 
-        Accept pipeline input?       false 
-        Parameter set name           (All) 
-        Aliases                      None 
-        Dynamic?                     false 
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	AssureGithubCLIInstalled
-````PowerShell
-
-   AssureGithubCLIInstalled 
-````
-
-### SYNOPSIS
-    Ensures GitHub CLI is properly installed and configured on the system. 
-
-### SYNTAX
-````PowerShell
-
-   AssureGithubCLIInstalled [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Performs comprehensive checks and setup for GitHub CLI (gh): 
-    - Verifies if GitHub CLI is installed and accessible in PATH 
-    - Installs GitHub CLI via WinGet if not present 
-    - Configures system PATH environment variable 
-    - Installs GitHub Copilot extension 
-    - Sets up GitHub authentication 
-    The function handles all prerequisites and ensures a working GitHub CLI setup. 
-
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Invoke-QueryImageContent
-````PowerShell
-
-   Invoke-QueryImageContent             --> Analyze-Image, Query-Image 
-````
-
-### SYNOPSIS
-    Analyzes image content using AI vision capabilities through the LM-Studio API. 
-
-### SYNTAX
-````PowerShell
-
-   Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Temperature] <Double>] [[-MaxToken] <Int32>]   
-   [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Processes images using the MiniCPM model via LM-Studio API to analyze content and 
-    answer queries about the image. The function supports various analysis parameters 
-    including temperature control for response randomness and token limits for output 
-    length. 
-
-### PARAMETERS
-    -Query <String> 
-        Specifies the question or prompt to analyze the image content. This drives the 
-        AI's analysis focus and determines what aspects of the image to examine. 
-        Required?                    true 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ImagePath <String> 
-        The path to the image file for analysis. Supports both relative and absolute 
-        paths. The file must exist and be accessible. 
-        Required?                    true 
-        Position?                    2 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Temperature <Double> 
-        Controls the randomness in the AI's response generation. Lower values (closer 
-        to 0) produce more focused and deterministic responses, while higher values 
-        increase creativity and variability. Valid range: 0.0 to 1.0. 
-        Required?                    false 
-        Position?                    3 
-        Default value                0.01 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxToken <Int32> 
-        Limits the length of the generated response by specifying maximum tokens. 
-        Use -1 for unlimited response length. Valid range: -1 to MaxInt. 
-        Required?                    false 
-        Position?                    4 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Start-AudioTranscription
-````PowerShell
-
-   Start-AudioTranscription             --> recordandtranscribe, transcribe 
-````
-
-### SYNOPSIS
-    Transcribes audio to text using various input methods and advanced configuration 
-    options. 
-
-### SYNTAX
-````PowerShell
-
-   Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX] [-PassThru] [-UseDesktopAudioCapture]   
-   [-WithTokenTimestamps] [[-TokenTimestampsSumThreshold] <Single>] [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] [-IgnoreSilence]   
-   [[-MaxDurationOfSilence] <TimeSpan>] [[-SilenceThreshold] <Int32>] [[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature]   
-   <Single>] [[-TemperatureInc] <Single>] [-WithTranslate] [[-Prompt] <String>] [[-SuppressRegex] <String>] [-WithProgress]   
-   [[-AudioContextSize] <Int32>] [-DontSuppressBlank] [[-MaxDuration] <TimeSpan>] [[-Offset] <TimeSpan>] [[-MaxLastTextTokens]   
-   <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <TimeSpan>]   
-   [[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] [[-NoSpeechThreshold] <Single>]   
-   [-NoContext] [-WithBeamSearchSamplingStrategy] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    This function provides comprehensive audio transcription capabilities, supporting 
-    both real-time recording and file-based transcription. It offers extensive 
-    configuration options for language detection, audio processing, and output 
-    formatting. 
-    Key features: 
-    - Multiple audio input sources (microphone, desktop audio, wav files) 
-    - Automatic silence detection (VOX) 
-    - Multi-language support 
-    - Token timestamp generation 
-    - CPU/GPU processing optimization 
-    - Advanced audio processing parameters 
-
-### PARAMETERS
-    -ModelFilePath <String> 
-        Path to store model files. Defaults to local GenXdev folder. 
-        Required?                    false 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -WaveFile <String> 
-        Path to the 16Khz mono, .WAV file to process. 
-        Required?                    false 
-        Position?                    2 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -VOX [<SwitchParameter>] 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -PassThru [<SwitchParameter>] 
-        Returns objects instead of strings. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -UseDesktopAudioCapture [<SwitchParameter>] 
-        Whether to use desktop audio capture instead of microphone input 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -WithTokenTimestamps [<SwitchParameter>] 
-        Whether to include token timestamps in the output. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TokenTimestampsSumThreshold <Single> 
-        Sum threshold for token timestamps, defaults to 0.5. 
-        Required?                    false 
-        Position?                    3 
-        Default value                0.5 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SplitOnWord [<SwitchParameter>] 
-        Whether to split on word boundaries. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxTokensPerSegment <Int32> 
-        Maximum number of tokens per segment. 
-        Required?                    false 
-        Position?                    4 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -IgnoreSilence [<SwitchParameter>] 
-        Whether to ignore silence (will mess up timestamps). 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxDurationOfSilence <TimeSpan> 
-        Maximum duration of silence before automatically stopping recording. 
-        Required?                    false 
-        Position?                    5 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SilenceThreshold <Int32> 
-        Silence detect threshold (0..32767 defaults to 30). 
-        Required?                    false 
-        Position?                    6 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Language <String> 
-        Sets the language to detect, defaults to 'English'. 
-        Required?                    false 
-        Position?                    7 
-        Default value                English 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -CpuThreads <Int32> 
-        Number of CPU threads to use, defaults to 0 (auto). 
-        Required?                    false 
-        Position?                    8 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Temperature <Single> 
-        Temperature for speech generation. 
-        Required?                    false 
-        Position?                    9 
-        Default value                0.01 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TemperatureInc <Single> 
-        Temperature increment. 
-        Required?                    false 
-        Position?                    10 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -WithTranslate [<SwitchParameter>] 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Prompt <String> 
-        Prompt to use for the model. 
-        Required?                    false 
-        Position?                    11 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SuppressRegex <String> 
-        Regex to suppress tokens from the output. 
-        Required?                    false 
-        Position?                    12 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -WithProgress [<SwitchParameter>] 
-        Whether to show progress. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -AudioContextSize <Int32> 
-        Size of the audio context. 
-        Required?                    false 
-        Position?                    13 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -DontSuppressBlank [<SwitchParameter>] 
-        Whether to NOT suppress blank lines. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxDuration <TimeSpan> 
-        Maximum duration of the audio. 
-        Required?                    false 
-        Position?                    14 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Offset <TimeSpan> 
-        Offset for the audio. 
-        Required?                    false 
-        Position?                    15 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxLastTextTokens <Int32> 
-        Maximum number of last text tokens. 
-        Required?                    false 
-        Position?                    16 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SingleSegmentOnly [<SwitchParameter>] 
-        Whether to use single segment only. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -PrintSpecialTokens [<SwitchParameter>] 
-        Whether to print special tokens. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxSegmentLength <Int32> 
-        Maximum segment length. 
-        Required?                    false 
-        Position?                    17 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxInitialTimestamp <TimeSpan> 
-        Start timestamps at this moment. 
-        Required?                    false 
-        Position?                    18 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -LengthPenalty <Single> 
-        Length penalty. 
-        Required?                    false 
-        Position?                    19 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -EntropyThreshold <Single> 
-        Entropy threshold. 
-        Required?                    false 
-        Position?                    20 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -LogProbThreshold <Single> 
-        Log probability threshold. 
-        Required?                    false 
-        Position?                    21 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoSpeechThreshold <Single> 
-        No speech threshold. 
-        Required?                    false 
-        Position?                    22 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoContext [<SwitchParameter>] 
-        Do not use context. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -WithBeamSearchSamplingStrategy [<SwitchParameter>] 
-        Use beam search sampling strategy. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	GenerateMasonryLayoutHtml
-````PowerShell
-
-   GenerateMasonryLayoutHtml 
-````
-
-### SYNOPSIS
-    Generates a responsive masonry layout HTML gallery from image data. 
-
-### SYNTAX
-````PowerShell
-
-   GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Creates an interactive HTML gallery with responsive masonry grid layout for 
-    displaying images. Features include: 
-    - Responsive grid layout that adapts to screen size 
-    - Image tooltips showing descriptions and keywords 
-    - Click-to-copy image path functionality 
-    - Clean modern styling with hover effects 
-
-### PARAMETERS
-    -Images <Array> 
-        Array of image objects containing metadata. Each object requires: 
-        - path: String with full filesystem path to image 
-        - keywords: String array of descriptive tags 
-        - description: Object containing short_description and long_description 
-        Required?                    true 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       true (ByValue) 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -FilePath <String> 
-        Optional output path for the HTML file. If omitted, returns HTML as string. 
-        Required?                    false 
-        Position?                    2 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Invoke-ImageKeywordUpdate
-````PowerShell
-
-   Invoke-ImageKeywordUpdate            --> updateimages 
-````
-
-### SYNOPSIS
-    Updates image metadata with AI-generated descriptions and keywords. 
-
-### SYNTAX
-````PowerShell
-
-   Invoke-ImageKeywordUpdate [[-ImageDirectory] <String>] [[-Recurse]] [[-OnlyNew]] [[-RetryFailed]] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    The Invoke-ImageKeywordUpdate function analyzes images using AI to generate 
-    descriptions, keywords, and other metadata. It creates a companion JSON file for 
-    each image containing this information. The function can process new images only 
-    or update existing metadata, and supports recursive directory scanning. 
-
-### PARAMETERS
-    -ImageDirectory <String> 
-        Specifies the directory containing images to process. Defaults to current 
-        directory if not specified. 
-        Required?                    false 
-        Position?                    1 
-        Default value                .\ 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Recurse [<SwitchParameter>] 
-        When specified, searches for images in the specified directory and all 
-        subdirectories. 
-        Required?                    false 
-        Position?                    2 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -OnlyNew [<SwitchParameter>] 
-        When specified, only processes images that do not already have metadata JSON 
-        files. 
-        Required?                    false 
-        Position?                    3 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -RetryFailed [<SwitchParameter>] 
-        When specified, reprocesses images where previous metadata generation attempts 
-        failed. 
-        Required?                    false 
-        Position?                    4 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Approve-NewTextFileContent
-````PowerShell
-
-   Approve-NewTextFileContent 
-````
-
-### SYNOPSIS
-    Interactive file content comparison and approval using WinMerge. 
-
-### SYNTAX
-````PowerShell
-
-   Approve-NewTextFileContent [-ContentPath] <String> [-NewContent] <String> [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Facilitates content comparison and merging through WinMerge by creating a 
-    temporary file with proposed changes. The user can interactively review and 
-    modify changes before approving. Returns approval status and final content. 
-
-### PARAMETERS
-    -ContentPath <String> 
-        The path to the target file for comparison and potential update. If the file 
-        doesn't exist, it will be created. 
-        Required?                    true 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NewContent <String> 
-        The proposed new content to compare against the existing file content. 
-        Required?                    true 
-        Position?                    2 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-### NOTES
-````PowerShell
+ 
+
+##	Approve-NewTextFileContent 
+````PowerShell 
+
+   Approve-NewTextFileContent  
+```` 
+
+### SYNOPSIS 
+    Interactive file content comparison and approval using WinMerge.  
+
+### SYNTAX 
+````PowerShell 
+
+   Approve-NewTextFileContent [-ContentPath] <String> [-NewContent] <String> [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    Facilitates content comparison and merging through WinMerge by creating a  
+    temporary file with proposed changes. The user can interactively review and  
+    modify changes before approving. Returns approval status and final content.  
+
+### PARAMETERS 
+    -ContentPath <String>  
+        The path to the target file for comparison and potential update. If the file  
+        doesn't exist, it will be created.  
+        Required?                    true  
+        Position?                    1  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -NewContent <String>  
+        The proposed new content to compare against the existing file content.  
+        Required?                    true  
+        Position?                    2  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+### NOTES 
+````PowerShell 
 
        Returns a hashtable with these properties:  
        - approved: True if changes were saved, False if discarded  
@@ -2446,1037 +226,2886 @@ Update-Module
        - userDeletedFile: True if user deleted existing file  
    -------------------------- EXAMPLE 1 --------------------------  
    PS C:\> $result = Approve-NewTextFileContent -ContentPath "C:\temp\myfile.txt" `  
-       -NewContent "New file content" 
-````
+       -NewContent "New file content"  
+```` 
 
 <br/><hr/><hr/><br/>
+ 
 
-##	Invoke-AIPowershellCommand
-````PowerShell
+##	AssureGithubCLIInstalled 
+````PowerShell 
 
-   Invoke-AIPowershellCommand           --> hint 
-````
+   AssureGithubCLIInstalled  
+```` 
 
-### SYNOPSIS
-    Generates and executes PowerShell commands using AI assistance. 
+### SYNOPSIS 
+    Ensures GitHub CLI is properly installed and configured on the system.  
 
-### SYNTAX
-````PowerShell
+### SYNTAX 
+````PowerShell 
 
-   Invoke-AIPowershellCommand [-Query] <String> [[-Model] <String>] [[-Temperature] <Double>] [-Clipboard] [<CommonParameters>] 
-````
+   AssureGithubCLIInstalled [<CommonParameters>]  
+```` 
 
-### DESCRIPTION
-    Uses LM-Studio to generate PowerShell commands based on natural language queries. 
-    The function can either send commands directly to the PowerShell window or copy 
-    them to the clipboard. It leverages AI models to interpret natural language and 
-    convert it into executable PowerShell commands. 
+### DESCRIPTION 
+    Performs comprehensive checks and setup for GitHub CLI (gh):  
+    - Verifies if GitHub CLI is installed and accessible in PATH  
+    - Installs GitHub CLI via WinGet if not present  
+    - Configures system PATH environment variable  
+    - Installs GitHub Copilot extension  
+    - Sets up GitHub authentication  
+    The function handles all prerequisites and ensures a working GitHub CLI setup.  
 
-### PARAMETERS
-    -Query <String> 
-        The natural language description of what you want to accomplish. The AI will 
-        convert this into an appropriate PowerShell command. 
-        Required?                    true 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       true (ByValue) 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Model <String> 
-        The LM-Studio model to use for command generation. Can be a name or partial path. 
-        Supports -like pattern matching for model selection. 
-        Required?                    false 
-        Position?                    2 
-        Default value                qwen 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Temperature <Double> 
-        Controls the randomness in the AI's response generation. Values range from 0.0 
-        (more focused/deterministic) to 1.0 (more creative/random). 
-        Required?                    false 
-        Position?                    3 
-        Default value                0.01 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Clipboard [<SwitchParameter>] 
-        When specified, copies the generated command to clipboard. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+### PARAMETERS 
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>
+ 
 
-##	Invoke-CommandFromToolCall
-````PowerShell
+##	AssureWinMergeInstalled 
+````PowerShell 
 
-   Invoke-CommandFromToolCall 
-````
+   AssureWinMergeInstalled  
+```` 
 
-### SYNOPSIS
-    Executes a tool call function with validation and parameter filtering. 
+### SYNOPSIS 
+    Ensures WinMerge is installed and available for file comparison operations.  
 
-### SYNTAX
-````PowerShell
+### SYNTAX 
+````PowerShell 
 
-   Invoke-CommandFromToolCall [-ToolCall] <Hashtable> [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>]   
-   [-NoConfirmationToolFunctionNames <String[]>] [-ForceAsText] [<CommonParameters>] 
-````
+   AssureWinMergeInstalled [<CommonParameters>]  
+```` 
 
-### DESCRIPTION
-    This function processes tool calls by validating arguments, filtering parameters, 
-    and executing callbacks with proper confirmation handling. It supports both script 
-    block and command info callbacks. 
+### DESCRIPTION 
+    Verifies if WinMerge is installed and properly configured in the system PATH.  
+    If not found, installs WinMerge using WinGet and adds it to the user's PATH.  
+    Handles the complete installation and configuration process automatically.  
 
-### PARAMETERS
-    -ToolCall <Hashtable> 
-        A hashtable containing the function details and arguments to be executed. 
-        Required?                    true 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Functions <Hashtable[]> 
-        Array of function definitions that can be called as tools. 
-        Required?                    false 
-        Position?                    named 
-        Default value                @() 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ExposedCmdLets <ExposedCmdletDefinition[]> 
-        Array of PowerShell command definitions available as tools. 
-        Required?                    false 
-        Position?                    named 
-        Default value                @() 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoConfirmationToolFunctionNames <String[]> 
-        Array of command names that can execute without user confirmation. 
-        Required?                    false 
-        Position?                    named 
-        Default value                @() 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ForceAsText [<SwitchParameter>] 
-        Forces the output to be formatted as text. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+### PARAMETERS 
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>
+ 
 
-##	Get-MediaFileAudioTranscription
-````PowerShell
+##	GenerateMasonryLayoutHtml 
+````PowerShell 
 
-   Get-MediaFileAudioTranscription 
-````
+   GenerateMasonryLayoutHtml  
+```` 
 
-### SYNOPSIS
-    Transcribes an audio or video file to text.. 
+### SYNOPSIS 
+    Generates a responsive masonry layout HTML gallery from image data.  
 
-### SYNTAX
-````PowerShell
+### SYNTAX 
+````PowerShell 
 
-   Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] [[-LanguageOut] <String>]   
-   [-TranslateUsingLMStudioModel <String>] [-SRT] [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps]   
-   [-TokenTimestampsSumThreshold <Single>] [-SplitOnWord] [-MaxTokensPerSegment <Int32>] [-IgnoreSilence] [-MaxDurationOfSilence   
-   <TimeSpan>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] [-TemperatureInc <Single>] [-Prompt   
-   <String>] [-SuppressRegex <String>] [-WithProgress] [-AudioContextSize <Int32>] [-DontSuppressBlank] [-MaxDuration <TimeSpan>]   
-   [-Offset <TimeSpan>] [-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [-MaxSegmentLength <Int32>]   
-   [-MaxInitialTimestamp <TimeSpan>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>]   
-   [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [<CommonParameters>] 
-````
+   GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [<CommonParameters>]  
+```` 
 
-### DESCRIPTION
-    Transcribes an audio or video file to text using the Whisper AI model 
+### DESCRIPTION 
+    Creates an interactive HTML gallery with responsive masonry grid layout for  
+    displaying images. Features include:  
+    - Responsive grid layout that adapts to screen size  
+    - Image tooltips showing descriptions and keywords  
+    - Click-to-copy image path functionality  
+    - Clean modern styling with hover effects  
 
-### PARAMETERS
-    -FilePath <String> 
-        The file path of the audio or video file to transcribe. 
-        Required?                    true 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -LanguageIn <String> 
-        The language to expect in the audio. E.g. "English", "French", "German", "Dutch" 
-        Required?                    false 
-        Position?                    2 
-        Default value                English 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -LanguageOut <String> 
-        The language to translate to. E.g. "french", "german", "dutch" 
-        Required?                    false 
-        Position?                    3 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TranslateUsingLMStudioModel <String> 
-        The LM Studio model to use for translation. 
-        Required?                    false 
-        Position?                    named 
-        Default value                qwen 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SRT [<SwitchParameter>] 
-        Output in SRT format. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -PassThru [<SwitchParameter>] 
-        Returns objects instead of strings. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -UseDesktopAudioCapture [<SwitchParameter>] 
-        Whether to use desktop audio capture instead of microphone input 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -WithTokenTimestamps [<SwitchParameter>] 
-        Whether to include token timestamps in the output. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TokenTimestampsSumThreshold <Single> 
-        Sum threshold for token timestamps, defaults to 0.5. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0.5 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SplitOnWord [<SwitchParameter>] 
-        Whether to split on word boundaries. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxTokensPerSegment <Int32> 
-        Maximum number of tokens per segment. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -IgnoreSilence [<SwitchParameter>] 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxDurationOfSilence <TimeSpan> 
-        Maximum duration of silence before automatically stopping recording. 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SilenceThreshold <Int32> 
-        Silence detect threshold (0..32767 defaults to 30) 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -CpuThreads <Int32> 
-        Number of CPU threads to use, defaults to 0 (auto). 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Temperature <Single> 
-        Temperature for speech generation. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0.01 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TemperatureInc <Single> 
-        Temperature increment. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Prompt <String> 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SuppressRegex <String> 
-        Regex to suppress tokens from the output. 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -WithProgress [<SwitchParameter>] 
-        Whether to show progress. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -AudioContextSize <Int32> 
-        Size of the audio context. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -DontSuppressBlank [<SwitchParameter>] 
-        Whether to NOT suppress blank lines. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxDuration <TimeSpan> 
-        Maximum duration of the audio. 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Offset <TimeSpan> 
-        Offset for the audio. 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxLastTextTokens <Int32> 
-        Maximum number of last text tokens. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -SingleSegmentOnly [<SwitchParameter>] 
-        Whether to use single segment only. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -PrintSpecialTokens [<SwitchParameter>] 
-        Whether to print special tokens. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxSegmentLength <Int32> 
-        Maximum segment length. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxInitialTimestamp <TimeSpan> 
-        Start timestamps at this moment. 
-        Required?                    false 
-        Position?                    named 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -LengthPenalty <Single> 
-        Length penalty. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -EntropyThreshold <Single> 
-        Entropy threshold. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -LogProbThreshold <Single> 
-        Log probability threshold. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoSpeechThreshold <Single> 
-        No speech threshold. 
-        Required?                    false 
-        Position?                    named 
-        Default value                0 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoContext [<SwitchParameter>] 
-        Do not use context. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -WithBeamSearchSamplingStrategy [<SwitchParameter>] 
-        Use beam search sampling strategy. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+### PARAMETERS 
+    -Images <Array>  
+        Array of image objects containing metadata. Each object requires:  
+        - path: String with full filesystem path to image  
+        - keywords: String array of descriptive tags  
+        - description: Object containing short_description and long_description  
+        Required?                    true  
+        Position?                    1  
+        Default value                  
+        Accept pipeline input?       true (ByValue)  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -FilePath <String>  
+        Optional output path for the HTML file. If omitted, returns HTML as string.  
+        Required?                    false  
+        Position?                    2  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>
+ 
 
-##	Set-GenXdevAICommandNotFoundActions
-````PowerShell
+##	Get-CpuCore 
+````PowerShell 
 
-   Set-GenXdevAICommandNotFoundActions 
-````
+   Get-CpuCore  
+```` 
 
-### SYNOPSIS
-    Sets up custom command not found handling with AI assistance. 
+### SYNOPSIS 
+    Calculates and returns the total number of logical CPU cores in the system.  
 
-### SYNTAX
-````PowerShell
+### SYNTAX 
+````PowerShell 
 
-   Set-GenXdevAICommandNotFoundActions [<CommonParameters>] 
-````
+   Get-CpuCore [<CommonParameters>]  
+```` 
 
-### DESCRIPTION
-    Configures PowerShell to handle unknown commands by either navigating to 
-    directories or using AI to interpret user intent. The handler first tries any 
-    existing command not found handler, then checks if the command is a valid path 
-    for navigation, and finally offers AI assistance for unknown commands. 
+### DESCRIPTION 
+    Queries the system hardware through Windows Management Instrumentation (WMI) to  
+    determine the total number of logical CPU cores. The function accounts for  
+    hyperthreading by multiplying the physical core count by 2.  
 
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+### PARAMETERS 
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>
+ 
+
+##	Get-HasCapableGpu 
+````PowerShell 
+
+   Get-HasCapableGpu  
+```` 
+
+### SYNOPSIS 
+    Determines if a CUDA-capable GPU with sufficient memory is present.  
+
+### SYNTAX 
+````PowerShell 
+
+   Get-HasCapableGpu [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    This function checks the system for CUDA-compatible GPUs with at least 4GB of  
+    video RAM. It uses Windows Management Instrumentation (WMI) to query installed  
+    video controllers and verify their memory capacity. This check is essential for  
+    AI workloads that require significant GPU memory.  
+
+### PARAMETERS 
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Get-MediaFileAudioTranscription 
+````PowerShell 
+
+   Get-MediaFileAudioTranscription      --> transcribefile  
+```` 
+
+### SYNOPSIS 
+    Transcribes an audio or video file to text..  
+
+### SYNTAX 
+````PowerShell 
+
+   Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SRT]   
+   [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>] [-SplitOnWord] [-MaxTokensPerSegment <Int32>]   
+   [-IgnoreSilence] [-MaxDurationOfSilence <Object>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] [-TemperatureInc <Single>]   
+   [-Prompt <String>] [-SuppressRegex <String>] [-WithProgress] [-AudioContextSize <Int32>] [-DontSuppressBlank] [-MaxDuration <Object>] [-Offset <Object>]   
+   [-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <Object>] [-LengthPenalty <Single>]   
+   [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    Transcribes an audio or video file to text using the Whisper AI model  
+
+### PARAMETERS 
+    -FilePath <String>  
+        The file path of the audio or video file to transcribe.  
+        Required?                    true  
+        Position?                    1  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -LanguageIn <String>  
+        The language to expect in the audio. E.g. "English", "French", "German", "Dutch"  
+        Required?                    false  
+        Position?                    2  
+        Default value                English  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -LanguageOut <String>  
+        The language to translate to. E.g. "french", "german", "dutch"  
+        Required?                    false  
+        Position?                    3  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TranslateUsingLMStudioModel <String>  
+        The LM Studio model to use for translation.  
+        Required?                    false  
+        Position?                    named  
+        Default value                qwen  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  true  
+    -SRT [<SwitchParameter>]  
+        Output in SRT format.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -PassThru [<SwitchParameter>]  
+        Returns objects instead of strings.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -UseDesktopAudioCapture [<SwitchParameter>]  
+        Whether to use desktop audio capture instead of microphone input  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -WithTokenTimestamps [<SwitchParameter>]  
+        Whether to include token timestamps in the output.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TokenTimestampsSumThreshold <Single>  
+        Sum threshold for token timestamps, defaults to 0.5.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0.5  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -SplitOnWord [<SwitchParameter>]  
+        Whether to split on word boundaries.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxTokensPerSegment <Int32>  
+        Maximum number of tokens per segment.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -IgnoreSilence [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxDurationOfSilence <Object>  
+        Maximum duration of silence before automatically stopping recording.  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -SilenceThreshold <Int32>  
+        Silence detect threshold (0..32767 defaults to 30)  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -CpuThreads <Int32>  
+        Number of CPU threads to use, defaults to 0 (auto).  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Temperature <Single>  
+        Temperature for speech generation.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0.01  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TemperatureInc <Single>  
+        Temperature increment.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Prompt <String>  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -SuppressRegex <String>  
+        Regex to suppress tokens from the output.  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -WithProgress [<SwitchParameter>]  
+        Whether to show progress.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -AudioContextSize <Int32>  
+        Size of the audio context.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -DontSuppressBlank [<SwitchParameter>]  
+        Whether to NOT suppress blank lines.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxDuration <Object>  
+        Maximum duration of the audio.  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Offset <Object>  
+        Offset for the audio.  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxLastTextTokens <Int32>  
+        Maximum number of last text tokens.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -SingleSegmentOnly [<SwitchParameter>]  
+        Whether to use single segment only.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -PrintSpecialTokens [<SwitchParameter>]  
+        Whether to print special tokens.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxSegmentLength <Int32>  
+        Maximum segment length.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxInitialTimestamp <Object>  
+        Start timestamps at this moment.  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -LengthPenalty <Single>  
+        Length penalty.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -EntropyThreshold <Single>  
+        Entropy threshold.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -LogProbThreshold <Single>  
+        Log probability threshold.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -NoSpeechThreshold <Single>  
+        No speech threshold.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -NoContext [<SwitchParameter>]  
+        Do not use context.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]  
+        Use beam search sampling strategy.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Get-NumberOfCpuCores 
+````PowerShell 
+
+   Get-NumberOfCpuCores  
+```` 
+
+### SYNOPSIS 
+    Calculates and returns the total number of logical CPU cores in the system.  
+
+### SYNTAX 
+````PowerShell 
+
+   Get-NumberOfCpuCores [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    Queries the system hardware through Windows Management Instrumentation (WMI) to  
+    determine the total number of logical CPU cores. The function accounts for  
+    hyperthreading by multiplying the physical core count by 2. This information is  
+    useful for optimizing parallel processing tasks and understanding system  
+    capabilities.  
+    The calculation process:  
+    1. Queries WMI for all physical processors  
+    2. Sums up the number of physical cores across all processors  
+    3. Multiplies by 2 to account for hyperthreading  
+    4. Returns the total logical core count  
+
+### PARAMETERS 
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+### NOTES 
+````PowerShell 
+
+       - Assumes all processors support hyperthreading  
+       - Requires WMI access permissions  
+       - Works on Windows systems only  
+   -------------------------- EXAMPLE 1 --------------------------  
+   PS C:\> # Get the total number of logical CPU cores  
+   $cores = Get-NumberOfCpuCores  
+   Write-Host "System has $cores logical CPU cores available"  
+```` 
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Get-TextTranslation 
+````PowerShell 
+
+   Get-TextTranslation                  --> Get-Translation, translate  
+```` 
+
+### SYNOPSIS 
+    Translates text to another language using the LM-Studio API.  
+
+### SYNTAX 
+````PowerShell 
+
+   Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Object>] [[-Model] <String>] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    The Get-TextTranslation function translates text into a specified target language  
+    using LM-Studio's API. It processes text in chunks to handle large inputs  
+    efficiently and maintains formatting.  
+
+### PARAMETERS 
+    -Text <String>  
+        The source text to be translated. Can be provided via pipeline.  
+        Required?                    true  
+        Position?                    1  
+        Default value                  
+        Accept pipeline input?       true (ByValue)  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Language <String>  
+        The target language for translation. Defaults to "English".  
+        Supports 140+ languages including major world languages and fun variants.  
+        Required?                    false  
+        Position?                    2  
+        Default value                english  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Instructions <Object>  
+        Custom instructions for the LLM model about how to perform the translation.  
+        Defaults to maintaining style and paragraph structure while translating.  
+        Required?                    false  
+        Position?                    3  
+        Default value                Translate this partial subtitle text, into the [Language] language, leave in the same style of writing, and leave the   
+        paragraph structure in tact, ommit only the translation no yapping or chatting.  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Model <String>  
+        The LM-Studio model to use for translation. Defaults to "qwen".  
+        Required?                    false  
+        Position?                    4  
+        Default value                qwen  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  true  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Invoke-AIPowershellCommand 
+````PowerShell 
+
+   Invoke-AIPowershellCommand           --> hint  
+```` 
+
+### SYNOPSIS 
+    Generates and executes PowerShell commands using AI assistance.  
+
+### SYNTAX 
+````PowerShell 
+
+   Invoke-AIPowershellCommand [-Query] <String> [[-Model] <String>] [[-Temperature] <Double>] [-Clipboard] [-WhatIf] [-Confirm] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    Uses LM-Studio to generate PowerShell commands based on natural language queries.  
+    The function can either send commands directly to the PowerShell window or copy  
+    them to the clipboard. It leverages AI models to interpret natural language and  
+    convert it into executable PowerShell commands.  
+
+### PARAMETERS 
+    -Query <String>  
+        The natural language description of what you want to accomplish. The AI will  
+        convert this into an appropriate PowerShell command.  
+        Required?                    true  
+        Position?                    1  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Model <String>  
+        The LM-Studio model to use for command generation. Can be a name or partial path.  
+        Supports -like pattern matching for model selection.  
+        Required?                    false  
+        Position?                    2  
+        Default value                qwen  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  true  
+    -Temperature <Double>  
+        Controls the randomness in the AI's response generation. Values range from 0.0  
+        (more focused/deterministic) to 1.0 (more creative/random).  
+        Required?                    false  
+        Position?                    3  
+        Default value                0.01  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Clipboard [<SwitchParameter>]  
+        When specified, copies the generated command to clipboard.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -WhatIf [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Confirm [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Invoke-CommandFromToolCall 
+````PowerShell 
+
+   Invoke-CommandFromToolCall  
+```` 
+
+### SYNOPSIS 
+    Executes a tool call function with validation and parameter filtering.  
+
+### SYNTAX 
+````PowerShell 
+
+   Invoke-CommandFromToolCall [-ToolCall] <Hashtable> [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames   
+   <String[]>] [-ForceAsText] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    This function processes tool calls by validating arguments, filtering parameters,  
+    and executing callbacks with proper confirmation handling. It supports both script  
+    block and command info callbacks.  
+
+### PARAMETERS 
+    -ToolCall <Hashtable>  
+        A hashtable containing the function details and arguments to be executed.  
+        Required?                    true  
+        Position?                    1  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Functions <Hashtable[]>  
+        Array of function definitions that can be called as tools.  
+        Required?                    false  
+        Position?                    named  
+        Default value                @()  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ExposedCmdLets <ExposedCmdletDefinition[]>  
+        Array of PowerShell command definitions available as tools.  
+        Required?                    false  
+        Position?                    named  
+        Default value                @()  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -NoConfirmationToolFunctionNames <String[]>  
+        Array of command names that can execute without user confirmation.  
+        Required?                    false  
+        Position?                    named  
+        Default value                @()  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ForceAsText [<SwitchParameter>]  
+        Forces the output to be formatted as text.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Invoke-ImageKeywordScan 
+````PowerShell 
+
+   Invoke-ImageKeywordScan              --> findimages  
+```` 
+
+### SYNOPSIS 
+    Scans image files for keywords and descriptions using metadata files.  
+
+### SYNTAX 
+````PowerShell 
+
+   Invoke-ImageKeywordScan [[-Keywords] <String[]>] [[-ImageDirectory] <String>] [[-PassThru]] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    Searches for image files (jpg, jpeg, png) in the specified directory and its  
+    subdirectories. For each image, checks associated description.json and  
+    keywords.json files for metadata. Can filter images based on keyword matches and  
+    display results in a masonry layout web view or return as objects.  
+
+### PARAMETERS 
+    -Keywords <String[]>  
+        Array of keywords to search for. Supports wildcards. If empty, returns all images  
+        with any metadata.  
+        Required?                    false  
+        Position?                    1  
+        Default value                @()  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ImageDirectory <String>  
+        Directory path to search for images. Defaults to current directory.  
+        Required?                    false  
+        Position?                    2  
+        Default value                .\  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -PassThru [<SwitchParameter>]  
+        Switch to return image data as objects instead of displaying in browser.  
+        Required?                    false  
+        Position?                    3  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Invoke-ImageKeywordUpdate 
+````PowerShell 
+
+   Invoke-ImageKeywordUpdate            --> updateimages  
+```` 
+
+### SYNOPSIS 
+    Updates image metadata with AI-generated descriptions and keywords.  
+
+### SYNTAX 
+````PowerShell 
+
+   Invoke-ImageKeywordUpdate [[-ImageDirectory] <String>] [[-Recurse]] [[-OnlyNew]] [[-RetryFailed]] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    The Invoke-ImageKeywordUpdate function analyzes images using AI to generate  
+    descriptions, keywords, and other metadata. It creates a companion JSON file for  
+    each image containing this information. The function can process new images only  
+    or update existing metadata, and supports recursive directory scanning.  
+
+### PARAMETERS 
+    -ImageDirectory <String>  
+        Specifies the directory containing images to process. Defaults to current  
+        directory if not specified.  
+        Required?                    false  
+        Position?                    1  
+        Default value                .\  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Recurse [<SwitchParameter>]  
+        When specified, searches for images in the specified directory and all  
+        subdirectories.  
+        Required?                    false  
+        Position?                    2  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -OnlyNew [<SwitchParameter>]  
+        When specified, only processes images that do not already have metadata JSON  
+        files.  
+        Required?                    false  
+        Position?                    3  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -RetryFailed [<SwitchParameter>]  
+        When specified, reprocesses images where previous metadata generation attempts  
+        failed.  
+        Required?                    false  
+        Position?                    4  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Invoke-LLMQuery 
+````PowerShell 
+
+   Invoke-LLMQuery                      --> Invoke-LMStudioQuery, llm, qllm, qlms  
+```` 
+
+### SYNOPSIS 
+    Sends queries to an OpenAI compatible Large Language Chat completion API and  
+    processes responses.  
+
+### SYNTAX 
+````PowerShell 
+
+   Invoke-LLMQuery [[-Query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>]   
+   [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts]   
+   [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames   
+   <String[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-ChatMode <String>] [-ChatOnce] [-NoSessionCaching]   
+   [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    This function sends queries to an OpenAI compatible Large Language Chat completion  
+    API and processes responses. It supports text and image inputs, handles tool  
+    function calls, and can operate in various chat modes including text and audio.  
+
+### PARAMETERS 
+    -Query <String>  
+        The text query to send to the model. Can be empty for chat modes.  
+        Required?                    false  
+        Position?                    1  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Model <String>  
+        The name or identifier of the LM Studio model to use.  
+        Required?                    false  
+        Position?                    2  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  true  
+    -ModelLMSGetIdentifier <String>  
+        Alternative identifier for getting a specific model from LM Studio.  
+        Required?                    false  
+        Position?                    2  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Instructions <String>  
+        System instructions to provide context to the model.  
+        Required?                    false  
+        Position?                    3  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Attachments <String[]>  
+        Array of file paths to attach to the query. Supports images and text files.  
+        Required?                    false  
+        Position?                    4  
+        Default value                @()  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Temperature <Double>  
+        Controls response randomness (0.0-1.0). Lower values are more deterministic.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxToken <Int32>  
+        Maximum tokens allowed in the response. Use -1 for model default.  
+        Required?                    false  
+        Position?                    named  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ShowWindow [<SwitchParameter>]  
+        Show the LM Studio window during processing.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TTLSeconds <Int32>  
+        Time-to-live in seconds for loaded models.  
+        Required?                    false  
+        Position?                    named  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Gpu <Int32>  
+        Required?                    false  
+        Position?                    named  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Force [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ImageDetail <String>  
+        Detail level for image processing (low/medium/high).  
+        Required?                    false  
+        Position?                    named  
+        Default value                low  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -IncludeThoughts [<SwitchParameter>]  
+        Include model's thought process in output.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -DontAddThoughtsToHistory [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ContinueLast [<SwitchParameter>]  
+        Continue from the last conversation context.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Functions <Hashtable[]>  
+        Array of function definitions that the model can call.  
+        Required?                    false  
+        Position?                    named  
+        Default value                @()  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ExposedCmdLets <ExposedCmdletDefinition[]>  
+        PowerShell commands to expose as tools to the model.  
+        Required?                    false  
+        Position?                    named  
+        Default value                @()  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -NoConfirmationToolFunctionNames <String[]>  
+        Array of command names that do not require confirmation  
+        Required?                    false  
+        Position?                    named  
+        Default value                @()  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Speak [<SwitchParameter>]  
+        Enable text-to-speech for AI responses.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -SpeakThoughts [<SwitchParameter>]  
+        Enable text-to-speech for AI thought process.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -OutputMarkupBlocksOnly [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MarkupBlocksTypeFilter <String[]>  
+        Required?                    false  
+        Position?                    named  
+        Default value                @("json", "powershell", "C#", "python", "javascript", "typescript", "html", "css", "yaml", "xml", "bash")  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ChatMode <String>  
+        Enable interactive chat mode with specified input method.  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ChatOnce [<SwitchParameter>]  
+        Internal parameter to control chat mode invocation.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -NoSessionCaching [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ApiEndpoint <String>  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ApiKey <String>  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Invoke-QueryImageContent 
+````PowerShell 
+
+   Invoke-QueryImageContent             --> Analyze-Image, Query-Image  
+```` 
+
+### SYNOPSIS 
+    Analyzes image content using AI vision capabilities through the LM-Studio API.  
+
+### SYNTAX 
+````PowerShell 
+
+   Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Temperature] <Double>] [[-MaxToken] <Int32>] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    Processes images using the MiniCPM model via LM-Studio API to analyze content and  
+    answer queries about the image. The function supports various analysis parameters  
+    including temperature control for response randomness and token limits for output  
+    length.  
+
+### PARAMETERS 
+    -Query <String>  
+        Specifies the question or prompt to analyze the image content. This drives the  
+        AI's analysis focus and determines what aspects of the image to examine.  
+        Required?                    true  
+        Position?                    1  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ImagePath <String>  
+        The path to the image file for analysis. Supports both relative and absolute  
+        paths. The file must exist and be accessible.  
+        Required?                    true  
+        Position?                    2  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Temperature <Double>  
+        Controls the randomness in the AI's response generation. Lower values (closer  
+        to 0) produce more focused and deterministic responses, while higher values  
+        increase creativity and variability. Valid range: 0.0 to 1.0.  
+        Required?                    false  
+        Position?                    3  
+        Default value                0.01  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxToken <Int32>  
+        Limits the length of the generated response by specifying maximum tokens.  
+        Use -1 for unlimited response length. Valid range: -1 to MaxInt.  
+        Required?                    false  
+        Position?                    4  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Invoke-WinMerge 
+````PowerShell 
+
+   Invoke-WinMerge  
+```` 
+
+### SYNOPSIS 
+    Launches WinMerge to compare two files side by side.  
+
+### SYNTAX 
+````PowerShell 
+
+   Invoke-WinMerge [-SourcecodeFilePath] <String> [-TargetcodeFilePath] <String> [[-Wait]] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    Launches the WinMerge application to compare source and target files in a side by  
+    side diff view. The function validates the existence of both input files and  
+    ensures WinMerge is properly installed before launching. Provides optional  
+    wait functionality to pause execution until WinMerge closes.  
+
+### PARAMETERS 
+    -SourcecodeFilePath <String>  
+        Full or relative path to the source file for comparison. The file must exist and  
+        be accessible.  
+        Required?                    true  
+        Position?                    1  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TargetcodeFilePath <String>  
+        Full or relative path to the target file for comparison. The file must exist and  
+        be accessible.  
+        Required?                    true  
+        Position?                    2  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Wait [<SwitchParameter>]  
+        Switch parameter that when specified will cause the function to wait for the  
+        WinMerge application to close before continuing execution.  
+        Required?                    false  
+        Position?                    3  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	New-LLMAudioChat 
+````PowerShell 
+
+   New-LLMAudioChat                     --> llmaudiochat  
+```` 
+
+### SYNOPSIS 
+    Creates an interactive audio chat session with an LLM model.  
+
+### SYNTAX 
+````PowerShell 
+
+   New-LLMAudioChat [[-query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>]   
+   [-AudioTemperature <Double>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>]   
+   [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX]   
+   [-UseDesktopAudioCapture] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>]   
+   [-SilenceThreshold <Single>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext]   
+   [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-WhatIf] [-Confirm] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    Initiates a voice-based conversation with a language model, supporting audio input  
+    and output. The function handles audio recording, transcription, model queries,  
+    and text-to-speech responses. Supports multiple language models and various  
+    configuration options.  
+
+### PARAMETERS 
+    -query <String>  
+        Initial text query to send to the model. Can be empty to start with voice input.  
+        Required?                    false  
+        Position?                    1  
+        Default value                  
+        Accept pipeline input?       true (ByValue)  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Model <String>  
+        The model name/path to use. Supports -like pattern matching. Default: "*-tool-use"  
+        Required?                    false  
+        Position?                    2  
+        Default value                *-tool-use  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  true  
+    -ModelLMSGetIdentifier <String>  
+        Model identifier for LM Studio. Default: "llama-3-groq-8b-tool-use"  
+        Required?                    false  
+        Position?                    3  
+        Default value                llama-3-groq-8b-tool-use  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Instructions <String>  
+        System instructions/prompt to guide the model's behavior.  
+        Required?                    false  
+        Position?                    4  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Attachments <String[]>  
+        Array of file paths to attach to the conversation for context.  
+        Required?                    false  
+        Position?                    5  
+        Default value                @()  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -AudioTemperature <Double>  
+        Temperature setting for audio input recognition. Range: 0.0-1.0. Default: 0.0  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Temperature <Double>  
+        Temperature for response randomness. Range: 0.0-1.0. Default: 0.0  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxToken <Int32>  
+        Maximum tokens in model response. Default: 8192  
+        Required?                    false  
+        Position?                    named  
+        Default value                8192  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ShowWindow [<SwitchParameter>]  
+        Switch to show the LM Studio window during operation.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TTLSeconds <Int32>  
+        Time-to-live in seconds for models loaded via API requests. Default: -1  
+        Required?                    false  
+        Position?                    named  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Gpu <Int32>  
+        GPU offloading configuration. -2=Auto, -1=LM Studio decides, 0-1=fraction of layers  
+        Default: -1  
+        Required?                    false  
+        Position?                    named  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Force [<SwitchParameter>]  
+        Switch to force stop LM Studio before initialization.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ImageDetail <String>  
+        Image detail level setting. Options: "low", "medium", "high". Default: "low"  
+        Required?                    false  
+        Position?                    named  
+        Default value                low  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -IncludeThoughts [<SwitchParameter>]  
+        Switch to include model's thought process in output.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -DontAddThoughtsToHistory [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ContinueLast [<SwitchParameter>]  
+        Switch to continue from last conversation context.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ExposedCmdLets <ExposedCmdletDefinition[]>  
+        Array of PowerShell command definitions available as tools to the model.  
+        Required?                    false  
+        Position?                    named  
+        Default value                @()  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -DontSpeak [<SwitchParameter>]  
+        Switch to disable text-to-speech for AI responses.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -DontSpeakThoughts [<SwitchParameter>]  
+        Switch to disable text-to-speech for AI thought responses.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -NoVOX [<SwitchParameter>]  
+        Switch to disable silence detection for automatic recording stop.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -UseDesktopAudioCapture [<SwitchParameter>]  
+        Switch to use desktop audio capture instead of microphone input.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TemperatureResponse <Double>  
+        Temperature for controlling response randomness. Range: 0.0-1.0. Default: 0.01  
+        Required?                    false  
+        Position?                    named  
+        Default value                0.01  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Language <String>  
+        Language to detect in audio input. Default: "English"  
+        Required?                    false  
+        Position?                    named  
+        Default value                English  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -CpuThreads <Int32>  
+        Number of CPU threads to use. 0=auto. Default: 0  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -SuppressRegex <String>  
+        Regex pattern to suppress tokens from output.  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -AudioContextSize <Int32>  
+        Size of the audio context window.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -SilenceThreshold <Single>  
+        Threshold for silence detection. Range: 0.0-1.0. Default: 0.3  
+        Required?                    false  
+        Position?                    named  
+        Default value                0.3  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -LengthPenalty <Single>  
+        Penalty factor for response length. Range: 0-1  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -EntropyThreshold <Single>  
+        Threshold for entropy in responses. Range: 0-1  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -LogProbThreshold <Single>  
+        Threshold for log probability in responses. Range: 0-1  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -NoSpeechThreshold <Single>  
+        Threshold for no-speech detection. Range: 0-1. Default: 0.1  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -NoContext [<SwitchParameter>]  
+        Switch to disable context usage in conversation.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]  
+        Switch to enable beam search sampling strategy.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -OnlyResponses [<SwitchParameter>]  
+        Switch to suppress recognized text in output.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -NoSessionCaching [<SwitchParameter>]  
+        Switch to disable session caching.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ApiEndpoint <String>  
+        API endpoint URL. Default: http://localhost:1234/v1/chat/completions  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ApiKey <String>  
+        API key for authentication.  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -WhatIf [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Confirm [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	New-LLMTextChat 
+````PowerShell 
+
+   New-LLMTextChat                      --> llmchat  
+```` 
+
+### SYNTAX 
+````PowerShell 
+
+   New-LLMTextChat [[-Query] <string>] [[-Model] <string>] [[-ModelLMSGetIdentifier] <string>] [[-Instructions] <string>] [[-Attachments] <string[]>]   
+   [-Temperature <double>] [-MaxToken <int>] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ImageDetail {low | medium | high}] [-IncludeThoughts]   
+   [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly]   
+   [-MarkupBlocksTypeFilter <string[]>] [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <string>] [-ApiKey <string>] [-WhatIf] [-Confirm] [<CommonParameters>]  
+```` 
+
+### PARAMETERS 
+    -ApiEndpoint <string>  
+        Api endpoint url, defaults to http://localhost:1234/v1/chat/completions  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -ApiKey <string>  
+        The API key to use for the request  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -Attachments <string[]>  
+        Array of file paths to attach  
+        Required?                    false  
+        Position?                    4  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -ChatOnce  
+        Used internally, to only invoke chat mode once after the llm invocation  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -Confirm  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      cf  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -ContinueLast  
+        Continue from last conversation  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -DontAddThoughtsToHistory  
+        Include model's thoughts in output  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -ExposedCmdLets <ExposedCmdletDefinition[]>  
+        Array of PowerShell command definitions to use as tools  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -Force  
+        Force stop LM Studio before initialization  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -Gpu <int>  
+        How much to offload to the GPU. If "off", GPU offloading is disabled. If "max", all layers are offloaded to GPU. If a number between 0 and 1, that   
+        fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto   
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -ImageDetail <string>  
+        Image detail level  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -IncludeThoughts  
+        Include model's thoughts in output  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -Instructions <string>  
+        System instructions for the model  
+        Required?                    false  
+        Position?                    3  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -MarkupBlocksTypeFilter <string[]>  
+        Will only output markup blocks of the specified types  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -MaxToken <int>  
+        Maximum tokens in response (-1 for default)  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      MaxTokens  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -Model <string>  
+        The LM-Studio model to use  
+        Required?                    false  
+        Position?                    1  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  true  
+    -ModelLMSGetIdentifier <string>  
+        The LM-Studio model identifier  
+        Required?                    false  
+        Position?                    2  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -NoSessionCaching  
+        Do not store session in session cache  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -OutputMarkupBlocksOnly  
+        Will only output markup block responses  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -Query <string>  
+        Query text to send to the model  
+        Required?                    false  
+        Position?                    0  
+        Accept pipeline input?       true (ByValue)  
+        Parameter set name           Default  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -ShowWindow  
+        Show the LM Studio window  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -Speak  
+        Enable text-to-speech for AI responses  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -SpeakThoughts  
+        Enable text-to-speech for AI thought responses  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -TTLSeconds <int>  
+        Set a TTL (in seconds) for models loaded via API requests  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      ttl  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -Temperature <double>  
+        Temperature for response randomness (0.0-1.0)  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    -WhatIf  
+        Required?                    false  
+        Position?                    Named  
+        Accept pipeline input?       false  
+        Parameter set name           (All)  
+        Aliases                      wi  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Save-Transcriptions 
+````PowerShell 
+
+   Save-Transcriptions  
+```` 
+
+### SYNOPSIS 
+    Generates subtitle files for audio and video files using OpenAI Whisper.  
+
+### SYNTAX 
+````PowerShell 
+
+   Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>]   
+   [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    Recursively searches for media files in the specified directory and uses a local  
+    OpenAI Whisper model to generate subtitle files in SRT format. The function  
+    supports multiple audio/video formats and can optionally translate subtitles to  
+    a different language using LM Studio. File naming follows a standardized pattern  
+    with language codes (e.g., video.mp4.en.srt).  
+
+### PARAMETERS 
+    -DirectoryPath <String>  
+        The root directory to search for media files. Defaults to the current directory.  
+        Will recursively process all supported media files in subfolders.  
+        Required?                    false  
+        Position?                    1  
+        Default value                .\  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -LanguageIn <String>  
+        The expected source language of the audio content. Used to improve transcription  
+        accuracy. Defaults to English. Supports 150+ languages.  
+        Required?                    false  
+        Position?                    2  
+        Default value                English  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -LanguageOut <String>  
+        Optional target language for translation. If specified, the generated subtitles  
+        will be translated from LanguageIn to this language using LM Studio.  
+        Required?                    false  
+        Position?                    3  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TranslateUsingLMStudioModel <String>  
+        The LM Studio model name to use for translation. Defaults to "qwen". Only used  
+        when LanguageOut is specified.  
+        Required?                    false  
+        Position?                    named  
+        Default value                qwen  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Set-GenXdevAICommandNotFoundAction 
+````PowerShell 
+
+   Set-GenXdevAICommandNotFoundAction  
+```` 
+
+### SYNOPSIS 
+    Sets up custom command not found handling with AI assistance.  
+
+### SYNTAX 
+````PowerShell 
+
+   Set-GenXdevAICommandNotFoundAction [-WhatIf] [-Confirm] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    Configures PowerShell to handle unknown commands by either navigating to  
+    directories or using AI to interpret user intent. The handler first tries any  
+    existing command not found handler, then checks if the command is a valid path  
+    for navigation, and finally offers AI assistance for unknown commands.  
+
+### PARAMETERS 
+    -WhatIf [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Confirm [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Start-AudioTranscription 
+````PowerShell 
+
+   Start-AudioTranscription             --> recordandtranscribe, transcribe  
+```` 
+
+### SYNOPSIS 
+    Transcribes audio to text using various input methods and advanced configuration  
+    options.  
+
+### SYNTAX 
+````PowerShell 
+
+   Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX] [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps]   
+   [[-TokenTimestampsSumThreshold] <Single>] [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] [-IgnoreSilence] [[-MaxDurationOfSilence] <Object>]   
+   [[-SilenceThreshold] <Int32>] [[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>] [[-TemperatureInc] <Single>] [-WithTranslate]   
+   [[-Prompt] <String>] [[-SuppressRegex] <String>] [-WithProgress] [[-AudioContextSize] <Int32>] [-DontSuppressBlank] [[-MaxDuration] <Object>] [[-Offset]   
+   <Object>] [[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <Object>]   
+   [[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] [[-NoSpeechThreshold] <Single>] [-NoContext]   
+   [-WithBeamSearchSamplingStrategy] [-WhatIf] [-Confirm] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    This function provides comprehensive audio transcription capabilities, supporting  
+    both real-time recording and file-based transcription. It offers extensive  
+    configuration options for language detection, audio processing, and output  
+    formatting.  
+    Key features:  
+    - Multiple audio input sources (microphone, desktop audio, wav files)  
+    - Automatic silence detection (VOX)  
+    - Multi-language support  
+    - Token timestamp generation  
+    - CPU/GPU processing optimization  
+    - Advanced audio processing parameters  
+
+### PARAMETERS 
+    -ModelFilePath <String>  
+        Path to store model files. Defaults to local GenXdev folder.  
+        Required?                    false  
+        Position?                    1  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -WaveFile <String>  
+        Path to the 16Khz mono, .WAV file to process.  
+        Required?                    false  
+        Position?                    2  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -VOX [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -PassThru [<SwitchParameter>]  
+        Returns objects instead of strings.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -UseDesktopAudioCapture [<SwitchParameter>]  
+        Whether to use desktop audio capture instead of microphone input  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -WithTokenTimestamps [<SwitchParameter>]  
+        Whether to include token timestamps in the output.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TokenTimestampsSumThreshold <Single>  
+        Sum threshold for token timestamps, defaults to 0.5.  
+        Required?                    false  
+        Position?                    3  
+        Default value                0.5  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -SplitOnWord [<SwitchParameter>]  
+        Whether to split on word boundaries.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxTokensPerSegment <Int32>  
+        Maximum number of tokens per segment.  
+        Required?                    false  
+        Position?                    4  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -IgnoreSilence [<SwitchParameter>]  
+        Whether to ignore silence (will mess up timestamps).  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxDurationOfSilence <Object>  
+        Maximum duration of silence before automatically stopping recording.  
+        Required?                    false  
+        Position?                    5  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -SilenceThreshold <Int32>  
+        Silence detect threshold (0..32767 defaults to 30).  
+        Required?                    false  
+        Position?                    6  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Language <String>  
+        Sets the language to detect.  
+        Required?                    false  
+        Position?                    7  
+        Default value                English  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -CpuThreads <Int32>  
+        Number of CPU threads to use, defaults to 0 (auto).  
+        Required?                    false  
+        Position?                    8  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Temperature <Single>  
+        Temperature for speech generation.  
+        Required?                    false  
+        Position?                    9  
+        Default value                0.01  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TemperatureInc <Single>  
+        Temperature increment.  
+        Required?                    false  
+        Position?                    10  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -WithTranslate [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Prompt <String>  
+        Prompt to use for the model.  
+        Required?                    false  
+        Position?                    11  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -SuppressRegex <String>  
+        Regex to suppress tokens from the output.  
+        Required?                    false  
+        Position?                    12  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -WithProgress [<SwitchParameter>]  
+        Whether to show progress.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -AudioContextSize <Int32>  
+        Size of the audio context.  
+        Required?                    false  
+        Position?                    13  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -DontSuppressBlank [<SwitchParameter>]  
+        Whether to NOT suppress blank lines.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxDuration <Object>  
+        Maximum duration of the audio.  
+        Required?                    false  
+        Position?                    14  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Offset <Object>  
+        Offset for the audio.  
+        Required?                    false  
+        Position?                    15  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxLastTextTokens <Int32>  
+        Maximum number of last text tokens.  
+        Required?                    false  
+        Position?                    16  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -SingleSegmentOnly [<SwitchParameter>]  
+        Whether to use single segment only.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -PrintSpecialTokens [<SwitchParameter>]  
+        Whether to print special tokens.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxSegmentLength <Int32>  
+        Maximum segment length.  
+        Required?                    false  
+        Position?                    17  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxInitialTimestamp <Object>  
+        Start timestamps at this moment.  
+        Required?                    false  
+        Position?                    18  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -LengthPenalty <Single>  
+        Length penalty.  
+        Required?                    false  
+        Position?                    19  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -EntropyThreshold <Single>  
+        Entropy threshold.  
+        Required?                    false  
+        Position?                    20  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -LogProbThreshold <Single>  
+        Log probability threshold.  
+        Required?                    false  
+        Position?                    21  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -NoSpeechThreshold <Single>  
+        No speech threshold.  
+        Required?                    false  
+        Position?                    22  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -NoContext [<SwitchParameter>]  
+        Do not use context.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]  
+        Use beam search sampling strategy.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -WhatIf [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Confirm [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
 
 &nbsp;<hr/>
-###	GenXdev.AI.LMStudio<hr/>
+###	GenXdev.AI.LMStudio<hr/> 
 
-##	AssureLMStudio
-````PowerShell
+##	AssureLMStudio 
+````PowerShell 
 
-   AssureLMStudio 
-````
+   AssureLMStudio  
+```` 
 
-### SYNOPSIS
-    Ensures LM Studio is properly initialized with the specified model. 
+### SYNOPSIS 
+    Ensures LM Studio is properly initialized with the specified model.  
 
-### SYNTAX
-````PowerShell
+### SYNTAX 
+````PowerShell 
 
-   AssureLMStudio [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow]   
-   [-Force] [<CommonParameters>] 
-````
+   AssureLMStudio [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow] [-Force]   
+   [<CommonParameters>]  
+```` 
 
-### DESCRIPTION
-    Initializes or reinitializes LM Studio with a specified model, handling process 
-    management and configuration settings. 
+### DESCRIPTION 
+    Initializes or reinitializes LM Studio with a specified model, handling process  
+    management and configuration settings.  
 
-### PARAMETERS
-    -Model <String> 
-        Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search 
-        Defaults to "*-tool-use". 
-        Required?                    false 
-        Position?                    1 
-        Default value                *-tool-use 
-        Accept pipeline input?       true (ByValue) 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ModelLMSGetIdentifier <String> 
-        The specific LM-Studio model identifier to use. 
-        Required?                    false 
-        Position?                    2 
-        Default value                llama-3-groq-8b-tool-use 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxToken <Int32> 
-        Maximum number of tokens in response. Use -1 for default setting. 
-        Required?                    false 
-        Position?                    3 
-        Default value                8192 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TTLSeconds <Int32> 
-        Time-to-live in seconds for models loaded via API requests. 
-        Required?                    false 
-        Position?                    4 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ShowWindow [<SwitchParameter>] 
-        Shows the LM Studio window during initialization when specified. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Force [<SwitchParameter>] 
-        Forces LM Studio to stop before initialization when specified. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Get-LMStudioPaths
-````PowerShell
-
-   Get-LMStudioPaths 
-````
-
-### SYNOPSIS
-    Retrieves file paths for LM Studio executables. 
-
-### SYNTAX
-````PowerShell
-
-   Get-LMStudioPaths [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Searches common installation locations for LM Studio executables and returns their 
-    paths. The function maintains a cache of found paths to optimize performance on 
-    subsequent calls. 
-
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+### PARAMETERS 
+    -Model <String>  
+        Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search  
+        Defaults to "*-tool-use".  
+        Required?                    false  
+        Position?                    1  
+        Default value                *-tool-use  
+        Accept pipeline input?       true (ByValue)  
+        Aliases                        
+        Accept wildcard characters?  true  
+    -ModelLMSGetIdentifier <String>  
+        The specific LM-Studio model identifier to use.  
+        Required?                    false  
+        Position?                    2  
+        Default value                llama-3-groq-8b-tool-use  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxToken <Int32>  
+        Maximum number of tokens in response. Use -1 for default setting.  
+        Required?                    false  
+        Position?                    3  
+        Default value                8192  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TTLSeconds <Int32>  
+        Time-to-live in seconds for models loaded via API requests.  
+        Required?                    false  
+        Position?                    4  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ShowWindow [<SwitchParameter>]  
+        Shows the LM Studio window during initialization when specified.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Force [<SwitchParameter>]  
+        Forces LM Studio to stop before initialization when specified.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>
+ 
 
-##	Get-LMStudioWindow
-````PowerShell
+##	Convert-DotNetTypeToLLMType 
+````PowerShell 
 
-   Get-LMStudioWindow 
-````
+   Convert-DotNetTypeToLLMType  
+```` 
 
-### SYNOPSIS
-    Gets a window helper for the LM Studio application. 
+### SYNOPSIS 
+    Converts .NET type names to LLM (Language Model) type names.  
 
-### SYNTAX
-````PowerShell
+### SYNTAX 
+````PowerShell 
 
-   Get-LMStudioWindow [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>]   
-   [-ShowWindow] [-Force] [-NoAutoStart] [<CommonParameters>] 
-````
+   Convert-DotNetTypeToLLMType [-DotNetType] <String> [<CommonParameters>]  
+```` 
 
-### DESCRIPTION
-    Gets a window helper for the LM Studio application. If LM Studio is not running, 
-    it will be started automatically unless prevented by NoAutoStart switch. 
+### DESCRIPTION 
+    This function takes a .NET type name as input and returns the corresponding  
+    simplified type name used in Language Models. It handles common .NET types  
+    and provides appropriate type mappings.  
 
-### PARAMETERS
-    -Model <String> 
-        Name or partial path of the model to initialize. 
-        Required?                    false 
-        Position?                    1 
-        Default value                *-tool-use 
-        Accept pipeline input?       true (ByValue) 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ModelLMSGetIdentifier <String> 
-        The LM-Studio model identifier to use. 
-        Required?                    false 
-        Position?                    2 
-        Default value                llama-3-groq-8b-tool-use 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxToken <Int32> 
-        Maximum tokens in response. Use -1 for default value. 
-        Required?                    false 
-        Position?                    3 
-        Default value                8192 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TTLSeconds <Int32> 
-        Set a Time To Live (in seconds) for models loaded via API. 
-        Required?                    false 
-        Position?                    4 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ShowWindow [<SwitchParameter>] 
-        Switch to show LM Studio window during initialization. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Force [<SwitchParameter>] 
-        Switch to force stop LM Studio before initialization. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -NoAutoStart [<SwitchParameter>] 
-        Switch to prevent automatic start of LM Studio if not running. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+### PARAMETERS 
+    -DotNetType <String>  
+        The .NET type name to convert to an LLM type name.  
+        Required?                    true  
+        Position?                    1  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>
+ 
 
-##	Test-LMStudioProcess
-````PowerShell
+##	ConvertTo-LMStudioFunctionDefinition 
+````PowerShell 
 
-   Test-LMStudioProcess 
-````
+   ConvertTo-LMStudioFunctionDefinition  
+```` 
 
-### SYNOPSIS
-    Tests if LM Studio process is running and configures its window state. 
+### SYNTAX 
+````PowerShell 
 
-### SYNTAX
-````PowerShell
+   ConvertTo-LMStudioFunctionDefinition [[-ExposedCmdLets] <ExposedCmdletDefinition[]>] [<CommonParameters>]  
+```` 
 
-   Test-LMStudioProcess [-ShowWindow] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Checks if LM Studio is running, and if so, returns true. If not running, it 
-    returns false. 
-
-### PARAMETERS
-    -ShowWindow [<SwitchParameter>] 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+### PARAMETERS 
+    -ExposedCmdLets <ExposedCmdletDefinition[]>  
+        PowerShell commands to convert to tool functions  
+        Required?                    false  
+        Position?                    0  
+        Accept pipeline input?       true (ByValue)  
+        Parameter set name           (All)  
+        Aliases                      None  
+        Dynamic?                     false  
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>
+ 
 
-##	Get-LMStudioModelList
-````PowerShell
+##	Get-LMStudioLoadedModelList 
+````PowerShell 
 
-   Get-LMStudioModelList 
-````
+   Get-LMStudioLoadedModelList  
+```` 
 
-### SYNOPSIS
-    Retrieves a list of installed LM Studio models. 
+### SYNOPSIS 
+    Retrieves the list of currently loaded models from LM Studio.  
 
-### SYNTAX
-````PowerShell
+### SYNTAX 
+````PowerShell 
 
-   Get-LMStudioModelList [<CommonParameters>] 
-````
+   Get-LMStudioLoadedModelList [<CommonParameters>]  
+```` 
 
-### DESCRIPTION
-    Gets a list of all models installed in LM Studio by executing the LM Studio CLI 
-    command and parsing its JSON output. Returns an array of model objects containing 
-    details about each installed model. 
+### DESCRIPTION 
+    Gets a list of all models that are currently loaded in LM Studio by querying  
+    the LM Studio process. Returns null if no models are loaded or if an error  
+    occurs. Requires LM Studio to be installed and accessible.  
 
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Initialize-LMStudioModel
-````PowerShell
-
-   Initialize-LMStudioModel 
-````
-
-### SYNOPSIS
-    Initializes and loads an AI model in LM Studio. 
-
-### SYNTAX
-````PowerShell
-
-   Initialize-LMStudioModel [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>]   
-   [-Gpu <Int32>] [-ShowWindow] [-Force] [-PreferredModels <String[]>] [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    Searches for and loads a specified AI model in LM Studio. The function handles 
-    installation verification, process management, and model loading with GPU 
-    support when available. 
-
-### PARAMETERS
-    -Model <String> 
-        Name or partial path of the model to initialize. Searched against available 
-        models. 
-        Required?                    false 
-        Position?                    1 
-        Default value                [string]::Empty 
-        Accept pipeline input?       true (ByValue) 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ModelLMSGetIdentifier <String> 
-        The specific LM-Studio model identifier to use for download/initialization. 
-        Required?                    false 
-        Position?                    2 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -MaxToken <Int32> 
-        Maximum number of tokens allowed in the response. Use -1 for default limit. 
-        Required?                    false 
-        Position?                    3 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -TTLSeconds <Int32> 
-        Time-to-live in seconds for models loaded via API requests. Use -1 for no TTL. 
-        Required?                    false 
-        Position?                    4 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Gpu <Int32> 
-        Required?                    false 
-        Position?                    named 
-        Default value                -1 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -ShowWindow [<SwitchParameter>] 
-        Shows the LM Studio window during initialization if specified. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Force [<SwitchParameter>] 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -PreferredModels <String[]> 
-        Array of model names to try if specified model is not found. 
-        Required?                    false 
-        Position?                    named 
-        Default value                @( 
-                    "qwen-7b", "vicuna", "alpaca", "gpt", "mistral", "falcon", "mpt", 
-                    "koala", "wizard", "guanaco", "bloom", "rwkv", "camel", "pythia", 
-                    "baichuan" 
-                ) 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+### PARAMETERS 
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>
+ 
 
-##	Start-LMStudioApplication
-````PowerShell
+##	Get-LMStudioModelList 
+````PowerShell 
 
-   Start-LMStudioApplication 
-````
+   Get-LMStudioModelList  
+```` 
 
-### SYNOPSIS
-    Starts the LM Studio application if it's not already running. 
+### SYNOPSIS 
+    Retrieves a list of installed LM Studio models.  
 
-### SYNTAX
-````PowerShell
+### SYNTAX 
+````PowerShell 
 
-   Start-LMStudioApplication [[-WithVisibleWindow]] [-Passthru] [<CommonParameters>] 
-````
+   Get-LMStudioModelList [<CommonParameters>]  
+```` 
 
-### DESCRIPTION
-    This function checks if LM Studio is installed and running. If not installed, it 
-    will install it. If not running, it will start it with the specified window 
-    visibility. 
+### DESCRIPTION 
+    Gets a list of all models installed in LM Studio by executing the LM Studio CLI  
+    command and parsing its JSON output. Returns an array of model objects containing  
+    details about each installed model.  
 
-### PARAMETERS
-    -WithVisibleWindow [<SwitchParameter>] 
-        Required?                    false 
-        Position?                    1 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    -Passthru [<SwitchParameter>] 
-        When specified, returns the Process object of the LM Studio application. 
-        Required?                    false 
-        Position?                    named 
-        Default value                False 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+### PARAMETERS 
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>
+ 
 
-##	Test-LMStudioInstallation
-````PowerShell
+##	Get-LMStudioPaths 
+````PowerShell 
 
-   Test-LMStudioInstallation 
-````
+   Get-LMStudioPaths  
+```` 
 
-### SYNOPSIS
-    Tests if LMStudio is installed and accessible on the system. 
+### SYNOPSIS 
+    Retrieves file paths for LM Studio executables.  
 
-### SYNTAX
-````PowerShell
+### SYNTAX 
+````PowerShell 
 
-   Test-LMStudioInstallation [<CommonParameters>] 
-````
+   Get-LMStudioPaths [<CommonParameters>]  
+```` 
 
-### DESCRIPTION
-    Verifies the LMStudio installation by checking if the executable exists at the 
-    expected path location. Uses Get-LMStudioPaths helper function to determine the 
-    installation path and validates the executable's existence. 
+### DESCRIPTION 
+    Searches common installation locations for LM Studio executables and returns their  
+    paths. The function maintains a cache of found paths to optimize performance on  
+    subsequent calls.  
 
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
-
-<br/><hr/><hr/><br/>
-
-##	Convert-DotNetTypeToLLMType
-````PowerShell
-
-   Convert-DotNetTypeToLLMType 
-````
-
-### SYNOPSIS
-    Converts .NET type names to LLM (Language Model) type names. 
-
-### SYNTAX
-````PowerShell
-
-   Convert-DotNetTypeToLLMType [-DotNetType] <String> [<CommonParameters>] 
-````
-
-### DESCRIPTION
-    This function takes a .NET type name as input and returns the corresponding 
-    simplified type name used in Language Models. It handles common .NET types 
-    and provides appropriate type mappings. 
-
-### PARAMETERS
-    -DotNetType <String> 
-        The .NET type name to convert to an LLM type name. 
-        Required?                    true 
-        Position?                    1 
-        Default value                 
-        Accept pipeline input?       false 
-        Aliases                       
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+### PARAMETERS 
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>
+ 
 
-##	Get-LMStudioLoadedModelList
-````PowerShell
+##	Get-LMStudioWindow 
+````PowerShell 
 
-   Get-LMStudioLoadedModelList 
-````
+   Get-LMStudioWindow  
+```` 
 
-### SYNOPSIS
-    Retrieves the list of currently loaded models from LM Studio. 
+### SYNOPSIS 
+    Gets a window helper for the LM Studio application.  
 
-### SYNTAX
-````PowerShell
+### SYNTAX 
+````PowerShell 
 
-   Get-LMStudioLoadedModelList [<CommonParameters>] 
-````
+   Get-LMStudioWindow [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow] [-Force]   
+   [-NoAutoStart] [<CommonParameters>]  
+```` 
 
-### DESCRIPTION
-    Gets a list of all models that are currently loaded in LM Studio by querying 
-    the LM Studio process. Returns null if no models are loaded or if an error 
-    occurs. Requires LM Studio to be installed and accessible. 
+### DESCRIPTION 
+    Gets a window helper for the LM Studio application. If LM Studio is not running,  
+    it will be started automatically unless prevented by NoAutoStart switch.  
 
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+### PARAMETERS 
+    -Model <String>  
+        Name or partial path of the model to initialize.  
+        Required?                    false  
+        Position?                    1  
+        Default value                *-tool-use  
+        Accept pipeline input?       true (ByValue)  
+        Aliases                        
+        Accept wildcard characters?  true  
+    -ModelLMSGetIdentifier <String>  
+        The LM-Studio model identifier to use.  
+        Required?                    false  
+        Position?                    2  
+        Default value                llama-3-groq-8b-tool-use  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxToken <Int32>  
+        Maximum tokens in response. Use -1 for default value.  
+        Required?                    false  
+        Position?                    3  
+        Default value                8192  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TTLSeconds <Int32>  
+        Set a Time To Live (in seconds) for models loaded via API.  
+        Required?                    false  
+        Position?                    4  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ShowWindow [<SwitchParameter>]  
+        Switch to show LM Studio window during initialization.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Force [<SwitchParameter>]  
+        Switch to force stop LM Studio before initialization.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -NoAutoStart [<SwitchParameter>]  
+        Switch to prevent automatic start of LM Studio if not running.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>
+ 
 
-##	Install-LMStudioApplication
-````PowerShell
+##	Initialize-LMStudioModel 
+````PowerShell 
 
-   Install-LMStudioApplication 
-````
+   Initialize-LMStudioModel  
+```` 
 
-### SYNOPSIS
-    Installs LM Studio application using WinGet package manager. 
+### SYNOPSIS 
+    Initializes and loads an AI model in LM Studio.  
 
-### SYNTAX
-````PowerShell
+### SYNTAX 
+````PowerShell 
 
-   Install-LMStudioApplication [<CommonParameters>] 
-````
+   Initialize-LMStudioModel [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-Gpu <Int32>] [-ShowWindow]   
+   [-Force] [-PreferredModels <String[]>] [<CommonParameters>]  
+```` 
 
-### DESCRIPTION
-    Ensures LM Studio is installed on the system by checking WinGet dependencies and 
-    installing LM Studio if not already present. Uses WinGet module with CLI fallback. 
+### DESCRIPTION 
+    Searches for and loads a specified AI model in LM Studio. The function handles  
+    installation verification, process management, and model loading with GPU  
+    support when available.  
 
-### PARAMETERS
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+### PARAMETERS 
+    -Model <String>  
+        Name or partial path of the model to initialize. Searched against available  
+        models.  
+        Required?                    false  
+        Position?                    1  
+        Default value                [string]::Empty  
+        Accept pipeline input?       true (ByValue)  
+        Aliases                        
+        Accept wildcard characters?  true  
+    -ModelLMSGetIdentifier <String>  
+        The specific LM-Studio model identifier to use for download/initialization.  
+        Required?                    false  
+        Position?                    2  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxToken <Int32>  
+        Maximum number of tokens allowed in the response. Use -1 for default limit.  
+        Required?                    false  
+        Position?                    3  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TTLSeconds <Int32>  
+        Time-to-live in seconds for models loaded via API requests. Use -1 for no TTL.  
+        Required?                    false  
+        Position?                    4  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Gpu <Int32>  
+        Required?                    false  
+        Position?                    named  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ShowWindow [<SwitchParameter>]  
+        Shows the LM Studio window during initialization if specified.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Force [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -PreferredModels <String[]>  
+        Array of model names to try if specified model is not found.  
+        Required?                    false  
+        Position?                    named  
+        Default value                @(  
+                    "qwen-7b", "vicuna", "alpaca", "gpt", "mistral", "falcon", "mpt",  
+                    "koala", "wizard", "guanaco", "bloom", "rwkv", "camel", "pythia",  
+                    "baichuan"  
+                )  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>
+ 
 
-##	ConvertTo-LMStudioFunctionDefinition
-````PowerShell
+##	Install-LMStudioApplication 
+````PowerShell 
 
-   ConvertTo-LMStudioFunctionDefinition 
-````
+   Install-LMStudioApplication  
+```` 
 
-### SYNTAX
-````PowerShell
+### SYNOPSIS 
+    Installs LM Studio application using WinGet package manager.  
 
-   ConvertTo-LMStudioFunctionDefinition [[-ExposedCmdLets] <ExposedCmdletDefinition[]>] [<CommonParameters>] 
-````
+### SYNTAX 
+````PowerShell 
 
-### PARAMETERS
-    -ExposedCmdLets <ExposedCmdletDefinition[]> 
-        PowerShell commands to convert to tool functions 
-        Required?                    false 
-        Position?                    0 
-        Accept pipeline input?       true (ByValue) 
-        Parameter set name           (All) 
-        Aliases                      None 
-        Dynamic?                     false 
-        Accept wildcard characters?  false 
-    <CommonParameters> 
-        This cmdlet supports the common parameters: Verbose, Debug, 
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable, 
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see 
-        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).  
+   Install-LMStudioApplication [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    Ensures LM Studio is installed on the system by checking WinGet dependencies and  
+    installing LM Studio if not already present. Uses WinGet module with CLI fallback.  
+
+### PARAMETERS 
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Start-LMStudioApplication 
+````PowerShell 
+
+   Start-LMStudioApplication  
+```` 
+
+### SYNOPSIS 
+    Starts the LM Studio application if it's not already running.  
+
+### SYNTAX 
+````PowerShell 
+
+   Start-LMStudioApplication [[-WithVisibleWindow]] [-Passthru] [-WhatIf] [-Confirm] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    This function checks if LM Studio is installed and running. If not installed, it  
+    will install it. If not running, it will start it with the specified window  
+    visibility.  
+
+### PARAMETERS 
+    -WithVisibleWindow [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    1  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Passthru [<SwitchParameter>]  
+        When specified, returns the Process object of the LM Studio application.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -WhatIf [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Confirm [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Test-LMStudioInstallation 
+````PowerShell 
+
+   Test-LMStudioInstallation  
+```` 
+
+### SYNOPSIS 
+    Tests if LMStudio is installed and accessible on the system.  
+
+### SYNTAX 
+````PowerShell 
+
+   Test-LMStudioInstallation [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    Verifies the LMStudio installation by checking if the executable exists at the  
+    expected path location. Uses Get-LMStudioPaths helper function to determine the  
+    installation path and validates the executable's existence.  
+
+### PARAMETERS 
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
+
+<br/><hr/><hr/><br/>
+ 
+
+##	Test-LMStudioProcess 
+````PowerShell 
+
+   Test-LMStudioProcess  
+```` 
+
+### SYNOPSIS 
+    Tests if LM Studio process is running and configures its window state.  
+
+### SYNTAX 
+````PowerShell 
+
+   Test-LMStudioProcess [-ShowWindow] [<CommonParameters>]  
+```` 
+
+### DESCRIPTION 
+    Checks if LM Studio is running, and if so, returns true. If not running, it  
+    returns false.  
+
+### PARAMETERS 
+    -ShowWindow [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    <CommonParameters>  
+        This cmdlet supports the common parameters: Verbose, Debug,  
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see  
+        about_CommonParameters     (https://go.microsoft.com/fwlink/?LinkID=113216).   
 
 <br/><hr/><hr/><br/>

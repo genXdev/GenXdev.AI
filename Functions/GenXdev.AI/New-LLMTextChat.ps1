@@ -78,14 +78,20 @@ New-LLMTextChat -Model "*-tool-use" -Temperature 0.7 -MaxToken 4096
 .EXAMPLE
 llmchat "Tell me a joke" -Speak -IncludeThoughts
 #>
+# Store exposed cmdlets at module level instead of global scope
+$script:LMStudioExposedCmdlets = $null
+
+
 function New-LLMTextChat {
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = "Default")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "New-LLMTextChat")]
     [Alias("llmchat")]
 
     param(
         ########################################################################
         [Parameter(
+            ParameterSetName = "Default",
             ValueFromPipeline = $true,
             Mandatory = $false,
             Position = 0,
@@ -99,6 +105,7 @@ function New-LLMTextChat {
             Position = 1,
             HelpMessage = "The LM-Studio model to use"
         )]
+        [SupportsWildcards()]
         [string] $Model = "*-tool-use",
         ########################################################################
         [Parameter(
@@ -168,6 +175,11 @@ function New-LLMTextChat {
         ########################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = "Include model's thoughts in output")]
+        [switch] $DontAddThoughtsToHistory,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = "Continue from last conversation")]
         [switch] $ContinueLast,
         ########################################################################
@@ -188,6 +200,19 @@ function New-LLMTextChat {
             Mandatory = $false
         )]
         [switch] $SpeakThoughts,
+        ###########################################################################
+        [Parameter(
+            HelpMessage = "Will only output markup block responses",
+            Mandatory = $false
+        )]
+        [switch] $OutputMarkupBlocksOnly,
+        ########################################################################
+        [Parameter(
+            HelpMessage = "Will only output markup blocks of the specified types",
+            Mandatory = $false
+        )]
+        [ValidateNotNull()]
+        [string[]] $MarkupBlocksTypeFilter = @("json", "powershell", "C#", "python", "javascript", "typescript", "html", "css", "yaml", "xml", "bash"),
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -216,12 +241,18 @@ function New-LLMTextChat {
 
         Write-Verbose "Initializing chat session with model: $Model"
 
+        $updateInstructions = [string]::IsNullOrWhiteSpace($Instructions)
+
         # initialize exposed cmdlets if not provided
         if ($null -eq $ExposedCmdLets) {
-            if ($ContinueLast -and $Global:LMStudioGlobalExposedCmdlets) {
-                $ExposedCmdLets = $Global:LMStudioGlobalExposedCmdlets
+            if ($ContinueLast -and $script:LMStudioExposedCmdlets) {
+
+                $ExposedCmdLets = $script:LMStudioExposedCmdlets
             }
             else {
+
+                $updateInstructions = $true
+
                 # initialize default allowed PowerShell cmdlets
                 $ExposedCmdLets = @(
                     @{
@@ -244,6 +275,13 @@ function New-LLMTextChat {
                         OutputText    = $false
                         Confirm       = $false
                         JsonDepth     = 2
+                    },
+                    @{
+                        Name          = "CimCmdlets\Get-CimInstance"
+                        AllowedParams = @("Query=string", "ClassName=string")
+                        OutputText    = $false
+                        Confirm       = $false
+                        JsonDepth     = 5
                     },
                     @{
                         Name                                 = "GenXdev.AI\Approve-NewTextFileContent"
@@ -273,6 +311,24 @@ function New-LLMTextChat {
                         Confirm    = $false
                     },
                     @{
+                        Name          = "GenXdev.Console\Start-TextToSpeech"
+                        AllowedParams = @("Lines=string")
+                        OutputText    = $true
+                        Confirm       = $false
+                    },
+                    @{
+                        Name          = "Microsoft.PowerShell.Management\Get-Clipboard"
+                        AllowedParams = @()
+                        OutputText    = $true
+                        Confirm       = $false
+                    },
+                    @{
+                        Name          = "Microsoft.PowerShell.Management\Set-Clipboard"
+                        AllowedParams = @("Value=string")
+                        OutputText    = $true
+                        Confirm       = $false
+                    },
+                    @{
                         Name       = "GenXdev.AI\Get-LMStudioModelList"
                         OutputText = $false
                         Confirm    = $false
@@ -283,11 +339,36 @@ function New-LLMTextChat {
                         OutputText = $false
                         Confirm    = $false
                         JsonDepth  = 2
-                    },
+                    }
+                );
+
+                $functionInfoObj = (ConvertTo-LMStudioFunctionDefinition -ExposedCmdLets:$ExposedCmdLets)
+                $functionInfoObj | ForEach-Object { $null = $_.function.Remove("callback") }
+                $functionInfo = $functionInfoObj |
+                    ConvertTo-Json `
+                        -ErrorAction SilentlyContinue `
+                        -WarningAction SilentlyContinue `
+                        -Depth 10
+
+                $ExposedCmdLets += @(
                     @{
                         Name          = "GenXdev.AI\Invoke-LLMQuery"
-                        AllowedParams = @("Query", "Model", "Instructions", "Attachments", "IncludeThoughts")
-                        ForcedParams  = @(@{Name = "NoSessionCaching"; Value = $true })
+                        AllowedParams = @("Query", "Model", "Attachments", "IncludeThoughts", "ContinueLast")
+                        ForcedParams  = @(
+                            @{
+                                Name  = "NoSessionCaching";
+                                Value = $true
+                            }, @{
+                                Name  = "Instructions";
+                                Value = "You are being invoked by another LM's tool function. Do what it asks, " +
+                                "but if it it didn't pass the right parameters, especially if it tries " +
+                                "to let you invoke PowerShell expressions, respond with a warning that " +
+                                "that is not possible. `r`n" +
+                                "If it asks you to create an execution plan for itself, know that it has " +
+                                "access to the following tool functions to help it:`r`n`r`n" +
+                                "$functionInfo"
+                            }
+                        )
                         OutputText    = $false
                         Confirm       = $false
                         JsonDepth     = 99
@@ -296,9 +377,47 @@ function New-LLMTextChat {
             }
         }
 
+        if ($updateInstructions) {
+
+            if ([string]::IsNullOrWhiteSpace($Instructions)) {
+
+                $Instructions = ""
+            }
+
+            $Instructions = @"
+$Instructions
+
+**You are an interactive AI assistant. Your primary functions are to:**
+1. **Ask and Answer Questions:** Engage with users to understand their queries and provide relevant responses.
+2. **Invoke Tools:** Proactively suggest the use of tools or directly invoke them if you are confident they can accomplish a task.
+
+**Key Guidelines:**
+- **Tool Usage:** You don't need to use all available tool parameters, and some parameters might be mutually exclusive. Determine the best parameters to use based on the task at hand.
+- **PowerShell Constraints:**
+  - **Avoid PowerShell Features:** Do not rely on PowerShell features like expanding string embeddings (e.g., `$()`) or any similar methods. Parameter checking is strict.
+  - **No Variables/Expressions:** Do not use PowerShell variables or expressions under any circumstances.
+
+**Handling Invoke-LLMQuery:**
+- If asked to use `Invoke-LLMQuery`, it is likely that the intention is to relay the output of another tool to the `Query` parameter.
+- **Steps to Follow:**
+  1. Execute the relevant tool.
+  2. Copy the output from the tool.
+  3. Paste the copied output into the `Query` parameter of the `Invoke-LLMQuery` function.
+  4. Include the user's instructions along with the tool's output in the `Query` parameter.
+
+**Multiple Tool Invocations:**
+- Feel free to invoke multiple tools within a single response if necessary.
+
+**Safety Measures:**
+- Do not worry about potential harm when invoking these tools. They are either unable to make changes or will prompt the user to confirm any actions. Users are aware of the possible consequences due to the nature of the PowerShell environment and the ability to enforce confirmation for any exposed tool.
+"@;
+
+            $Instructions = $Instructions.Trim()
+        }
+
         if (-not $NoSessionCaching) {
 
-            $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
+            $script:LMStudioExposedCmdlets = $ExposedCmdLets
         }
 
         Write-Verbose "Initialized with $($ExposedCmdLets.Count) exposed cmdlets"
@@ -321,7 +440,7 @@ function New-LLMTextChat {
 
         if ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or $ApiEndpoint.Contains("localhost")) {
 
-            $initializationParams = Copy-IdenticalParamValues -BoundParameters $PSBoundParameters `
+            $initializationParams = GenXdev.Helpers\Copy-IdenticalParamValues -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
                 -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
@@ -355,8 +474,6 @@ function New-LLMTextChat {
 
             $null = $PSBoundParameters.Add("ExposedCmdLets", $ExposedCmdLets);
         }
-
-        $hadAQuery = -not [string]::IsNullOrEmpty($Query)
     }
 
     process {
@@ -364,23 +481,42 @@ function New-LLMTextChat {
         Write-Verbose "Starting chat interaction loop"
 
         # helper function to display available tool functions
-        function Show-ToolFunctions {
+        function Show-ToolFunction {
+            function FixName([string] $name) {
+                $index = $name.IndexOf("\")
+                if ($index -gt 0) {
+                    return $name.Substring($index + 1)
+                }
+                return $name;
+            }
+
+            function GetParamString([object] $cmdlet) {
+                if ($null -eq $cmdlet.AllowedParams) { return "" }
+                $params = $cmdlet.AllowedParams | ForEach-Object {
+                    $a = $_
+                    if ($a -match "^(.+?)=") {
+                        $a = $matches[1]
+                    }
+                    $a
+                }
+                return "($(($params -join ',')))"
+            }
+
             if ($ExposedCmdLets.Count -gt 0) {
                 Write-Host -ForegroundColor Green `
                     "Tool functions now active ($($ExposedCmdLets.Count)) ->"
-                # ...existing code...
+
                 $( ($ExposedCmdLets | ForEach-Object {
-
+                            $name = FixName($_.Name)
+                            $params = GetParamString($_)
                             if ($_.Confirm) {
-
-                                "$($_.Name)"
+                                "$name$params"
                             }
                             else {
-
-                                "$($_.Name)*"
+                                "$name*$params"
                             }
                         } | Select-Object -Unique) -join ', ') |
-                Write-Host -ForegroundColor Green
+                    Write-Host -ForegroundColor Green
             }
         }
 
@@ -388,7 +524,7 @@ function New-LLMTextChat {
         $script:isFirst = -not $ContinueLast
 
         # display available tools
-        Show-ToolFunctions
+        Show-ToolFunction
 
         # main chat loop
         $shouldStop = $false
@@ -419,26 +555,26 @@ function New-LLMTextChat {
             $PSBoundParameters["Query"] = $question;
             $PSBoundParameters["ExposedCmdLets"] = $ExposedCmdLets;
 
-            $invocationArguments = Copy-IdenticalParamValues `
+            $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\Invoke-LLMQuery" `
                 -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
             $invocationArguments.ChatOnce = $false
 
-            @(Invoke-LLMQuery @invocationArguments) | ForEach-Object {
-
-                if (($null -eq $_) -or ([string]::IsNullOrEmpty("$_".trim()))) { return }
+            @(Invoke-LLMQuery @invocationArguments) | ForEach-Object -Process {
+                $result = $_
+                if (($null -eq $result) -or ([string]::IsNullOrEmpty("$result".trim()))) { return }
 
                 $script:isFirst = $false
 
                 if ($ChatOnce) {
 
-                    Write-Output $_
+                    Write-Output $result
                 }
                 else {
 
-                    Write-Host -ForegroundColor Yellow "$_"
+                    Write-Host -ForegroundColor Yellow "$result"
                 }
             }
 

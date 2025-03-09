@@ -41,7 +41,7 @@ $html = GenerateMasonryLayoutHtml $images
 function GenerateMasonryLayoutHtml {
 
     [CmdletBinding()]
-
+    [OutputType([System.String])]
     param (
         ###############################################################################
         [Parameter(
@@ -168,7 +168,7 @@ function GenerateMasonryLayoutHtml {
         }
         else {
             Write-Verbose "Saving HTML gallery to: $FilePath"
-            $html | Out-File -FilePath (Expand-Path $FilePath -CreateDirectory) `
+            $html | Out-File -FilePath (GenXdev.FileSystem\Expand-Path $FilePath -CreateDirectory) `
                 -Encoding utf8
         }
     }

@@ -35,6 +35,7 @@ Save-Transcriptions "C:\Media" "Japanese" "English" "qwen"
 function Save-Transcriptions {
 
     [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
     param(
         ######################################################################
         [parameter(
@@ -47,7 +48,7 @@ function Save-Transcriptions {
         [Parameter(
             Mandatory = $false,
             Position = 1,
-            HelpMessage = "The language to expect in the audio, defaults to 'English'."
+            HelpMessage = "The language to expect in the audio."
         )]
         [PSDefaultValue(Value = "English")]
         [ValidateSet(
@@ -373,7 +374,7 @@ function Save-Transcriptions {
     process {
 
         # change to target directory for file processing
-        Set-Location (Expand-Path $DirectoryPath)
+        Set-Location (GenXdev.FileSystem\Expand-Path $DirectoryPath)
         Write-Verbose "Changed working directory to: $DirectoryPath"
 
         # recursively process each file in directory and subdirectories

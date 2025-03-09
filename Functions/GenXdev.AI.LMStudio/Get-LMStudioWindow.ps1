@@ -37,6 +37,9 @@ Get-LMStudioWindow "*-tool-use" -ttl 3600
 function Get-LMStudioWindow {
 
     [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseUsingScopeModifierInNewRunspaces", "")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "")]
     param(
         ########################################################################
         [Parameter(
@@ -46,6 +49,7 @@ function Get-LMStudioWindow {
             HelpMessage = "Name or partial path of the model to initialize"
         )]
         [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [string]$Model = "*-tool-use",
         ########################################################################
         [Parameter(
@@ -94,10 +98,13 @@ function Get-LMStudioWindow {
 
         Write-Verbose "Starting search for LM Studio window"
 
+        # get paths for LM Studio
+        $paths = Get-LMStudioPaths
+
         if ($Force -and (-not $NoAutoStart)) {
 
             # copy matching parameters to AssureLMStudio function call
-            $invocationArguments = Copy-IdenticalParamValues `
+            $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\AssureLMStudio" `
                 -DefaultValues (Get-Variable -Scope Local -Name * `
@@ -165,7 +172,7 @@ function Get-LMStudioWindow {
             Write-Verbose "Starting new LM Studio instance"
 
             # prepare parameters for AssureLMStudio
-            $invocationArguments = Copy-IdenticalParamValues `
+            $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\AssureLMStudio" `
                 -DefaultValues (Get-Variable -Scope Local -Name * `
@@ -195,16 +202,13 @@ function Get-LMStudioWindow {
 
                 # position windows and set focus
                 $null = Set-WindowPosition -Left -Monitor 0
+                $null = Set-WindowPosition -WindowHelper $result -Right -Monitor 0
 
-                Get-Process "LM Studio" -ErrorAction SilentlyContinue |
-                Where-Object -Property MainWindowHandle -NE 0 |
-                ForEach-Object {
-                    $null = Set-WindowPosition -Process $_ -Right -Monitor 0
-                }
-
-                $result.SetForeground()
-                Send-Keys "^2"
-                (Get-PowershellMainWindow).SetForeground()
+                $null = $result.Show()
+                $null = $result.Restore()
+                $null = $result.SetForeground()
+                $null = Send-Key "^2"
+                $null = (Get-PowershellMainWindow).SetForeground()
             }
 
             Write-Output $result

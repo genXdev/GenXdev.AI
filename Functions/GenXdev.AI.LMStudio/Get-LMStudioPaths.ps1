@@ -21,18 +21,19 @@ Write-Output "LM Studio path: $($paths.LMStudioExe)"
 function Get-LMStudioPaths {
 
     [CmdletBinding()]
+    [OutputType([System.Collections.Hashtable])]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
     param()
 
     begin {
 
-        # define search paths for the main LM Studio executable
+        # define search paths for executables
         $searchPathsLMStudio = @(
             "${env:LOCALAPPDATA}\LM-Studio\lm studio.exe",
             "${env:LOCALAPPDATA}\Programs\LM-Studio\lm studio.exe",
             "${env:LOCALAPPDATA}\Programs\LM Studio\lm studio.exe"
         )
 
-        # define search paths for the LMS command-line tool
         $searchPathsLMSexe = @(
             "${env:LOCALAPPDATA}\LM-Studio\lms.exe",
             "${env:LOCALAPPDATA}\Programs\LM-Studio\lms.exe",
@@ -43,7 +44,7 @@ function Get-LMStudioPaths {
     process {
 
         # check if paths need to be discovered
-        if (-not $script:LMStudioExe -or -not $script:LMSExe) {
+        if (-not $script:LMStudioExe -or -not $script:LMSexe) {
 
             Write-Verbose "Searching for LM Studio executables..."
 
@@ -59,8 +60,8 @@ function Get-LMStudioPaths {
             # find LMS command-line executable
             $script:LMSExe = Get-ChildItem `
                 -Path $searchPathsLMSexe `
-                -Recurse `
                 -File `
+                -Recurse `
                 -ErrorAction SilentlyContinue |
             Select-Object -First 1 |
             ForEach-Object FullName

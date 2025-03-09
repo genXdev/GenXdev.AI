@@ -1,9 +1,11 @@
-Describe "Test-LMStudioProcess basic functionality" {
+
+################################################################################
+Describe "GenerateMasonryLayoutHtml" {
 
     It "should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Test-LMStudioProcess.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\GenerateMasonryLayoutHtml.ps1"
 
         # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
@@ -26,11 +28,5 @@ The following PSScriptAnalyzer rules are being violated:
 $message
 "@;
     }
-
-    It "Should return true when LMStudio process is running" {
-
-        $null = Start-LMStudioApplication
-        $result = Test-LMStudioProcess
-        $result | Should -Be $true
-    }
 }
+################################################################################

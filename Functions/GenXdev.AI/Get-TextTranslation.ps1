@@ -42,8 +42,6 @@ function Get-TextTranslation {
             ValueFromPipeline = $true
         )]
         [string] $Text,
-
-
         ################################################################################
         [Parameter(
             Mandatory = $false,
@@ -223,6 +221,7 @@ function Get-TextTranslation {
             HelpMessage = "The LM-Studio model to use for translation"
         )]
         [PSDefaultValue(Value = "qwen")]
+        [SupportsWildcards()]
         [string]$Model = "qwen"
     )
 
@@ -300,18 +299,15 @@ function Get-TextTranslation {
                 $nextPart = $nextPart.Substring(0, $nextPart.Length - 1)
             }
 
-
             Write-Verbose "Translating text to $Language for: `"$nextPart`".."
-
 
             try {
                 # attempt translation of current chunk
-                $translatedPart = qlms `
+                $translatedPart = Invoke-LLMQuery `
                     -Query "partial subtitle text: '$nextPart'" `
                     -Instructions $Instructions `
                     -Model:$Model `
                     -Temperature 0.02
-
 
                 # append successful translation with preserved spacing
                 $null = $translation.Append("$spaceLeft$translatedPart$spaceRight")

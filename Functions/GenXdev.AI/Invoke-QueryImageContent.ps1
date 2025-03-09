@@ -85,7 +85,7 @@ function Invoke-QueryImageContent {
         Write-Verbose "Starting image analysis with query: $Query"
 
         # convert any relative or partial path to full path for reliability
-        $imagePath = Expand-Path $ImagePath
+        $imagePath = GenXdev.FileSystem\Expand-Path $ImagePath
 
         # ensure the specified image file exists before proceeding
         if (-not (Test-Path $imagePath)) {

@@ -2,22 +2,28 @@
 # helper function to process AI command suggestions
 function Set-AICommandSuggestion {
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    [OutputType([string])]
     param(
         ########################################################################
         [Parameter(
+            Position = 0,
             Mandatory = $true,
             HelpMessage = "The PowerShell command to process"
         )]
-        [string]$Command
+        [ValidateNotNullOrEmpty()]
+        [string] $Command
         ########################################################################
     )
 
-    # convert the command suggestion to json format
-    return @{
-        command = $Command.Trim()
-        success = $true
-    } | ConvertTo-Json -WarningAction SilentlyContinue
+    if ($PSCmdlet.ShouldProcess($Command, "Process AI command suggestion")) {
+
+        # convert the command suggestion to json format
+        return @{
+            command = $Command.Trim()
+            success = $true
+        } | ConvertTo-Json -WarningAction SilentlyContinue
+    }
 }
 
 ################################################################################
@@ -54,14 +60,14 @@ hint "list files modified today"
 #>
 function Invoke-AIPowershellCommand {
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    [OutputType([void])]
     [Alias("hint")]
     param (
         ########################################################################
         [Parameter(
             Position = 0,
             Mandatory = $true,
-            ValueFromPipeline = $true,
             HelpMessage = "The natural language query to generate a command for"
         )]
         [ValidateNotNullOrEmpty()]
@@ -74,6 +80,7 @@ function Invoke-AIPowershellCommand {
         )]
         [ValidateNotNullOrEmpty()]
         [PSDefaultValue(Value = "qwen")]
+        [SupportsWildcards()]
         [string] $Model = "qwen",
         ########################################################################
         [Parameter(
@@ -148,20 +155,27 @@ only what Set-AICommandSuggestion returns in json format.
             }
         )
 
-        # generate the command using the AI model
-        $result = Invoke-LLMQuery `
-            -Query $Query `
-            -Model $Model `
-            -Temperature $Temperature `
-            -Instructions $instructions `
-            -ExposedCmdLets $exposedCmdlets | `
-            ConvertFrom-Json
+
+        $result = [string]::Empty
+
+        if ($PSCmdlet.ShouldProcess($command, "Copy command to clipboard")) {
+
+            # generate the command using the AI model
+            $result = Invoke-LLMQuery `
+                -Query $Query `
+                -Model $Model `
+                -Temperature $Temperature `
+                -Instructions $instructions `
+                -ExposedCmdLets $exposedCmdlets | `
+                ConvertFrom-Json
+        }
 
         # parse the AI response and extract the command
         $commandResult = ($result | ConvertFrom-Json)
 
         # verify the command generation was successful
         if (-not $commandResult.success) {
+
             Write-Warning "Failed to generate command: $($commandResult.command)"
             return
         }
@@ -169,19 +183,23 @@ only what Set-AICommandSuggestion returns in json format.
         $command = $commandResult.command
 
         if ($Clipboard) {
-            # copy the generated command to clipboard
-            $command | Set-Clipboard
-            Write-Verbose "Command copied to clipboard"
+            if ($PSCmdlet.ShouldProcess($command, "Copy command to clipboard")) {
+                # copy the generated command to clipboard
+                $command | Set-Clipboard
+                Write-Verbose "Command copied to clipboard"
+            }
         }
         else {
-            # get the main powershell window for command input
-            $mainWindow = Get-PowershellMainWindow
-            if ($null -ne $mainWindow) {
-                $mainWindow.SetForeground()
-            }
+            if ($PSCmdlet.ShouldProcess("PowerShell window", "Send command")) {
+                # get the main powershell window for command input
+                $mainWindow = Get-PowershellMainWindow
+                if ($null -ne $mainWindow) {
+                    $null = $mainWindow.SetForeground()
+                }
 
-            # send the command with proper line break handling
-            Send-Keys ("`r`n$command".Replace("`r`n", " ``+{ENTER}"))
+                # send the command with proper line break handling
+                Send-Key ("`r`n$command".Replace("`r`n", " ``+{ENTER}"))
+            }
         }
     }
 

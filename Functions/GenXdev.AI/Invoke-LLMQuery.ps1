@@ -75,12 +75,13 @@ qllm "What is 2+2?" -Model "qwen"
 function Invoke-LLMQuery {
 
     [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "")]
     [Alias("qllm", "llm", "Invoke-LMStudioQuery", "qlms")]
 
     param(
         ########################################################################
         [Parameter(
-            ValueFromPipeline = $true,
             Mandatory = $false,
             Position = 0,
             HelpMessage = "Query text to send to the model"
@@ -94,6 +95,7 @@ function Invoke-LLMQuery {
             Position = 1,
             HelpMessage = "The LM-Studio model to use"
         )]
+        [SupportsWildcards()]
         [string] $Model,
         ########################################################################
         [Parameter(
@@ -163,6 +165,11 @@ function Invoke-LLMQuery {
         ########################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = "Include model's thoughts in output")]
+        [switch] $DontAddThoughtsToHistory,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = "Continue from last conversation")]
         [switch] $ContinueLast,
         ########################################################################
@@ -194,6 +201,19 @@ function Invoke-LLMQuery {
             Mandatory = $false
         )]
         [switch] $SpeakThoughts,
+        ###########################################################################
+        [Parameter(
+            HelpMessage = "Will only output markup block responses",
+            Mandatory = $false
+        )]
+        [switch] $OutputMarkupBlocksOnly,
+        ########################################################################
+        [Parameter(
+            HelpMessage = "Will only output markup blocks of the specified types",
+            Mandatory = $false
+        )]
+        [ValidateNotNull()]
+        [string[]] $MarkupBlocksTypeFilter = @("json", "powershell", "C#", "python", "javascript", "typescript", "html", "css", "yaml", "xml", "bash"),
         ########################################################################
         [Alias("chat")]
         [Parameter(
@@ -225,11 +245,15 @@ function Invoke-LLMQuery {
     )
 
     begin {
+        Write-Verbose "Starting LLM interaction..."
+
+        $MarkupBlocksTypeFilter = $MarkupBlocksTypeFilter | ForEach-Object { $_.ToLowerInvariant() }
+
         # initialize lm studio if using localhost
         if ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or
             $ApiEndpoint.Contains("localhost")) {
 
-            $initParams = Copy-IdenticalParamValues `
+            $initParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
                 -DefaultValues (Get-Variable -Scope Local -Name * `
@@ -319,7 +343,7 @@ function Invoke-LLMQuery {
             }
         }
         if (-not $isDuplicate) {
-
+            Write-Verbose "System Instructions: $Instructions"
             $null = $messages.Add($newMessage)
         }
 
@@ -345,19 +369,25 @@ function Invoke-LLMQuery {
 
         if ($ChatOnce) {
 
-            $invocationArgs = Copy-IdenticalParamValues `
+            $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\New-LLMTextChat' `
                 -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
             return (New-LLMTextChat @invocationArgs)
         }
+        # Just before sending request
+        Write-Verbose "Sending request to LLM with:"
+        Write-Verbose "Model: $Model"
+        Write-Verbose "Query: $Query"
+        Write-Verbose "Temperature: $Temperature"
+
 
         switch ($ChatMode) {
 
             "textprompt" {
 
-                $invocationArgs = Copy-IdenticalParamValues `
+                $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\New-LLMTextChat' `
                     -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
@@ -366,7 +396,7 @@ function Invoke-LLMQuery {
             }
             "default audioinput device" {
 
-                $invocationArgs = Copy-IdenticalParamValues `
+                $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\New-LLMAudioChat' `
                     -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
@@ -376,7 +406,7 @@ function Invoke-LLMQuery {
             "desktop audio" {
 
                 $DesktopAudio = $true
-                $invocationArgs = Copy-IdenticalParamValues `
+                $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\New-LLMAudioChat' `
                     -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
@@ -388,7 +418,7 @@ function Invoke-LLMQuery {
         # process attachments if provided
         foreach ($attachment in $Attachments) {
             # Process attachments (text or image) as before...
-            $filePath = Expand-Path $attachment;
+            $filePath = GenXdev.FileSystem\Expand-Path $attachment;
             $fileExtension = [IO.Path]::GetExtension($filePath).ToLowerInvariant();
             $mimeType = "application/octet-stream";
             $isText = $false;
@@ -809,10 +839,6 @@ function Invoke-LLMQuery {
 
             $payload.tools = $functionsWithoutCallbacks
             $payload.function_call = "auto"
-            if (-not [string]::IsNullOrWhiteSpace($Query)) {
-
-                $Query = "You now have access to and only to the following Powershell cmdlets: $(($Functions.function.name | Select-Object -Unique | ConvertTo-Json -Compress -Depth 1 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue))`r`n$Query"
-            }
         }
 
         if (-not [string]::IsNullOrWhiteSpace($Query)) {
@@ -830,7 +856,8 @@ function Invoke-LLMQuery {
         $json = $payload | ConvertTo-Json -Depth 60 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
 
-        Write-Verbose "Querying LM-Studio model '$Model"
+        Write-Verbose "Querying LM-Studio model '$Model' with parameters:"
+        Write-Verbose $($payload | ConvertTo-Json -Depth 7 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue)
 
         # send request with long timeouts
         $response = Invoke-RestMethod -Uri $apiUrl `
@@ -860,11 +887,34 @@ function Invoke-LLMQuery {
 
                 Write-Verbose "Tool call detected: $($toolCall.function.name)"
 
+                # Format parameters as PowerShell command line style
+                $foundArguments = ($toolCall.function.arguments | ConvertFrom-Json)
+                $paramLine = $toolCall.function.arguments | ConvertFrom-Json |
+                Get-Member -MemberType NoteProperty |
+                ForEach-Object {
+                    $name = $_.Name
+                    $value = $foundArguments.$name
+                    "-$name $($value | ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue)"
+                } | Join-String -Separator " "
+
+                Write-Verbose "PS> $($toolCall.function.name) $paramLine"
+                if (-not ($Verbose -or $VerbosePreference -eq "Continue")) {
+
+                    Write-Host "PS> $($toolCall.function.name) $paramLine" -ForegroundColor Cyan
+                }
+
                 [GenXdev.Helpers.ExposedToolCallInvocationResult] $invocationResult = Invoke-CommandFromToolCall `
                     -ToolCall:$toolCall `
                     -Functions:$Functions `
                     -ExposedCmdLets:$ExposedCmdLets `
                     -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames | Select-Object -First 1
+
+                if (-not ($Verbose -or $VerbosePreference -eq "Continue")) {
+
+                    Write-Host "$($invocationResult.Output | ForEach-Object { if ($_ -is [string]) { $_ } else { $_ | Out-String } })" -ForegroundColor Green
+                }
+
+                Write-Verbose "Tool function result: $($invocationResult | ConvertTo-Json -Depth 3 -Compress)"
 
                 if (-not $invocationResult.CommandExposed) {
 
@@ -918,7 +968,8 @@ function Invoke-LLMQuery {
         }
 
         # Handle regular message content if no tool calls
-        $finalOutput = ""
+        [System.Collections.Generic.List[object]] $finalOutput = @()
+
         foreach ($msg in $response.choices.message) {
 
             $content = $msg.content
@@ -930,10 +981,24 @@ function Invoke-LLMQuery {
                 $toolCall = $null
 
                 try {
-                    $toolCall = $toolCallJson | ConvertFrom-Json | ConvertTo-HashTable
+                    $toolCall = $toolCallJson | ConvertFrom-Json -ErrorAction SilentlyContinue -WarningAction SilentlyContinue | ConvertTo-HashTable
 
                     Write-Verbose "Tool call detected: $($toolCall.function.name)"
 
+                    # Format parameters as PowerShell command line style
+                    $foundArguments = ($toolCall.function.arguments | ConvertFrom-Json)
+                    $paramLine = $toolCall.function.arguments | ConvertFrom-Json |
+                    Get-Member -MemberType NoteProperty |
+                    ForEach-Object {
+                        $name = $_.Name
+                        $value = $foundArguments.$name
+                        "-$name $($value | ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue)"
+                    } | Join-String -Separator " "
+
+                    Write-Verbose "PS> $($toolCall.function.name) $paramLine"
+                    if (-not ($Verbose -or $VerbosePreference -eq "Continue")) {
+                        Write-Host "PS> $($toolCall.function.name) $paramLine" -ForegroundColor Cyan
+                    }
                     # Check if this tool_call_id is already in messages
                     $existingResponse = $messages | Where-Object {
                         $_.tool_call_id -eq $toolCall.id
@@ -955,6 +1020,14 @@ function Invoke-LLMQuery {
                         -ExposedCmdLets:$ExposedCmdLets `
                         -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames `
                         -ForceAsText | Select-Object -First 1
+
+                    if ((-not ($Verbose -or $VerbosePreference -eq "Continue")) -and
+                        ($null -ne $invocationResult.Output)) {
+
+                        Write-Host "$($invocationResult.Output | ForEach-Object { if ($_ -is [string]) { $_ } else { $_ | Out-String } })" -ForegroundColor Green
+                    }
+
+                    Write-Verbose "Tool function result: $($invocationResult | ConvertTo-Json -Depth 3 -Compress)"
 
                     if (-not $invocationResult.CommandExposed) {
 
@@ -1012,11 +1085,17 @@ function Invoke-LLMQuery {
                 }
             }
 
+            # Update chat history with assistant's response
+            if (-not $DontAddThoughtsToHistory) {
+                $msg.content = $content;
+                $null = $messages.Add($msg)
+            }
+
             if (-not [string]::IsNullOrWhiteSpace($content)) {
 
                 if ($IncludeThoughts) {
 
-                    $finalOutput += $content + "`n"
+                    $finalOutput.Add($content)
                 }
 
                 # Process thoughts as before
@@ -1027,6 +1106,7 @@ function Invoke-LLMQuery {
                     if ($i2 -ge 0) {
 
                         $thoughts = $content.Substring($i, $i2 - $i)
+                        Write-Verbose "LLM Thoughts: $thoughts"
 
                         if (-not $IncludeThoughts) {
 
@@ -1042,22 +1122,56 @@ function Invoke-LLMQuery {
 
                 # Remove <think> patterns
                 $cleaned = [regex]::Replace($content, "<think>.*?</think>", "")
-                $finalOutput += $cleaned + "`n"
+                Write-Verbose "LLM Response: $cleaned"
+
+                if ($DontAddThoughtsToHistory) {
+
+                    $msg.content = $cleaned;
+                    $null = $messages.Add($msg)
+                }
+
+                if ($OutputMarkupBlocksOnly) {
+
+                    $null = $finalOutput.RemoveAt($finalOutput.Count - 1);
+
+                    $cleaned = "`n$cleaned`n"
+                    $i = $cleaned.IndexOf("`n``````");
+                    while ($i -ge 0) {
+
+                        $i += 4;
+                        $i2 = $cleaned.IndexOf("`n", $i);
+                        $name = $cleaned.Substring($i, $i2 - $i).Trim().ToLowerInvariant();
+
+                        $i = $i2 + 1;
+                        $i2 = $cleaned.IndexOf("`n``````", $i);
+                        if ($i2 -ge 0) {
+
+                            $codeBlock = $cleaned.Substring($i, $i2 - $i);
+                            $codeBlock = $json.Trim();
+                            if ($name -in $MarkupBlocksTypeFilter) {
+
+                                $null = $finalOutput.Add($codeBlock);
+                            }
+                        }
+
+                        $i = $cleaned.IndexOf("`n``````", $i2 + 4);
+                    }
+                }
+                else {
+
+                    $null = $finalOutput.Add($cleaned)
+
+                    if ($Speak) {
+
+                        $null = Start-TextToSpeech $cleaned
+                    }
+                }
             }
         }
+        $finalOutput | ForEach-Object {
 
-        Write-Output $finalOutput
-
-        if ($Speak) {
-
-            $null = Start-TextToSpeech $finalOutput
+            Write-Output $_
         }
-
-        # Update chat history with assistant's response
-        $null = $messages.Add(@{
-                role    = "assistant"
-                content = $finalOutput
-            })
 
         Write-Verbose "Conversation history updated"
     }

@@ -36,6 +36,7 @@ o "vicuna" -ttl 3600
 function Initialize-LMStudioModel {
 
     [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseUsingScopeModifierInNewRunspaces", "")]
     param(
         ########################################################################
         [Parameter(
@@ -45,6 +46,7 @@ function Initialize-LMStudioModel {
             HelpMessage = "Name or partial path of the model to initialize"
         )]
         [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [string]$Model = [string]::Empty,
         ########################################################################
         [Parameter(
@@ -101,7 +103,6 @@ function Initialize-LMStudioModel {
     )
 
     begin {
-
         # force stop LM Studio processes if requested
         if ($Force) {
 
@@ -255,9 +256,9 @@ function Initialize-LMStudioModel {
 
             Write-Verbose "Loading model..."
             $params = [System.Collections.Generic.List[string]]::new()
-            $params.Add("load")
-            $params.Add($foundModel.path)
-            $params.Add("--exact")
+            $null = $params.Add("load")
+            $null = $params.Add($foundModel.path)
+            $null = $params.Add("--exact")
 
             if ($TTLSeconds -gt 0) {
                 $null = $params.Add("--ttl")
@@ -299,30 +300,30 @@ function Initialize-LMStudioModel {
             Write-Verbose "Loading model with parameters: $($params|ConvertTo-Json -Compress -WarningAction SilentlyContinue)"
 
             $success = Start-Job -ArgumentList @($paths, $params) -ScriptBlock {
-                param($paths, $params)
+                param($lmstudiopaths, $params)
 
                 try {
                     # Redirect stderr to stdout to capture all output
-                    $process = Start-Process ($paths.LMSExe) -ArgumentList $params -Wait -NoNewWindow -PassThru `
+                    $process = Start-Process ($lmstudiopaths.LMSExe) -ArgumentList $params -Wait -NoNewWindow -PassThru `
                         -RedirectStandardOutput $true
 
                     # Consider success if process exits with code 0 or if we detect the model is actually loaded
                     return ($process.ExitCode -eq 0) -or
-                           (& $paths.LMSExe list | Select-String -Pattern $params[1] -Quiet)
+                           (& $lmstudiopaths.LMSExe list | Select-String -Pattern $params[1] -Quiet)
                 }
                 catch {
                     Write-Warning "Error during model load: $_"
                     return $false
                 }
-            } |
+            }.GetNewClosure() |
             Wait-Job -Timeout 1800 |
             Receive-Job
 
             # retry after unloading all models if load failed
             if (-not $success -and $loadedModels.Count -gt 0) {
                 $null = Start-Job -ArgumentList $paths -ScriptBlock {
-                    param($paths)
-                    $null = Start-Process ($paths.LMSExe) -ArgumentList @("unload", "--all") `
+                    param($lmstudiopaths)
+                    $null = Start-Process ($lmstudiopaths.LMSExe) -ArgumentList @("unload", "--all") `
                         -Wait -NoNewWindow
                     $LASTEXITCODE -eq 0
                 } |

@@ -74,7 +74,7 @@ function Invoke-ImageKeywordUpdate {
     begin {
 
         # convert relative path to absolute path
-        $path = Expand-Path $ImageDirectory
+        $path = GenXdev.FileSystem\Expand-Path $ImageDirectory
 
         # verify directory exists before proceeding
         if (-not [System.IO.Directory]::Exists($path)) {

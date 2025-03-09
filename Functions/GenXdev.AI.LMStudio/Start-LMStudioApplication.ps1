@@ -19,7 +19,7 @@ Start-LMStudioApplication -WithVisibleWindow -Passthru
 #>
 function Start-LMStudioApplication {
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         ########################################################################
         [Parameter(
@@ -45,8 +45,10 @@ function Start-LMStudioApplication {
         Write-Verbose "Checking LM Studio installation..."
         if (-not (Test-LMStudioInstallation)) {
 
-            Write-Verbose "LM Studio not found, initiating installation..."
-            $null = Install-LMStudioApplication
+            if ($PSCmdlet.ShouldProcess("LM Studio", "Install application")) {
+                Write-Verbose "LM Studio not found, initiating installation..."
+                $null = Install-LMStudioApplication
+            }
         }
     }
 
@@ -65,41 +67,43 @@ function Start-LMStudioApplication {
                 throw "LM Studio executable could not be located"
             }
 
-            # start background job for non-blocking operation
-            $jobParams = @{
-                ScriptBlock  = {
-                    param($paths, $showWindow)
+            if ($PSCmdlet.ShouldProcess("LM Studio", "Start application")) {
+                # start background job for non-blocking operation
+                $jobParams = @{
+                    ScriptBlock  = {
+                        param($paths, $showWindow)
 
-                    # start server component
-                    $null = Start-Process `
-                        -FilePath $paths.LMSExe `
-                        -ArgumentList "server", "start", "--port", "1234" `
-                        -NoNewWindow
-                    Start-Sleep -Seconds 4
+                        # start server component
+                        $null = Start-Process `
+                            -FilePath $paths.LMSExe `
+                            -ArgumentList "server", "start", "--port", "1234" `
+                            -NoNewWindow
+                        Start-Sleep -Seconds 4
+                    }
+                    ArgumentList = @($paths, ($ShowWindow -eq $true))
                 }
-                ArgumentList = @($paths, ($ShowWindow -eq $true))
-            }
 
-            $null = Start-Job @jobParams | Wait-Job
+                $null = Start-Job @jobParams | Wait-Job
 
-            if ($showWindow) {
+                if ($showWindow) {
 
-                $null = Get-LMStudioWindow -ShowWindow -NoAutoStart -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
-            }
+                    $null = Get-LMStudioWindow -ShowWindow -NoAutoStart -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+                }
 
-            # verify process starts within timeout period
-            Write-Verbose "Waiting for LM Studio process..."
-            $timeout = 30
-            $timer = [System.Diagnostics.Stopwatch]::StartNew()
+                # verify process starts within timeout period
+                Write-Verbose "Waiting for LM Studio process..."
+                $timeout = 30
+                $timer = [System.Diagnostics.Stopwatch]::StartNew()
 
-            while (-not (Test-LMStudioProcess) -and
-                   ($timer.Elapsed.TotalSeconds -lt $timeout)) {
+                while (-not (Test-LMStudioProcess) -and
+                    ($timer.Elapsed.TotalSeconds -lt $timeout)) {
 
-                Start-Sleep -Seconds 1
-            }
+                    Start-Sleep -Seconds 1
+                }
 
-            if (-not (Test-LMStudioProcess)) {
-                throw "LM Studio failed to start within $timeout seconds"
+                if (-not (Test-LMStudioProcess)) {
+                    throw "LM Studio failed to start within $timeout seconds"
+                }
             }
         }
 
@@ -110,8 +114,7 @@ function Start-LMStudioApplication {
     }
 
     end {
-        if ($ShowWindow) {
-
+        if ($ShowWindow -and $PSCmdlet.ShouldProcess("LM Studio", "Show window")) {
             $null = Get-LMStudioWindow -NoAutoStart -ShowWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         }
     }
