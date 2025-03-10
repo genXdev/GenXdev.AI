@@ -1,6 +1,6 @@
 Describe "Test-LMStudioProcess basic functionality" {
 
-    It "should pass PSScriptAnalyzer rules" {
+    It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Test-LMStudioProcess.ps1"

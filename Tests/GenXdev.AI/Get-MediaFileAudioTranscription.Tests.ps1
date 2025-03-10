@@ -2,7 +2,7 @@
 ################################################################################
 Describe "Get-MediaFileAudioTranscription" {
 
-    It "should pass PSScriptAnalyzer rules" {
+    It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\Get-MediaFileAudioTranscription.ps1"
@@ -32,7 +32,7 @@ $message
 
     # It "Should get audio transcription from a media file" -Skip:(-not ($Global:AllowLongRunningTests -eq $true)) {
 
-    #     # test with default model name that should be available
+    #     # test with default model name that Should be available
     #     $result = Get-MediaFileAudioTranscription -FilePath "$PSScriptRoot\escalated-quickly.mp3" -Verbose
     #     $result | Should -Not -BeNullOrEmpty
     #     $result | Should -Contain "escalated quickly"

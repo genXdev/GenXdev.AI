@@ -45,7 +45,7 @@ Describe "Invoke-CommandFromToolCall cmdlet tests" {
         }
     }
 
-    It "should pass PSScriptAnalyzer rules" {
+    It "Should pass PSScriptAnalyzer rules" {
         # analyze main function implementation
         $scriptPath = "$PSScriptRoot\..\..\Functions\GenXdev.AI\" +
         "Invoke-CommandFromToolCall.ps1"

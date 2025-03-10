@@ -2,7 +2,7 @@
 
 Describe "Get-LMStudioLoadedModelList basic functionality test" {
 
-    It "should pass PSScriptAnalyzer rules" {
+    It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Get-LMStudioLoadedModelList.ps1"
@@ -39,13 +39,13 @@ $message
         $result | Should -Not -BeNullOrEmpty
     }
 
-    It "Should have *-tool-use model present" {
+    It "Should have qwen2.5-14b-instruct model present" {
 
-        Initialize-LMStudioModel -Model "*-tool-use" -ModelLMSGetIdentifier "llama-3-groq-8b-tool-use"
+        Initialize-LMStudioModel -Model "qwen2.5-14b-instruct" -ModelLMSGetIdentifier "qwen2.5-14b-instruct"
         $result = Get-LMStudioLoadedModelList
 
         # verify qwen-7b model exists
-        $qwenModel = $result | Where-Object { $_.path -like "*-tool-use*" }
+        $qwenModel = $result | Where-Object { $_.identifier -like "qwen2.5-14b-instruct" }
         $qwenModel | Should -Not -BeNull
     }
 }

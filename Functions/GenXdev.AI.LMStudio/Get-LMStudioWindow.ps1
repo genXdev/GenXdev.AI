@@ -32,7 +32,7 @@ Switch to prevent automatic start of LM Studio if not running.
 Get-LMStudioWindow -Model "llama-2" -MaxToken 4096 -ShowWindow
 
 .EXAMPLE
-Get-LMStudioWindow "*-tool-use" -ttl 3600
+Get-LMStudioWindow "qwen2.5-14b-instruct" -ttl 3600
 #>
 function Get-LMStudioWindow {
 
@@ -50,14 +50,14 @@ function Get-LMStudioWindow {
         )]
         [ValidateNotNullOrEmpty()]
         [SupportsWildcards()]
-        [string]$Model = "*-tool-use",
+        [string]$Model = "qwen2.5-14b-instruct",
         ########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 1,
             HelpMessage = "The LM-Studio model to use"
         )]
-        [string]$ModelLMSGetIdentifier = "llama-3-groq-8b-tool-use",
+        [string]$ModelLMSGetIdentifier = "qwen2.5-14b-instruct",
         ########################################################################
         [Parameter(
             Mandatory = $false,

@@ -2,7 +2,7 @@
 
 Describe "Test-LMStudioInstallation function tests" {
 
-    It "should pass PSScriptAnalyzer rules" {
+    It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Test-LMStudioInstallation.ps1"
@@ -33,8 +33,8 @@ $message
         # attempt to detect lm studio installation
         $result = Test-LMStudioInstallation
 
-        # test should pass only if lm studio is actually installed
-        $result | Should -Be $true -Because "LM Studio should be installed
+        # test Should pass only if lm studio is actually installed
+        $result | Should -Be $true -Because "LM Studio Should be installed
             for these tests to work"
     }
 }

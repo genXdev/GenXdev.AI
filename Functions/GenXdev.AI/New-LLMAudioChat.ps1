@@ -13,10 +13,10 @@ configuration options.
 Initial text query to send to the model. Can be empty to start with voice input.
 
 .PARAMETER Model
-The model name/path to use. Supports -like pattern matching. Default: "*-tool-use"
+The model name/path to use. Supports -like pattern matching. Default: "qwen2.5-14b-instruct"
 
 .PARAMETER ModelLMSGetIdentifier
-Model identifier for LM Studio. Default: "llama-3-groq-8b-tool-use"
+Model identifier for LM Studio. Default: "qwen2.5-14b-instruct"
 
 .PARAMETER Instructions
 System instructions/prompt to guide the model's behavior.
@@ -120,7 +120,7 @@ API key for authentication.
 
 .EXAMPLE
 New-LLMAudioChat -Query "Tell me about PowerShell" `
-    -Model "*-tool-use" `
+    -Model "qwen2.5-14b-instruct" `
     -Temperature 0.7 `
     -MaxToken 4096
 
@@ -150,14 +150,14 @@ function New-LLMAudioChat {
             HelpMessage = "The LM-Studio model to use"
         )]
         [SupportsWildcards()]
-        [string] $Model = "*-tool-use",
+        [string] $Model = "qwen2.5-14b-instruct",
         ########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 2,
             HelpMessage = "The LM-Studio model identifier"
         )]
-        [string] $ModelLMSGetIdentifier = "llama-3-groq-8b-tool-use",
+        [string] $ModelLMSGetIdentifier = "qwen2.5-14b-instruct",
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -594,7 +594,7 @@ function New-LLMAudioChat {
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
                 -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
-            $modelInfo = Initialize-LMStudioModel @initializationParams
+            $modelInfo = GenXdev.AI\Initialize-LMStudioModel @initializationParams
             $Model = $modelInfo.identifier
         }
 
@@ -654,9 +654,7 @@ function New-LLMAudioChat {
                     Write-Verbose "Configuring audio settings"
                     $audioParams.VOX = -not $NoVOX
                     $audioParams.Temperature = $AudioTemperature
-                    $audioParams.ModelFilePath = GenXdev.FileSystem\Expand-Path "..\..\..\..\GenXdev.Local\" `
-                        -CreateDirectory
-
+                    
                     # process text input or start recording
                     $recognizedText = $query ? $query.Trim() : [string]::Empty
 

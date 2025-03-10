@@ -12,7 +12,7 @@
     RootModule            = 'GenXdev.AI.psm1'
 
     # Version number of this module.
-    ModuleVersion         = '1.118.2025'
+    ModuleVersion         = '1.120.2025'
 
     # Supported PSEditions
     CompatiblePSEditions  = 'Core'
@@ -51,13 +51,12 @@
     ProcessorArchitecture = 'Amd64'
 
     # Modules that must be imported into the global environment prior to importing this module
-    RequiredModules       = @(
-        @{ModuleName = 'GenXdev.Data'; ModuleVersion = '1.118.2025'; },
-        @{ModuleName = 'GenXdev.Helpers'; ModuleVersion = '1.118.2025'; },
-        @{ModuleName = 'GenXdev.Webbrowser'; ModuleVersion = '1.118.2025'; },
-        @{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.118.2025'; },
-        @{ModuleName = 'GenXdev.Console'; ModuleVersion = '1.118.2025'; },
-        @{ModuleName = 'GenXdev.FileSystem'; ModuleVersion = '1.118.2025'; })
+    RequiredModules       = @(@{ModuleName = 'GenXdev.Data'; ModuleVersion = '1.120.2025'; },
+        @{ModuleName = 'GenXdev.Helpers'; ModuleVersion = '1.120.2025'; },
+        @{ModuleName = 'GenXdev.Webbrowser'; ModuleVersion = '1.120.2025'; },
+        @{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.120.2025'; },
+        @{ModuleName = 'GenXdev.Console'; ModuleVersion = '1.120.2025'; },
+        @{ModuleName = 'GenXdev.FileSystem'; ModuleVersion = '1.120.2025'; })
 
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @()
@@ -112,7 +111,7 @@
 
     # List of all files packaged with this module
     FileList              = 'GenXdev.AI.LMStudio.psm1', 'GenXdev.AI.psd1', 'GenXdev.AI.psm1',
-    'LICENSE', 'license.txt', 'powershell.jpg', 'README.md', 'Tests.psm1',
+    'LICENSE', 'license.txt', 'powershell.jpg', 'README.md',
     'Tests\GenXdev.AI.LMStudio\AssureLMStudio.Tests.ps1',
     'Tests\GenXdev.AI.LMStudio\Convert-DotNetTypeToLLMType.Tests.ps1',
     'Tests\GenXdev.AI.LMStudio\ConvertTo-LMStudioFunctionDefinition.Tests.ps1',

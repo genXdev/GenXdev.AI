@@ -35,15 +35,19 @@ function AssureGithubCLIInstalled {
         System.Boolean. Returns true if WinGet is installed, false otherwise.
         #>
         function IsWinGetInstalled {
-
-            # attempt to load the winget module silently
-            Import-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
-
-            # verify if module was loaded successfully
-            $module = Get-Module "Microsoft.WinGet.Client" `
-                -ErrorAction SilentlyContinue
-
-            return $null -ne $module
+            try {
+                Import-Module "Microsoft.WinGet.Client" -ErrorAction Stop
+                $module = Get-Module "Microsoft.WinGet.Client" -ErrorAction Stop
+                return $null -ne $module
+            }
+            catch [System.IO.FileNotFoundException] {
+                Write-Verbose "WinGet module not found"
+                return $false
+            }
+            catch {
+                Write-Warning "Error checking WinGet installation: $_"
+                return $false
+            }
         }
 
         ########################################################################
@@ -55,71 +59,77 @@ function AssureGithubCLIInstalled {
         Forces installation of the Microsoft.WinGet.Client module and imports it.
         #>
         function InstallWinGet {
-
-            # inform user about winget installation
-            Write-Verbose "Installing WinGet PowerShell client..."
-
-            # force install the winget module
-            $null = Install-Module "Microsoft.WinGet.Client" `
-                -Force `
-                -AllowClobber
-
-            # load the newly installed module
-            Import-Module "Microsoft.WinGet.Client"
+            try {
+                Write-Verbose "Installing WinGet PowerShell client..."
+                Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber -ErrorAction Stop
+                Import-Module "Microsoft.WinGet.Client" -ErrorAction Stop
+            }
+            catch [System.UnauthorizedAccessException] {
+                throw "Insufficient permissions to install WinGet module. Run as administrator: $_"
+            }
+            catch {
+                throw "Failed to install WinGet module: $_"
+            }
         }
     }
 
     process {
-
-        # check if github cli exists in system path
-        if (@(Get-Command 'gh.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
-
-            Write-Verbose "GitHub CLI not found in PATH, checking installation..."
-
-            # standard installation path for github cli
-            $githubCliPath = "$env:ProgramFiles\GitHub CLI"
-
-            # retrieve current user's path environment variable
-            $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
-
-            # ensure github cli path is in user's path
-            if ($currentPath -notlike "*$githubCliPath*") {
-
-                Write-Verbose "Adding GitHub CLI to PATH..."
-
-                # append github cli path to existing path
-                [Environment]::SetEnvironmentVariable(
-                    'PATH',
-                    "$currentPath;$githubCliPath",
-                    'User')
-
-                # ensure current session has updated path
-                $env:PATH = [Environment]::GetEnvironmentVariable('PATH', 'User')
-            }
-
-            # verify if cli is now accessible after path update
+        $ErrorActionPreference = 'Stop'
+        try {
             if (@(Get-Command 'gh.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
+                Write-Verbose "GitHub CLI not found in PATH, checking installation..."
+                $githubCliPath = "$env:ProgramFiles\GitHub CLI"
+                $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
 
-                Write-Verbose "Installing GitHub CLI..."
-
-                # ensure winget is available for installation
-                if (-not (IsWinGetInstalled)) {
-                    InstallWinGet
+                if ($currentPath -notlike "*$githubCliPath*") {
+                    try {
+                        Write-Verbose "Adding GitHub CLI to PATH..."
+                        [Environment]::SetEnvironmentVariable(
+                            'PATH',
+                            "$currentPath;$githubCliPath",
+                            'User')
+                        $env:PATH = [Environment]::GetEnvironmentVariable('PATH', 'User')
+                    }
+                    catch [System.Security.SecurityException] {
+                        throw "Access denied while updating PATH environment variable: $_"
+                    }
                 }
 
-                # use winget to install github cli
-                $null = Install-WinGetPackage -Id 'GitHub.cli' -Force
+                if (@(Get-Command 'gh.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
+                    Write-Verbose "Installing GitHub CLI..."
 
-                # verify installation success
-                if (-not (Get-Command 'gh.exe' -ErrorAction SilentlyContinue)) {
-                    Write-Error "GitHub CLI installation failed"
-                    return
+                    if (-not (IsWinGetInstalled)) {
+                        InstallWinGet
+                    }
+
+                    try {
+                        $null = Install-WinGetPackage -Id 'GitHub.cli' -Force
+                    }
+                    catch {
+                        throw "Failed to install GitHub CLI via WinGet: $_"
+                    }
+
+                    if (-not (Get-Command 'gh.exe' -ErrorAction SilentlyContinue)) {
+                        throw "GitHub CLI installation failed: Command not found after installation"
+                    }
+
+                    try {
+                        Write-Verbose "Initiating GitHub authentication..."
+                        $null = gh auth login --web -h github.com
+                    }
+                    catch {
+                        Write-Error "GitHub authentication failed: $_"
+                    }
                 }
-
-                # setup github authentication
-                Write-Verbose "Initiating GitHub authentication..."
-                $null = gh auth login --web -h github.com
             }
+        }
+        catch {
+            $errorMessage = "Failed to setup GitHub CLI: $($_.Exception.Message)"
+            Write-Error -Exception $_.Exception -Message $errorMessage -Category OperationStopped
+            throw
+        }
+        finally {
+            $ErrorActionPreference = 'Continue'
         }
     }
 

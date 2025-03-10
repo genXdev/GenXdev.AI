@@ -1,7 +1,7 @@
 ################################################################################
 Describe "Get-CpuCore" {
 
-    It "should pass PSScriptAnalyzer rules" {
+    It "Should pass PSScriptAnalyzer rules" {
 
         # get the analyzed script path
         $scriptPath = GenXdev.FileSystem\Expand-Path `

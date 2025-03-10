@@ -440,6 +440,7 @@ function Start-AudioTranscription {
 
         # add or update model path parameter
         if (-not $PSBoundParameters.ContainsKey("ModelFilePath")) {
+
             $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Out-Null
         }
         else {

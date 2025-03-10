@@ -12,7 +12,7 @@ commands.
 Initial text to send to the model.
 
 .PARAMETER Model
-The LM-Studio model to use, defaults to "*-tool-use".
+The LM-Studio model to use, defaults to "qwen2.5-14b-instruct".
 
 .PARAMETER ModelLMSGetIdentifier
 The specific LM-Studio model identifier for automatic model downloads.
@@ -72,7 +72,7 @@ Api endpoint url, defaults to http://localhost:1234/v1/chat/completions.
 The API key to use for the request.
 
 .EXAMPLE
-New-LLMTextChat -Model "*-tool-use" -Temperature 0.7 -MaxToken 4096
+New-LLMTextChat -Model "qwen2.5-14b-instruct" -Temperature 0.7 -MaxToken 4096
 -Instructions "You are a helpful AI assistant"
 
 .EXAMPLE
@@ -106,14 +106,14 @@ function New-LLMTextChat {
             HelpMessage = "The LM-Studio model to use"
         )]
         [SupportsWildcards()]
-        [string] $Model = "*-tool-use",
+        [string] $Model = "qwen2.5-14b-instruct",
         ########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 2,
             HelpMessage = "The LM-Studio model identifier"
         )]
-        [string] $ModelLMSGetIdentifier = "llama-3-groq-8b-tool-use",
+        [string] $ModelLMSGetIdentifier = "qwen2.5-14b-instruct",
         ########################################################################
         [Parameter(
             Mandatory = $false,

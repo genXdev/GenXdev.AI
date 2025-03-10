@@ -9,7 +9,7 @@ management and configuration settings.
 
 .PARAMETER Model
 Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search
-Defaults to "*-tool-use".
+Defaults to "qwen2.5-14b-instruct".
 
 .PARAMETER ModelLMSGetIdentifier
 The specific LM-Studio model identifier to use.
@@ -27,10 +27,10 @@ Shows the LM Studio window during initialization when specified.
 Forces LM Studio to stop before initialization when specified.
 
 .EXAMPLE
-AssureLMStudio -Model "llama-3-groq-8b-tool-use" -MaxToken 8192 -ShowWindow
+AssureLMStudio -Model "qwen2.5-14b-instruct" -MaxToken 8192 -ShowWindow
 
 .EXAMPLE
-AssureLMStudio "llama-3-groq-8b-tool-use" -ttl 3600 -Force
+AssureLMStudio "qwen2.5-14b-instruct" -ttl 3600 -Force
 #>
 function AssureLMStudio {
 
@@ -45,14 +45,14 @@ function AssureLMStudio {
         )]
         [ValidateNotNullOrEmpty()]
         [SupportsWildcards()]
-        [string]$Model = "*-tool-use",
+        [string]$Model = "qwen2.5-14b-instruct",
         ########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 1,
             HelpMessage = "The LM-Studio model to use"
         )]
-        [string]$ModelLMSGetIdentifier = "llama-3-groq-8b-tool-use",
+        [string]$ModelLMSGetIdentifier = "qwen2.5-14b-instruct",
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -90,13 +90,13 @@ function AssureLMStudio {
 
         # ensure default model parameter is set
         if (-not $PSBoundParameters.ContainsKey("Model")) {
-            $null = $PSBoundParameters.Add("Model", "*-tool-use")
+            $null = $PSBoundParameters.Add("Model", "qwen2.5-14b-instruct")
         }
 
         # ensure default model identifier is set
         if (-not $PSBoundParameters.ContainsKey("ModelLMSGetIdentifier")) {
             $null = $PSBoundParameters.Add("ModelLMSGetIdentifier", `
-                    "llama-3-groq-8b-tool-use")
+                    "qwen2.5-14b-instruct")
         }
 
         # ensure default max token is set

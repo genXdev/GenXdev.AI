@@ -6,7 +6,7 @@ Describe "Set-GenXdevAICommandNotFoundAction Set-GenXdevAICommandNotFoundAction"
             "$PSScriptRoot\..\..\Functions\GenXdev.AI\Set-GenXdevAICommandNotFoundAction.ps1"
     }
 
-    It "should pass PSScriptAnalyzer rules" {
+    It "Should pass PSScriptAnalyzer rules" {
 
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $script:scriptPath
