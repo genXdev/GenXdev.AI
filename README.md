@@ -117,7 +117,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-SetClipboard] [<CommonParameters>]  
+   Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>]   
+   [-SetClipboard] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -185,7 +186,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Approve-NewTextFileContent [-ContentPath] <String> [-NewContent] <String> [<CommonParameters>]  
+   Approve-NewTextFileContent [-ContentPath] <String> [-NewContent] <String>   
+   [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -422,11 +424,17 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SRT] [-PassThru] [-UseDesktopAudioCapture]   
-   [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>] [-SplitOnWord] [-MaxTokensPerSegment <Int32>] [-IgnoreSilence] [-MaxDurationOfSilence <Object>] [-SilenceThreshold <Int32>]   
-   [-CpuThreads <Int32>] [-Temperature <Single>] [-TemperatureInc <Single>] [-Prompt <String>] [-SuppressRegex <String>] [-WithProgress] [-AudioContextSize <Int32>] [-DontSuppressBlank]   
-   [-MaxDuration <Object>] [-Offset <Object>] [-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <Object>]   
-   [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [<CommonParameters>]  
+   Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>]   
+   [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SRT] [-PassThru]   
+   [-UseDesktopAudioCapture] [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>]   
+   [-SplitOnWord] [-MaxTokensPerSegment <Int32>] [-IgnoreSilence] [-MaxDurationOfSilence   
+   <Object>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>]   
+   [-TemperatureInc <Single>] [-Prompt <String>] [-SuppressRegex <String>] [-WithProgress]   
+   [-AudioContextSize <Int32>] [-DontSuppressBlank] [-MaxDuration <Object>] [-Offset <Object>]   
+   [-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [-MaxSegmentLength   
+   <Int32>] [-MaxInitialTimestamp <Object>] [-LengthPenalty <Single>] [-EntropyThreshold   
+   <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext]   
+   [-WithBeamSearchSamplingStrategy] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -781,7 +789,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Object>] [[-Model] <String>] [<CommonParameters>]  
+   Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Object>]   
+   [[-Model] <String>] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -812,8 +821,9 @@ Update-Module
         Defaults to maintaining style and paragraph structure while translating.  
         Required?                    false  
         Position?                    3  
-        Default value                Translate this partial subtitle text, into the [Language] language, leave in the same style of writing, and leave the paragraph structure in tact, ommit   
-        only the translation no yapping or chatting.  
+        Default value                Translate this partial subtitle text, into the [Language]   
+        language, leave in the same style of writing, and leave the paragraph structure in   
+        tact, ommit only the translation no yapping or chatting.  
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  false  
@@ -895,7 +905,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-AIPowershellCommand [-Query] <String> [[-Model] <String>] [[-Temperature] <Double>] [-Clipboard] [-WhatIf] [-Confirm] [<CommonParameters>]  
+   Invoke-AIPowershellCommand [-Query] <String> [[-Model] <String>] [[-Temperature] <Double>]   
+   [-Clipboard] [-WhatIf] [-Confirm] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -975,8 +986,9 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-CommandFromToolCall [-ToolCall] <Hashtable> [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-ForceAsText]   
-   [<CommonParameters>]  
+   Invoke-CommandFromToolCall [-ToolCall] <Hashtable> [-Functions <Hashtable[]>]   
+   [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>]   
+   [-ForceAsText] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1046,7 +1058,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-ImageKeywordScan [[-Keywords] <String[]>] [[-ImageDirectory] <String>] [[-PassThru]] [<CommonParameters>]  
+   Invoke-ImageKeywordScan [[-Keywords] <String[]>] [[-ImageDirectory] <String>] [[-PassThru]]   
+   [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1102,7 +1115,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-ImageKeywordUpdate [[-ImageDirectory] <String>] [[-Recurse]] [[-OnlyNew]] [[-RetryFailed]] [<CommonParameters>]  
+   Invoke-ImageKeywordUpdate [[-ImageDirectory] <String>] [[-Recurse]] [[-OnlyNew]]   
+   [[-RetryFailed]] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1170,10 +1184,15 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-LLMQuery [[-Query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-MaxToken   
-   <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>]   
-   [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <String[]>]   
-   [-ChatMode <String>] [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>]  
+   Invoke-LLMQuery [[-Query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>]   
+   [[-Instructions] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-MaxToken   
+   <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail   
+   <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions   
+   <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>]   
+   [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts]   
+   [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-ChatMode <String>]   
+   [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>]   
+   [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1349,7 +1368,8 @@ Update-Module
     -MarkupBlocksTypeFilter <String[]>  
         Required?                    false  
         Position?                    named  
-        Default value                @("json", "powershell", "C#", "python", "javascript", "typescript", "html", "css", "yaml", "xml", "bash")  
+        Default value                @("json", "powershell", "C#", "python", "javascript",   
+        "typescript", "html", "css", "yaml", "xml", "bash")  
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  false  
@@ -1411,7 +1431,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Temperature] <Double>] [[-MaxToken] <Int32>] [<CommonParameters>]  
+   Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Temperature] <Double>]   
+   [[-MaxToken] <Int32>] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1479,7 +1500,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-WinMerge [-SourcecodeFilePath] <String> [-TargetcodeFilePath] <String> [[-Wait]] [<CommonParameters>]  
+   Invoke-WinMerge [-SourcecodeFilePath] <String> [-TargetcodeFilePath] <String> [[-Wait]]   
+   [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1537,12 +1559,17 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   New-LLMAudioChat [[-query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-AudioTemperature <Double>]   
-   [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory]   
-   [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-TemperatureResponse <Double>] [-Language <String>]   
-   [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Single>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>]   
-   [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-WhatIf] [-Confirm]   
-   [<CommonParameters>]  
+   New-LLMAudioChat [[-query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier]   
+   <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-AudioTemperature   
+   <Double>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>]   
+   [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts]   
+   [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>]   
+   [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-TemperatureResponse   
+   <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>]   
+   [-AudioContextSize <Int32>] [-SilenceThreshold <Single>] [-LengthPenalty <Single>]   
+   [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>]   
+   [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoSessionCaching]   
+   [-ApiEndpoint <String>] [-ApiKey <String>] [-WhatIf] [-Confirm] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1561,7 +1588,8 @@ Update-Module
         Aliases                        
         Accept wildcard characters?  false  
     -Model <String>  
-        The model name/path to use. Supports -like pattern matching. Default: "qwen2.5-14b-instruct"  
+        The model name/path to use. Supports -like pattern matching. Default:   
+        "qwen2.5-14b-instruct"  
         Required?                    false  
         Position?                    2  
         Default value                qwen2.5-14b-instruct  
@@ -1880,10 +1908,13 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   New-LLMTextChat [[-Query] <string>] [[-Model] <string>] [[-ModelLMSGetIdentifier] <string>] [[-Instructions] <string>] [[-Attachments] <string[]>] [-Temperature <double>] [-MaxToken <int>]   
-   [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ImageDetail {low | medium | high}] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets   
-   <ExposedCmdletDefinition[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <string[]>] [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <string>] [-ApiKey   
-   <string>] [-WhatIf] [-Confirm] [<CommonParameters>]  
+   New-LLMTextChat [[-Query] <string>] [[-Model] <string>] [[-ModelLMSGetIdentifier] <string>]   
+   [[-Instructions] <string>] [[-Attachments] <string[]>] [-Temperature <double>] [-MaxToken   
+   <int>] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ImageDetail {low | medium   
+   | high}] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets   
+   <ExposedCmdletDefinition[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly]   
+   [-MarkupBlocksTypeFilter <string[]>] [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint   
+   <string>] [-ApiKey <string>] [-WhatIf] [-Confirm] [<CommonParameters>]  
 ```` 
 
 ### PARAMETERS 
@@ -1968,8 +1999,10 @@ Update-Module
         Dynamic?                     false  
         Accept wildcard characters?  false  
     -Gpu <int>  
-        How much to offload to the GPU. If "off", GPU offloading is disabled. If "max", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded   
-        to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto   
+        How much to offload to the GPU. If "off", GPU offloading is disabled. If "max", all   
+        layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will   
+        be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2   
+        = Auto   
         Required?                    false  
         Position?                    Named  
         Accept pipeline input?       false  
@@ -2141,7 +2174,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [<CommonParameters>]  
+   Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut]   
+   <String>] [-TranslateUsingLMStudioModel <String>] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -2255,11 +2289,17 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX] [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] [[-TokenTimestampsSumThreshold] <Single>]   
-   [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] [-IgnoreSilence] [[-MaxDurationOfSilence] <Object>] [[-SilenceThreshold] <Int32>] [[-Language] <String>] [[-CpuThreads] <Int32>]   
-   [[-Temperature] <Single>] [[-TemperatureInc] <Single>] [-WithTranslate] [[-Prompt] <String>] [[-SuppressRegex] <String>] [-WithProgress] [[-AudioContextSize] <Int32>] [-DontSuppressBlank]   
-   [[-MaxDuration] <Object>] [[-Offset] <Object>] [[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <Object>]   
-   [[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] [[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-WhatIf] [-Confirm]   
+   Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX]   
+   [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps]   
+   [[-TokenTimestampsSumThreshold] <Single>] [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>]   
+   [-IgnoreSilence] [[-MaxDurationOfSilence] <Object>] [[-SilenceThreshold] <Int32>]   
+   [[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>] [[-TemperatureInc]   
+   <Single>] [-WithTranslate] [[-Prompt] <String>] [[-SuppressRegex] <String>] [-WithProgress]   
+   [[-AudioContextSize] <Int32>] [-DontSuppressBlank] [[-MaxDuration] <Object>] [[-Offset]   
+   <Object>] [[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens]   
+   [[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <Object>] [[-LengthPenalty] <Single>]   
+   [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] [[-NoSpeechThreshold]   
+   <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-WhatIf] [-Confirm]   
    [<CommonParameters>]  
 ```` 
 
@@ -2593,7 +2633,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   AssureLMStudio [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow] [-Force] [<CommonParameters>]  
+   AssureLMStudio [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken]   
+   <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow] [-Force] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -2602,7 +2643,8 @@ Update-Module
 
 ### PARAMETERS 
     -Model <String>  
-        Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search  
+        Name or partial path of the model to initialize, detects and excepts -like 'patterns*'   
+        for search  
         Defaults to "qwen2.5-14b-instruct".  
         Required?                    false  
         Position?                    1  
@@ -2706,7 +2748,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   ConvertTo-LMStudioFunctionDefinition [[-ExposedCmdLets] <ExposedCmdletDefinition[]>] [<CommonParameters>]  
+   ConvertTo-LMStudioFunctionDefinition [[-ExposedCmdLets] <ExposedCmdletDefinition[]>]   
+   [<CommonParameters>]  
 ```` 
 
 ### PARAMETERS 
@@ -2830,7 +2873,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Get-LMStudioWindow [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow] [-Force] [-NoAutoStart] [<CommonParameters>]  
+   Get-LMStudioWindow [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken]   
+   <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow] [-Force] [-NoAutoStart] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -2915,8 +2959,9 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Initialize-LMStudioModel [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-Gpu <Int32>] [-ShowWindow] [-Force] [-PreferredModels   
-   <String[]>] [<CommonParameters>]  
+   Initialize-LMStudioModel [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>]   
+   [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-Gpu <Int32>] [-ShowWindow] [-Force]   
+   [-PreferredModels <String[]>] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -3042,7 +3087,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Start-LMStudioApplication [[-WithVisibleWindow]] [-Passthru] [-WhatIf] [-Confirm] [<CommonParameters>]  
+   Start-LMStudioApplication [[-WithVisibleWindow]] [-Passthru] [-WhatIf] [-Confirm]   
+   [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
