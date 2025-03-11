@@ -654,7 +654,7 @@ function New-LLMAudioChat {
                     Write-Verbose "Configuring audio settings"
                     $audioParams.VOX = -not $NoVOX
                     $audioParams.Temperature = $AudioTemperature
-                    
+
                     # process text input or start recording
                     $recognizedText = $query ? $query.Trim() : [string]::Empty
 

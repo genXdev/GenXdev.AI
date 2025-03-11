@@ -308,8 +308,7 @@ function Initialize-LMStudioModel {
                         -RedirectStandardOutput $true
 
                     # Consider success if process exits with code 0 or if we detect the model is actually loaded
-                    return ($process.ExitCode -eq 0) -or
-                           (& $lmstudiopaths.LMSExe list | Select-String -Pattern $params[1] -Quiet)
+                    return ($process.ExitCode -eq 0) -or (Get-LMStudioLoadedModelList | Where-Object { $_.path -like $params[1] })
                 }
                 catch {
                     Write-Warning "Error during model load: $_"

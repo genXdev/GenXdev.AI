@@ -8,6 +8,7 @@
 . "$PSScriptRoot\Functions\GenXdev.AI\Get-MediaFileAudioTranscription.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Get-NumberOfCpuCores.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Get-TextTranslation.ps1"
+. "$PSScriptRoot\Functions\GenXdev.AI\Get-VectorSimilarity.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Invoke-AIPowershellCommand.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Invoke-CommandFromToolCall.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Invoke-ImageKeywordScan.ps1"

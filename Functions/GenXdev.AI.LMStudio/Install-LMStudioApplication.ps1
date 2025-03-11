@@ -77,6 +77,7 @@ function Install-LMStudioApplication {
                 $script:LMStudioExe = $null
                 $script:LMSExe = $null
                 Get-LMStudioPaths
+                $null = Start-Process -FilePath ($script:LMStudioExe) -WindowStyle Maximized
             }
             else {
                 Write-Verbose "LM Studio is already installed"
