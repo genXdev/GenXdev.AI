@@ -4,6 +4,7 @@
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Get-LMStudioLoadedModelList.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Get-LMStudioModelList.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Get-LMStudioPaths.ps1"
+. "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Get-LMStudioTextEmbedding.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Get-LMStudioWindow.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Initialize-LMStudioModel.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Install-LMStudioApplication.ps1"

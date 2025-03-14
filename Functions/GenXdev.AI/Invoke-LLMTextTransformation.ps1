@@ -1,59 +1,57 @@
 ################################################################################
 <#
 .SYNOPSIS
-Enhances text by adding contextually appropriate emoticons using AI.
+Transforms text using AI-powered processing.
 
 .DESCRIPTION
-This function processes input text to add emoticons that match the emotional
-context. It can accept input directly through parameters, from the pipeline, or
-from the system clipboard. The function leverages AI models to analyze the text
-and select appropriate emoticons, making messages more expressive and engaging.
+This function processes input text using AI models to perform various transformations
+such as spell checking, adding emoticons, or any other text enhancement specified
+through instructions. It can accept input directly through parameters, from the
+pipeline, or from the system clipboard.
 
 .PARAMETER Text
-The input text to enhance with emoticons. If not provided, the function will
-read from the system clipboard. Multiple lines of text are supported.
+The input text to transform. If not provided, the function will read from the
+system clipboard. Multiple lines of text are supported.
 
 .PARAMETER Instructions
-Additional instructions to guide the AI model in selecting and placing emoticons.
-These can help fine-tune the emotional context and style of added emoticons.
+Instructions to guide the AI model in transforming the text. By default, it will
+perform spell checking and grammar correction.
 
 .PARAMETER Model
-Specifies which AI model to use for emoticon selection and placement. Different
-models may produce varying results in terms of emoticon selection and context
-understanding. Defaults to "qwen".
+Specifies which AI model to use for the text transformation. Different models
+may produce varying results. Defaults to "qwen".
 
 .PARAMETER SetClipboard
-When specified, copies the enhanced text back to the system clipboard after
+When specified, copies the transformed text back to the system clipboard after
 processing is complete.
 
 .EXAMPLE
-Add-EmoticonsToText -Text "Hello, how are you today?" -Model "qwen" `
-    -SetClipboard
+Invoke-LLMTextTransformation -Text "Hello, hwo are you todey?"
 
 .EXAMPLE
-"Time to celebrate!" | emojify
+"Time to celerbate!" | Invoke-LLMTextTransformation -Instructions "Add celebratory emoticons"
 #>
-function Add-EmoticonsToText {
+function Invoke-LLMTextTransformation {
 
     [CmdletBinding()]
     [OutputType([System.String])]
-    [Alias("emojify")]
+    [Alias("spellcheck")]
     param (
         ########################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
             ValueFromPipeline = $true,
-            HelpMessage = "The text to enhance with emoticons"
+            HelpMessage = "The text to transform"
         )]
         [string]$Text,
         ########################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = "Additional instructions for the AI model"
+            HelpMessage = "Instructions for the AI model on how to transform the text"
         )]
-        [string]$Instructions = "",
+        [string]$Instructions = "Check and correct any spelling or grammar errors in the text. Return the corrected text without any additional comments or explanations.",
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -122,10 +120,84 @@ function Add-EmoticonsToText {
         ########################################################################
     )
 
-    process {
-        $emotifyInstructions = "Add funny or expressive emojii to the text provided as content of the user-role message. Don't change the text otherwise. $Instructions"
+    begin {
 
-        Invoke-LLMTextTransformation @PSBoundParameters -Instructions $emotifyInstructions
+        # create string builder for efficient text accumulation
+        $resultBuilder = [System.Text.StringBuilder]::new()
+
+        # Define response format schema
+        $responseSchema = @{
+            type        = "json_schema"
+            json_schema = @{
+                name   = "text_transformation_response"
+                strict = "true"
+                schema = @{
+                    type       = "object"
+                    properties = @{
+                        response = @{
+                            type        = "string"
+                            description = "The transformed text output"
+                        }
+                    }
+                    required   = @("response")
+                }
+            }
+        } | ConvertTo-Json -Depth 10
+
+        Write-Verbose "Starting text transformation with model: $Model"
+    }
+
+    process {
+
+        # check if we should read from clipboard
+        $isClipboardSource = [string]::IsNullOrWhiteSpace($Text)
+
+        if ($isClipboardSource) {
+
+            Write-Verbose "No direct text input, reading from clipboard"
+            $Text = Get-Clipboard
+
+            if ([string]::IsNullOrWhiteSpace($Text)) {
+                Write-Warning "No text found in the clipboard."
+                return
+            }
+        }
+
+        try {
+            Write-Verbose "Processing text block for transformation"
+
+            $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName "Invoke-LLMQuery"
+
+            $invocationParams.Query = $Text
+            $invocationParams.Instructions = $Instructions
+            $invocationParams.ResponseFormat = $responseSchema
+
+            # send text to ai model and extract enhanced response
+            $enhancedText = (Invoke-LLMQuery @invocationParams |
+                ConvertFrom-Json).response
+
+            $null = $resultBuilder.Append("$enhancedText`r`n")
+        }
+        catch {
+
+            Write-Error "Failed to process text with AI model: $_"
+        }
+    }
+
+    end {
+
+        # get final combined result
+        $finalResult = $resultBuilder.ToString()
+
+        if ($SetClipboard) {
+            Write-Verbose "Copying enhanced text to clipboard"
+            Set-Clipboard -Value $finalResult
+        }
+
+        # return enhanced text
+        $finalResult
     }
 }
 ################################################################################

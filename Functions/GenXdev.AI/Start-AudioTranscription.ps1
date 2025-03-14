@@ -531,6 +531,7 @@ function Start-AudioTranscription {
 
             # add ShouldProcess check before executing the operation
             if ($PSCmdlet.ShouldProcess($targetDescription, "Start")) {
+
                 Get-SpeechToText @invocationArguments
             }
         }

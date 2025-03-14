@@ -1,50 +1,48 @@
 ################################################################################
 <#
 .SYNOPSIS
-Enhances text by adding contextually appropriate emoticons using AI.
+Converts direct or blunt text into polite, professional corporate speak using AI.
 
 .DESCRIPTION
-This function processes input text to add emoticons that match the emotional
-context. It can accept input directly through parameters, from the pipeline, or
-from the system clipboard. The function leverages AI models to analyze the text
-and select appropriate emoticons, making messages more expressive and engaging.
+This function processes input text to transform direct or potentially harsh language
+into diplomatic, professional corporate communications. It can accept input directly
+through parameters, from the pipeline, or from the system clipboard. The function
+leverages AI models to analyze and rephrase text while preserving the original intent.
 
 .PARAMETER Text
-The input text to enhance with emoticons. If not provided, the function will
+The input text to convert to corporate speak. If not provided, the function will
 read from the system clipboard. Multiple lines of text are supported.
 
 .PARAMETER Instructions
-Additional instructions to guide the AI model in selecting and placing emoticons.
-These can help fine-tune the emotional context and style of added emoticons.
+Additional instructions to guide the AI model in converting the text.
+These can help fine-tune the tone and style of the corporate language.
 
 .PARAMETER Model
-Specifies which AI model to use for emoticon selection and placement. Different
-models may produce varying results in terms of emoticon selection and context
-understanding. Defaults to "qwen".
+Specifies which AI model to use for text transformation. Different models may
+produce varying results in terms of corporate language style. Defaults to "qwen".
 
 .PARAMETER SetClipboard
-When specified, copies the enhanced text back to the system clipboard after
+When specified, copies the transformed text back to the system clipboard after
 processing is complete.
 
 .EXAMPLE
-Add-EmoticonsToText -Text "Hello, how are you today?" -Model "qwen" `
-    -SetClipboard
+ConvertTo-CorporateSpeak -Text "That's a terrible idea" -Model "qwen" -SetClipboard
 
 .EXAMPLE
-"Time to celebrate!" | emojify
+"This makes no sense" | corporatize
 #>
-function Add-EmoticonsToText {
+function ConvertTo-CorporateSpeak {
 
     [CmdletBinding()]
     [OutputType([System.String])]
-    [Alias("emojify")]
+    [Alias("corporatize")]
     param (
         ########################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
             ValueFromPipeline = $true,
-            HelpMessage = "The text to enhance with emoticons"
+            HelpMessage = "The text to convert to corporate speak"
         )]
         [string]$Text,
         ########################################################################
@@ -83,7 +81,7 @@ function Add-EmoticonsToText {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Copy the enhanced text to clipboard"
+            HelpMessage = "Copy the transformed text to clipboard"
         )]
         [switch]$SetClipboard,
         ########################################################################
@@ -123,9 +121,22 @@ function Add-EmoticonsToText {
     )
 
     process {
-        $emotifyInstructions = "Add funny or expressive emojii to the text provided as content of the user-role message. Don't change the text otherwise. $Instructions"
+        $corporateInstructions = @"
+Translate users input from the a brutal or direct phrase into polite, professional corporate speak while preserving the original intent. The translation should sound diplomatic and suitable for a corporate environment, even if the original phrase is blunt or harsh.
+Examples:
 
-        Invoke-LLMTextTransformation @PSBoundParameters -Instructions $emotifyInstructions
+Original: 'That makes no sense.'
+Translation: 'Can you please elaborate on your thinking here?'
+
+Original: 'I’ve told you this 5,000 times.'
+Translation: 'I have provided this information previously.'
+
+Original: 'Stop micromanaging me.'
+Translation: 'I feel that I am at my most productive when I have more autonomy.'
+
+$Instructions
+"@
+        Invoke-LLMTextTransformation @PSBoundParameters -Instructions $corporateInstructions
     }
 }
 ################################################################################

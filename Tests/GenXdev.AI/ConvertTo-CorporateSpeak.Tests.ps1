@@ -1,10 +1,10 @@
 ################################################################################
-Describe "Invoke-ImageKeywordUpdate" {
+Describe "ConvertTo-CorporateSpeak" {
 
-    It "Should pass PSScriptAnalyzer rules" {
+    It "should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\Invoke-ImageKeywordUpdate.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\ConvertTo-CorporateSpeak.ps1"
 
         # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `

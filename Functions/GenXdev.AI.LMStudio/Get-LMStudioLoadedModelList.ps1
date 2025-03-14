@@ -37,7 +37,7 @@ function Get-LMStudioLoadedModelList {
         try {
             # query lm studio process and convert json output to objects
             $modelList = & "$($paths.LMSExe)" ps --json |
-                ConvertFrom-Json
+            ConvertFrom-Json
 
             Write-Verbose "Successfully retrieved $(($modelList |
                 Measure-Object).Count) models"

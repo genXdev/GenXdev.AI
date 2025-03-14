@@ -77,6 +77,7 @@ function Install-LMStudioApplication {
                 $script:LMStudioExe = $null
                 $script:LMSExe = $null
                 Get-LMStudioPaths
+                $null = Get-Process "LM Studio" -ErrorAction SilentlyContinue | Stop-Process -Force
                 $null = Start-Process -FilePath ($script:LMStudioExe) -WindowStyle Maximized
             }
             else {

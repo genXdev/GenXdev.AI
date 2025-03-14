@@ -1,50 +1,48 @@
 ################################################################################
 <#
 .SYNOPSIS
-Enhances text by adding contextually appropriate emoticons using AI.
+Converts polite, professional corporate speak into direct, clear language using AI.
 
 .DESCRIPTION
-This function processes input text to add emoticons that match the emotional
-context. It can accept input directly through parameters, from the pipeline, or
-from the system clipboard. The function leverages AI models to analyze the text
-and select appropriate emoticons, making messages more expressive and engaging.
+This function processes input text to transform diplomatic, corporate communications
+into more direct and clear language. It can accept input directly through parameters,
+from the pipeline, or from the system clipboard. The function leverages AI models
+to analyze and rephrase text while preserving the original intent.
 
 .PARAMETER Text
-The input text to enhance with emoticons. If not provided, the function will
+The corporate speak text to convert to direct language. If not provided, the function will
 read from the system clipboard. Multiple lines of text are supported.
 
 .PARAMETER Instructions
-Additional instructions to guide the AI model in selecting and placing emoticons.
-These can help fine-tune the emotional context and style of added emoticons.
+Additional instructions to guide the AI model in converting the text.
+These can help fine-tune the tone and style of the direct language.
 
 .PARAMETER Model
-Specifies which AI model to use for emoticon selection and placement. Different
-models may produce varying results in terms of emoticon selection and context
-understanding. Defaults to "qwen".
+Specifies which AI model to use for text transformation. Different models may
+produce varying results in terms of language style. Defaults to "qwen".
 
 .PARAMETER SetClipboard
-When specified, copies the enhanced text back to the system clipboard after
+When specified, copies the transformed text back to the system clipboard after
 processing is complete.
 
 .EXAMPLE
-Add-EmoticonsToText -Text "Hello, how are you today?" -Model "qwen" `
-    -SetClipboard
+ConvertFrom-CorporateSpeak -Text "I would greatly appreciate your timely response to this matter" -Model "qwen" -SetClipboard
 
 .EXAMPLE
-"Time to celebrate!" | emojify
+"We should circle back to ideate on this matter" | uncorporatize
 #>
-function Add-EmoticonsToText {
+function ConvertFrom-CorporateSpeak {
 
     [CmdletBinding()]
     [OutputType([System.String])]
-    [Alias("emojify")]
+    [Alias("uncorporatize")]
     param (
         ########################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
             ValueFromPipeline = $true,
-            HelpMessage = "The text to enhance with emoticons"
+            HelpMessage = "The text to convert to corporate speak"
         )]
         [string]$Text,
         ########################################################################
@@ -83,7 +81,7 @@ function Add-EmoticonsToText {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Copy the enhanced text to clipboard"
+            HelpMessage = "Copy the transformed text to clipboard"
         )]
         [switch]$SetClipboard,
         ########################################################################
@@ -123,9 +121,59 @@ function Add-EmoticonsToText {
     )
 
     process {
-        $emotifyInstructions = "Add funny or expressive emojii to the text provided as content of the user-role message. Don't change the text otherwise. $Instructions"
+        $corporateInstructions = @"
+Translate the users input from corporate jargon phrase into simple, everyday language that anyone can understand. The translation should reveal the true and real meaning of the phrase, making it clear and straightforward, even if the corporate speak is used to soften or obscure the actual intent.
+Examples:
 
-        Invoke-LLMTextTransformation @PSBoundParameters -Instructions $emotifyInstructions
+Corporate: 'Let's touch base.'
+Layman: 'Let's talk or meet.'
+
+Corporate: 'Think outside the box.'
+Layman: 'Be creative or innovative.'
+
+Corporate: 'We're optimizing our workforce.'
+Layman: 'We're laying off employees.'
+
+Corporate: 'Optimizing our workforce'
+Layman: 'Laying off employees.'
+
+Corporate: 'Rightsizing'
+Layman: 'Laying off employees.'
+
+Corporate: 'Performance improvement plan'
+Layman: 'Employee is at risk of being fired.'
+
+Corporate: 'Streamlining operations'
+Layman: 'Cutting costs, often through layoffs.'
+
+Corporate: 'Reorganization'
+'Can involve layoffs or unfavorable role changes.'
+
+Corporate: 'Attrition'
+Layman: 'Not replacing departing employees to reduce headcount.'
+
+Corporate: 'Workforce reduction'
+'Layoffs.'
+
+Corporate: 'Downsizing'
+Layman: 'Reducing employee numbers.'
+
+Corporate: 'Cost-saving measures'
+'Can include layoffs.'
+
+Corporate: 'Restructuring'
+Layman: 'Often includes layoffs.'
+
+Corporate: 'Trim the fat'
+'Reducing costs, often by cutting jobs or projects.'
+
+Corporate: 'Buy-in'
+Layman: 'Ensuring support to avoid wasted effort; implies potential resistance.'
+
+$Instructions
+"@
+
+        Invoke-LLMTextTransformation @PSBoundParameters -Instructions $corporateInstructions
     }
 }
 ################################################################################

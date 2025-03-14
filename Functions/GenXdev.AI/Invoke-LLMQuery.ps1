@@ -96,14 +96,13 @@ function Invoke-LLMQuery {
             HelpMessage = "The LM-Studio model to use"
         )]
         [SupportsWildcards()]
-        [string] $Model,
+        [string] $Model = "qwen2.5-14b-instruct",
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 1,
             HelpMessage = "Identifier used for getting specific model from LM Studio"
         )]
-        [string] $ModelLMSGetIdentifier,
+        [string] $ModelLMSGetIdentifier = "qwen2.5-14b-instruct",
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -116,6 +115,12 @@ function Invoke-LLMQuery {
             Mandatory = $false,
             HelpMessage = "Array of file paths to attach")]
         [string[]] $Attachments = @(),
+        ########################################################################
+        [Parameter(
+            Position = 3,
+            Mandatory = $false,
+            HelpMessage = "A JSON schema for the requested output format")]
+        [string] $ResponseFormat = $null,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -805,6 +810,15 @@ function Invoke-LLMQuery {
             stream      = $false
             messages    = $messages
             temperature = $Temperature
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($ResponseFormat)) {
+            try {
+                $payload.response_format = $ResponseFormat | ConvertFrom-Json
+            }
+            catch {
+                Write-Warning "Invalid response format schema. Ignoring."
+            }
         }
 
         if (-not [string]::IsNullOrWhiteSpace($Model)) {

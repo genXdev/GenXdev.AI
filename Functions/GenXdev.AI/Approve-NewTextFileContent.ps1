@@ -66,7 +66,7 @@ function Approve-NewTextFileContent {
 
         # create temporary file with matching extension for comparison
         $tempFile = GenXdev.FileSystem\Expand-Path ([System.IO.Path]::GetTempFileName() +
-                [System.IO.Path]::GetExtension($contentPath)) `
+            [System.IO.Path]::GetExtension($contentPath)) `
             -CreateDirectory
 
         Write-Verbose "Created temp comparison file: $tempFile"

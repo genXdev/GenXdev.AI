@@ -85,9 +85,9 @@ function Invoke-CommandFromToolCall {
 
         # extract and convert arguments from the tool call
         $result.UnfilteredArguments = $ToolCall.function.arguments |
-            ConvertFrom-Json -ErrorAction SilentlyContinue |
-            ConvertTo-HashTable |
-            Select-Object -First 1
+        ConvertFrom-Json -ErrorAction SilentlyContinue |
+        ConvertTo-HashTable |
+        Select-Object -First 1
 
         Write-Verbose "Processing tool call: $($ToolCall.function.name)"
         Write-Verbose "Unfiltered arguments: $($result.UnfilteredArguments |
@@ -225,14 +225,14 @@ function Invoke-CommandFromToolCall {
             # check if there are any forced parameters
             $foundCmdlets = @(
                 $ExposedCmdLets |
-                    Sort-Object -Property Name -Descending |
-                    ForEach-Object {
-                        if (
+                Sort-Object -Property Name -Descending |
+                ForEach-Object {
+                    if (
                         ($_.Name -EQ ($matchedFunction.name)) -or
                         ($_.Name -like "*\$($matchedFunction.name)") -or
                         ($matchedFunction.name -like "*\$($_.Name)")
-                        ) { $_ }
-                    }
+                    ) { $_ }
+                }
             );
 
             foreach ($exposedCmdLet in $foundCmdlets) {
@@ -446,7 +446,7 @@ function Invoke-CommandFromToolCall {
                     try {
                         if ($tmpResult -is [string]) {
                             $jsonTest = $tmpResult |
-                                ConvertFrom-Json -ErrorAction Stop
+                            ConvertFrom-Json -ErrorAction Stop
                             if ($jsonTest) {
                                 $isAlreadyJson = $true
                                 $result.OutputType = "application/json"
@@ -481,8 +481,8 @@ function Invoke-CommandFromToolCall {
 
                                 $tmpResult = (@($tmpResult) |
                                     ForEach-Object { $_ | Out-String }) |
-                                    ConvertTo-Json -Depth $jsonDepth `
-                                        -WarningAction SilentlyContinue
+                                ConvertTo-Json -Depth $jsonDepth `
+                                    -WarningAction SilentlyContinue
                             }
                             else {
 
@@ -490,9 +490,9 @@ function Invoke-CommandFromToolCall {
                                     $tmpResult -is [string]) {
 
                                     $tmpResult = $tmpResult |
-                                        ConvertTo-Json -Depth $jsonDepth `
-                                            -ErrorAction SilentlyContinue `
-                                            -WarningAction SilentlyContinue
+                                    ConvertTo-Json -Depth $jsonDepth `
+                                        -ErrorAction SilentlyContinue `
+                                        -WarningAction SilentlyContinue
                                 }
                                 else {
 
@@ -501,13 +501,13 @@ function Invoke-CommandFromToolCall {
                                             -ErrorAction SilentlyContinue `
                                             -WarningAction SilentlyContinue `
                                             -Depth ($jsonDepth - 1) |
-                                            ConvertFrom-Json `
-                                                -ErrorAction SilentlyContinue `
-                                                -WarningAction SilentlyContinue |
-                                            ConvertTo-HashTable
-                                        } | ConvertTo-Json -Depth $jsonDepth `
+                                        ConvertFrom-Json `
                                             -ErrorAction SilentlyContinue `
-                                            -WarningAction SilentlyContinue
+                                            -WarningAction SilentlyContinue |
+                                        ConvertTo-HashTable
+                                    } | ConvertTo-Json -Depth $jsonDepth `
+                                        -ErrorAction SilentlyContinue `
+                                        -WarningAction SilentlyContinue
                                 }
                             }
                         }

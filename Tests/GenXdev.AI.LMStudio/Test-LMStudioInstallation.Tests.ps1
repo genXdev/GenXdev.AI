@@ -1,5 +1,4 @@
 ################################################################################
-
 Describe "Test-LMStudioInstallation function tests" {
 
     It "Should pass PSScriptAnalyzer rules" {

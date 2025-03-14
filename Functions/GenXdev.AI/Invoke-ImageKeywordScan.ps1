@@ -115,7 +115,7 @@ function Invoke-ImageKeywordScan {
                             -NotePropertyValue $keywordsFound -Force |
                         Out-Null
 
-                                        $null = [System.IO.File]::Delete("$($image):keywords.json")
+                        $null = [System.IO.File]::Delete("$($image):keywords.json")
 
                         $descriptionFound |
                         ConvertTo-Json -Depth 99 -Compress `

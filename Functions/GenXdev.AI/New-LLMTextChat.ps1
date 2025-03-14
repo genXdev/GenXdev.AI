@@ -306,15 +306,16 @@ function New-LLMTextChat {
                         JsonDepth     = 99
                     },
                     @{
-                        Name       = "GenXdev.Console\UtcNow"
-                        OutputText = $true
-                        Confirm    = $false
-                    },
-                    @{
                         Name          = "GenXdev.Console\Start-TextToSpeech"
                         AllowedParams = @("Lines=string")
                         OutputText    = $true
                         Confirm       = $false
+                    },
+                    @{
+                        Name          = "Microsoft.PowerShell.Utility\Invoke-Expression"
+                        AllowedParams = @("Command=string")
+                        Confirm       = $true
+                        JsonDepth     = 40
                     },
                     @{
                         Name          = "Microsoft.PowerShell.Management\Get-Clipboard"
@@ -345,10 +346,10 @@ function New-LLMTextChat {
                 $functionInfoObj = (ConvertTo-LMStudioFunctionDefinition -ExposedCmdLets:$ExposedCmdLets)
                 $functionInfoObj | ForEach-Object { $null = $_.function.Remove("callback") }
                 $functionInfo = $functionInfoObj |
-                    ConvertTo-Json `
-                        -ErrorAction SilentlyContinue `
-                        -WarningAction SilentlyContinue `
-                        -Depth 10
+                ConvertTo-Json `
+                    -ErrorAction SilentlyContinue `
+                    -WarningAction SilentlyContinue `
+                    -Depth 10
 
                 $ExposedCmdLets += @(
                     @{
@@ -516,7 +517,7 @@ $Instructions
                                 "$name*$params"
                             }
                         } | Select-Object -Unique) -join ', ') |
-                    Write-Host -ForegroundColor Green
+                Write-Host -ForegroundColor Green
             }
         }
 
