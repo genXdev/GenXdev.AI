@@ -17,6 +17,7 @@
 . "$PSScriptRoot\Functions\GenXdev.AI\Invoke-ImageKeywordUpdate.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Invoke-LLMQuery.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Invoke-LLMTextTransformation.ps1"
+. "$PSScriptRoot\Functions\GenXdev.AI\Invoke-LLMBooleanEvaluation.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Invoke-QueryImageContent.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Invoke-WinMerge.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\New-LLMAudioChat.ps1"

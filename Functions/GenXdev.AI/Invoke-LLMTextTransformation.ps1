@@ -68,16 +68,10 @@ function Invoke-LLMTextTransformation {
         [string] $ModelLMSGetIdentifier,
         ########################################################################
         [Parameter(
+            Position = 3,
             Mandatory = $false,
-            HelpMessage = "Temperature for response randomness (0.0-1.0)")]
-        [ValidateRange(0.0, 1.0)]
-        [double] $Temperature = 0.0,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)")]
-        [Alias("MaxTokens")]
-        [int] $MaxToken = -1,
+            HelpMessage = "Array of file paths to attach")]
+        [string[]] $Attachments = @(),
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -89,6 +83,18 @@ function Invoke-LLMTextTransformation {
             Mandatory = $false,
             HelpMessage = "Show the LM Studio window")]
         [switch] $ShowWindow,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Temperature for response randomness (0.0-1.0)")]
+        [ValidateRange(0.0, 1.0)]
+        [double] $Temperature = 0.01,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Maximum tokens in response (-1 for default)")]
+        [Alias("MaxTokens")]
+        [int] $MaxToken = -1,
         ########################################################################
         [Alias("ttl")]
         [Parameter(
@@ -110,14 +116,65 @@ function Invoke-LLMTextTransformation {
         ########################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = "Image detail level")]
+        [ValidateSet("low", "medium", "high")]
+        [string] $ImageDetail = "low",
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Include model's thoughts in output")]
+        [switch] $DontAddThoughtsToHistory,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Continue from last conversation")]
+        [switch] $ContinueLast,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Array of function definitions")]
+        [hashtable[]] $Functions = @(),
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Array of PowerShell command definitions to use as tools")]
+        [GenXdev.Helpers.ExposedCmdletDefinition[]]
+        $ExposedCmdLets = @(),
+        ########################################################################
+        # Array of command names that don't require confirmation
+        [Parameter(Mandatory = $false)]
+        [string[]]
+        [Alias("NoConfirmationFor")]
+        $NoConfirmationToolFunctionNames = @(),
+        ###########################################################################
+        [Parameter(
+            HelpMessage = "Enable text-to-speech for AI responses",
+            Mandatory = $false
+        )]
+        [switch] $Speak,
+        ###########################################################################
+        [Parameter(
+            HelpMessage = "Enable text-to-speech for AI thought responses",
+            Mandatory = $false
+        )]
+        [switch] $SpeakThoughts,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Don't store session in session cache")]
+        [switch] $NoSessionCaching,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = "Api endpoint url, defaults to http://localhost:1234/v1/chat/completions")]
         [string] $ApiEndpoint = $null,
         ########################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The API key to use for the request")]
-        [string] $ApiKey = $null
+        [string] $ApiKey = $null,
         ########################################################################
+        [switch] $AllowDefaultTools
     )
 
     begin {
@@ -172,9 +229,14 @@ function Invoke-LLMTextTransformation {
 
             $invocationParams.Query = $Text
             $invocationParams.Instructions = $Instructions
+            $invocationParams.IncludeThoughts = $false
             $invocationParams.ResponseFormat = $responseSchema
+            $invocationParams.Temperature = $Temperature
 
-            # send text to ai model and extract enhanced response
+            if ($AllowDefaultTools) {
+                $invocationParams.ChatMode = "textprompt"
+                $invocationParams.ChatOnce = $true
+            }
             $enhancedText = (Invoke-LLMQuery @invocationParams |
                 ConvertFrom-Json).response
 

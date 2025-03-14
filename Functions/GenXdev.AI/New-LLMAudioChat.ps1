@@ -418,7 +418,7 @@ function New-LLMAudioChat {
             "Yiddish",
             "Yoruba",
             "Zulu")]
-        [string] $Language = "English",
+        [string] $Language = "",
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Number of CPU threads to use, defaults to 0 (auto)")]
         [int] $CpuThreads = 0,
@@ -471,11 +471,38 @@ function New-LLMAudioChat {
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The API key to use for the request")]
-        [string] $ApiKey = $null
+        [string] $ApiKey = $null,
+        ########################################################################
+        [Parameter(
+            Position = 3,
+            Mandatory = $false,
+            HelpMessage = "A JSON schema for the requested output format")]
+        [string] $ResponseFormat = $null,
+        ########################################################################
+        [Parameter(
+            HelpMessage = "Will only output markup block responses",
+            Mandatory = $false
+        )]
+        [switch] $OutputMarkupBlocksOnly,
+        ########################################################################
+        [Parameter(
+            HelpMessage = "Will only output markup blocks of the specified types",
+            Mandatory = $false
+        )]
+        [ValidateNotNull()]
+        [string[]] $MarkupBlocksTypeFilter = @("json", "powershell", "C#", "python", "javascript", "typescript", "html", "css", "yaml", "xml", "bash")
         ########################################################################
     )
 
     begin {
+
+        if ([string]::IsNullOrWhiteSpace($Language)) {
+
+            # get default language from system settings
+            $Language = Get-DefaultWebLanguage
+            Write-Verbose "Using system default language: $Language"
+        }
+
         # initialize stopping flag for chat loop
         $stopping = $false
         Write-Verbose "Starting new audio LLM chat session with model $Model"

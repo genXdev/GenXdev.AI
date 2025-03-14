@@ -125,11 +125,81 @@ function Invoke-ImageKeywordUpdate {
                     "{}" > "$($image):description.json"
                 }
 
+                # Define response format schema
+                $responseSchema = @{
+                    type        = "json_schema"
+                    json_schema = @{
+                        name   = "image_analysis_response"
+                        strict = "true"
+                        schema = @{
+                            type       = "object"
+                            properties = @{
+                                short_description     = @{
+                                    type        = "string"
+                                    description = "Brief description of the image (max 80 chars)"
+                                    maxLength   = 80
+                                }
+                                long_description      = @{
+                                    type        = "string"
+                                    description = "Detailed description of the image"
+                                }
+                                has_nudity            = @{
+                                    type        = "boolean"
+                                    description = "Whether the image contains nudity"
+                                }
+                                keywords              = @{
+                                    type        = "array"
+                                    items       = @{
+                                        type = "string"
+                                    }
+                                    description = "Array of descriptive keywords"
+                                }
+                                has_explicit_content  = @{
+                                    type        = "boolean"
+                                    description = "Whether the image contains explicit content"
+                                }
+                                overall_mood_of_image = @{
+                                    type        = "string"
+                                    description = "The general mood or emotion conveyed by the image"
+                                }
+                                picture_type          = @{
+                                    type        = "string"
+                                    description = "The type or category of the image"
+                                }
+                                style_type            = @{
+                                    type        = "string"
+                                    description = "The artistic or visual style of the image"
+                                }
+                            }
+                            required   = @(
+                                "short_description",
+                                "long_description",
+                                "has_nudity",
+                                "keywords",
+                                "has_explicit_content",
+                                "overall_mood_of_image",
+                                "picture_type",
+                                "style_type"
+                            )
+                        }
+                    }
+                } | ConvertTo-Json -Depth 10
+
                 Write-Verbose "Analyzing image content: $image"
+
+                $query = (
+                    "Analyze image and return a object with properties: " +
+                    "'short_description' (max 80 chars), 'long_description', " +
+                    "'has_nudity, keywords' (array of strings), " +
+                    "'has_explicit_content', 'overall_mood_of_image', " +
+                    "'picture_type' and 'style_type'. " +
+                    "Output only json, no markdown or anything other then json."
+                );
 
                 # get AI-generated image description and metadata
                 $description = Invoke-QueryImageContent `
-                    -Q-ImagePath $image -Temperature 0.01
+                    -ResponseFormat $responseSchema `
+                    -Query $query -ImagePath $image -Temperature 0.01
 
                 Write-Verbose "Received analysis: $description"
 

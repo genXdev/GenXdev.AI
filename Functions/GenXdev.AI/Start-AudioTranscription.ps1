@@ -324,7 +324,7 @@ function Start-AudioTranscription {
             "Yiddish",
             "Yoruba",
             "Zulu")]
-        [string] $Language = "English",
+        [string] $Language = "",
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Number of CPU threads to use, defaults to 0 (auto)")]
         [int] $CpuThreads = 0,
@@ -400,6 +400,13 @@ function Start-AudioTranscription {
     )
 
     begin {
+
+        if ([string]::IsNullOrWhiteSpace($Language)) {
+
+            # get default language from system settings
+            $Language = Get-DefaultWebLanguage
+            Write-Verbose "Using system default language: $Language"
+        }
 
         Write-Verbose "Initializing audio transcription with selected options"
 

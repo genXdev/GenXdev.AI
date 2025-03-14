@@ -201,7 +201,7 @@ function Save-Transcriptions {
             "Yiddish",
             "Yoruba",
             "Zulu")]
-        [string] $LanguageIn = "English",
+        [string] $LanguageIn = "",
         ######################################################################
         [Parameter(
             Mandatory = $false,
@@ -218,6 +218,12 @@ function Save-Transcriptions {
         ######################################################################
     )
     begin {
+
+        if ([string]::IsNullOrWhiteSpace($LanguageIn)) {
+
+            # get default language from system settings
+            $LanguageIn = Get-DefaultWebLanguage
+        }
 
         # define array of supported media file extensions for processing
         $extensions = @(

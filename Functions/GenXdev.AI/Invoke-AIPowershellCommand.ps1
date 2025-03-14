@@ -64,7 +64,6 @@ function Invoke-AIPowershellCommand {
     [OutputType([void])]
     [Alias("hint")]
     param (
-        ########################################################################
         [Parameter(
             Position = 0,
             Mandatory = $true,
@@ -76,35 +75,81 @@ function Invoke-AIPowershellCommand {
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = "The LM-Studio model name or path to use"
+            HelpMessage = "Additional instructions for the AI model"
         )]
-        [ValidateNotNullOrEmpty()]
-        [PSDefaultValue(Value = "qwen")]
-        [SupportsWildcards()]
-        [string] $Model = "qwen",
+        [string]$Instructions = "",
         ########################################################################
         [Parameter(
-            Position = 2,
             Mandatory = $false,
-            HelpMessage = "Temperature for controlling response randomness"
+            Position = 2,
+            HelpMessage = "The LM-Studio model to use"
         )]
+        [SupportsWildcards()]
+        [string] $Model,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Identifier used for getting specific model from LM Studio"
+        )]
+        [string] $ModelLMSGetIdentifier,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Temperature for response randomness (0.0-1.0)")]
         [ValidateRange(0.0, 1.0)]
         [double] $Temperature = 0.01,
         ########################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = "Maximum tokens in response (-1 for default)")]
+        [Alias("MaxTokens")]
+        [int] $MaxToken = -1,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = "Copy command to clipboard"
         )]
-        [switch] $Clipboard
+        [switch] $Clipboard,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Show the LM Studio window")]
+        [switch] $ShowWindow,
+        ########################################################################
+        [Alias("ttl")]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests")]
+        [int] $TTLSeconds = -1,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "GPU offloading control (-2=Auto, -1=LM Studio decides)"
+        )]
+        [int]$Gpu = -1,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Force stop LM Studio before initialization"
+        )]
+        [switch]$Force,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Api endpoint url")]
+        [string] $ApiEndpoint = $null,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key to use for the request")]
+        [string] $ApiKey = $null
         ########################################################################
     )
 
     begin {
+        Write-Verbose "Initializing AI command generation"
 
-        Write-Verbose "Initializing AI command generation with model: $Model"
-
-        # define the AI system prompt with instructions
-        $instructions = @"
+        $commandInstructions = @"
 You are a PowerShell expert.
 Although you only have access to a limited set of tool functions to execute
 in your suggested powershell commandline script, you are not limited
@@ -114,91 +159,49 @@ their goal.
 First try basic powershell commands, if that does not solve it then try to use
 the Get-GenXDevCmdlets, Get-Help and the Get-Command cmdlets to find the right
 commands to use.
-Use the Set-AICommandSuggestion function with the command you suggest. return
-only what Set-AICommandSuggestion returns in json format.
+Return only the suggested command without any explanation or commentary.
+$Instructions
 "@
     }
 
     process {
-
         Write-Verbose "Generating PowerShell command for query: $Query"
 
-        # define the cmdlets that will be available to the AI model
-        $exposedCmdlets = @(
-            @{
-                Name          = "Get-Command"
-                AllowedParams = @("Name=string")
-                Confirm       = $false
-                JsonDepth     = 3
-                OutputText    = $false
-            },
-            @{
-                Name          = "Set-AICommandSuggestion"
-                AllowedParams = @("Command")
-                Confirm       = $false
-            },
-            @{
-                Name          = "Get-GenXDevCmdlets"
-                AllowedParams = @("ModuleName", "Filter")
-                Confirm       = $false
-            },
-            @{
-                Name          = "Get-Help"
-                AllowedParams = @("Name=string")
-                Confirm       = $false
-                ForcedParams  = @(
-                    @{
-                        Name  = "Category"
-                        Value = "Cmdlet"
-                    }
-                )
-            }
-        )
+        # Copy matching parameters to invoke transformation
+        $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "Invoke-LLMTextTransformation"
 
+        $invocationParams.Text = $Query
+        $invocationParams.Instructions = $commandInstructions
+        $invocationParams.SetClipboard = $Clipboard
 
-        $result = [string]::Empty
-
-        if ($PSCmdlet.ShouldProcess($command, "Copy command to clipboard")) {
-
-            # generate the command using the AI model
-            $result = Invoke-LLMQuery `
-                -Query $Query `
-                -Model $Model `
-                -Temperature $Temperature `
-                -Instructions $instructions `
-                -ExposedCmdLets $exposedCmdlets | `
-                ConvertFrom-Json
-        }
-
-        # parse the AI response and extract the command
-        $commandResult = ($result | ConvertFrom-Json)
-
-        # verify the command generation was successful
-        if (-not $commandResult.success) {
-
-            Write-Warning "Failed to generate command: $($commandResult.command)"
-            return
-        }
-
-        $command = $commandResult.command
+        # Get the command from the AI
+        $command = Invoke-LLMTextTransformation @invocationParams
 
         if ($Clipboard) {
-            if ($PSCmdlet.ShouldProcess($command, "Copy command to clipboard")) {
-                # copy the generated command to clipboard
-                $command | Set-Clipboard
-                Write-Verbose "Command copied to clipboard"
-            }
+            Write-Verbose "Command copied to clipboard"
         }
         else {
             if ($PSCmdlet.ShouldProcess("PowerShell window", "Send command")) {
-                # get the main powershell window for command input
+
                 $mainWindow = Get-PowershellMainWindow
                 if ($null -ne $mainWindow) {
                     $null = $mainWindow.SetForeground()
                 }
 
-                # send the command with proper line break handling
-                Send-Key ("`r`n$command".Replace("`r`n", " ``+{ENTER}"))
+                $oldClipboard = Get-Clipboard
+                try {
+                    ("$command".Trim().Replace("`n", " ```n")) | Set-Clipboard
+
+                    Send-Key "^v"
+
+                    Start-Sleep 2
+                }
+                finally {
+
+                    $oldClipboard | Set-Clipboard
+                }
             }
         }
     }

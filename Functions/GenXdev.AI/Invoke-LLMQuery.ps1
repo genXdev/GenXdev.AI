@@ -187,7 +187,7 @@ function Invoke-LLMQuery {
             Mandatory = $false,
             HelpMessage = "Array of PowerShell command definitions to use as tools")]
         [GenXdev.Helpers.ExposedCmdletDefinition[]]
-        $ExposedCmdLets = @(),
+        $ExposedCmdLets = $null,
         ########################################################################
         # Array of command names that don't require confirmation
         [Parameter(Mandatory = $false)]
@@ -750,6 +750,8 @@ function Invoke-LLMQuery {
                 $image.Dispose()
                 return [System.Convert]::ToBase64String($imageData)
             }
+
+            [string] $base64Data = getImageBase64Data $filePath $ImageDetail
 
             if ($isText) {
 

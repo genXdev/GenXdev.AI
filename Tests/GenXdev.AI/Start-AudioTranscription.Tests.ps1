@@ -1,19 +1,19 @@
 ################################################################################
-Describe "Start-AudioTranscription" {
+Describe "Start-AudioTranscription Start-AudioTranscription" {
+
+    BeforeAll {
+        $Script:scriptPath = GenXdev.FileSystem\Expand-Path `
+            "$PSScriptRoot\..\..\Functions\GenXdev.AI\Start-AudioTranscription.ps1"
+    }
 
     It "Should pass PSScriptAnalyzer rules" {
-
-        # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\Start-AudioTranscription.ps1"
-
         # run analyzer with explicit settings
-        $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
-            -Path $scriptPath
+        $Script:analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
+            -Path $Script:scriptPath
 
-        [string] $message = ""
-        $analyzerResults | ForEach-Object {
-
-            $message = $message + @"
+        [string] $Script:message = ""
+        $Script:analyzerResults | ForEach-Object {
+            $Script:message = $Script:message + @"
 --------------------------------------------------
 Rule: $($_.RuleName)`
 Description: $($_.Description)
@@ -22,10 +22,10 @@ Message: $($_.Message)
 "@
         }
 
-        $analyzerResults.Count | Should -Be 0 -Because @"
+        $Script:analyzerResults.Count | Should -Be 0 -Because @"
 The following PSScriptAnalyzer rules are being violated:
-$message
-"@;
+$Script:message
+"@
     }
 }
 ################################################################################

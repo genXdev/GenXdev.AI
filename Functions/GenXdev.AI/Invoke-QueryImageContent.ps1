@@ -68,7 +68,12 @@ function Invoke-QueryImageContent {
         )]
         [ValidateRange(0.0, 1.0)]
         [double]$Temperature = 0.01,
-
+        ########################################################################
+        [Parameter(
+            Position = 3,
+            Mandatory = $false,
+            HelpMessage = "A JSON schema for the requested output format")]
+        [string] $ResponseFormat = $null,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -103,6 +108,7 @@ function Invoke-QueryImageContent {
             -Model "MiniCPM" `
             -ModelLMSGetIdentifier "minicpm-v-2_6" `
             -Query $Query `
+            -ResponseFormat $ResponseFormat `
             -Instructions "You are an AI assistant that analyzes images." `
             -Attachments $imagePath `
             -Temperature $Temperature `

@@ -67,7 +67,7 @@ Update-Module
 | [Get-HasCapableGpu](#Get-HasCapableGpu) |  | Determines if a CUDA-capable GPU with sufficient memory is present. |
 | [Get-MediaFileAudioTranscription](#Get-MediaFileAudioTranscription) | transcribefile | Transcribes an audio or video file to text.. |
 | [Get-NumberOfCpuCores](#Get-NumberOfCpuCores) |  | Calculates and returns the total number of logical CPU cores in the system. |
-| [Get-TextTranslation](#Get-TextTranslation) | translate, get-translation | Translates text to another language using the LM-Studio API. |
+| [Get-TextTranslation](#Get-TextTranslation) | translate | Translates text to another language using AI. |
 | [Get-VectorSimilarity](#Get-VectorSimilarity) |  |  |
 | [Invoke-AIPowershellCommand](#Invoke-AIPowershellCommand) | hint | Generates and executes PowerShell commands using AI assistance. |
 | [Invoke-CommandFromToolCall](#Invoke-CommandFromToolCall) |  | Executes a tool call function with validation and parameter filtering. |
@@ -123,10 +123,9 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>]   
-   [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>]   
-   [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint   
-   <String>] [-ApiKey <String>] [<CommonParameters>]  
+   Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>]   
+   [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>]   
+   [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -257,8 +256,7 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Approve-NewTextFileContent [-ContentPath] <String> [-NewContent] <String>   
-   [<CommonParameters>]  
+   Approve-NewTextFileContent [-ContentPath] <String> [-NewContent] <String> [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -382,10 +380,9 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   ConvertFrom-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [[-Model]   
-   <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>]   
-   [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint   
-   <String>] [-ApiKey <String>] [<CommonParameters>]  
+   ConvertFrom-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>]   
+   [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>]   
+   [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -396,8 +393,7 @@ Update-Module
 
 ### PARAMETERS 
     -Text <String>  
-        The corporate speak text to convert to direct language. If not provided, the function   
-        will  
+        The corporate speak text to convert to direct language. If not provided, the function will  
         read from the system clipboard. Multiple lines of text are supported.  
         Required?                    false  
         Position?                    1  
@@ -516,10 +512,9 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   ConvertTo-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>]   
-   [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>]   
-   [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint   
-   <String>] [-ApiKey <String>] [<CommonParameters>]  
+   ConvertTo-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>]   
+   [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>]   
+   [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -762,17 +757,13 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>]   
-   [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SRT] [-PassThru]   
-   [-UseDesktopAudioCapture] [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>]   
-   [-SplitOnWord] [-MaxTokensPerSegment <Int32>] [-IgnoreSilence] [-MaxDurationOfSilence   
-   <Object>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>]   
-   [-TemperatureInc <Single>] [-Prompt <String>] [-SuppressRegex <String>] [-WithProgress]   
-   [-AudioContextSize <Int32>] [-DontSuppressBlank] [-MaxDuration <Object>] [-Offset   
-   <Object>] [-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens]   
-   [-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <Object>] [-LengthPenalty <Single>]   
-   [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>]   
-   [-NoContext] [-WithBeamSearchSamplingStrategy] [<CommonParameters>]  
+   Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SRT]   
+   [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>] [-SplitOnWord] [-MaxTokensPerSegment <Int32>]   
+   [-IgnoreSilence] [-MaxDurationOfSilence <Object>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] [-TemperatureInc <Single>]   
+   [-Prompt <String>] [-SuppressRegex <String>] [-WithProgress] [-AudioContextSize <Int32>] [-DontSuppressBlank] [-MaxDuration <Object>] [-Offset <Object>]   
+   [-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <Object>] [-LengthPenalty   
+   <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy]   
+   [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1118,61 +1109,142 @@ Update-Module
 ##	Get-TextTranslation 
 ````PowerShell 
 
-   Get-TextTranslation                  --> Get-Translation, translate  
+   Get-TextTranslation                  --> translate  
 ```` 
 
 ### SYNOPSIS 
-    Translates text to another language using the LM-Studio API.  
+    Translates text to another language using AI.  
 
 ### SYNTAX 
 ````PowerShell 
 
-   Get-TextTranslation [-Text] <String> [[-Language] <String>] [[-Instructions] <Object>]   
-   [[-Model] <String>] [<CommonParameters>]  
+   Get-TextTranslation [[-Text] <String>] [[-Language] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>]   
+   [-Temperature <Double>] [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey   
+   <String>] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
-    The Get-TextTranslation function translates text into a specified target language  
-    using LM-Studio's API. It processes text in chunks to handle large inputs  
-    efficiently and maintains formatting.  
+    This function translates input text into a specified target language using AI  
+    models. It can accept input directly through parameters, from the pipeline, or  
+    from the system clipboard. The function preserves formatting and style while  
+    translating.  
 
 ### PARAMETERS 
     -Text <String>  
-        The source text to be translated. Can be provided via pipeline.  
-        Required?                    true  
+        The text to translate. Accepts pipeline input. If not provided, reads from system  
+        clipboard.  
+        Required?                    false  
         Position?                    1  
         Default value                  
         Accept pipeline input?       true (ByValue)  
         Aliases                        
         Accept wildcard characters?  false  
     -Language <String>  
-        The target language for translation. Defaults to "English".  
-        Supports 140+ languages including major world languages and fun variants.  
+        Target language for translation. Supports 140+ languages including major world  
+        languages and variants.  
         Required?                    false  
         Position?                    2  
-        Default value                english  
+        Default value                  
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  false  
-    -Instructions <Object>  
-        Custom instructions for the LLM model about how to perform the translation.  
-        Defaults to maintaining style and paragraph structure while translating.  
+    -Instructions <String>  
+        Additional instructions to guide the AI model in translation style and context.  
         Required?                    false  
         Position?                    3  
-        Default value                Translate this partial subtitle text, into the [Language]   
-        language, leave in the same style of writing, and leave the paragraph structure in   
-        tact, ommit only the translation no yapping or chatting.  
+        Default value                  
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  false  
     -Model <String>  
-        The LM-Studio model to use for translation. Defaults to "qwen".  
+        Specifies which AI model to use for translation. Supports wildcards.  
         Required?                    false  
         Position?                    4  
-        Default value                qwen  
+        Default value                  
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  true  
+    -ModelLMSGetIdentifier <String>  
+        Identifier used for getting specific model from LM Studio.  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Temperature <Double>  
+        Controls response randomness (0.0-1.0). Lower values are more deterministic.  
+        Required?                    false  
+        Position?                    named  
+        Default value                0  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxToken <Int32>  
+        Maximum tokens in response. Use -1 for default model limits.  
+        Required?                    false  
+        Position?                    named  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -SetClipboard [<SwitchParameter>]  
+        When specified, copies the translated text to system clipboard after translation.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ShowWindow [<SwitchParameter>]  
+        Shows the LM Studio window during processing.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TTLSeconds <Int32>  
+        Sets a Time-To-Live in seconds for models loaded via API requests.  
+        Required?                    false  
+        Position?                    named  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Gpu <Int32>  
+        Controls GPU layer offloading: -2=Auto, -1=LM Studio decides, 0-1=fraction of  
+        layers, "off"=disabled, "max"=all layers.  
+        Required?                    false  
+        Position?                    named  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Force [<SwitchParameter>]  
+        Forces LM Studio to stop before initialization.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ApiEndpoint <String>  
+        API endpoint URL. Defaults to http://localhost:1234/v1/chat/completions  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ApiKey <String>  
+        API key for authentication with the endpoint.  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
     <CommonParameters>  
         This cmdlet supports the common parameters: Verbose, Debug,  
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,  
@@ -1243,8 +1315,9 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-AIPowershellCommand [-Query] <String> [[-Model] <String>] [[-Temperature] <Double>]   
-   [-Clipboard] [-WhatIf] [-Confirm] [<CommonParameters>]  
+   Invoke-AIPowershellCommand [-Query] <String> [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>]   
+   [-MaxToken <Int32>] [-Clipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [-WhatIf]   
+   [-Confirm] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1263,21 +1336,42 @@ Update-Module
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  false  
+    -Instructions <String>  
+        Required?                    false  
+        Position?                    2  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
     -Model <String>  
         The LM-Studio model to use for command generation. Can be a name or partial path.  
         Supports -like pattern matching for model selection.  
         Required?                    false  
-        Position?                    2  
-        Default value                qwen  
+        Position?                    3  
+        Default value                  
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  true  
+    -ModelLMSGetIdentifier <String>  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
     -Temperature <Double>  
         Controls the randomness in the AI's response generation. Values range from 0.0  
         (more focused/deterministic) to 1.0 (more creative/random).  
         Required?                    false  
-        Position?                    3  
+        Position?                    named  
         Default value                0.01  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -MaxToken <Int32>  
+        Required?                    false  
+        Position?                    named  
+        Default value                -1  
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  false  
@@ -1286,6 +1380,48 @@ Update-Module
         Required?                    false  
         Position?                    named  
         Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ShowWindow [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -TTLSeconds <Int32>  
+        Required?                    false  
+        Position?                    named  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Gpu <Int32>  
+        Required?                    false  
+        Position?                    named  
+        Default value                -1  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -Force [<SwitchParameter>]  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ApiEndpoint <String>  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ApiKey <String>  
+        Required?                    false  
+        Position?                    named  
+        Default value                  
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  false  
@@ -1324,9 +1460,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-CommandFromToolCall [-ToolCall] <Hashtable> [-Functions <Hashtable[]>]   
-   [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames   
-   <String[]>] [-ForceAsText] [<CommonParameters>]  
+   Invoke-CommandFromToolCall [-ToolCall] <Hashtable> [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>]   
+   [-NoConfirmationToolFunctionNames <String[]>] [-ForceAsText] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1396,8 +1531,7 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-ImageKeywordScan [[-Keywords] <String[]>] [[-ImageDirectory] <String>]   
-   [[-PassThru]] [<CommonParameters>]  
+   Invoke-ImageKeywordScan [[-Keywords] <String[]>] [[-ImageDirectory] <String>] [[-PassThru]] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1453,8 +1587,7 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-ImageKeywordUpdate [[-ImageDirectory] <String>] [[-Recurse]] [[-OnlyNew]]   
-   [[-RetryFailed]] [<CommonParameters>]  
+   Invoke-ImageKeywordUpdate [[-ImageDirectory] <String>] [[-Recurse]] [[-OnlyNew]] [[-RetryFailed]] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1522,15 +1655,11 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-LLMQuery [[-Query] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>]   
-   [[-Instructions] <String>] [[-Attachments] <String[]>] [[-ResponseFormat] <String>]   
-   [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu   
-   <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory]   
-   [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>]   
-   [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts]   
-   [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-ChatMode <String>]   
-   [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>]   
-   [<CommonParameters>]  
+   Invoke-LLMQuery [[-Query] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Instructions] <String>] [[-Attachments] <String[]>]   
+   [[-ResponseFormat] <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail   
+   <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>]   
+   [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-ChatMode   
+   <String>] [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1713,8 +1842,7 @@ Update-Module
     -MarkupBlocksTypeFilter <String[]>  
         Required?                    false  
         Position?                    named  
-        Default value                @("json", "powershell", "C#", "python", "javascript",   
-        "typescript", "html", "css", "yaml", "xml", "bash")  
+        Default value                @("json", "powershell", "C#", "python", "javascript", "typescript", "html", "css", "yaml", "xml", "bash")  
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  false  
@@ -1776,10 +1904,9 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-LLMTextTransformation [[-Text] <String>] [[-Instructions] <String>] [[-Model]   
-   <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>]   
-   [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint   
-   <String>] [-ApiKey <String>] [<CommonParameters>]  
+   Invoke-LLMTextTransformation [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>]   
+   [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>]   
+   [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1803,8 +1930,8 @@ Update-Module
         perform spell checking and grammar correction.  
         Required?                    false  
         Position?                    2  
-        Default value                Check and correct any spelling or grammar errors in the   
-        text. Return the corrected text without any additional comments or explanations.  
+        Default value                Check and correct any spelling or grammar errors in the text. Return the corrected text without any additional comments   
+        or explanations.  
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  false  
@@ -1910,8 +2037,7 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Temperature] <Double>]   
-   [[-MaxToken] <Int32>] [<CommonParameters>]  
+   Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Temperature] <Double>] [[-MaxToken] <Int32>] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -1979,8 +2105,7 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Invoke-WinMerge [-SourcecodeFilePath] <String> [-TargetcodeFilePath] <String> [[-Wait]]   
-   [<CommonParameters>]  
+   Invoke-WinMerge [-SourcecodeFilePath] <String> [-TargetcodeFilePath] <String> [[-Wait]] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -2038,17 +2163,13 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   New-LLMAudioChat [[-query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier]   
-   <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-AudioTemperature   
-   <Double>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>]   
-   [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts]   
-   [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>]   
-   [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-TemperatureResponse   
-   <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>]   
-   [-AudioContextSize <Int32>] [-SilenceThreshold <Single>] [-LengthPenalty <Single>]   
-   [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>]   
-   [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoSessionCaching]   
-   [-ApiEndpoint <String>] [-ApiKey <String>] [-WhatIf] [-Confirm] [<CommonParameters>]  
+   New-LLMAudioChat [[-query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>]   
+   [-AudioTemperature <Double>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail   
+   <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-DontSpeak] [-DontSpeakThoughts]   
+   [-NoVOX] [-UseDesktopAudioCapture] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>]   
+   [-AudioContextSize <Int32>] [-SilenceThreshold <Single>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>]   
+   [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey   
+   <String>] [-WhatIf] [-Confirm] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -2067,8 +2188,7 @@ Update-Module
         Aliases                        
         Accept wildcard characters?  false  
     -Model <String>  
-        The model name/path to use. Supports -like pattern matching. Default:   
-        "qwen2.5-14b-instruct"  
+        The model name/path to use. Supports -like pattern matching. Default: "qwen2.5-14b-instruct"  
         Required?                    false  
         Position?                    2  
         Default value                qwen2.5-14b-instruct  
@@ -2239,7 +2359,7 @@ Update-Module
         Language to detect in audio input. Default: "English"  
         Required?                    false  
         Position?                    named  
-        Default value                English  
+        Default value                  
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  false  
@@ -2387,14 +2507,11 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   New-LLMTextChat [[-Query] <string>] [[-Model] <string>] [[-ModelLMSGetIdentifier]   
-   <string>] [[-Instructions] <string>] [[-Attachments] <string[]>] [-Temperature <double>]   
-   [-MaxToken <int>] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ImageDetail   
-   {low | medium | high}] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast]   
-   [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Speak] [-SpeakThoughts]   
-   [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <string[]>] [-ChatOnce]   
-   [-NoSessionCaching] [-ApiEndpoint <string>] [-ApiKey <string>] [-WhatIf] [-Confirm]   
-   [<CommonParameters>]  
+   New-LLMTextChat [[-Query] <string>] [[-Model] <string>] [[-ModelLMSGetIdentifier] <string>] [[-Instructions] <string>] [[-Attachments] <string[]>]   
+   [-Temperature <double>] [-MaxToken <int>] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ImageDetail {low | medium | high}]   
+   [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Speak] [-SpeakThoughts]   
+   [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <string[]>] [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <string>] [-ApiKey <string>] [-WhatIf]   
+   [-Confirm] [<CommonParameters>]  
 ```` 
 
 ### PARAMETERS 
@@ -2479,10 +2596,8 @@ Update-Module
         Dynamic?                     false  
         Accept wildcard characters?  false  
     -Gpu <int>  
-        How much to offload to the GPU. If "off", GPU offloading is disabled. If "max", all   
-        layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will   
-        be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2   
-        = Auto   
+        How much to offload to the GPU. If "off", GPU offloading is disabled. If "max", all layers are offloaded to GPU. If a number between 0 and 1, that   
+        fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto   
         Required?                    false  
         Position?                    Named  
         Accept pipeline input?       false  
@@ -2654,8 +2769,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut]   
-   <String>] [-TranslateUsingLMStudioModel <String>] [<CommonParameters>]  
+   Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>]   
+   [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -2769,17 +2884,12 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX]   
-   [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps]   
-   [[-TokenTimestampsSumThreshold] <Single>] [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>]   
-   [-IgnoreSilence] [[-MaxDurationOfSilence] <Object>] [[-SilenceThreshold] <Int32>]   
-   [[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>]   
-   [[-TemperatureInc] <Single>] [-WithTranslate] [[-Prompt] <String>] [[-SuppressRegex]   
-   <String>] [-WithProgress] [[-AudioContextSize] <Int32>] [-DontSuppressBlank]   
-   [[-MaxDuration] <Object>] [[-Offset] <Object>] [[-MaxLastTextTokens] <Int32>]   
-   [-SingleSegmentOnly] [-PrintSpecialTokens] [[-MaxSegmentLength] <Int32>]   
-   [[-MaxInitialTimestamp] <Object>] [[-LengthPenalty] <Single>] [[-EntropyThreshold]   
-   <Single>] [[-LogProbThreshold] <Single>] [[-NoSpeechThreshold] <Single>] [-NoContext]   
+   Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX] [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps]   
+   [[-TokenTimestampsSumThreshold] <Single>] [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] [-IgnoreSilence] [[-MaxDurationOfSilence] <Object>]   
+   [[-SilenceThreshold] <Int32>] [[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>] [[-TemperatureInc] <Single>] [-WithTranslate]   
+   [[-Prompt] <String>] [[-SuppressRegex] <String>] [-WithProgress] [[-AudioContextSize] <Int32>] [-DontSuppressBlank] [[-MaxDuration] <Object>] [[-Offset]   
+   <Object>] [[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <Object>]   
+   [[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] [[-NoSpeechThreshold] <Single>] [-NoContext]   
    [-WithBeamSearchSamplingStrategy] [-WhatIf] [-Confirm] [<CommonParameters>]  
 ```` 
 
@@ -2896,7 +3006,7 @@ Update-Module
         Sets the language to detect.  
         Required?                    false  
         Position?                    7  
-        Default value                English  
+        Default value                  
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  false  
@@ -3113,8 +3223,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   AssureLMStudio [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken]   
-   <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow] [-Force] [<CommonParameters>]  
+   AssureLMStudio [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow] [-Force]   
+   [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -3123,8 +3233,7 @@ Update-Module
 
 ### PARAMETERS 
     -Model <String>  
-        Name or partial path of the model to initialize, detects and excepts -like 'patterns*'   
-        for search  
+        Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search  
         Defaults to "qwen2.5-14b-instruct".  
         Required?                    false  
         Position?                    1  
@@ -3228,8 +3337,7 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   ConvertTo-LMStudioFunctionDefinition [[-ExposedCmdLets] <ExposedCmdletDefinition[]>]   
-   [<CommonParameters>]  
+   ConvertTo-LMStudioFunctionDefinition [[-ExposedCmdLets] <ExposedCmdletDefinition[]>] [<CommonParameters>]  
 ```` 
 
 ### PARAMETERS 
@@ -3350,9 +3458,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Get-LMStudioTextEmbedding [-Text] <string[]> [[-Model] <string>] [-ModelLMSGetIdentifier   
-   <string>] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ApiEndpoint <string>]   
-   [-ApiKey <string>] [<CommonParameters>]  
+   Get-LMStudioTextEmbedding [-Text] <string[]> [[-Model] <string>] [-ModelLMSGetIdentifier <string>] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>]   
+   [-Force] [-ApiEndpoint <string>] [-ApiKey <string>] [<CommonParameters>]  
 ```` 
 
 ### PARAMETERS 
@@ -3384,10 +3491,8 @@ Update-Module
         Dynamic?                     false  
         Accept wildcard characters?  false  
     -Gpu <int>  
-        How much to offload to the GPU. If "off", GPU offloading is disabled. If "max", all   
-        layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will   
-        be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2   
-        = Auto   
+        How much to offload to the GPU. If "off", GPU offloading is disabled. If "max", all layers are offloaded to GPU. If a number between 0 and 1, that   
+        fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto   
         Required?                    false  
         Position?                    Named  
         Accept pipeline input?       false  
@@ -3461,8 +3566,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Get-LMStudioWindow [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken]   
-   <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow] [-Force] [-NoAutoStart] [<CommonParameters>]  
+   Get-LMStudioWindow [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow] [-Force]   
+   [-NoAutoStart] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -3547,9 +3652,8 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Initialize-LMStudioModel [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>]   
-   [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-Gpu <Int32>] [-ShowWindow] [-Force]   
-   [-PreferredModels <String[]>] [<CommonParameters>]  
+   Initialize-LMStudioModel [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-Gpu <Int32>]   
+   [-ShowWindow] [-Force] [-PreferredModels <String[]>] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 
@@ -3675,8 +3779,7 @@ Update-Module
 ### SYNTAX 
 ````PowerShell 
 
-   Start-LMStudioApplication [[-WithVisibleWindow]] [-Passthru] [-WhatIf] [-Confirm]   
-   [<CommonParameters>]  
+   Start-LMStudioApplication [[-WithVisibleWindow]] [-Passthru] [-WhatIf] [-Confirm] [<CommonParameters>]  
 ```` 
 
 ### DESCRIPTION 

@@ -233,8 +233,13 @@ function New-LLMTextChat {
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The API key to use for the request")]
-        [string] $ApiKey = $null
+        [string] $ApiKey = $null,
         ########################################################################
+        [Parameter(
+            Position = 3,
+            Mandatory = $false,
+            HelpMessage = "A JSON schema for the requested output format")]
+        [string] $ResponseFormat = $null
     )
 
     begin {

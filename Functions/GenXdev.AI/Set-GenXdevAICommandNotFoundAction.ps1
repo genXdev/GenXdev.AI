@@ -126,6 +126,7 @@ function Set-GenXdevAICommandNotFoundAction {
 
                 # configure AI assistance
                 $CommandLookupEventArgs.CommandScriptBlock = {
+
                     $userChoice = $host.ui.PromptForChoice(
                         "Command not found",
                         "Do you want AI to figure out what you want?",
@@ -134,7 +135,10 @@ function Set-GenXdevAICommandNotFoundAction {
 
                     if ($userChoice -eq 0) { return }
 
+                    Send-Key ($MyInvocation.line) -Escape
+
                     Write-Host -ForegroundColor Yellow "What did you want to do?"
+
                     [System.Console]::Write("> ")
                     $userIntent = [System.Console]::ReadLine()
                     Write-Host -ForegroundColor Green "Ok, hold on a sec.."

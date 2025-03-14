@@ -551,6 +551,12 @@ function Get-MediaFileAudioTranscription {
 
     begin {
 
+        if ([string]::IsNullOrWhiteSpace($LanguageIn)) {
+
+            # get default language from system settings
+            $LanguageIn = Get-DefaultWebLanguage
+        }
+
         if ($PSBoundParameters.ContainsKey("MaxDurationOfSilence") -and (-not ($MaxDurationOfSilence -is [System.TimeSpan]))) {
 
             $MaxDurationOfSilence = [System.TimeSpan]::FromSeconds($MaxDurationOfSilence)
