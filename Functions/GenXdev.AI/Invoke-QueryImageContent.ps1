@@ -70,7 +70,6 @@ function Invoke-QueryImageContent {
         [double]$Temperature = 0.01,
         ########################################################################
         [Parameter(
-            Position = 3,
             Mandatory = $false,
             HelpMessage = "A JSON schema for the requested output format")]
         [string] $ResponseFormat = $null,
@@ -104,7 +103,7 @@ function Invoke-QueryImageContent {
         Write-Verbose "Processing image: $imagePath"
 
         # invoke the ai model with image analysis configuration
-        $null = Invoke-LLMQuery `
+        Invoke-LLMQuery `
             -Model "MiniCPM" `
             -ModelLMSGetIdentifier "minicpm-v-2_6" `
             -Query $Query `

@@ -236,7 +236,6 @@ function New-LLMTextChat {
         [string] $ApiKey = $null,
         ########################################################################
         [Parameter(
-            Position = 3,
             Mandatory = $false,
             HelpMessage = "A JSON schema for the requested output format")]
         [string] $ResponseFormat = $null

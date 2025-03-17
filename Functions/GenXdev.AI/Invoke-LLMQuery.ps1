@@ -117,7 +117,6 @@ function Invoke-LLMQuery {
         [string[]] $Attachments = @(),
         ########################################################################
         [Parameter(
-            Position = 3,
             Mandatory = $false,
             HelpMessage = "A JSON schema for the requested output format")]
         [string] $ResponseFormat = $null,
@@ -596,6 +595,11 @@ function Invoke-LLMQuery {
                 ".php" {
                     $mimeType = "application/x-httpd-php"
                     $isText = $true
+                    break;
+                }
+                ".pdf" {
+                    $mimeType = "application/pdf"
+                    $isText = $false
                     break;
                 }
                 ".js" {

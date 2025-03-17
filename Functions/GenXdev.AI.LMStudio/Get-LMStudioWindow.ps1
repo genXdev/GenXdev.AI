@@ -208,6 +208,7 @@ function Get-LMStudioWindow {
                 $null = $result.Restore()
                 $null = $result.SetForeground()
                 $null = Send-Key "^2"
+                Start-Sleep 1
                 $null = (Get-PowershellMainWindow).SetForeground()
             }
 
