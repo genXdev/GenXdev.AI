@@ -1,8 +1,8 @@
 ################################################################################
 
-Describe "Get-LMStudioLoadedModelList basic functionality test" {
+Pester\Describe "Get-LMStudioLoadedModelList basic functionality test" {
 
-    It "Should pass PSScriptAnalyzer rules" {
+    Pester\It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Get-LMStudioLoadedModelList.ps1"
@@ -12,7 +12,7 @@ Describe "Get-LMStudioLoadedModelList basic functionality test" {
             -Path $scriptPath
 
         [string] $message = ""
-        $analyzerResults | ForEach-Object {
+        $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
 --------------------------------------------------
@@ -23,30 +23,30 @@ Message: $($_.Message)
 "@
         }
 
-        $analyzerResults.Count | Should -Be 0 -Because @"
+        $analyzerResults.Count | Pester\Should -Be 0 -Because @"
 The following PSScriptAnalyzer rules are being violated:
 $message
 "@;
     }
 
-    It "Should return loaded models from LM Studio" {
+    Pester\It "Should return loaded models from LM Studio" {
 
-        AssureLMStudio
+        GenXdev.AI\AssureLMStudio
 
-        $result = Get-LMStudioLoadedModelList
+        $result = GenXdev.AI\Get-LMStudioLoadedModelList
 
         # verify we get valid response
-        $result | Should -Not -BeNullOrEmpty
+        $result | Pester\Should -Not -BeNullOrEmpty
     }
 
-    It "Should have qwen2.5-14b-instruct model present" {
+    Pester\It "Should have qwen2.5-14b-instruct model present" {
 
-        Initialize-LMStudioModel -Model "qwen2.5-14b-instruct" -ModelLMSGetIdentifier "qwen2.5-14b-instruct"
-        $result = Get-LMStudioLoadedModelList
+        GenXdev.AI\Initialize-LMStudioModel -Model "qwen2.5-14b-instruct" -ModelLMSGetIdentifier "qwen2.5-14b-instruct"
+        $result = GenXdev.AI\Get-LMStudioLoadedModelList
 
-        # verify qwen-7b model exists
-        $qwenModel = $result | Where-Object { $_.identifier -like "qwen2.5-14b-instruct" }
-        $qwenModel | Should -Not -BeNull
+        # verify qwen-14b model exists
+        $qwenModel = $result | Microsoft.PowerShell.Core\Where-Object { $_.identifier -like "qwen2.5-14b-instruct" }
+        $qwenModel | Pester\Should -Not -BeNull
     }
 }
 

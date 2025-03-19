@@ -1,8 +1,8 @@
 using module GenXdev.Helpers
 
-Describe "Invoke-CommandFromToolCall cmdlet tests" {
+Pester\Describe "Invoke-CommandFromToolCall cmdlet tests" {
 
-    BeforeAll {
+    Pester\BeforeAll {
         # store test variables in script scope
         $Script:testFunctions = @(
             @{
@@ -23,7 +23,7 @@ Describe "Invoke-CommandFromToolCall cmdlet tests" {
                                 "Movie2"
                             )
                             path   = $path
-                        } | ConvertTo-Json
+                        } | Microsoft.PowerShell.Utility\ConvertTo-Json
                     }
                 }
             }
@@ -45,12 +45,12 @@ Describe "Invoke-CommandFromToolCall cmdlet tests" {
         }
     }
 
-    It "Should pass PSScriptAnalyzer rules" {
+    Pester\It "Should pass PSScriptAnalyzer rules" {
         # analyze main function implementation
         $scriptPath = "$PSScriptRoot\..\..\Functions\GenXdev.AI\" +
         "Invoke-CommandFromToolCall.ps1"
 
-        Write-Verbose "Analyzing  $scriptPath"
+        Microsoft.PowerShell.Utility\Write-Verbose "Analyzing  $scriptPath"
 
         # Get settings to verify what's being passed
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
@@ -58,7 +58,7 @@ Describe "Invoke-CommandFromToolCall cmdlet tests" {
             -ErrorAction SilentlyContinue
 
         [string] $message = ""
-        $analyzerResults | ForEach-Object {
+        $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
 --------------------------------------------------
@@ -69,13 +69,13 @@ Message: $($_.Message)
 "@
         }
 
-        $analyzerResults.Count | Should -Be 0 -Because @"
+        $analyzerResults.Count | Pester\Should -Be 0 -Because @"
 The following PSScriptAnalyzer rules are being violated:
 $message
 "@;
     }
 
-    It "Should reject invalid parameters" {
+    Pester\It "Should reject invalid parameters" {
         # create test call with invalid parameter
         $invalidCall = @{
             function = @{
@@ -84,29 +84,29 @@ $message
             }
         }
 
-        $result = Invoke-CommandFromToolCall `
+        $result = GenXdev.AI\Invoke-CommandFromToolCall `
             -ToolCall $invalidCall `
             -Functions $Script:testFunctions
 
-        $result.CommandExposed | Should -Be $false
-        $result.Reason | Should -Not -BeNullOrEmpty
+        $result.CommandExposed | Pester\Should -Be $false
+        $result.Reason | Pester\Should -Not -BeNullOrEmpty
     }
 
-    It "Should require confirmation by default" {
+    Pester\It "Should require confirmation by default" {
         # mock host UI for confirmation prompt
-        Mock -CommandName "Write-Host" -ModuleName "GenXdev.AI"
-        Mock -CommandName "Read-Host" -ModuleName "GenXdev.AI" -MockWith { return 'y' }
+        Pester\Mock -CommandName "Write-Host" -ModuleName "GenXdev.AI"
+        Pester\Mock -CommandName "Read-Host" -ModuleName "GenXdev.AI" -MockWith { return 'y' }
 
-        $result = Invoke-CommandFromToolCall `
+        $result = GenXdev.AI\Invoke-CommandFromToolCall `
             -ToolCall $Script:testToolCall `
             -Functions $Script:testFunctions `
             -ExposedCmdLets $Script:testCmdlets
 
-        $result.CommandExposed | Should -Be $true
-        $result.Output | Should -Not -BeNullOrEmpty
+        $result.CommandExposed | Pester\Should -Be $true
+        $result.Output | Pester\Should -Not -BeNullOrEmpty
     }
 
-    It "Should handle missing required parameters" {
+    Pester\It "Should handle missing required parameters" {
         # create test call without required parameter
         $invalidCall = @{
             function = @{
@@ -115,31 +115,31 @@ $message
             }
         }
 
-        $result = Invoke-CommandFromToolCall `
+        $result = GenXdev.AI\Invoke-CommandFromToolCall `
             -ToolCall $invalidCall `
             -Functions $Script:testFunctions
 
-        $result.CommandExposed | Should -Be $false
-        $result.Reason | Should -BeLike "*Missing required parameter*"
+        $result.CommandExposed | Pester\Should -Be $false
+        $result.Reason | Pester\Should -BeLike "*Missing required parameter*"
     }
 
-    It "Should execute command with proper output format" {
-        $result = Invoke-CommandFromToolCall `
+    Pester\It "Should execute command with proper output format" {
+        $result = GenXdev.AI\Invoke-CommandFromToolCall `
             -ToolCall $Script:testToolCall `
             -Functions $Script:testFunctions `
             -ExposedCmdLets $Script:testCmdlets `
             -NoConfirmationToolFunctionNames @("Get-Movies")
 
         # verify successful execution
-        $result.CommandExposed | Should -Be $true
-        $result.Output | Should -Not -BeNullOrEmpty
+        $result.CommandExposed | Pester\Should -Be $true
+        $result.Output | Pester\Should -Not -BeNullOrEmpty
 
         # parse and verify JSON output
-        $jsonOutput = $result.Output | ConvertFrom-Json
-        $jsonOutput.movies | Should -Not -BeNullOrEmpty
-        $jsonOutput.movies.Count | Should -Be 2
-        $jsonOutput.movies[0] | Should -Be "Movie1"
-        $jsonOutput.movies[1] | Should -Be "Movie2"
-        $jsonOutput.path | Should -Be "B:\"
+        $jsonOutput = $result.Output | Microsoft.PowerShell.Utility\ConvertFrom-Json
+        $jsonOutput.movies | Pester\Should -Not -BeNullOrEmpty
+        $jsonOutput.movies.Count | Pester\Should -Be 2
+        $jsonOutput.movies[0] | Pester\Should -Be "Movie1"
+        $jsonOutput.movies[1] | Pester\Should -Be "Movie2"
+        $jsonOutput.path | Pester\Should -Be "B:\"
     }
 }

@@ -23,27 +23,27 @@ function Get-CpuCore {
 
         # initialize counter for tracking total physical cores
         $totalPhysicalCores = 0
-        Write-Verbose "Initializing CPU core count calculation"
+        Microsoft.PowerShell.Utility\Write-Verbose "Initializing CPU core count calculation"
     }
 
     process {
 
         # query physical processors through WMI
-        $processors = Get-WmiObject -Class Win32_Processor
-        Write-Verbose "Retrieved $($processors.Count) physical processors"
+        $processors = Microsoft.PowerShell.Management\Get-WmiObject -Class Win32_Processor
+        Microsoft.PowerShell.Utility\Write-Verbose "Retrieved $($processors.Count) physical processors"
 
         # sum cores from each processor
         $processors |
-        Select-Object -Property NumberOfCores |
-        ForEach-Object {
+        Microsoft.PowerShell.Utility\Select-Object -Property NumberOfCores |
+        Microsoft.PowerShell.Core\ForEach-Object {
 
             $totalPhysicalCores += $_.NumberOfCores
-            Write-Verbose "Added $($_.NumberOfCores) cores from processor"
+            Microsoft.PowerShell.Utility\Write-Verbose "Added $($_.NumberOfCores) cores from processor"
         }
 
         # account for hyperthreading
         $logicalCores = $totalPhysicalCores * 2
-        Write-Verbose "Final count: $logicalCores logical cores"
+        Microsoft.PowerShell.Utility\Write-Verbose "Final count: $logicalCores logical cores"
     }
 
     end {

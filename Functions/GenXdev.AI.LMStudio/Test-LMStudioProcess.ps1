@@ -21,13 +21,13 @@ function Test-LMStudioProcess {
 
     begin {
 
-        Write-Verbose "Searching for LM Studio process..."
+        Microsoft.PowerShell.Utility\Write-Verbose "Searching for LM Studio process..."
     }
 
     process {
 
         # get lm studio process with a valid window handle
-        $process = Get-Process -Name "LM Studio" -ErrorAction SilentlyContinue | ForEach-Object {
+        $process = Microsoft.PowerShell.Management\Get-Process -Name "LM Studio" -ErrorAction SilentlyContinue | Microsoft.PowerShell.Core\ForEach-Object {
 
             if ($ShowWindow) {
 

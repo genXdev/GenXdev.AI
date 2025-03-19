@@ -34,11 +34,11 @@ function AssureWinMergeInstalled {
         function IsWinGetInstalled {
 
             # attempt to load the winget module silently
-            Import-Module "Microsoft.WinGet.Client" `
+            Microsoft.PowerShell.Core\Import-Module "Microsoft.WinGet.Client" `
                 -ErrorAction SilentlyContinue
 
             # verify if module was loaded successfully
-            $module = Get-Module "Microsoft.WinGet.Client" `
+            $module = Microsoft.PowerShell.Core\Get-Module "Microsoft.WinGet.Client" `
                 -ErrorAction SilentlyContinue
 
             return $null -ne $module
@@ -59,21 +59,21 @@ function AssureWinMergeInstalled {
         function InstallWinGet {
 
             # install and import winget module with force to ensure success
-            Write-Verbose "Installing WinGet PowerShell client..."
-            $null = Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber
+            Microsoft.PowerShell.Utility\Write-Verbose "Installing WinGet PowerShell client..."
+            $null = PowerShellGet\Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber
 
             # load the newly installed module
-            Import-Module "Microsoft.WinGet.Client"
+            Microsoft.PowerShell.Core\Import-Module "Microsoft.WinGet.Client"
         }
     }
 
     process {
 
         # verify if winmerge is available in current session
-        if (@(Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
+        if (@(Microsoft.PowerShell.Core\Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
 
             # define the standard installation location for winmerge
-            $winMergePath = Join-Path $env:LOCALAPPDATA "Programs\WinMerge"
+            $winMergePath = Microsoft.PowerShell.Management\Join-Path $env:LOCALAPPDATA "Programs\WinMerge"
 
             # get the current user's path environment variable
             $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
@@ -81,7 +81,7 @@ function AssureWinMergeInstalled {
             # ensure winmerge path exists in user's path variable
             if ($currentPath -notlike "*$winMergePath*") {
 
-                Write-Verbose "Adding WinMerge to system PATH..."
+                Microsoft.PowerShell.Utility\Write-Verbose "Adding WinMerge to system PATH..."
                 [Environment]::SetEnvironmentVariable(
                     'PATH',
                     "$currentPath;$winMergePath",
@@ -92,11 +92,11 @@ function AssureWinMergeInstalled {
             }
 
             # check if winmerge is now accessible
-            if (@(Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue).Length -gt 0) {
+            if (@(Microsoft.PowerShell.Core\Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue).Length -gt 0) {
                 return
             }
 
-            Write-Host "WinMerge not found. Installing WinMerge..."
+            Microsoft.PowerShell.Utility\Write-Host "WinMerge not found. Installing WinMerge..."
 
             # ensure winget is available for installation
             if (-not (IsWinGetInstalled)) {
@@ -104,10 +104,10 @@ function AssureWinMergeInstalled {
             }
 
             # install winmerge using winget package manager
-            $null = Install-WinGetPackage -Id 'WinMerge.WinMerge' -Force
+            $null = Microsoft.WinGet.Client\Install-WinGetPackage -Id 'WinMerge.WinMerge' -Force
 
             # verify successful installation
-            if (-not (Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue)) {
+            if (-not (Microsoft.PowerShell.Core\Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue)) {
                 throw "WinMerge installation failed."
             }
         }

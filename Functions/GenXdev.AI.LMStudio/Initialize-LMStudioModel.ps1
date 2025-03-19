@@ -28,7 +28,7 @@ Shows the LM Studio window during initialization if specified.
 Array of model names to try if specified model is not found.
 
 .EXAMPLE
-Initialize-LMStudioModel -Model "qwen-7b" -ShowWindow -MaxToken 2048
+Initialize-LMStudioModel -Model "qwen2.5-14b-instruct" -ShowWindow -MaxToken 2048
 
 .EXAMPLE
 o "vicuna" -ttl 3600
@@ -89,13 +89,13 @@ function Initialize-LMStudioModel {
             HelpMessage = "Force stop LM Studio before initialization"
         )]
         [switch]$Force,
-        ################################################################################################################################################
+        ################1################################################################################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "List of preferred models to try if specified not found"
         )]
         [string[]]$PreferredModels = @(
-            "qwen-7b", "vicuna", "alpaca", "gpt", "mistral", "falcon", "mpt",
+            "qwen2.5-14b-instruct", "vicuna", "alpaca", "gpt", "mistral", "falcon", "mpt",
             "koala", "wizard", "guanaco", "bloom", "rwkv", "camel", "pythia",
             "baichuan"
         )
@@ -112,9 +112,9 @@ function Initialize-LMStudioModel {
             }
             $Force = $false
 
-            Write-Verbose "Force parameter specified, stopping LM Studio processes"
-            $null = Get-Process "LM Studio", "LMS" -ErrorAction SilentlyContinue |
-            Stop-Process -Force
+            Microsoft.PowerShell.Utility\Write-Verbose "Force parameter specified, stopping LM Studio processes"
+            $null = Microsoft.PowerShell.Management\Get-Process "LM Studio", "LMS" -ErrorAction SilentlyContinue |
+            Microsoft.PowerShell.Management\Stop-Process -Force
         }
 
         # no model specified?
@@ -166,49 +166,49 @@ function Initialize-LMStudioModel {
         }
 
         # get lm studio installation paths
-        $paths = Get-LMStudioPaths
+        $paths = GenXdev.AI\Get-LMStudioPaths
 
         # verify installation and process status
-        $installationOk = Test-LMStudioInstallation
-        $processOk = Test-LMStudioProcess -ShowWindow:$ShowWindow
+        $installationOk = GenXdev.AI\Test-LMStudioInstallation
+        $processOk = GenXdev.AI\Test-LMStudioProcess -ShowWindow:$ShowWindow
 
         # handle installation and process initialization if needed
         if (-not $installationOk -or -not $processOk) {
 
             if (-not $installationOk) {
 
-                $null = Install-LMStudioApplication
-                $installationOk = Test-LMStudioInstallation
+                $null = GenXdev.AI\Install-LMStudioApplication
+                $installationOk = GenXdev.AI\Test-LMStudioInstallation
 
                 if (-not $installationOk) {
                     throw "LM Studio not found or properly installed"
                 }
             }
 
-            $paths = Get-LMStudioPaths
+            $paths = GenXdev.AI\Get-LMStudioPaths
 
             if (-not $processOk) {
 
                 # attempt to start the server asynchronously
-                $null = Start-LMStudioApplication -WithVisibleWindow:$ShowWindow
+                $null = GenXdev.AI\Start-LMStudioApplication -WithVisibleWindow:$ShowWindow
             }
         }
 
         if ($ShowWindow) {
 
-            $null = Get-LMStudioWindow -NoAutoStart -ShowWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            $null = GenXdev.AI\Get-LMStudioWindow -NoAutoStart -ShowWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         }
 
-        Write-Verbose "Using LM Studio CLI executable: $($paths.LMSExe)"
+        Microsoft.PowerShell.Utility\Write-Verbose "Using LM Studio CLI executable: $($paths.LMSExe)"
     }
 
     process {
 
         # get current model list and search for requested model
-        $modelList = Get-LMStudioModelList
+        $modelList = GenXdev.AI\Get-LMStudioModelList
         $foundModel = $modelList |
-        Where-Object { $_.path -like "*$Model*" } |
-        Select-Object -First 1
+        Microsoft.PowerShell.Core\Where-Object { $_.path -like "*$Model*" } |
+        Microsoft.PowerShell.Utility\Select-Object -First 1
 
         # attempt to download model if not found and identifier provided
         if (-not $foundModel) {
@@ -216,24 +216,24 @@ function Initialize-LMStudioModel {
                 $null = & "$($paths.LMSExe)" get $ModelLMSGetIdentifier
 
                 # refresh model list after download
-                $modelList = Get-LMStudioModelList
+                $modelList = GenXdev.AI\Get-LMStudioModelList
                 $foundModel = $modelList |
-                Where-Object { $_.path -like "*$Model*" } |
-                Select-Object -First 1
+                Microsoft.PowerShell.Core\Where-Object { $_.path -like "*$Model*" } |
+                Microsoft.PowerShell.Utility\Select-Object -First 1
             }
         }
 
         # try preferred models if still not found
         if (-not $foundModel) {
-            Write-Verbose "Model '$Model' not found, trying preferred models"
+            Microsoft.PowerShell.Utility\Write-Verbose "Model '$Model' not found, trying preferred models"
 
             foreach ($preferredModel in $PreferredModels) {
                 $foundModel = $modelList |
-                Where-Object { $_.path -like "*$preferredModel*" } |
-                Select-Object -First 1
+                Microsoft.PowerShell.Core\Where-Object { $_.path -like "*$preferredModel*" } |
+                Microsoft.PowerShell.Utility\Select-Object -First 1
 
                 if ($foundModel) {
-                    Write-Verbose "Found preferred model: $($foundModel.path)"
+                    Microsoft.PowerShell.Utility\Write-Verbose "Found preferred model: $($foundModel.path)"
                     break
                 }
             }
@@ -243,18 +243,18 @@ function Initialize-LMStudioModel {
             throw "Model '$Model' not found"
         }
 
-        Write-Verbose "Selected model: $($foundModel.path)"
+        Microsoft.PowerShell.Utility\Write-Verbose "Selected model: $($foundModel.path)"
 
         # check if model is already loaded
-        $loadedModels = Get-LMStudioLoadedModelList
+        $loadedModels = GenXdev.AI\Get-LMStudioLoadedModelList
         $modelLoaded = $loadedModels |
-        Where-Object { $_.path -eq $foundModel.path } |
-        Select-Object -First 1
+        Microsoft.PowerShell.Core\Where-Object { $_.path -eq $foundModel.path } |
+        Microsoft.PowerShell.Utility\Select-Object -First 1
 
         # load model if not already active
         if ($null -eq $modelLoaded) {
 
-            Write-Verbose "Loading model..."
+            Microsoft.PowerShell.Utility\Write-Verbose "Loading model..."
             $params = [System.Collections.Generic.List[string]]::new()
             $null = $params.Add("load")
             $null = $params.Add($foundModel.path)
@@ -268,7 +268,7 @@ function Initialize-LMStudioModel {
             switch ($Gpu) {
 
                 -2 {
-                    if (Get-HasCapableGpu) {
+                    if (GenXdev.AI\Get-HasCapableGpu) {
 
                         $null = $params.Add("--gpu 1")
                     }
@@ -286,7 +286,7 @@ function Initialize-LMStudioModel {
                     }
                     else {
 
-                        Write-Warning "Invalid GPU value. Use -2 for autodetect, or 0..1"
+                        Microsoft.PowerShell.Utility\Write-Warning "Invalid GPU value. Use -2 for autodetect, or 0..1"
                     }
                 }
             }
@@ -297,51 +297,51 @@ function Initialize-LMStudioModel {
                 $null = $params.Add($maxToken)
             }
 
-            Write-Verbose "Loading model with parameters: $($params|ConvertTo-Json -Compress -WarningAction SilentlyContinue)"
+            Microsoft.PowerShell.Utility\Write-Verbose "Loading modeMicrosoft.PowerShell.Utility\ConvertTo-Jsoners: $($params|Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -WarningAction SilentlyContinue)"
 
-            $success = Start-Job -ArgumentList @($paths, $params) -ScriptBlock {
+            $success = Microsoft.PowerShell.Core\Start-Job -ArgumentList @($paths, $params) -ScriptBlock {
                 param($lmstudiopaths, $params)
 
                 try {
                     # Redirect stderr to stdout to capture all output
-                    $process = Start-Process ($lmstudiopaths.LMSExe) -ArgumentList $params -Wait -NoNewWindow -PassThru `
+                    $process = Microsoft.PowerShell.Management\Start-Process ($lmstudiopaths.LMSExe) -ArgumentList $params -Wait -NoNewWindow -PassThru `
                         -RedirectStandardOutput $true
 
                     # Consider success if process exits with code 0 or if we detect the model is actually loaded
-                    return ($process.ExitCode -eq 0) -or (Get-LMStudioLoadedModelList | Where-Object { $_.path -like $params[1] })
+                    return ($process.ExitCode -eq 0) -or (GenXdev.AI\Get-LMStudioLoadedMMicrosoft.PowerShell.Core\Where-Objecticrosoft.PowerShell.Core\Where-Object { $_.path -like $params[1] })
                 }
                 catch {
-                    Write-Warning "Error during model load: $_"
+                    Microsoft.PowerShell.Utility\Write-Warning "Error during model load: $_"
                     return $false
                 }
             }.GetNewClosure() |
-            Wait-Job -Timeout 1800 |
-            Receive-Job
+            Microsoft.PowerShell.Core\Wait-Job -Timeout 1800 |
+            Microsoft.PowerShell.Core\Receive-Job
 
             # retry after unloading all models if load failed
             if (-not $success -and $loadedModels.Count -gt 0) {
-                $null = Start-Job -ArgumentList $paths -ScriptBlock {
+                $null = Microsoft.PowerShell.Core\Start-Job -ArgumentList $paths -ScriptBlock {
                     param($lmstudiopaths)
-                    $null = Start-Process ($lmstudiopaths.LMSExe) -ArgumentList @("unload", "--all") `
+                    $null = Microsoft.PowerShell.Management\Start-Process ($lmstudiopaths.LMSExe) -ArgumentList @("unload", "--all") `
                         -Wait -NoNewWindow
                     $LASTEXITCODE -eq 0
                 } |
-                Wait-Job -Timeout 10 |
-                Receive-Job
+                Microsoft.PowerShell.Core\Wait-Job -Timeout 10 |
+                Microsoft.PowerShell.Core\Receive-Job
 
-                return Initialize-LMStudioModel @PSBoundParameters
+                return GenXdev.AI\Initialize-LMStudioModel @PSBoundParameters
             }
         }
 
         # verify successful model load
-        $loadedModels = Get-LMStudioLoadedModelList
+        $loadedModels = GenXdev.AI\Get-LMStudioLoadedModelList
         $modelLoaded = $loadedModels |
-        Where-Object { $_.path -eq $foundModel.path } |
-        Select-Object -First 1
+        Microsoft.PowerShell.Core\Where-Object { $_.path -eq $foundModel.path } |
+        Microsoft.PowerShell.Utility\Select-Object -First 1
 
         if ($null -eq $modelLoaded) {
 
-            $null = Test-LMStudioProcess -ShowWindow
+            $null = GenXdev.AI\Test-LMStudioProcess -ShowWindow
             throw "Model failed to load. Check LM-Studio configuration."
         }
 
@@ -351,7 +351,7 @@ function Initialize-LMStudioModel {
     end {
         if ($ShowWindow) {
 
-            $null = Get-LMStudioWindow -NoAutoStart -ShowWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            $null = GenXdev.AI\Get-LMStudioWindow -NoAutoStart -ShowWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         }
     }
 }

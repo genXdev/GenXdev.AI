@@ -222,7 +222,7 @@ function Save-Transcriptions {
         if ([string]::IsNullOrWhiteSpace($LanguageIn)) {
 
             # get default language from system settings
-            $LanguageIn = Get-DefaultWebLanguage
+            $LanguageIn = GenXdev.Helpers\Get-DefaultWebLanguage
         }
 
         # define array of supported media file extensions for processing
@@ -373,22 +373,22 @@ function Save-Transcriptions {
         )
 
         # store current location to restore at end of processing
-        Push-Location
-        Write-Verbose "Current working directory stored for later restoration"
+        Microsoft.PowerShell.Management\Push-Location
+        Microsoft.PowerShell.Utility\Write-Verbose "Current working directory stored for later restoration"
     }
 
     process {
 
         # change to target directory for file processing
-        Set-Location (GenXdev.FileSystem\Expand-Path $DirectoryPath)
-        Write-Verbose "Changed working directory to: $DirectoryPath"
+        Microsoft.PowerShell.Management\Set-Location (GenXdev.FileSystem\Expand-Path $DirectoryPath)
+        Microsoft.PowerShell.Utility\Write-Verbose "Changed working directory to: $DirectoryPath"
 
         # recursively process each file in directory and subdirectories
-        Get-ChildItem -File -rec | ForEach-Object {
+        Microsoft.PowerShell.Management\Get-ChildItem -File -rec | Microsoft.PowerShell.Core\ForEach-Object {
 
             # skip files that don't have a supported media extension
             if ($extensions -notcontains $PSItem.Extension.ToLower()) {
-                Write-Verbose "Skipping file with unsupported extension: $($PSItem.Name)"
+                Microsoft.PowerShell.Utility\Write-Verbose "Skipping file with unsupported extension: $($PSItem.Name)"
                 return
             }
 
@@ -406,26 +406,26 @@ function Save-Transcriptions {
             # handle legacy Dutch subtitle file naming convention
             if ([io.file]::Exists($nlPathOld)) {
                 if ([io.file]::Exists($nlPath)) {
-                    Remove-Item $nlPathOld -Force
+                    Microsoft.PowerShell.Management\Remove-Item $nlPathOld -Force
                 }
                 else {
-                    Move-Item $nlPathOld $nlPath -Force
+                    Microsoft.PowerShell.Management\Move-Item $nlPathOld $nlPath -Force
                 }
             }
 
             # handle legacy English subtitle file naming convention
             if ([io.file]::Exists($enPathOld)) {
                 if ([io.file]::Exists($enPath)) {
-                    Remove-Item $enPathOld -Force
+                    Microsoft.PowerShell.Management\Remove-Item $enPathOld -Force
                 }
                 else {
-                    Move-Item $enPathOld $enPath -Force
+                    Microsoft.PowerShell.Management\Move-Item $enPathOld $enPath -Force
                 }
             }
 
             # skip if subtitle file already exists for target language
             if ([io.file]::Exists($newPath)) {
-                Write-Verbose "Subtitle file already exists: $newPath"
+                Microsoft.PowerShell.Utility\Write-Verbose "Subtitle file already exists: $newPath"
                 return
             }
 
@@ -435,7 +435,7 @@ function Save-Transcriptions {
                     [System.Diagnostics.ProcessPriorityClass]::Idle
 
                 try {
-                    Write-Verbose "Generating transcription for: $($PSItem.FullName)"
+                    Microsoft.PowerShell.Utility\Write-Verbose "Generating transcription for: $($PSItem.FullName)"
 
                     # prepare parameters for transcription generation
                     $params = @{
@@ -457,7 +457,7 @@ function Save-Transcriptions {
                     }
 
                     # generate transcription using whisper model
-                    $transcription = Get-MediaFileAudioTranscription @params
+                    $transcription = GenXdev.AI\Get-MediaFileAudioTranscription @params
                 }
                 finally {
                     # restore normal CPU priority after processing
@@ -466,22 +466,22 @@ function Save-Transcriptions {
                 }
             }
             catch {
-                Write-Verbose "Failed to process file: $($PSItem.FullName)"
-                Write-Verbose "Error details: $PSItem"
+                Microsoft.PowerShell.Utility\Write-Verbose "Failed to process file: $($PSItem.FullName)"
+                Microsoft.PowerShell.Utility\Write-Verbose "Error details: $PSItem"
                 return
             }
 
             # save generated transcription to subtitle file
-            $transcription | Out-File $newPath -Force
-            Write-Verbose "Transcription saved to: $newPath"
+            $transcription | Microsoft.PowerShell.Utility\Out-File $newPath -Force
+            Microsoft.PowerShell.Utility\Write-Verbose "Transcription saved to: $newPath"
             $transcription
         }
     }
 
     end {
         # restore original working directory
-        Pop-Location
-        Write-Verbose "Original working directory restored"
+        Microsoft.PowerShell.Management\Pop-Location
+        Microsoft.PowerShell.Utility\Write-Verbose "Original working directory restored"
     }
 }
 ################################################################################

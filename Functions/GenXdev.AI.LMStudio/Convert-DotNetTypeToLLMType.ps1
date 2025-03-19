@@ -34,7 +34,7 @@ function Convert-DotNetTypeToLLMType {
     )
 
     begin {
-        Write-Verbose "Converting .NET type '$DotNetType' to LLM type"
+        Microsoft.PowerShell.Utility\Write-Verbose "Converting .NET type '$DotNetType' to LLM type"
     }
 
     process {
@@ -54,7 +54,7 @@ function Convert-DotNetTypeToLLMType {
             default { "object" }
         }
 
-        Write-Verbose "Converted '$DotNetType' to '$result'"
+        Microsoft.PowerShell.Utility\Write-Verbose "Converted '$DotNetType' to '$result'"
         return $result
     }
 

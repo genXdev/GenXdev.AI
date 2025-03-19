@@ -173,7 +173,7 @@ Layman: 'Ensuring support to avoid wasted effort; implies potential resistance.'
 $Instructions
 "@
 
-        Invoke-LLMTextTransformation @PSBoundParameters -Instructions $corporateInstructions
+        GenXdev.AI\Invoke-LLMTextTransformation @PSBoundParameters -Instructions $corporateInstructions
     }
 }
 ################################################################################

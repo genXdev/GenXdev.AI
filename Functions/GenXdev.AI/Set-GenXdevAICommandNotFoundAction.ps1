@@ -19,7 +19,7 @@ function Set-GenXdevAICommandNotFoundAction {
 
     begin {
 
-        Write-Verbose "Starting Set-GenXdevAICommandNotFoundAction"
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting Set-GenXdevAICommandNotFoundAction"
 
         # store reference to existing handler if it's not already our handler
         $script:originalHandler = $null
@@ -31,12 +31,12 @@ function Set-GenXdevAICommandNotFoundAction {
             $handlerString = $currentHandler.ToString()
             if ($handlerString.Contains("Do you want AI to figure out")) {
 
-                Write-Verbose "AI Command handler already installed - exiting"
+                Microsoft.PowerShell.Utility\Write-Verbose "AI Command handler already installed - exiting"
                 return
             }
 
             $script:originalHandler = $currentHandler
-            Write-Verbose "Stored original command handler for chaining"
+            Microsoft.PowerShell.Utility\Write-Verbose "Stored original command handler for chaining"
         }
     }
 
@@ -51,7 +51,7 @@ function Set-GenXdevAICommandNotFoundAction {
             # Add flag to prevent recursion
             $script:insideCommandHandler = $false
 
-            Write-Verbose "Configuring new CommandNotFoundAction handler"
+            Microsoft.PowerShell.Utility\Write-Verbose "Configuring new CommandNotFoundAction handler"
 
             # define the command not found action handler
             $ExecutionContext.InvokeCommand.CommandNotFoundAction = {
@@ -60,7 +60,7 @@ function Set-GenXdevAICommandNotFoundAction {
                 # prevent recursion
                 if ($script:insideCommandHandler) {
 
-                    Write-Debug "Preventing recursive call for command: $CommandName"
+                    Microsoft.PowerShell.Utility\Write-Debug "Preventing recursive call for command: $CommandName"
                     return
                 }
 
@@ -93,7 +93,7 @@ function Set-GenXdevAICommandNotFoundAction {
                             }
                         }
                         catch {
-                            Write-Debug "Original handler failed: $_"
+                            Microsoft.PowerShell.Utility\Write-Debug "Original handler failed: $_"
                         }
                     }
                 }
@@ -107,11 +107,11 @@ function Set-GenXdevAICommandNotFoundAction {
                 }
 
                 # handle directory navigation
-                if (Test-Path -Path $CommandName -PathType Container) {
+                if (Microsoft.PowerShell.Management\Test-Path -Path $CommandName -PathType Container) {
 
                     $CommandLookupEventArgs.CommandScriptBlock = {
-                        Set-Location $CommandName
-                        Get-ChildItem
+                        Microsoft.PowerShell.Management\Set-Location $CommandName
+                        Microsoft.PowerShell.Management\Get-ChildItem
                     }.GetNewClosure()
 
                     $CommandLookupEventArgs.StopSearch = $true
@@ -135,13 +135,13 @@ function Set-GenXdevAICommandNotFoundAction {
 
                     if ($userChoice -eq 0) { return }
 
-                    Send-Key ($MyInvocation.line) -Escape
+                    GenXdev.Windows\Send-Key ($MyInvocation.line) -Escape
 
-                    Write-Host -ForegroundColor Yellow "What did you want to do?"
+                    Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Yellow "What did you want to do?"
 
                     [System.Console]::Write("> ")
                     $userIntent = [System.Console]::ReadLine()
-                    Write-Host -ForegroundColor Green "Ok, hold on a sec.."
+                    Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Green "Ok, hold on a sec.."
 
                     # prepare AI hint
                     $aiPrompt = ("Generate a Powershell commandline that would " +
@@ -149,19 +149,19 @@ function Set-GenXdevAICommandNotFoundAction {
                         "`$ExecutionContext.InvokeCommand.CommandNotFoundAction " +
                         "with her prompt being: $userIntent")
 
-                    Invoke-AIPowershellCommand $aiPrompt
+                    GenXdev.AI\Invoke-AIPowershellCommand $aiPrompt
                 }.GetNewClosure()
 
                 $CommandLookupEventArgs.StopSearch = $true
             }
         }
         catch {
-            Write-Error "Failed to set up command not found handler: $_"
+            Microsoft.PowerShell.Utility\Write-Error "Failed to set up command not found handler: $_"
         }
     }
 
     end {
-        Write-Verbose "Command not found handler configuration completed"
+        Microsoft.PowerShell.Utility\Write-Verbose "Command not found handler configuration completed"
     }
 }
 ################################################################################

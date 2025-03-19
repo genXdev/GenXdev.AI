@@ -1,7 +1,7 @@
 ################################################################################
-Describe "Get-CpuCore" {
+Pester\Describe "Get-CpuCore" {
 
-    It "Should pass PSScriptAnalyzer rules" {
+    Pester\It "Should pass PSScriptAnalyzer rules" {
 
         # get the analyzed script path
         $scriptPath = GenXdev.FileSystem\Expand-Path `
@@ -12,7 +12,7 @@ Describe "Get-CpuCore" {
             -Path $scriptPath
 
         [string] $message = ""
-        $analyzerResults | ForEach-Object {
+        $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
 --------------------------------------------------
@@ -23,7 +23,7 @@ Message: $($_.Message)
 "@
         }
 
-        $analyzerResults.Count | Should -Be 0 -Because @"
+        $analyzerResults.Count | Pester\Should -Be 0 -Because @"
 The following PSScriptAnalyzer rules are being violated:
 $message
 "@;

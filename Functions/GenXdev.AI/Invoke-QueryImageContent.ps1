@@ -86,13 +86,13 @@ function Invoke-QueryImageContent {
     begin {
 
         # log the initiation of image analysis process
-        Write-Verbose "Starting image analysis with query: $Query"
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting image analysis with query: $Query"
 
         # convert any relative or partial path to full path for reliability
         $imagePath = GenXdev.FileSystem\Expand-Path $ImagePath
 
         # ensure the specified image file exists before proceeding
-        if (-not (Test-Path $imagePath)) {
+        if (-not (Microsoft.PowerShell.Management\Test-Path $imagePath)) {
             throw "Image file not found: $imagePath"
         }
     }
@@ -100,10 +100,10 @@ function Invoke-QueryImageContent {
     process {
 
         # log the start of actual image processing
-        Write-Verbose "Processing image: $imagePath"
+        Microsoft.PowerShell.Utility\Write-Verbose "Processing image: $imagePath"
 
         # invoke the ai model with image analysis configuration
-        Invoke-LLMQuery `
+        GenXdev.AI\Invoke-LLMQuery `
             -Model "MiniCPM" `
             -ModelLMSGetIdentifier "minicpm-v-2_6" `
             -Query $Query `

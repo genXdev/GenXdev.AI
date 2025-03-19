@@ -249,9 +249,9 @@ function Invoke-LLMQuery {
     )
 
     begin {
-        Write-Verbose "Starting LLM interaction..."
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting LLM interaction..."
 
-        $MarkupBlocksTypeFilter = $MarkupBlocksTypeFilter | ForEach-Object { $_.ToLowerInvariant() }
+        $MarkupBlocksTypeFilter = $MarkupBlocksTypeFilter | Microsoft.PowerShell.Core\ForEach-Object { $_.ToLowerInvariant() }
 
         # initialize lm studio if using localhost
         if ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or
@@ -260,7 +260,7 @@ function Invoke-LLMQuery {
             $initParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
-                -DefaultValues (Get-Variable -Scope Local -Name * `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * `
                     -ErrorAction SilentlyContinue)
 
             if ($PSBoundParameters.ContainsKey("Force")) {
@@ -268,7 +268,7 @@ function Invoke-LLMQuery {
                 $Force = $false
             }
 
-            $modelInfo = Initialize-LMStudioModel @initParams
+            $modelInfo = GenXdev.AI\Initialize-LMStudioModel @initParams
             $Model = $modelInfo.identifier
         }
 
@@ -306,10 +306,10 @@ function Invoke-LLMQuery {
                 $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
             }
 
-            Write-Verbose "Converting tool functions to LM Studio format"
+            Microsoft.PowerShell.Utility\Write-Verbose "Converting tool functions to LM Studio format"
 
             # convert them
-            $functions = ConvertTo-LMStudioFunctionDefinition `
+            $functions = GenXdev.AI\ConvertTo-LMStudioFunctionDefinition `
                 -ExposedCmdLets $ExposedCmdLets
         }
 
@@ -338,16 +338,16 @@ function Invoke-LLMQuery {
         }
 
         # add if not already present
-        $newMessageJson = $newMessage | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+        $newMessageJson = $newMessage | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
         $isDuplicate = $false
         foreach ($msg in $messages) {
-            if (($msg | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) -eq $newMessageJson) {
+            if (($msg | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) -eq $newMessageJson) {
                 $isDuplicate = $true
                 break
             }
         }
         if (-not $isDuplicate) {
-            Write-Verbose "System Instructions: $Instructions"
+            Microsoft.PowerShell.Utility\Write-Verbose "System Instructions: $Instructions"
             $null = $messages.Add($newMessage)
         }
 
@@ -366,7 +366,7 @@ function Invoke-LLMQuery {
             $headers."Authorization" = "Bearer $ApiKey"
         }
 
-        Write-Verbose "Initialized conversation with system instructions"
+        Microsoft.PowerShell.Utility\Write-Verbose "Initialized conversation with system instructions"
     }
 
     process {
@@ -376,15 +376,15 @@ function Invoke-LLMQuery {
             $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\New-LLMTextChat' `
-                -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
-            return (New-LLMTextChat @invocationArgs)
+            return (GenXdev.AI\New-LLMTextChat @invocationArgs)
         }
         # Just before sending request
-        Write-Verbose "Sending request to LLM with:"
-        Write-Verbose "Model: $Model"
-        Write-Verbose "Query: $Query"
-        Write-Verbose "Temperature: $Temperature"
+        Microsoft.PowerShell.Utility\Write-Verbose "Sending request to LLM with:"
+        Microsoft.PowerShell.Utility\Write-Verbose "Model: $Model"
+        Microsoft.PowerShell.Utility\Write-Verbose "Query: $Query"
+        Microsoft.PowerShell.Utility\Write-Verbose "Temperature: $Temperature"
 
 
         switch ($ChatMode) {
@@ -394,18 +394,18 @@ function Invoke-LLMQuery {
                 $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\New-LLMTextChat' `
-                    -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
-                return (New-LLMTextChat @invocationArgs)
+                return (GenXdev.AI\New-LLMTextChat @invocationArgs)
             }
             "default audioinput device" {
 
                 $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\New-LLMAudioChat' `
-                    -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
-                return (New-LLMAudioChat @invocationArgs)
+                return (GenXdev.AI\New-LLMAudioChat @invocationArgs)
             }
             "desktop audio" {
 
@@ -413,9 +413,9 @@ function Invoke-LLMQuery {
                 $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\New-LLMAudioChat' `
-                    -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
-                return (New-LLMAudioChat @invocationArgs)
+                return (GenXdev.AI\New-LLMAudioChat @invocationArgs)
             }
         }
 
@@ -739,7 +739,7 @@ function Invoke-LLMQuery {
                             $newHeight = $maxDimension
                             $newWidth = [math]::Round($image.Width * ($maxDimension / $image.Height))
                         }
-                        $scaledImage = New-Object System.Drawing.Bitmap $newWidth, $newHeight
+                        $scaledImage = Microsoft.PowerShell.Utility\New-Object System.Drawing.Bitmap $newWidth, $newHeight
                         $graphics = [System.Drawing.Graphics]::FromImage($scaledImage)
                         $graphics.DrawImage($image, 0, 0, $newWidth, $newHeight)
                         $graphics.Dispose();
@@ -747,7 +747,7 @@ function Invoke-LLMQuery {
                 }
                 catch {
                 }
-                $memoryStream = New-Object System.IO.MemoryStream
+                $memoryStream = Microsoft.PowerShell.Utility\New-Object System.IO.MemoryStream
                 $image.Save($memoryStream, $image.RawFormat)
                 $imageData = $memoryStream.ToArray()
                 $memoryStream.Close()
@@ -768,10 +768,10 @@ function Invoke-LLMQuery {
                         bytes        = "data:$mimeType;base64,$base64Data"
                     }
                 }
-                $newMessageJson = $newMessage | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+                $newMessageJson = $newMessage | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
                 $isDuplicate = $false
                 foreach ($msg in $messages) {
-                    if (($msg | ConvertTo-Json -Depth 10 -Compress) -eq $newMessageJson) {
+                    if (($msg | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress) -eq $newMessageJson) {
                         $isDuplicate = $true
                         break
                     }
@@ -795,10 +795,10 @@ function Invoke-LLMQuery {
                         }
                     )
                 }
-                $newMessageJson = $newMessage | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+                $newMessageJson = $newMessage | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
                 $isDuplicate = $false
                 foreach ($msg in $messages) {
-                    if (($msg | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) -eq $newMessageJson) {
+                    if (($msg | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) -eq $newMessageJson) {
                         $isDuplicate = $true
                         break
                     }
@@ -820,10 +820,10 @@ function Invoke-LLMQuery {
 
         if (-not [string]::IsNullOrWhiteSpace($ResponseFormat)) {
             try {
-                $payload.response_format = $ResponseFormat | ConvertFrom-Json
+                $payload.response_format = $ResponseFormat | Microsoft.PowerShell.Utility\ConvertFrom-Json
             }
             catch {
-                Write-Warning "Invalid response format schema. Ignoring."
+                Microsoft.PowerShell.Utility\Write-Warning "Invalid response format schema. Ignoring."
             }
         }
 
@@ -841,7 +841,7 @@ function Invoke-LLMQuery {
 
             # maintain array structure, create new array with required properties
             $functionsWithoutCallbacks = @(
-                $Functions | ForEach-Object {
+                $Functions | Microsoft.PowerShell.Core\ForEach-Object {
                     [PSCustomObject] @{
                         type     = $_.type
                         function = [PSCustomObject] @{
@@ -873,14 +873,14 @@ function Invoke-LLMQuery {
         }
 
         # convert payload to json
-        $json = $payload | ConvertTo-Json -Depth 60 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+        $json = $payload | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 60 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
 
-        Write-Verbose "Querying LM-Studio model '$Model' with parameters:"
-        Write-Verbose $($payload | ConvertTo-Json -Depth 7 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue)
+        Microsoft.PowerShell.Utility\Write-Verbose "Querying LM-Studio model '$Model' with parameters:"
+        Microsoft.PowerShell.Utility\Write-Verbose $($payload | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 7 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue)
 
         # send request with long timeouts
-        $response = Invoke-RestMethod -Uri $apiUrl `
+        $response = Microsoft.PowerShell.Utility\Invoke-RestMethod -Uri $apiUrl `
             -Method Post `
             -Body $bytes `
             -Headers $headers `
@@ -892,49 +892,49 @@ function Invoke-LLMQuery {
 
             # Add assistant's tool calls to history
             $newMsg = $response.choices[0].message
-            $newMsgJson = $newMsg | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+            $newMsgJson = $newMsg | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
 
             # Only add if it's not a duplicate of the last message
             if ($messages.Count -eq 0 -or
-                ($messages[-1] | ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) -ne $newMsgJson) {
-                $messages.Add($newMsg) | Out-Null
+                ($messages[-1] | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) -ne $newMsgJson) {
+                $messages.Add($newMsg) | Microsoft.PowerShell.Core\Out-Null
             }
 
             # Process all tool calls sequentially
             foreach ($toolCallCO in $response.choices[0].message.tool_calls) {
 
-                $toolCall = $toolCallCO | ConvertTo-HashTable
+                $toolCall = $toolCallCO | GenXdev.Helpers\ConvertTo-HashTable
 
-                Write-Verbose "Tool call detected: $($toolCall.function.name)"
+                Microsoft.PowerShell.Utility\Write-Verbose "Tool call detected: $($toolCall.function.name)"
 
                 # Format parameters as PowerShell command line style
-                $foundArguments = ($toolCall.function.arguments | ConvertFrom-Json)
-                $paramLine = $toolCall.function.arguments | ConvertFrom-Json |
-                Get-Member -MemberType NoteProperty |
-                ForEach-Object {
+                $foundArguments = ($toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json)
+                $paramLine = $toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json |
+                Microsoft.PowerShell.Utility\Get-Member -MemberType NoteProperty |
+                Microsoft.PowerShell.Core\ForEach-Object {
                     $name = $_.Name
                     $value = $foundArguments.$name
-                    "-$name $($value | ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue)"
-                } | Join-String -Separator " "
+                    "-$name $($value | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue)"
+                } | Microsoft.PowerShell.Utility\Join-String -Separator " "
 
-                Write-Verbose "PS> $($toolCall.function.name) $paramLine"
+                Microsoft.PowerShell.Utility\Write-Verbose "PS> $($toolCall.function.name) $paramLine"
                 if (-not ($Verbose -or $VerbosePreference -eq "Continue")) {
 
-                    Write-Host "PS> $($toolCall.function.name) $paramLine" -ForegroundColor Cyan
+                    Microsoft.PowerShell.Utility\Write-Host "PS> $($toolCall.function.name) $paramLine" -ForegroundColor Cyan
                 }
 
-                [GenXdev.Helpers.ExposedToolCallInvocationResult] $invocationResult = Invoke-CommandFromToolCall `
+                [GenXdev.Helpers.ExposedToolCallInvocationResult] $invocationResult = GenXdev.AI\Invoke-CommandFromToolCall `
                     -ToolCall:$toolCall `
                     -Functions:$Functions `
                     -ExposedCmdLets:$ExposedCmdLets `
-                    -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames | Select-Object -First 1
+                    -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames | Microsoft.PowerShell.Utility\Select-Object -First 1
 
                 if (-not ($Verbose -or $VerbosePreference -eq "Continue")) {
 
-                    Write-Host "$($invocationResult.Output | ForEach-Object { if ($_ -is [string]) { $_ } else { $_ | Out-String } })" -ForegroundColor Green
+                    Microsoft.PowerShell.Utility\Write-Host "$($invocationResult.Output | Microsoft.PowerShell.Core\ForEach-Object { if ($_ -is [string]) { $_ } else { $_ | Microsoft.PowerShell.Utility\Out-String } })" -ForegroundColor Green
                 }
 
-                Write-Verbose "Tool function result: $($invocationResult | ConvertTo-Json -Depth 3 -Compress)"
+                Microsoft.PowerShell.Utility\Write-Verbose "Tool function result: $($invocationResult | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 3 -Compress)"
 
                 if (-not $invocationResult.CommandExposed) {
 
@@ -945,7 +945,7 @@ function Invoke-LLMQuery {
                             content      = $invocationResult.Error ? $invocationResult.Error : $invocationResult.Reason
                             tool_call_id = $toolCall.id
                             id           = $toolCall.id
-                            arguments    = $toolCall.function.arguments | ConvertFrom-Json
+                            arguments    = $toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json
                         })
                 }
                 else {
@@ -957,12 +957,12 @@ function Invoke-LLMQuery {
                             content_type = $invocationResult.OutputType
                             tool_call_id = $toolCall.id
                             id           = $toolCall.id
-                            arguments    = $toolCall.function.arguments | ConvertFrom-Json
+                            arguments    = $toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json
                         })
                 }
             }
 
-            Write-Verbose "Continuing conversation after tool responses"
+            Microsoft.PowerShell.Utility\Write-Verbose "Continuing conversation after tool responses"
 
             if (-not $PSBoundParameters.ContainsKey('ContinueLast')) {
 
@@ -982,7 +982,7 @@ function Invoke-LLMQuery {
                 $PSBoundParameters['Query'] = ""
             }
 
-            Invoke-LLMQuery @PSBoundParameters
+            GenXdev.AI\Invoke-LLMQuery @PSBoundParameters
 
             return;
         }
@@ -1001,63 +1001,63 @@ function Invoke-LLMQuery {
                 $toolCall = $null
 
                 try {
-                    $toolCall = $toolCallJson | ConvertFrom-Json -ErrorAction SilentlyContinue -WarningAction SilentlyContinue | ConvertTo-HashTable
+                    $toolCall = $toolCallJson | Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue -WarningAction SilentlyContinue | GenXdev.Helpers\ConvertTo-HashTable
 
-                    Write-Verbose "Tool call detected: $($toolCall.function.name)"
+                    Microsoft.PowerShell.Utility\Write-Verbose "Tool call detected: $($toolCall.function.name)"
 
                     # Format parameters as PowerShell command line style
-                    $foundArguments = ($toolCall.function.arguments | ConvertFrom-Json)
-                    $paramLine = $toolCall.function.arguments | ConvertFrom-Json |
-                    Get-Member -MemberType NoteProperty |
-                    ForEach-Object {
+                    $foundArguments = ($toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json)
+                    $paramLine = $toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json |
+                    Microsoft.PowerShell.Utility\Get-Member -MemberType NoteProperty |
+                    Microsoft.PowerShell.Core\ForEach-Object {
                         $name = $_.Name
                         $value = $foundArguments.$name
-                        "-$name $($value | ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue)"
-                    } | Join-String -Separator " "
+                        "-$name $($value | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue)"
+                    } | Microsoft.PowerShell.Utility\Join-String -Separator " "
 
-                    Write-Verbose "PS> $($toolCall.function.name) $paramLine"
+                    Microsoft.PowerShell.Utility\Write-Verbose "PS> $($toolCall.function.name) $paramLine"
                     if (-not ($Verbose -or $VerbosePreference -eq "Continue")) {
-                        Write-Host "PS> $($toolCall.function.name) $paramLine" -ForegroundColor Cyan
+                        Microsoft.PowerShell.Utility\Write-Host "PS> $($toolCall.function.name) $paramLine" -ForegroundColor Cyan
                     }
                     # Check if this tool_call_id is already in messages
-                    $existingResponse = $messages | Where-Object {
+                    $existingResponse = $messages | Microsoft.PowerShell.Core\Where-Object {
                         $_.tool_call_id -eq $toolCall.id
-                    } | Select-Object -First 1
+                    } | Microsoft.PowerShell.Utility\Select-Object -First 1
 
                     if ($existingResponse) {
                         # Replace the tool call with existing response
                         $replacement = [string]::IsNullOrWhiteSpace($existingResponse.Content) ?
-                            ($existingResponse.Error | ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) :
+                            ($existingResponse.Error | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) :
                         $existingResponse.Content;
 
                         $content = $content.Replace($matches[0], $replacement)
                         continue
                     }
 
-                    [GenXdev.Helpers.ExposedToolCallInvocationResult] $invocationResult = Invoke-CommandFromToolCall `
+                    [GenXdev.Helpers.ExposedToolCallInvocationResult] $invocationResult = GenXdev.AI\Invoke-CommandFromToolCall `
                         -ToolCall:$toolCall `
                         -Functions:$Functions `
                         -ExposedCmdLets:$ExposedCmdLets `
                         -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames `
-                        -ForceAsText | Select-Object -First 1
+                        -ForceAsText | Microsoft.PowerShell.Utility\Select-Object -First 1
 
                     if ((-not ($Verbose -or $VerbosePreference -eq "Continue")) -and
                         ($null -ne $invocationResult.Output)) {
 
-                        Write-Host "$($invocationResult.Output | ForEach-Object { if ($_ -is [string]) { $_ } else { $_ | Out-String } })" -ForegroundColor Green
+                        Microsoft.PowerShell.Utility\Write-Host "$($invocationResult.Output | Microsoft.PowerShell.Core\ForEach-Object { if ($_ -is [string]) { $_ } else { $_ | Microsoft.PowerShell.Utility\Out-String } })" -ForegroundColor Green
                     }
 
-                    Write-Verbose "Tool function result: $($invocationResult | ConvertTo-Json -Depth 3 -Compress)"
+                    Microsoft.PowerShell.Utility\Write-Verbose "Tool function result: $($invocationResult | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 3 -Compress)"
 
                     if (-not $invocationResult.CommandExposed) {
 
                         $newMessage = @{
                             role         = "tool"
                             name         = $toolCall.function.name
-                            content      = $invocationResult.Error ? ($invocationResult.Error | ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) : $invocationResult.Reason
+                            content      = $invocationResult.Error ? ($invocationResult.Error | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) : $invocationResult.Reason
                             tool_call_id = $toolCall.id
                             id           = $toolCall.id
-                            arguments    = $toolCall.function.arguments | ConvertFrom-Json
+                            arguments    = $toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json
                         };
 
                         # Add tool response to history
@@ -1074,7 +1074,7 @@ function Invoke-LLMQuery {
                             content_type = $invocationResult.OutputType
                             tool_call_id = $toolCall.id
                             id           = $toolCall.id
-                            arguments    = $toolCall.function.arguments | ConvertFrom-Json
+                            arguments    = $toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json
                         };
 
                         # Add tool response to history
@@ -1092,10 +1092,10 @@ function Invoke-LLMQuery {
                             error           = $_.Exception.Message
                             exceptionThrown = $true
                             exceptionClass  = $_.Exception.GetType().FullName
-                        } | ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue;
+                        } | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue;
                         tool_call_id = $toolCall.id
                         id           = $toolCall.id
-                        arguments    = $toolCall.function.arguments | ConvertFrom-Json
+                        arguments    = $toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json
                     };
 
                     # Add tool response to history
@@ -1126,23 +1126,23 @@ function Invoke-LLMQuery {
                     if ($i2 -ge 0) {
 
                         $thoughts = $content.Substring($i, $i2 - $i)
-                        Write-Verbose "LLM Thoughts: $thoughts"
+                        Microsoft.PowerShell.Utility\Write-Verbose "LLM Thoughts: $thoughts"
 
                         if (-not $IncludeThoughts) {
 
-                            Write-Host $thoughts -ForegroundColor Yellow
+                            Microsoft.PowerShell.Utility\Write-Host $thoughts -ForegroundColor Yellow
                         }
 
                         if ($SpeakThoughts) {
 
-                            $null = Start-TextToSpeech $thoughts
+                            $null = GenXdev.Console\Start-TextToSpeech $thoughts
                         }
                     }
                 }
 
                 # Remove <think> patterns
                 $cleaned = [regex]::Replace($content, "<think>.*?</think>", "")
-                Write-Verbose "LLM Response: $cleaned"
+                Microsoft.PowerShell.Utility\Write-Verbose "LLM Response: $cleaned"
 
                 if ($DontAddThoughtsToHistory) {
 
@@ -1183,17 +1183,17 @@ function Invoke-LLMQuery {
 
                     if ($Speak) {
 
-                        $null = Start-TextToSpeech $cleaned
+                        $null = GenXdev.Console\Start-TextToSpeech $cleaned
                     }
                 }
             }
         }
-        $finalOutput | ForEach-Object {
+        $finalOutput | Microsoft.PowerShell.Core\ForEach-Object {
 
-            Write-Output $_
+            Microsoft.PowerShell.Utility\Write-Output $_
         }
 
-        Write-Verbose "Conversation history updated"
+        Microsoft.PowerShell.Utility\Write-Verbose "Conversation history updated"
     }
 }
 ################################################################################

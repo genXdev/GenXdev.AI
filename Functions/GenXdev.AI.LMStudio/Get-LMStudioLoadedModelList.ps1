@@ -20,32 +20,32 @@ function Get-LMStudioLoadedModelList {
     begin {
 
         # verify lm studio is properly installed
-        Write-Verbose "Verifying LM Studio installation..."
-        if (-not (Test-LMStudioInstallation)) {
+        Microsoft.PowerShell.Utility\Write-Verbose "Verifying LM Studio installation..."
+        if (-not (GenXdev.AI\Test-LMStudioInstallation)) {
             throw "LM Studio is not installed or accessible"
         }
 
         # get required paths for lm studio components
-        Write-Verbose "Retrieving LM Studio paths..."
-        $paths = Get-LMStudioPaths
+        Microsoft.PowerShell.Utility\Write-Verbose "Retrieving LM Studio paths..."
+        $paths = GenXdev.AI\Get-LMStudioPaths
     }
 
     process {
 
-        Write-Verbose "Querying LM Studio for loaded models..."
+        Microsoft.PowerShell.Utility\Write-Verbose "Querying LM Studio for loaded models..."
 
         try {
             # query lm studio process and convert json output to objects
             $modelList = & "$($paths.LMSExe)" ps --json |
-            ConvertFrom-Json
+            Microsoft.PowerShell.Utility\ConvertFrom-Json
 
-            Write-Verbose "Successfully retrieved $(($modelList |
-                Measure-Object).Count) models"
+            Microsoft.PowerShell.Utility\Write-Verbose "Successfully retrieved $(($modelList |
+                Microsoft.PowerShell.Utility\Measure-Object).Count) models"
 
             return $modelList
         }
         catch {
-            Write-Warning "Failed to retrieve model list: $_"
+            Microsoft.PowerShell.Utility\Write-Warning "Failed to retrieve model list: $_"
             throw
         }
     }

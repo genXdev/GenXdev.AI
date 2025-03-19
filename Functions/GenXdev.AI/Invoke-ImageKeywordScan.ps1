@@ -60,12 +60,12 @@ function Invoke-ImageKeywordScan {
         # convert relative path to absolute path
         $path = GenXdev.FileSystem\Expand-Path $ImageDirectory
 
-        Write-Verbose "Scanning directory: $path"
+        Microsoft.PowerShell.Utility\Write-Verbose "Scanning directory: $path"
 
         # validate directory exists before proceeding
         if (-not [System.IO.Directory]::Exists($path)) {
 
-            Write-Host "The directory '$path' does not exist."
+            Microsoft.PowerShell.Utility\Write-Host "The directory '$path' does not exist."
             return
         }
     }
@@ -73,12 +73,12 @@ function Invoke-ImageKeywordScan {
     process {
 
         # search for jpg/jpeg/png files and process each one
-        $results = Get-ChildItem -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
+        $results = Microsoft.PowerShell.Management\Get-ChildItem -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
             -Recurse -File -ErrorAction SilentlyContinue |
-        ForEach-Object {
+        Microsoft.PowerShell.Core\ForEach-Object {
 
             $image = $PSItem.FullName
-            Write-Verbose "Processing image: $image"
+            Microsoft.PowerShell.Utility\Write-Verbose "Processing image: $image"
 
             $keywordsFound = @()
             $descriptionFound = $null
@@ -89,7 +89,7 @@ function Invoke-ImageKeywordScan {
                 try {
                     $descriptionFound = [System.IO.File]::ReadAllText(
                         "$($image):description.json") |
-                    ConvertFrom-Json
+                    Microsoft.PowerShell.Utility\ConvertFrom-Json
 
                     $keywordsFound = ($null -eq $descriptionFound.keywords) ?
                     @() : $descriptionFound.keywords
@@ -105,22 +105,22 @@ function Invoke-ImageKeywordScan {
                 try {
                     $keywordsFound = [System.IO.File]::ReadAllText(
                         "$($image):keywords.json") |
-                    ConvertFrom-Json
+                    Microsoft.PowerShell.Utility\ConvertFrom-Json
 
                     # merge keywords into description if needed
                     if ($null -eq $descriptionFound.keywords) {
 
-                        Add-Member -NotePropertyName "keywords" `
+                        Microsoft.PowerShell.Utility\Add-Member -NotePropertyName "keywords" `
                             -InputObject $descriptionFound `
                             -NotePropertyValue $keywordsFound -Force |
-                        Out-Null
+                        Microsoft.PowerShell.Core\Out-Null
 
                         $null = [System.IO.File]::Delete("$($image):keywords.json")
 
                         $descriptionFound |
-                        ConvertTo-Json -Depth 99 -Compress `
+                        Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 99 -Compress `
                             -WarningAction SilentlyContinue |
-                        Set-Content "$($image):description.json"
+                        Microsoft.PowerShell.Management\Set-Content "$($image):description.json"
                     }
                 }
                 catch {
@@ -143,7 +143,7 @@ function Invoke-ImageKeywordScan {
 
                 $descriptionFound = $null -ne $descriptionFound ?
                 $descriptionFound : "" |
-                ConvertTo-Json -Compress -Depth 10 -WarningAction SilentlyContinue
+                Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 10 -WarningAction SilentlyContinue
 
                 foreach ($requiredKeyword in $Keywords) {
 
@@ -172,7 +172,7 @@ function Invoke-ImageKeywordScan {
             # return matching image data
             if ($found) {
 
-                Write-Verbose "Found matching image: $image"
+                Microsoft.PowerShell.Utility\Write-Verbose "Found matching image: $image"
                 @{
                     path        = $image
                     keywords    = $keywordsFound
@@ -194,11 +194,11 @@ function Invoke-ImageKeywordScan {
 
                 if (($null -eq $Keywords) -or ($Keywords.Length -eq 0)) {
 
-                    Write-Host "No images found."
+                    Microsoft.PowerShell.Utility\Write-Host "No images found."
                 }
                 else {
 
-                    Write-Host "No images found with the specified keywords."
+                    Microsoft.PowerShell.Utility\Write-Host "No images found with the specified keywords."
                 }
 
                 return
@@ -209,7 +209,7 @@ function Invoke-ImageKeywordScan {
 
             # set file attributes to temporary and hidden
             try {
-                Set-ItemProperty -Path $filePath -Name Attributes `
+                Microsoft.PowerShell.Management\Set-ItemProperty -Path $filePath -Name Attributes `
                     -Value ([System.IO.FileAttributes]::Temporary -bor `
                         [System.IO.FileAttributes]::Hidden) `
                     -ErrorAction SilentlyContinue
@@ -217,8 +217,8 @@ function Invoke-ImageKeywordScan {
             catch {}
 
             # generate and display results in browser
-            GenerateMasonryLayoutHtml -Images $results -FilePath $filePath
-            Open-Webbrowser -NewWindow -Url $filePath -FullScreen
+            GenXdev.AI\GenerateMasonryLayoutHtml -Images $results -FilePath $filePath
+            GenXdev.Webbrowser\Open-Webbrowser -NewWindow -Url $filePath -FullScreen
         }
     }
 }

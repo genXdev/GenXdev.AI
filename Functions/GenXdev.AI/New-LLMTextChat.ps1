@@ -243,7 +243,7 @@ function New-LLMTextChat {
 
     begin {
 
-        Write-Verbose "Initializing chat session with model: $Model"
+        Microsoft.PowerShell.Utility\Write-Verbose "Initializing chat session with model: $Model"
 
         $updateInstructions = [string]::IsNullOrWhiteSpace($Instructions)
 
@@ -347,10 +347,10 @@ function New-LLMTextChat {
                     }
                 );
 
-                $functionInfoObj = (ConvertTo-LMStudioFunctionDefinition -ExposedCmdLets:$ExposedCmdLets)
-                $functionInfoObj | ForEach-Object { $null = $_.function.Remove("callback") }
+                $functionInfoObj = (GenXdev.AI\ConvertTo-LMStudioFunctionDefinition -ExposedCmdLets:$ExposedCmdLets)
+                $functionInfoObj | Microsoft.PowerShell.Core\ForEach-Object { $null = $_.function.Remove("callback") }
                 $functionInfo = $functionInfoObj |
-                ConvertTo-Json `
+                Microsoft.PowerShell.Utility\ConvertTo-Json `
                     -ErrorAction SilentlyContinue `
                     -WarningAction SilentlyContinue `
                     -Depth 10
@@ -425,7 +425,7 @@ $Instructions
             $script:LMStudioExposedCmdlets = $ExposedCmdLets
         }
 
-        Write-Verbose "Initialized with $($ExposedCmdLets.Count) exposed cmdlets"
+        Microsoft.PowerShell.Utility\Write-Verbose "Initialized with $($ExposedCmdLets.Count) exposed cmdlets"
 
         # ensure required parameters are present in bound parameters
         if (-not $PSBoundParameters.ContainsKey("Model")) {
@@ -447,9 +447,9 @@ $Instructions
 
             $initializationParams = GenXdev.Helpers\Copy-IdenticalParamValues -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
-                -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
-            $modelInfo = Initialize-LMStudioModel @initializationParams
+            $modelInfo = GenXdev.AI\Initialize-LMStudioModel @initializationParams
             $Model = $modelInfo.identifier
         }
 
@@ -483,7 +483,7 @@ $Instructions
 
     process {
 
-        Write-Verbose "Starting chat interaction loop"
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting chat interaction loop"
 
         # helper function to display available tool functions
         function Show-ToolFunction {
@@ -497,7 +497,7 @@ $Instructions
 
             function GetParamString([object] $cmdlet) {
                 if ($null -eq $cmdlet.AllowedParams) { return "" }
-                $params = $cmdlet.AllowedParams | ForEach-Object {
+                $params = $cmdlet.AllowedParams | Microsoft.PowerShell.Core\ForEach-Object {
                     $a = $_
                     if ($a -match "^(.+?)=") {
                         $a = $matches[1]
@@ -508,10 +508,10 @@ $Instructions
             }
 
             if ($ExposedCmdLets.Count -gt 0) {
-                Write-Host -ForegroundColor Green `
+                Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Green `
                     "Tool functions now active ($($ExposedCmdLets.Count)) ->"
 
-                $( ($ExposedCmdLets | ForEach-Object {
+                $( ($ExposedCmdLets | Microsoft.PowerShell.Core\ForEach-Object {
                             $name = FixName($_.Name)
                             $params = GetParamString($_)
                             if ($_.Confirm) {
@@ -520,8 +520,8 @@ $Instructions
                             else {
                                 "$name*$params"
                             }
-                        } | Select-Object -Unique) -join ', ') |
-                Write-Host -ForegroundColor Green
+                        } | Microsoft.PowerShell.Utility\Select-Object -Unique) -join ', ') |
+                Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Green
             }
         }
 
@@ -539,9 +539,9 @@ $Instructions
 
                 # get user input
                 [Console]::Write("> ");
-                try { $null = Set-PSReadLineOption -PredictionSource History } catch { }
+                try { $null = PSReadLine\Set-PSReadLineOption -PredictionSource History } catch { }
                 # $question = Read-Host
-                $question = PSConsoleHostReadLine
+                $question = PSReadLine\PSConsoleHostReadLine
                 if ($null -eq $question) { $question = [string]::Empty }
             }
             else {
@@ -554,7 +554,7 @@ $Instructions
                 }
             }
 
-            Write-Verbose "Processing query: $question"
+            Microsoft.PowerShell.Utility\Write-Verbose "Processing query: $question"
 
             $PSBoundParameters["ContinueLast"] = (-not $script:isFirst);
             $PSBoundParameters["Query"] = $question;
@@ -563,11 +563,11 @@ $Instructions
             $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\Invoke-LLMQuery" `
-                -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
             $invocationArguments.ChatOnce = $false
 
-            @(Invoke-LLMQuery @invocationArguments) | ForEach-Object -Process {
+            @(GenXdev.AI\Invoke-LLMQuery @invocationArguments) | Microsoft.PowerShell.Core\ForEach-Object -Process {
                 $result = $_
                 if (($null -eq $result) -or ([string]::IsNullOrEmpty("$result".trim()))) { return }
 
@@ -575,11 +575,11 @@ $Instructions
 
                 if ($ChatOnce) {
 
-                    Write-Output $result
+                    Microsoft.PowerShell.Utility\Write-Output $result
                 }
                 else {
 
-                    Write-Host -ForegroundColor Yellow "$result"
+                    Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Yellow "$result"
                 }
             }
 
@@ -589,7 +589,7 @@ $Instructions
     }
 
     end {
-        Write-Verbose "Chat session completed"
+        Microsoft.PowerShell.Utility\Write-Verbose "Chat session completed"
     }
 }
 ################################################################################

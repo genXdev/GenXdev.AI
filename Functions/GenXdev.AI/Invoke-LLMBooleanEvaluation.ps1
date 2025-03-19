@@ -217,9 +217,9 @@ $Instructions
                     required   = @("result", "confidence", "reason")
                 }
             }
-        } | ConvertTo-Json -Depth 10
+        } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
 
-        Write-Verbose "Starting boolean evaluation with model: $Model"
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting boolean evaluation with model: $Model"
 
         $script:result = $false
         $response = $null
@@ -231,21 +231,21 @@ $Instructions
 
         if ($isClipboardSource) {
 
-            Write-Verbose "No direct text input, reading from clipboard"
-            $Text = Get-Clipboard
+            Microsoft.PowerShell.Utility\Write-Verbose "No direct text input, reading from clipboard"
+            $Text = Microsoft.PowerShell.Management\Get-Clipboard
 
             if ([string]::IsNullOrWhiteSpace($Text)) {
-                Write-Warning "No text found in the clipboard."
+                Microsoft.PowerShell.Utility\Write-Warning "No text found in the clipboard."
                 return
             }
         }
 
         try {
-            Write-Verbose "Processing statement for evaluation"
+            Microsoft.PowerShell.Utility\Write-Verbose "Processing statement for evaluation"
 
             $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "Invoke-LLMQuery"
+                -FunctionName "GenXdev.AI\Invoke-LLMQuery"
 
             $invocationParams.Query = $Text
             $invocationParams.Instructions = $Instructions
@@ -260,16 +260,16 @@ $Instructions
             }
 
             # Get evaluation result
-            $response = Invoke-LLMQuery @invocationParams | ConvertFrom-Json
+            $response = GenXdev.AI\Invoke-LLMQuery @invocationParams | Microsoft.PowerShell.Utility\ConvertFrom-Json
 
             # Store result
             $script:result = [bool]$response.result
             $summary = "`r`n`"$Text`"`r`n`r`nevaluates to be: $($response.result)`r`nconfidence: $($response.confidence) confidence.`r`nReason: $($response.reason)`r`n"
 
-            Write-Verbose $summary
+            Microsoft.PowerShell.Utility\Write-Verbose $summary
         }
         catch {
-            Write-Error "Failed to evaluate statement with AI model: $_"
+            Microsoft.PowerShell.Utility\Write-Error "Failed to evaluate statement with AI model: $_"
         }
     }
 
@@ -278,16 +278,16 @@ $Instructions
 
             if ($SetClipboard) {
 
-                Write-Verbose "Copying result to clipboard"
+                Microsoft.PowerShell.Utility\Write-Verbose "Copying result to clipboard"
 
                 if ($IncludeThoughts) {
 
                     $summary = "`r`n`"$Text`"`r`n`r`nevaluates to be: $($response.result)`r`nconfidence: $($response.confidence) confidence.`r`nReason: $($response.reason)`r`n"
-                    $summary | Set-Clipboard
+                    $summary | Microsoft.PowerShell.Management\Set-Clipboard
                 }
                 else {
 
-                    Set-Clipboard -Value $script:result
+                    Microsoft.PowerShell.Management\Set-Clipboard -Value $script:result
                 }
             }
         }

@@ -123,9 +123,16 @@ function Add-EmoticonsToText {
     )
 
     process {
-        $emotifyInstructions = "Add funny or expressive emojii to the text provided as content of the user-role message. Don't change the text otherwise. $Instructions"
+        # construct instructions for emoticon enhancement
+        $emotifyInstructions = (
+            "Add funny or expressive emojii to the text provided as content " +
+            "of the user-role message. Don't change the text otherwise. " +
+            "$Instructions"
+        )
 
-        Invoke-LLMTextTransformation @PSBoundParameters -Instructions $emotifyInstructions
+        # invoke the language model with emoticon instructions
+        GenXdev.AI\Invoke-LLMTextTransformation @PSBoundParameters `
+            -Instructions $emotifyInstructions
     }
 }
 ################################################################################

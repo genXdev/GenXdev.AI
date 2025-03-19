@@ -1,8 +1,8 @@
 ################################################################################
 
-Describe "Initialize-LMStudioModel.Tests" {
+Pester\Describe "Initialize-LMStudioModel.Tests" {
 
-    It "Should pass PSScriptAnalyzer rules" {
+    Pester\It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Initialize-LMStudioModel.ps1"
@@ -12,7 +12,7 @@ Describe "Initialize-LMStudioModel.Tests" {
             -Path $scriptPath
 
         [string] $message = ""
-        $analyzerResults | ForEach-Object {
+        $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
 --------------------------------------------------
@@ -23,7 +23,7 @@ Message: $($_.Message)
 "@
         }
 
-        $analyzerResults.Count | Should -Be 0 -Because @"
+        $analyzerResults.Count | Pester\Should -Be 0 -Because @"
 The following PSScriptAnalyzer rules are being violated:
 $message
 "@;
@@ -32,32 +32,32 @@ $message
 
 ################################################################################
 
-Describe "Initialize-LMStudioModel integration tests" {
+Pester\Describe "Initialize-LMStudioModel integration tests" {
 
-    It "Should initialize a model by name" {
+    Pester\It "Should initialize a model by name" {
         # test with default model name that Should be available
-        $result = Initialize-LMStudioModel -Model "qwen2.5-14b-instruct" -ModelLMSGetIdentifier "qwen2.5-14b-instruct"
-        $result | Should -Not -Be $null
-        $result.path | Should -Not -BeNullOrEmpty
+        $result = GenXdev.AI\Initialize-LMStudioModel -Model "qwen2.5-14b-instruct" -ModelLMSGetIdentifier "qwen2.5-14b-instruct"
+        $result | Pester\Should -Not -Be $null
+        $result.path | Pester\Should -Not -BeNullOrEmpty
     }
 
-    It "Should initialize with window visible" {
-        $result = Initialize-LMStudioModel -Model "qwen2.5-14b-instruct" -ModelLMSGetIdentifier "qwen2.5-14b-instruct" -ShowWindow
-        $result | Should -Not -Be $null
-        $result.path | Should -Not -BeNullOrEmpty
+    Pester\It "Should initialize with window visible" {
+        $result = GenXdev.AI\Initialize-LMStudioModel -Model "qwen2.5-14b-instruct" -ModelLMSGetIdentifier "qwen2.5-14b-instruct" -ShowWindow
+        $result | Pester\Should -Not -Be $null
+        $result.path | Pester\Should -Not -BeNullOrEmpty
 
-        $window = Get-Window "LM Studio"
-        $window  | Should -Not -Be $null
-        $window.Handle  | Should -Not -Be 0
-        $window.IsVisible() | Should -Be $true
+        $window = GenXdev.Windows\Get-Window "LM Studio"
+        $window  | Pester\Should -Not -Be $null
+        $window.Handle  | Pester\Should -Not -Be 0
+        $window.IsVisible() | Pester\Should -Be $true
     }
 
-    It "Should fall back to preferred models if specified not found" {
+    Pester\It "Should fall back to preferred models if specified not found" {
         # test with non-existent model name to trigger fallback
-        $result = Initialize-LMStudioModel `
+        $result = GenXdev.AI\Initialize-LMStudioModel `
             -Model "nonexistent_model_12345" `
             -PreferredModels @("qwen2.5-14b-instruct", "mistral")
-        $result | Should -Not -BeNullOrEmpty
+        $result | Pester\Should -Not -BeNullOrEmpty
     }
 }
 

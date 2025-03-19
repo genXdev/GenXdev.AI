@@ -54,7 +54,7 @@ function Approve-NewTextFileContent {
         # ensure content path exists, create if missing
         $contentPath = GenXdev.FileSystem\Expand-Path $ContentPath -CreateFile
 
-        Write-Verbose "Target file path: $contentPath"
+        Microsoft.PowerShell.Utility\Write-Verbose "Target file path: $contentPath"
     }
 
     process {
@@ -62,20 +62,20 @@ function Approve-NewTextFileContent {
         # check initial file existence for tracking deletion
         $existed = [System.IO.File]::Exists($contentPath)
 
-        Write-Verbose "File existed before comparison: $existed"
+        Microsoft.PowerShell.Utility\Write-Verbose "File existed before comparison: $existed"
 
         # create temporary file with matching extension for comparison
         $tempFile = GenXdev.FileSystem\Expand-Path ([System.IO.Path]::GetTempFileName() +
             [System.IO.Path]::GetExtension($contentPath)) `
             -CreateDirectory
 
-        Write-Verbose "Created temp comparison file: $tempFile"
+        Microsoft.PowerShell.Utility\Write-Verbose "Created temp comparison file: $tempFile"
 
         # write proposed content to temp file
-        $NewContent | Out-File -FilePath $tempFile -Force
+        $NewContent | Microsoft.PowerShell.Utility\Out-File -FilePath $tempFile -Force
 
         # launch winmerge for interactive comparison
-        $null = Invoke-WinMerge `
+        $null = GenXdev.AI\Invoke-WinMerge `
             -SourcecodeFilePath $tempFile `
             -TargetcodeFilePath $contentPath `
             -Wait
@@ -88,7 +88,7 @@ function Approve-NewTextFileContent {
         if ($result.approved) {
 
             # check if content was modified during comparison
-            $content = Get-Content -Path $contentPath -Raw
+            $content = Microsoft.PowerShell.Management\Get-Content -Path $contentPath -Raw
             $changed = $content.Trim() -ne $NewContent.Trim()
 
             $result.approvedAsIs = -not $changed
@@ -101,7 +101,7 @@ function Approve-NewTextFileContent {
             $result.userDeletedFile = $true
         }
 
-        Write-Verbose "Comparison result: $($result | ConvertTo-Json)"
+        Microsoft.PowerShell.Utility\Write-Verbose "Comparison result: $($result | Microsoft.PowerShell.Utility\ConvertTo-Json)"
         return $result
     }
 

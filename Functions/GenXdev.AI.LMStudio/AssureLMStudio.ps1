@@ -86,7 +86,7 @@ function AssureLMStudio {
 
     begin {
 
-        Write-Verbose "Starting AssureLMStudio with Model: $Model"
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting AssureLMStudio with Model: $Model"
 
         # ensure default model parameter is set
         if (-not $PSBoundParameters.ContainsKey("Model")) {
@@ -109,11 +109,11 @@ function AssureLMStudio {
 
         $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "Initialize-LMStudioModel" `
-            -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+            -FunctionName "GenXdev.AI\Initialize-LMStudioModel" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
-        Write-Verbose "Initializing LM Studio model with parameters"
-        $null = Initialize-LMStudioModel @invocationArguments
+        Microsoft.PowerShell.Utility\Write-Verbose "Initializing LM Studio model with parameters"
+        $null = GenXdev.AI\Initialize-LMStudioModel @invocationArguments
     }
 
     end {

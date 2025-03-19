@@ -42,12 +42,12 @@ function Start-LMStudioApplication {
     begin {
 
         # verify lm studio installation
-        Write-Verbose "Checking LM Studio installation..."
-        if (-not (Test-LMStudioInstallation)) {
+        Microsoft.PowerShell.Utility\Write-Verbose "Checking LM Studio installation..."
+        if (-not (GenXdev.AI\Test-LMStudioInstallation)) {
 
             if ($PSCmdlet.ShouldProcess("LM Studio", "Install application")) {
-                Write-Verbose "LM Studio not found, initiating installation..."
-                $null = Install-LMStudioApplication
+                Microsoft.PowerShell.Utility\Write-Verbose "LM Studio not found, initiating installation..."
+                $null = GenXdev.AI\Install-LMStudioApplication
             }
         }
     }
@@ -55,12 +55,12 @@ function Start-LMStudioApplication {
     process {
 
         # check if we need to start or show the process
-        if (-not (Test-LMStudioProcess -ShowWindow:$ShowWindow) -or $ShowWindow) {
+        if (-not (GenXdev.AI\Test-LMStudioProcess -ShowWindow:$ShowWindow) -or $ShowWindow) {
 
-            Write-Verbose "Preparing to start or show LM Studio..."
+            Microsoft.PowerShell.Utility\Write-Verbose "Preparing to start or show LM Studio..."
 
             # get installation paths
-            $paths = Get-LMStudioPaths
+            $paths = GenXdev.AI\Get-LMStudioPaths
 
             # validate executable path
             if (-not $paths.LMStudioExe) {
@@ -74,34 +74,34 @@ function Start-LMStudioApplication {
                         param($paths, $showWindow)
 
                         # start server component
-                        $null = Start-Process `
+                        $null = Microsoft.PowerShell.Management\Start-Process `
                             -FilePath $paths.LMSExe `
                             -ArgumentList "server", "start", "--port", "1234" `
                             -NoNewWindow
-                        Start-Sleep -Seconds 4
+                        Microsoft.PowerShell.Utility\Start-Sleep -Seconds 4
                     }
                     ArgumentList = @($paths, ($ShowWindow -eq $true))
                 }
 
-                $null = Start-Job @jobParams | Wait-Job
+                $null = Microsoft.PowerShell.Core\Start-Job @jobParams | Microsoft.PowerShell.Core\Wait-Job
 
                 if ($showWindow) {
 
-                    $null = Get-LMStudioWindow -ShowWindow -NoAutoStart -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+                    $null = GenXdev.AI\Get-LMStudioWindow -ShowWindow -NoAutoStart -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
                 }
 
                 # verify process starts within timeout period
-                Write-Verbose "Waiting for LM Studio process..."
+                Microsoft.PowerShell.Utility\Write-Verbose "Waiting for LM Studio process..."
                 $timeout = 30
                 $timer = [System.Diagnostics.Stopwatch]::StartNew()
 
-                while (-not (Test-LMStudioProcess) -and
+                while (-not (GenXdev.AI\Test-LMStudioProcess) -and
                     ($timer.Elapsed.TotalSeconds -lt $timeout)) {
 
-                    Start-Sleep -Seconds 1
+                    Microsoft.PowerShell.Utility\Start-Sleep -Seconds 1
                 }
 
-                if (-not (Test-LMStudioProcess)) {
+                if (-not (GenXdev.AI\Test-LMStudioProcess)) {
                     throw "LM Studio failed to start within $timeout seconds"
                 }
             }
@@ -109,13 +109,13 @@ function Start-LMStudioApplication {
 
         # return process object if requested
         if ($Passthru) {
-            Get-Process -Name "LM Studio" -ErrorAction Stop
+            Microsoft.PowerShell.Management\Get-Process -Name "LM Studio" -ErrorAction Stop
         }
     }
 
     end {
         if ($ShowWindow -and $PSCmdlet.ShouldProcess("LM Studio", "Show window")) {
-            $null = Get-LMStudioWindow -NoAutoStart -ShowWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            $null = GenXdev.AI\Get-LMStudioWindow -NoAutoStart -ShowWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         }
     }
 }

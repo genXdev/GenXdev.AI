@@ -1,6 +1,5 @@
 . "$PSScriptRoot\Functions\GenXdev.AI\Add-EmoticonsToText.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Approve-NewTextFileContent.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI\AssureGithubCLIInstalled.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\AssureWinMergeInstalled.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\ConvertFrom-CorporateSpeak.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\ConvertTo-CorporateSpeak.ps1"

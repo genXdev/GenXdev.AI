@@ -1,6 +1,6 @@
-Describe "Get-LMStudioPaths basic integration tests" {
+Pester\Describe "Get-LMStudioPaths basic integration tests" {
 
-    It "Should pass PSScriptAnalyzer rules" {
+    Pester\It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Get-LMStudioPaths.ps1"
@@ -10,7 +10,7 @@ Describe "Get-LMStudioPaths basic integration tests" {
             -Path $scriptPath
 
         [string] $message = ""
-        $analyzerResults | ForEach-Object {
+        $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
 --------------------------------------------------
@@ -21,19 +21,19 @@ Message: $($_.Message)
 "@
         }
 
-        $analyzerResults.Count | Should -Be 0 -Because @"
+        $analyzerResults.Count | Pester\Should -Be 0 -Because @"
 The following PSScriptAnalyzer rules are being violated:
 $message
 "@;
     }
 
-    It "Returns valid default paths that exist on the system" {
+    Pester\It "Returns valid default paths that exist on the system" {
 
-        $result = Get-LMStudioPaths
+        $result = GenXdev.AI\Get-LMStudioPaths
 
-        $result | Should -Not -BeNull
-        [IO.File]::Exists($result.LMStudioExe) | Should -BeTrue
-        [IO.File]::Exists($result.LMSExe) | Should -BeTrue
+        $result | Pester\Should -Not -BeNull
+        [IO.File]::Exists($result.LMStudioExe) | Pester\Should -BeTrue
+        [IO.File]::Exists($result.LMSExe) | Pester\Should -BeTrue
     }
 }
 

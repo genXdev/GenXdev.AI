@@ -62,7 +62,7 @@ function Get-LMStudioTextEmbedding {
     )
 
     begin {
-        Write-Verbose "Starting text embedding process..."
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting text embedding process..."
 
         # initialize lm studio if using localhost
         if ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or
@@ -71,7 +71,7 @@ function Get-LMStudioTextEmbedding {
             $initParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
-                -DefaultValues (Get-Variable -Scope Local -Name * `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * `
                     -ErrorAction SilentlyContinue)
 
             if ($PSBoundParameters.ContainsKey("Force")) {
@@ -79,7 +79,7 @@ function Get-LMStudioTextEmbedding {
                 $Force = $false
             }
 
-            $modelInfo = Initialize-LMStudioModel @initParams
+            $modelInfo = GenXdev.AI\Initialize-LMStudioModel @initParams
             $Model = $modelInfo.identifier
         }
 
@@ -97,7 +97,7 @@ function Get-LMStudioTextEmbedding {
     }
 
     process {
-        Write-Verbose "Getting embeddings for text with model: $Model"
+        Microsoft.PowerShell.Utility\Write-Verbose "Getting embeddings for text with model: $Model"
 
         # prepare api payload
         $payload = @{
@@ -106,13 +106,13 @@ function Get-LMStudioTextEmbedding {
         }
 
         # convert payload to json
-        $json = $payload | ConvertTo-Json -Depth 60 -Compress
+        $json = $payload | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 60 -Compress
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
 
-        Write-Verbose "Requesting embeddings from LM-Studio model '$Model'"
+        Microsoft.PowerShell.Utility\Write-Verbose "Requesting embeddings from LM-Studio model '$Model'"
 
         # send request with long timeouts
-        $response = Invoke-RestMethod -Uri $apiUrl `
+        $response = Microsoft.PowerShell.Utility\Invoke-RestMethod -Uri $apiUrl `
             -Method Post `
             -Body $bytes `
             -Headers $headers `

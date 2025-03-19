@@ -136,7 +136,7 @@ Translation: 'I feel that I am at my most productive when I have more autonomy.'
 
 $Instructions
 "@
-        Invoke-LLMTextTransformation @PSBoundParameters -Instructions $corporateInstructions
+        GenXdev.AI\Invoke-LLMTextTransformation @PSBoundParameters -Instructions $corporateInstructions
     }
 }
 ################################################################################

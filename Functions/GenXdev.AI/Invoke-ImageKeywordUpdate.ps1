@@ -79,7 +79,7 @@ function Invoke-ImageKeywordUpdate {
         # verify directory exists before proceeding
         if (-not [System.IO.Directory]::Exists($path)) {
 
-            Write-Host "The directory '$path' does not exist."
+            Microsoft.PowerShell.Utility\Write-Host "The directory '$path' does not exist."
             return
         }
     }
@@ -87,9 +87,9 @@ function Invoke-ImageKeywordUpdate {
     process {
 
         # get all supported image files from the specified directory
-        Get-ChildItem -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
+        Microsoft.PowerShell.Management\Get-ChildItem -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
             -Recurse:$Recurse -File -ErrorAction SilentlyContinue |
-        ForEach-Object {
+        Microsoft.PowerShell.Core\ForEach-Object {
 
             # handle retry logic for previously failed images
             if ($RetryFailed) {
@@ -183,9 +183,9 @@ function Invoke-ImageKeywordUpdate {
                             )
                         }
                     }
-                } | ConvertTo-Json -Depth 10
+                } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
 
-                Write-Verbose "Analyzing image content: $image"
+                Microsoft.PowerShell.Utility\Write-Verbose "Analyzing image content: $image"
 
                 $query = (
                     "Analyze image and return a object with properties: " +
@@ -197,11 +197,11 @@ function Invoke-ImageKeywordUpdate {
                 );
 
                 # get AI-generated image description and metadata
-                $description = Invoke-QueryImageContent `
+                $description = GenXdev.AI\Invoke-QueryImageContent `
                     -ResponseFormat $responseSchema `
                     -Query $query -ImagePath $image -Temperature 0.01
 
-                Write-Verbose "Received analysis: $description"
+                Microsoft.PowerShell.Utility\Write-Verbose "Received analysis: $description"
 
                 try {
 
@@ -217,13 +217,13 @@ function Invoke-ImageKeywordUpdate {
                     # save formatted JSON metadata
                     [System.IO.File]::WriteAllText(
                         "$($image):description.json",
-                        ($description | ConvertFrom-Json |
-                        ConvertTo-Json -Compress -Depth 20 `
+                        ($description | Microsoft.PowerShell.Utility\ConvertFrom-Json |
+                        Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 `
                             -WarningAction SilentlyContinue))
                 }
                 catch {
 
-                    Write-Warning "$PSItem`r`n$description"
+                    Microsoft.PowerShell.Utility\Write-Warning "$PSItem`r`n$description"
                 }
             }
         }

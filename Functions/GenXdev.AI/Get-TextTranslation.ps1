@@ -187,13 +187,13 @@ function Get-TextTranslation {
     )
 
     begin {
-        Write-Verbose "Initializing text translation to $Language"
+        Microsoft.PowerShell.Utility\Write-Verbose "Initializing text translation to $Language"
 
         if ([string]::IsNullOrWhiteSpace($Language)) {
 
             # get default language from system settings
-            $Language = Get-DefaultWebLanguage
-            Write-Verbose "Using system default language: $Language"
+            $Language = GenXdev.Helpers\Get-DefaultWebLanguage
+            Microsoft.PowerShell.Utility\Write-Verbose "Using system default language: $Language"
         }
     }
 
@@ -214,15 +214,15 @@ function Get-TextTranslation {
             " $Instructions"
         )
 
-        Write-Verbose "Preparing to invoke LLM translation"
+        Microsoft.PowerShell.Utility\Write-Verbose "Preparing to invoke LLM translation"
 
         # copy matching parameters to invoke translation
         $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "Invoke-LLMTextTransformation"
+            -FunctionName "GenXdev.AI\Invoke-LLMTextTransformation"
 
         # perform the translation
-        Invoke-LLMTextTransformation @invocationParams `
+        GenXdev.AI\Invoke-LLMTextTransformation @invocationParams `
             -Instructions $translationInstructions
     }
 

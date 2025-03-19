@@ -498,23 +498,23 @@ function New-LLMAudioChat {
         if ([string]::IsNullOrWhiteSpace($Language)) {
 
             # get default language from system settings
-            $Language = Get-DefaultWebLanguage
-            Write-Verbose "Using system default language: $Language"
+            $Language = GenXdev.Helpers\Get-DefaultWebLanguage
+            Microsoft.PowerShell.Utility\Write-Verbose "Using system default language: $Language"
         }
 
         # initialize stopping flag for chat loop
         $stopping = $false
-        Write-Verbose "Starting new audio LLM chat session with model $Model"
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting new audio LLM chat session with model $Model"
 
         # handle exposed cmdlets configuration
-        Write-Verbose "Configuring exposed cmdlets..."
+        Microsoft.PowerShell.Utility\Write-Verbose "Configuring exposed cmdlets..."
         if ($null -eq $ExposedCmdLets) {
             if ($ContinueLast -and $Global:LMStudioGlobalExposedCmdlets) {
-                Write-Verbose "Using existing exposed cmdlets from last session"
+                Microsoft.PowerShell.Utility\Write-Verbose "Using existing exposed cmdlets from last session"
                 $ExposedCmdLets = $Global:LMStudioGlobalExposedCmdlets
             }
             else {
-                Write-Verbose "Initializing default exposed cmdlets"
+                Microsoft.PowerShell.Utility\Write-Verbose "Initializing default exposed cmdlets"
                 # initialize default allowed PowerShell cmdlets
                 $ExposedCmdLets = @(
                     @{
@@ -590,14 +590,14 @@ function New-LLMAudioChat {
 
         # cache exposed cmdlets if session caching is enabled
         if (-not $NoSessionCaching) {
-            Write-Verbose "Caching exposed cmdlets for future sessions"
+            Microsoft.PowerShell.Utility\Write-Verbose "Caching exposed cmdlets for future sessions"
             $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
         }
 
-        Write-Verbose "Successfully initialized with $($ExposedCmdLets.Count) exposed cmdlets"
+        Microsoft.PowerShell.Utility\Write-Verbose "Successfully initialized with $($ExposedCmdLets.Count) exposed cmdlets"
 
         # ensure required parameters are properly set
-        Write-Verbose "Validating and setting required parameters"
+        Microsoft.PowerShell.Utility\Write-Verbose "Validating and setting required parameters"
         # ensure required parameters exist
         if (-not $PSBoundParameters.ContainsKey("Model")) {
             $null = $PSBoundParameters.Add("Model", $Model)
@@ -618,7 +618,7 @@ function New-LLMAudioChat {
 
             $initializationParams = GenXdev.Helpers\Copy-IdenticalParamValues -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
-                -DefaultValues (Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
             $modelInfo = GenXdev.AI\Initialize-LMStudioModel @initializationParams
             $Model = $modelInfo.identifier
@@ -655,7 +655,7 @@ function New-LLMAudioChat {
         while (-not $stopping) {
             # handle initial query vs subsequent voice input
             if ($hadAQuery) {
-                Write-Verbose "Processing initial query: $query"
+                Microsoft.PowerShell.Utility\Write-Verbose "Processing initial query: $query"
                 if ($PSCmdlet.ShouldProcess("Process initial query: $query", "Process Query", "New-LLMAudioChat")) {
                     $hadAQuery = $false
                     $query = [string]::Empty
@@ -665,19 +665,19 @@ function New-LLMAudioChat {
                 }
             }
             else {
-                Write-Host "Press any key to start recording or Q to quit"
+                Microsoft.PowerShell.Utility\Write-Host "Press any key to start recording or Q to quit"
 
                 try {
                     # prepare audio transcription parameters
-                    Write-Verbose "Preparing audio transcription parameters"
+                    Microsoft.PowerShell.Utility\Write-Verbose "Preparing audio transcription parameters"
                     $audioParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
                         -FunctionName "GenXdev.AI\Start-AudioTranscription" `
-                        -DefaultValues (Get-Variable -Scope Local -Name * `
+                        -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * `
                             -ErrorAction SilentlyContinue)
 
                     # configure and execute audio recording
-                    Write-Verbose "Configuring audio settings"
+                    Microsoft.PowerShell.Utility\Write-Verbose "Configuring audio settings"
                     $audioParams.VOX = -not $NoVOX
                     $audioParams.Temperature = $AudioTemperature
 
@@ -685,18 +685,18 @@ function New-LLMAudioChat {
                     $recognizedText = $query ? $query.Trim() : [string]::Empty
 
                     if ([string]::IsNullOrWhiteSpace($recognizedText)) {
-                        Write-Verbose "Starting audio recording and transcription"
+                        Microsoft.PowerShell.Utility\Write-Verbose "Starting audio recording and transcription"
                         if ($PSCmdlet.ShouldProcess("Start audio recording and transcription", "Record Audio", "New-LLMAudioChat")) {
-                            $recognizedText = Start-AudioTranscription @audioParams
+                            $recognizedText = GenXdev.AI\Start-AudioTranscription @audioParams
                         }
                     }
                 }
                 catch {
                     # handle audio recording errors
                     if ("$PSItem" -notlike "*aborted*") {
-                        Write-Error $PSItem
+                        Microsoft.PowerShell.Utility\Write-Error $PSItem
                     }
-                    Write-Verbose "Audio transcription failed or was aborted"
+                    Microsoft.PowerShell.Utility\Write-Verbose "Audio transcription failed or was aborted"
                     $query = [string]::Empty
                     $recognizedText = [string]::Empty
                     continue
@@ -706,46 +706,46 @@ function New-LLMAudioChat {
             # process recognized input if not empty
             if (-not [string]::IsNullOrWhiteSpace($recognizedText)) {
                 $question = $recognizedText
-                Write-Verbose "Processing recognized input: $question"
+                Microsoft.PowerShell.Utility\Write-Verbose "Processing recognized input: $question"
 
                 # prepare LM Studio query parameters
-                Write-Verbose "Preparing LM Studio parameters"
+                Microsoft.PowerShell.Utility\Write-Verbose "Preparing LM Studio parameters"
                 $invokeLMStudioParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName "GenXdev.AI\New-LLMTextChat" `
-                    -DefaultValues (Get-Variable -Scope Local -Name * `
+                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * `
                         -ErrorAction SilentlyContinue)
 
                 # configure and execute LM Studio query
-                Write-Verbose "Configuring LM Studio query parameters"
+                Microsoft.PowerShell.Utility\Write-Verbose "Configuring LM Studio query parameters"
                 $invokeLMStudioParams.Query = $question
                 $invokeLMSTudioParams.Speak = -not $DontSpeak
                 $invokeLMStudioParams.SpeakThoughts = -not $DontSpeakThoughts
                 $invokeLMStudioParams.ChatOnce = $true
 
-                Write-Verbose "Executing LM Studio query"
+                Microsoft.PowerShell.Utility\Write-Verbose "Executing LM Studio query"
                 if ($PSCmdlet.ShouldProcess("Execute LM Studio query: $question", "Query LM Studio", "New-LLMAudioChat")) {
-                    $answer = New-LLMTextChat @invokeLMStudioParams
+                    $answer = GenXdev.AI\New-LLMTextChat @invokeLMStudioParams
 
                     # display formatted response
                     if ($OnlyResponses) {
-                        Write-Host "$answer" -ForegroundColor Green
+                        Microsoft.PowerShell.Utility\Write-Host "$answer" -ForegroundColor Green
                     }
                     else {
-                        Write-Host "<< $answer" -ForegroundColor Green
+                        Microsoft.PowerShell.Utility\Write-Host "<< $answer" -ForegroundColor Green
                     }
                 }
 
-                Write-Host "Press any key to interrupt and start recording or Q to quit"
+                Microsoft.PowerShell.Utility\Write-Host "Press any key to interrupt and start recording or Q to quit"
             }
             else {
-                Write-Host "Too short or only silence recorded`r`n"
+                Microsoft.PowerShell.Utility\Write-Host "Too short or only silence recorded`r`n"
             }
 
             # monitor for key presses during speech output
-            Write-Verbose "Monitoring for key presses during speech output"
+            Microsoft.PowerShell.Utility\Write-Verbose "Monitoring for key presses during speech output"
             $continueWaiting = $true
-            while ($continueWaiting -and (Get-IsSpeaking)) {
+            while ($continueWaiting -and (GenXdev.Console\Get-IsSpeaking)) {
 
                 while ([Console]::KeyAvailable) {
 
@@ -753,8 +753,8 @@ function New-LLMAudioChat {
                     [System.Console]::Write("`e[1G`e[2K")
 
                     if ($key -eq [ConsoleKey]::Q) {
-                        Stop-TextToSpeech
-                        Write-Host "---------------"
+                        GenXdev.Console\Stop-TextToSpeech
+                        Microsoft.PowerShell.Utility\Write-Host "---------------"
                         $continueWaiting = $false
                         $stopping = $true
                         return
@@ -765,19 +765,19 @@ function New-LLMAudioChat {
                     }
                 }
 
-                $null = Start-Sleep -Milliseconds 100
+                $null = Microsoft.PowerShell.Utility\Start-Sleep -Milliseconds 100
             }
 
             # clear previous prompt
             [System.Console]::Write("`e[1A`e[2K")
 
-            Stop-TextToSpeech
-            Write-Host "---------------"
+            GenXdev.Console\Stop-TextToSpeech
+            Microsoft.PowerShell.Utility\Write-Host "---------------"
         }
     }
 
     end {
-        Write-Verbose "Audio chat session completed"
+        Microsoft.PowerShell.Utility\Write-Verbose "Audio chat session completed"
     }
 }
 ################################################################################

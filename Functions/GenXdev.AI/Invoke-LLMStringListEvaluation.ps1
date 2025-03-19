@@ -213,9 +213,9 @@ $Instructions
                     required   = @("items")
                 }
             }
-        } | ConvertTo-Json -Depth 10
+        } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
 
-        Write-Verbose "Starting string list evaluation with model: $Model"
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting string list evaluation with model: $Model"
         $script:result = @()
         $response = $null
     }
@@ -226,21 +226,21 @@ $Instructions
 
         if ($isClipboardSource) {
 
-            Write-Verbose "No direct text input, reading from clipboard"
-            $Text = Get-Clipboard
+            Microsoft.PowerShell.Utility\Write-Verbose "No direct text input, reading from clipboard"
+            $Text = Microsoft.PowerShell.Management\Get-Clipboard
 
             if ([string]::IsNullOrWhiteSpace($Text)) {
-                Write-Warning "No text found in the clipboard."
+                Microsoft.PowerShell.Utility\Write-Warning "No text found in the clipboard."
                 return
             }
         }
 
         try {
-            Write-Verbose "Processing text for string list extraction"
+            Microsoft.PowerShell.Utility\Write-Verbose "Processing text for string list extraction"
 
             $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "Invoke-LLMQuery"
+                -FunctionName "GenXdev.AI\Invoke-LLMQuery"
 
             $invocationParams.Query = $Text
             $invocationParams.Instructions = $Instructions
@@ -254,28 +254,28 @@ $Instructions
             }
 
             # Get evaluation result
-            $response = Invoke-LLMQuery @invocationParams | ConvertFrom-Json
+            $response = GenXdev.AI\Invoke-LLMQuery @invocationParams | Microsoft.PowerShell.Utility\ConvertFrom-Json
 
             # Store result
             $script:result = $response.items
             $summary = "`r`n`"$Text`"`r`n`r`nExtracted items:`r`n" + ($response.items -join "`r`n")
 
-            Write-Verbose $summary
+            Microsoft.PowerShell.Utility\Write-Verbose $summary
         }
         catch {
-            Write-Error "Failed to extract string list with AI model: $_"
+            Microsoft.PowerShell.Utility\Write-Error "Failed to extract string list with AI model: $_"
         }
     }
 
     end {
         if ($null -ne $response) {
             if ($SetClipboard) {
-                Write-Verbose "Copying result to clipboard"
+                Microsoft.PowerShell.Utility\Write-Verbose "Copying result to clipboard"
                 if ($IncludeThoughts) {
-                    $summary | Set-Clipboard
+                    $summary | Microsoft.PowerShell.Management\Set-Clipboard
                 }
                 else {
-                    $script:result | Set-Clipboard
+                    $script:result | Microsoft.PowerShell.Management\Set-Clipboard
                 }
             }
         }

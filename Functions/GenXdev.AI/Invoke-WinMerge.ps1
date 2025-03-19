@@ -40,7 +40,7 @@ function Invoke-WinMerge {
             HelpMessage = "Path to the source file to compare"
         )]
         [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $_ -PathType Leaf })]
+        [ValidateScript({ Microsoft.PowerShell.Management\Test-Path $_ -PathType Leaf })]
         [string]$SourcecodeFilePath,
         ########################################################################
         [Parameter(
@@ -49,7 +49,7 @@ function Invoke-WinMerge {
             HelpMessage = "Path to the target file to compare against"
         )]
         [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Test-Path $_ -PathType Leaf })]
+        [ValidateScript({ Microsoft.PowerShell.Management\Test-Path $_ -PathType Leaf })]
         [string]$TargetcodeFilePath,
         ########################################################################
         [Parameter(
@@ -65,8 +65,8 @@ function Invoke-WinMerge {
     begin {
 
         # verify that winmerge is installed and accessible
-        Write-Verbose "Verifying WinMerge installation status..."
-        AssureWinMergeInstalled
+        Microsoft.PowerShell.Utility\Write-Verbose "Verifying WinMerge installation status..."
+        GenXdev.AI\AssureWinMergeInstalled
 
 
         # convert any relative paths to full paths for reliability
@@ -75,8 +75,8 @@ function Invoke-WinMerge {
 
 
         # log the resolved file paths for troubleshooting
-        Write-Verbose "Resolved source file path: $sourcePath"
-        Write-Verbose "Resolved target file path: $targetPath"
+        Microsoft.PowerShell.Utility\Write-Verbose "Resolved source file path: $sourcePath"
+        Microsoft.PowerShell.Utility\Write-Verbose "Resolved target file path: $targetPath"
     }
 
 
@@ -92,13 +92,13 @@ function Invoke-WinMerge {
         # add wait parameter if specified to block until winmerge closes
         if ($Wait) {
             $processArgs['Wait'] = $true
-            Write-Verbose "Will wait for WinMerge process to exit"
+            Microsoft.PowerShell.Utility\Write-Verbose "Will wait for WinMerge process to exit"
         }
 
 
         # launch winmerge with the configured parameters
-        Write-Verbose "Launching WinMerge application..."
-        Start-Process @processArgs
+        Microsoft.PowerShell.Utility\Write-Verbose "Launching WinMerge application..."
+        Microsoft.PowerShell.Management\Start-Process @processArgs
     }
 
 

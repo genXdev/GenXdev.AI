@@ -1,6 +1,6 @@
-Describe "Test-LMStudioProcess basic functionality" {
+Pester\Describe "Test-LMStudioProcess basic functionality" {
 
-    It "Should pass PSScriptAnalyzer rules" {
+    Pester\It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Test-LMStudioProcess.ps1"
@@ -10,7 +10,7 @@ Describe "Test-LMStudioProcess basic functionality" {
             -Path $scriptPath
 
         [string] $message = ""
-        $analyzerResults | ForEach-Object {
+        $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
 --------------------------------------------------
@@ -21,16 +21,16 @@ Message: $($_.Message)
 "@
         }
 
-        $analyzerResults.Count | Should -Be 0 -Because @"
+        $analyzerResults.Count | Pester\Should -Be 0 -Because @"
 The following PSScriptAnalyzer rules are being violated:
 $message
 "@;
     }
 
-    It "Should return true when LMStudio process is running" {
+    Pester\It "Should return true when LMStudio process is running" {
 
-        $null = Start-LMStudioApplication
-        $result = Test-LMStudioProcess
-        $result | Should -Be $true
+        $null = GenXdev.AI\Start-LMStudioApplication
+        $result = GenXdev.AI\Test-LMStudioProcess
+        $result | Pester\Should -Be $true
     }
 }

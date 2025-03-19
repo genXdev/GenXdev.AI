@@ -85,13 +85,13 @@ function Invoke-CommandFromToolCall {
 
         # extract and convert arguments from the tool call
         $result.UnfilteredArguments = $ToolCall.function.arguments |
-        ConvertFrom-Json -ErrorAction SilentlyContinue |
-        ConvertTo-HashTable |
-        Select-Object -First 1
+        Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue |
+        GenXdev.Helpers\ConvertTo-HashTable |
+        Microsoft.PowerShell.Utility\Select-Object -First 1
 
-        Write-Verbose "Processing tool call: $($ToolCall.function.name)"
-        Write-Verbose "Unfiltered arguments: $($result.UnfilteredArguments |
-            ConvertTo-Json)"
+        Microsoft.PowerShell.Utility\Write-Verbose "Processing tool call: $($ToolCall.function.name)"
+        Microsoft.PowerShell.Utility\Write-Verbose "Unfiltered arguments: $($result.UnfilteredArguments |
+            Microsoft.PowerShell.Utility\ConvertTo-Json)"
 
         $result.FilteredArguments = [hashtable] @{}
         $result.ExposedCmdLet = $null
@@ -105,7 +105,7 @@ function Invoke-CommandFromToolCall {
 
         # find all exising predefined function definitions that match the tool call
         $matchedFunctions = @(
-            $Functions.function | ForEach-Object {
+            $Functions.function | Microsoft.PowerShell.Core\ForEach-Object {
 
                 $fullFunction = $PSItem.Name
                 $function = $fullFunction.Split("\")[1];
@@ -150,13 +150,13 @@ function Invoke-CommandFromToolCall {
             $result.CommandExposed = $true
 
             # start by checking if all required parameters are present
-            $matchedFunction.parameters.required | ForEach-Object {
+            $matchedFunction.parameters.required | Microsoft.PowerShell.Core\ForEach-Object {
 
                 # reference next required parameter's name
                 $definedParamName = $_
 
                 $foundArguments = @(
-                    $result.UnfilteredArguments.GetEnumerator() | ForEach-Object {
+                    $result.UnfilteredArguments.GetEnumerator() | Microsoft.PowerShell.Core\ForEach-Object {
                         if ($PSItem.Name -EQ $definedParamName) { $PSItem } }
                 );
 
@@ -167,7 +167,7 @@ function Invoke-CommandFromToolCall {
                     $result.Output = $null
                     $result.OutputType = $null
                     $result.FullName = $null
-                    $result.UnfilteredArguments = $ToolCall.function.arguments | ConvertFrom-Json -ErrorAction SilentlyContinue | ConvertTo-HashTable | Select-Object -First 1
+                    $result.UnfilteredArguments = $ToolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue | GenXdev.Helpers\ConvertTo-HashTable | Microsoft.PowerShell.Utility\Select-Object -First 1
                     $result.FilteredArguments = [hashtable] @{}
                     $result.ExposedCmdLet = $null
                     $result.Error = $null
@@ -197,7 +197,7 @@ function Invoke-CommandFromToolCall {
                     $result.Output = $null
                     $result.OutputType = $null
                     $result.FullName = $null
-                    $result.UnfilteredArguments = $ToolCall.function.arguments | ConvertFrom-Json -ErrorAction SilentlyContinue | ConvertTo-HashTable | Select-Object -First 1
+                    $result.UnfilteredArguments = $ToolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue | GenXdev.Helpers\ConvertTo-HashTable | Microsoft.PowerShell.Utility\Select-Object -First 1
                     $result.FilteredArguments = [hashtable] @{}
                     $result.ExposedCmdLet = $null
                     $result.Error = $null
@@ -225,8 +225,8 @@ function Invoke-CommandFromToolCall {
             # check if there are any forced parameters
             $foundCmdlets = @(
                 $ExposedCmdLets |
-                Sort-Object -Property Name -Descending |
-                ForEach-Object {
+                Microsoft.PowerShell.Utility\Sort-Object -Property Name -Descending |
+                Microsoft.PowerShell.Core\ForEach-Object {
                     if (
                         ($_.Name -EQ ($matchedFunction.name)) -or
                         ($_.Name -like "*\$($matchedFunction.name)") -or
@@ -237,7 +237,7 @@ function Invoke-CommandFromToolCall {
 
             foreach ($exposedCmdLet in $foundCmdlets) {
 
-                $exposedCmdLetParamNames = @($exposedCmdLet.AllowedParams | ForEach-Object { "$_".Split("=")[0] }) + @($exposedCmdLet.ForcedParams)
+                $exposedCmdLetParamNames = @($exposedCmdLet.AllowedParams | Microsoft.PowerShell.Core\ForEach-Object { "$_".Split("=")[0] }) + @($exposedCmdLet.ForcedParams)
 
                 $foundUnmatchingParam = $false;
                 foreach ($filteredArgument in $result.FilteredArguments.GetEnumerator()) {
@@ -258,7 +258,7 @@ function Invoke-CommandFromToolCall {
                     $result.Output = $null
                     $result.OutputType = $null
                     $result.FullName = $null
-                    $result.UnfilteredArguments = $ToolCall.function.arguments | ConvertFrom-Json -ErrorAction SilentlyContinue | ConvertTo-HashTable | Select-Object -First 1
+                    $result.UnfilteredArguments = $ToolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue | GenXdev.Helpers\ConvertTo-HashTable | Microsoft.PowerShell.Utility\Select-Object -First 1
                     $result.FilteredArguments = [hashtable] @{}
                     $result.ExposedCmdLet = $null
                     $result.Error = $null
@@ -305,10 +305,10 @@ function Invoke-CommandFromToolCall {
                 }
                 else {
 
-                    $location = (Get-Location).Path
+                    $location = (Microsoft.PowerShell.Management\Get-Location).Path
                     $functionName = $toolCall.function.Name
                     $filteredArguments = $result.FilteredArguments;
-                    $parametersLine = $filteredArguments.GetEnumerator() | ForEach-Object {
+                    $parametersLine = $filteredArguments.GetEnumerator() | Microsoft.PowerShell.Core\ForEach-Object {
 
                         $skip = $false;
                         $filteredArgumentName = $_.Name
@@ -327,13 +327,13 @@ function Invoke-CommandFromToolCall {
 
                         if (-not $skip) {
 
-                            "-$($_.Name) ($($_.Value | ConvertTo-Json -Compress -Depth 10 -WarningAction SilentlyContinue))"
+                            "-$($_.Name) ($($_.Value | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 10 -WarningAction SilentlyContinue))"
                         }
                         else {
 
                             "-$($_.Name) [value]"
                         }
-                    } | ForEach-Object {
+                    } | Microsoft.PowerShell.Core\ForEach-Object {
 
                         $_ -join " "
                     }
@@ -372,9 +372,9 @@ function Invoke-CommandFromToolCall {
                             $VerbosePreference = 'Continue'
                             $ErrorActionPreference = 'Continue'
                             $WarningPreference = 'Continue'
-                            $null = Register-EngineEvent -SourceIdentifier "Verbose" -Action $verboseScriptBlock
-                            $null = Register-EngineEvent -SourceIdentifier "Error" -Action $errorScriptBlock
-                            $null = Register-EngineEvent -SourceIdentifier "Warning" -Action $warningScriptBlock
+                            $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier "Verbose" -Action $verboseScriptBlock
+                            $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier "Error" -Action $errorScriptBlock
+                            $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier "Warning" -Action $warningScriptBlock
 
                             try {
                                 $tmpResult = &$cb @filteredArguments
@@ -384,9 +384,9 @@ function Invoke-CommandFromToolCall {
                                 $tmpResult = $null
                             }
                             finally {
-                                $null = Unregister-Event -SourceIdentifier "Verbose" -ErrorAction SilentlyContinue
-                                $null = Unregister-Event -SourceIdentifier "Error" -ErrorAction SilentlyContinue
-                                $null = Unregister-Event -SourceIdentifier "Warning" -ErrorAction SilentlyContinue
+                                $null = Microsoft.PowerShell.Utility\Unregister-Event -SourceIdentifier "Verbose" -ErrorAction SilentlyContinue
+                                $null = Microsoft.PowerShell.Utility\Unregister-Event -SourceIdentifier "Error" -ErrorAction SilentlyContinue
+                                $null = Microsoft.PowerShell.Utility\Unregister-Event -SourceIdentifier "Warning" -ErrorAction SilentlyContinue
                                 $VerbosePreference = $oldVerbosePreference
                                 $ErrorActionPreference = $oldErrorActionPreference
                                 $WarningPreference = $oldWarningPreference
@@ -446,7 +446,7 @@ function Invoke-CommandFromToolCall {
                     try {
                         if ($tmpResult -is [string]) {
                             $jsonTest = $tmpResult |
-                            ConvertFrom-Json -ErrorAction Stop
+                            Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction Stop
                             if ($jsonTest) {
                                 $isAlreadyJson = $true
                                 $result.OutputType = "application/json"
@@ -480,8 +480,8 @@ function Invoke-CommandFromToolCall {
                             if ($asText) {
 
                                 $tmpResult = (@($tmpResult) |
-                                    ForEach-Object { $_ | Out-String }) |
-                                ConvertTo-Json -Depth $jsonDepth `
+                                    Microsoft.PowerShell.Core\ForEach-Object { $_ | Microsoft.PowerShell.Utility\Out-String }) |
+                                Microsoft.PowerShell.Utility\ConvertTo-Json -Depth $jsonDepth `
                                     -WarningAction SilentlyContinue
                             }
                             else {
@@ -490,22 +490,22 @@ function Invoke-CommandFromToolCall {
                                     $tmpResult -is [string]) {
 
                                     $tmpResult = $tmpResult |
-                                    ConvertTo-Json -Depth $jsonDepth `
+                                    Microsoft.PowerShell.Utility\ConvertTo-Json -Depth $jsonDepth `
                                         -ErrorAction SilentlyContinue `
                                         -WarningAction SilentlyContinue
                                 }
                                 else {
 
-                                    $tmpResult = $tmpResult | ForEach-Object {
-                                        $_ | ConvertTo-Json `
+                                    $tmpResult = $tmpResult | Microsoft.PowerShell.Core\ForEach-Object {
+                                        $_ | Microsoft.PowerShell.Utility\ConvertTo-Json `
                                             -ErrorAction SilentlyContinue `
                                             -WarningAction SilentlyContinue `
                                             -Depth ($jsonDepth - 1) |
-                                        ConvertFrom-Json `
+                                        Microsoft.PowerShell.Utility\ConvertFrom-Json `
                                             -ErrorAction SilentlyContinue `
                                             -WarningAction SilentlyContinue |
-                                        ConvertTo-HashTable
-                                    } | ConvertTo-Json -Depth $jsonDepth `
+                                        GenXdev.Helpers\ConvertTo-HashTable
+                                    } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth $jsonDepth `
                                         -ErrorAction SilentlyContinue `
                                         -WarningAction SilentlyContinue
                                 }
@@ -521,7 +521,7 @@ function Invoke-CommandFromToolCall {
                     error           = $_.Exception.Message
                     exceptionThrown = $true
                     exceptionClass  = $_.Exception.GetType().FullName
-                } | ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue
+                } | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue
             }
 
             # we only execute the first matching function
@@ -531,7 +531,7 @@ function Invoke-CommandFromToolCall {
 
     end {
 
-        Write-Output $result
+        Microsoft.PowerShell.Utility\Write-Output $result
     }
 }
 ################################################################################

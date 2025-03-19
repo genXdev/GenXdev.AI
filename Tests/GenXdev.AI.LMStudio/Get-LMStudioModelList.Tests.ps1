@@ -1,8 +1,8 @@
 ################################################################################
 
-Describe "Get-LMStudioModelList.Tests" {
+Pester\Describe "Get-LMStudioModelList.Tests" {
 
-    It "Should pass PSScriptAnalyzer rules" {
+    Pester\It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Get-LMStudioModelList.ps1"
@@ -12,7 +12,7 @@ Describe "Get-LMStudioModelList.Tests" {
             -Path $scriptPath
 
         [string] $message = ""
-        $analyzerResults | ForEach-Object {
+        $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
 --------------------------------------------------
@@ -23,53 +23,53 @@ Message: $($_.Message)
 "@
         }
 
-        $analyzerResults.Count | Should -Be 0 -Because @"
+        $analyzerResults.Count | Pester\Should -Be 0 -Because @"
 The following PSScriptAnalyzer rules are being violated:
 $message
 "@;
     }
 
-    Context "Basic functionality" {
+    Pester\Context "Basic functionality" {
 
-        It "Should return models with required properties" {
+        Pester\It "Should return models with required properties" {
             # get all models
-            $result = Get-LMStudioModelList
+            $result = GenXdev.AI\Get-LMStudioModelList
 
             # verify if any models exist
             if ($null -eq $result) {
-                Set-ItResult -Skipped -Because "No models found in LM Studio"
+                Pester\Set-ItResult -Skipped -Because "No models found in LM Studio"
                 return
             }
 
             # verify models have required properties
-            $result | Should -Not -BeNullOrEmpty
-            $result | ForEach-Object {
-                $_.path | Should -Not -BeNullOrEmpty
+            $result | Pester\Should -Not -BeNullOrEmpty
+            $result | Microsoft.PowerShell.Core\ForEach-Object {
+                $_.path | Pester\Should -Not -BeNullOrEmpty
             }
         }
 
-        It "Should be able to find qwen-7b model if present" {
-            # get all models and filter for qwen-7b
-            $result = Get-LMStudioModelList
+        Pester\It "Should be able to find qwen-14b model if present" {
+            # get all models and filter for qwen-14b
+            $result = GenXdev.AI\Get-LMStudioModelList
 
             # verify if any models exist
             if ($null -eq $result) {
-                Set-ItResult -Skipped -Because "No models found in LM Studio"
+                Pester\Set-ItResult -Skipped -Because "No models found in LM Studio"
                 return
             }
 
-            # check for qwen-7b in model paths
-            $qwenModel = $result | Where-Object { $_.path -like "*qwen-7b*" }
+            # check for qwen-14b in model paths
+            $qwenModel = $result | Microsoft.PowerShell.Core\Where-Object { $_.path -like "*Qwen2.5-14B*" }
 
             # skip if not found (don't fail - model might not be installed)
             if ($null -eq $qwenModel) {
-                Set-ItResult -Skipped -Because "Qwen-7b model not installed"
+                Pester\Set-ItResult -Skipped -Because "qwen-14b model not installed"
                 return
             }
 
             # verify model properties if found
-            $qwenModel.path | Should -Not -BeNullOrEmpty
-            $qwenModel.path | Should -BeLike "*qwen-7b*"
+            $qwenModel.path | Pester\Should -Not -BeNullOrEmpty
+            $qwenModel.path | Pester\Should -BeLike "*Qwen2.5-14B*"
         }
     }
 }

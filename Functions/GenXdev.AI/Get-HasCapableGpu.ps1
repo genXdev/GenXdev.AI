@@ -24,7 +24,7 @@ function Get-HasCapableGpu {
 
     begin {
         # inform user that gpu check is starting
-        Write-Verbose "Starting GPU capability verification"
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting GPU capability verification"
     }
 
     process {
@@ -32,12 +32,12 @@ function Get-HasCapableGpu {
         $requiredMemory = 1024 * 1024 * 1024 * 4
 
         # query system for video controllers meeting memory requirement
-        $videoControllers = Get-WmiObject `
+        $videoControllers = Microsoft.PowerShell.Management\Get-WmiObject `
             -Class Win32_VideoController |
-        Where-Object { $_.AdapterRAM -ge $requiredMemory }
+        Microsoft.PowerShell.Core\Where-Object { $_.AdapterRAM -ge $requiredMemory }
 
         # output number of capable gpus found for debugging
-        Write-Verbose "Detected $($videoControllers.Count) GPUs with 4GB+ RAM"
+        Microsoft.PowerShell.Utility\Write-Verbose "Detected $($videoControllers.Count) GPUs with 4GB+ RAM"
 
         # return true if at least one capable gpu was found
         return $null -ne $videoControllers

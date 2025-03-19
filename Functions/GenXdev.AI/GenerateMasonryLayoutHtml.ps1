@@ -1,4 +1,4 @@
-################################################################################
+﻿################################################################################
 <#
 .SYNOPSIS
 Generates a responsive masonry layout HTML gallery from image data.
@@ -64,9 +64,9 @@ function GenerateMasonryLayoutHtml {
     begin {
 
         # load system.web for html encoding
-        Add-Type -AssemblyName System.Web
+        Microsoft.PowerShell.Utility\Add-Type -AssemblyName System.Web
 
-        Write-Verbose "Starting HTML generation for $($Images.Count) images"
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting HTML generation for $($Images.Count) images"
 
         # initialize html template with styles and javascript
         $html = @"
@@ -78,8 +78,8 @@ function GenerateMasonryLayoutHtml {
     <title>Masonry Image Layout</title>
     <script type="text/javascript">
         function setClipboard(index) {
-            let imageInfo = JSON.parse($(($Images | ConvertTo-Json -Compress -Depth 20 `
-                -WarningAction SilentlyContinue | ConvertTo-Json -Compress -Depth 20 `
+            let imageInfo = JSON.parse($(($Images | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 `
+                -WarningAction SilentlyContinue | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 `
                 -WarningAction SilentlyContinue)));
             while (imageInfo instanceof String) { imageInfo = JSON.parse(imageInfo); }
             path = imageInfo[index].path;
@@ -126,7 +126,7 @@ function GenerateMasonryLayoutHtml {
 
     process {
 
-        Write-Verbose "Generating HTML elements for image gallery"
+        Microsoft.PowerShell.Utility\Write-Verbose "Generating HTML elements for image gallery"
 
         # track image index for javascript callbacks
         $index = 0
@@ -163,12 +163,12 @@ function GenerateMasonryLayoutHtml {
 
         # either return html string or save to file based on parameters
         if ($null -eq $FilePath) {
-            Write-Verbose "Returning HTML as string output"
+            Microsoft.PowerShell.Utility\Write-Verbose "Returning HTML as string output"
             $html
         }
         else {
-            Write-Verbose "Saving HTML gallery to: $FilePath"
-            $html | Out-File -FilePath (GenXdev.FileSystem\Expand-Path $FilePath -CreateDirectory) `
+            Microsoft.PowerShell.Utility\Write-Verbose "Saving HTML gallery to: $FilePath"
+            $html | Microsoft.PowerShell.Utility\Out-File -FilePath (GenXdev.FileSystem\Expand-Path $FilePath -CreateDirectory) `
                 -Encoding utf8
         }
     }

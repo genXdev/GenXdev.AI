@@ -554,7 +554,7 @@ function Get-MediaFileAudioTranscription {
         if ([string]::IsNullOrWhiteSpace($LanguageIn)) {
 
             # get default language from system settings
-            $LanguageIn = Get-DefaultWebLanguage
+            $LanguageIn = GenXdev.Helpers\Get-DefaultWebLanguage
         }
 
         if ($PSBoundParameters.ContainsKey("MaxDurationOfSilence") -and (-not ($MaxDurationOfSilence -is [System.TimeSpan]))) {
@@ -581,7 +581,7 @@ function Get-MediaFileAudioTranscription {
             $PSBoundParameters["MaxInitialTimestamp"] = $MaxInitialTimestamp
         }
 
-        $ffmpegPath = (Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1 | ForEach-Object FullName)
+        $ffmpegPath = (Microsoft.PowerShell.Management\Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Microsoft.PowerShell.Utility\Select-Object -First 1 | Microsoft.PowerShell.Core\ForEach-Object FullName)
     }
 
     process {
@@ -589,8 +589,8 @@ function Get-MediaFileAudioTranscription {
         $MaxSrtChars = [System.Math]::Min(200, [System.Math]::Max(20, $MaxSrtChars))
 
         function IsWinGetInstalled {
-            Import-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
-            $module = Get-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
+            Microsoft.PowerShell.Core\Import-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
+            $module = Microsoft.PowerShell.Core\Get-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
             if ($null -eq $module) {
                 return $false
             }
@@ -599,9 +599,9 @@ function Get-MediaFileAudioTranscription {
 
         function InstallWinGet {
 
-            Write-Verbose "Installing WinGet PowerShell client.."
-            Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber
-            Import-Module "Microsoft.WinGet.Client"
+            Microsoft.PowerShell.Utility\Write-Verbose "Installing WinGet PowerShell client.."
+            PowerShellGet\Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber
+            Microsoft.PowerShell.Core\Import-Module "Microsoft.WinGet.Client"
         }
 
         function Installffmpeg {
@@ -614,39 +614,39 @@ function Get-MediaFileAudioTranscription {
             }
 
             $ffmpeg = "Gyan.FFmpeg"
-            $ffmpegPackage = Get-WinGetPackage -Id $ffmpeg
+            $ffmpegPackage = Microsoft.WinGet.Client\Get-WinGetPackage -Id $ffmpeg
 
             if ($null -eq $ffmpegPackage) {
 
-                Write-Verbose "Installing ffmpeg.."
+                Microsoft.PowerShell.Utility\Write-Verbose "Installing ffmpeg.."
                 try {
-                    Install-WinGetPackage -Id $ffmpeg -Force
+                    Microsoft.WinGet.Client\Install-WinGetPackage -Id $ffmpeg -Force
                 }
                 catch {
                     winget install $ffmpeg
                 }
-                $ffmpegPath = (Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+                $ffmpegPath = (Microsoft.PowerShell.Management\Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Microsoft.PowerShell.Utility\Select-Object -First 1).FullName
             }
         }
 
         # Make sure ffmpeg is installed
-        Installffmpeg | Out-Null
+        Installffmpeg | Microsoft.PowerShell.Core\Out-Null
 
         # Replace these paths with your actual file paths
         $inputFile = GenXdev.FileSystem\Expand-Path $FilePath
         $outputFile = [IO.Path]::GetTempFileName() + ".wav";
 
         # Construct and execute the ffmpeg command
-        Write-Verbose "Converting the file '$inputFile' to WAV format.."
+        Microsoft.PowerShell.Utility\Write-Verbose "Converting the file '$inputFile' to WAV format.."
 
-        $job = Start-Job -ArgumentList $ffmpegPath, $inputFile, $outputFile -ScriptBlock {
+        $job = Microsoft.PowerShell.Core\Start-Job -ArgumentList $ffmpegPath, $inputFile, $outputFile -ScriptBlock {
 
             param($ffmpegPath, $inputFile, $outputFile)
 
-            $ffmpegPath = (Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Select-Object -First 1 | ForEach-Object FullName)
+            $ffmpegPath = (Microsoft.PowerShell.Management\Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Microsoft.PowerShell.Utility\Select-Object -First 1 | Microsoft.PowerShell.Core\ForEach-Object FullName)
             try {
                 # Convert the file to WAV format
-                & $ffmpegPath -i "$inputFile" -ac 1 -ar 16000 -sample_fmt s16 "$outputFile" -loglevel quiet -y | Out-Null
+                & $ffmpegPath -i "$inputFile" -ac 1 -ar 16000 -sample_fmt s16 "$outputFile" -loglevel quiet -y | Microsoft.PowerShell.Core\Out-Null
             }
             finally {
                 [System.Console]::Write("`e[1A`e[2K")
@@ -656,71 +656,71 @@ function Get-MediaFileAudioTranscription {
         }
 
         # Wait for the job to complete and check the result
-        $job | Wait-Job | Out-Null
-        $success = ($job | Receive-Job) -eq 0
-        Remove-Job -Job $job | Out-Null
+        $job | Microsoft.PowerShell.Core\Wait-Job | Microsoft.PowerShell.Core\Out-Null
+        $success = ($job | Microsoft.PowerShell.Core\Receive-Job) -eq 0
+        Microsoft.PowerShell.Core\Remove-Job -Job $job | Microsoft.PowerShell.Core\Out-Null
 
         if (-not $success) {
 
-            Write-Warning "Failed to convert the file '$inputFile' to WAV format."
+            Microsoft.PowerShell.Utility\Write-Warning "Failed to convert the file '$inputFile' to WAV format."
 
             # Clean up the temporary file
             if ([IO.File]::Exists($outputFile)) {
 
-                Remove-Item -Path $outputFile -Force | Out-Null
+                Microsoft.PowerShell.Management\Remove-Item -Path $outputFile -Force | Microsoft.PowerShell.Core\Out-Null
             }
 
             return
         }
 
-        Write-Verbose "Transcribing the audio file '$inputFile'.."
+        Microsoft.PowerShell.Utility\Write-Verbose "Transcribing the audio file '$inputFile'.."
 
         if ($PSBoundParameters.ContainsKey("LanguageIn")) {
 
-            $null = $PSBoundParameters.Add("Language", $LanguageIn) | Out-Null;
+            $null = $PSBoundParameters.Add("Language", $LanguageIn) | Microsoft.PowerShell.Core\Out-Null;
         }
 
         if ($PSBoundParameters.ContainsKey("WithTranslate")) {
 
-            $null = $PSBoundParameters.Remove("WithTranslate", $true) | Out-Null;
+            $null = $PSBoundParameters.Remove("WithTranslate", $true) | Microsoft.PowerShell.Core\Out-Null;
         }
 
         if (($SRT -eq $true) -and (-not $PSBoundParameters.ContainsKey("PassThru"))) {
 
-            $null = $PSBoundParameters.Add("PassThru", $true) | Out-Null;
+            $null = $PSBoundParameters.Add("PassThru", $true) | Microsoft.PowerShell.Core\Out-Null;
         }
         else {
 
             if ((-not $SRT) -and $PSBoundParameters.ContainsKey("PassThru")) {
 
-                $null = $PSBoundParameters.Remove("PassThru") | Out-Null
+                $null = $PSBoundParameters.Remove("PassThru") | Microsoft.PowerShell.Core\Out-Null
             }
         }
 
         if (-not $PSBoundParameters.ContainsKey("WaveFile")) {
 
-            $null = $PSBoundParameters.Add("WaveFile", $outputFile) | Out-Null;
+            $null = $PSBoundParameters.Add("WaveFile", $outputFile) | Microsoft.PowerShell.Core\Out-Null;
         }
 
         if (-not $PSBoundParameters.ContainsKey("ErrorAction")) {
 
-            $null = $PSBoundParameters.Add("ErrorAction", "Stop") | Out-Null;
+            $null = $PSBoundParameters.Add("ErrorAction", "Stop") | Microsoft.PowerShell.Core\Out-Null;
         }
 
         if (-not $PSBoundParameters.ContainsKey("ModelFilePath")) {
 
-            $null = $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Out-Null;
+            $null = $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Microsoft.PowerShell.Core\Out-Null;
         }
         else {
 
             $PSBoundParameters["ModelFilePath"] = $ModelFilePath;
         }
 
-        if (-not (Get-HasCapableGpu)) {
+        if (-not (GenXdev.AI\Get-HasCapableGpu)) {
 
             if (-not $PSBoundParameters.ContainsKey("CpuThreads")) {
 
-                $null = $PSBoundParameters.Add("CpuThreads", (Get-NumberOfCpuCores)) | Out-Null;
+                $null = $PSBoundParameters.Add("CpuThreads", (GenXdev.AI\Get-NumberOfCpuCores)) | Microsoft.PowerShell.Core\Out-Null;
             }
         }
 
@@ -733,30 +733,30 @@ function Get-MediaFileAudioTranscription {
                 $i = 1
                 $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
-                    -FunctionName "Start-AudioTranscription"
+                    -FunctionName "GenXdev.AI\Start-AudioTranscription"
 
-                Start-AudioTranscription @invocationArguments | ForEach-Object {
+                GenXdev.AI\Start-AudioTranscription @invocationArguments | Microsoft.PowerShell.Core\ForEach-Object {
 
                     $result = $PSItem;
 
                     # needs translation?
                     if (-not [string]::IsNullOrWhiteSpace($LanguageOut)) {
 
-                        Write-Verbose "Translating text to $LanguageOut for: `"$($result.Text)`".."
+                        Microsoft.PowerShell.Utility\Write-Verbose "Translating text to $LanguageOut for: `"$($result.Text)`".."
 
                         try {
                             # translate the text
                             $result = @{
-                                Text  = (Get-TextTranslation -Text:($result.Text) -Language:$LanguageOut -Model:$TranslateUsingLMStudioModel -Instructions "Translate this partial subtitle text, into the [Language] language. ommit only the translation no yapping or chatting. return in json format like so: {`"Translation`":`"Translated text here`"}" | ConvertFrom-Json).Translation;
+                                Text  = (GenXdev.AI\Get-TextTranslation -Text:($result.Text) -Language:$LanguageOut -Model:$TranslateUsingLMStudioModel -Instructions "Translate this partial subtitle text, into the [Language] language. ommit only the translation no yapping or chatting. return in json format like so: {`"Translation`":`"Translated text here`"}" | Microsoft.PowerShell.Utility\ConvertFrom-Json).Translation;
                                 Start = $result.Start;
                                 End   = $result.End;
                             }
 
-                            Write-Verbose "Text translated to: `"$($result.Text)`".."
+                            Microsoft.PowerShell.Utility\Write-Verbose "Text translated to: `"$($result.Text)`".."
                         }
                         catch {
 
-                            Write-Verbose "Translating text to $LanguageOut, failed: $PSItem"
+                            Microsoft.PowerShell.Utility\Write-Verbose "Translating text to $LanguageOut, failed: $PSItem"
                         }
                     }
 
@@ -778,13 +778,13 @@ function Get-MediaFileAudioTranscription {
 
                 $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
-                    -FunctionName "Start-AudioTranscription"
+                    -FunctionName "GenXdev.AI\Start-AudioTranscription"
 
                 # transcribe the audio file to text
-                $results = Start-AudioTranscription @invocationArguments
+                $results = GenXdev.AI\Start-AudioTranscription @invocationArguments
 
                 # delegate
-                Get-TextTranslation -Text "$results" -Language $LanguageOut -Model $TranslateUsingLMStudioModel
+                GenXdev.AI\Get-TextTranslation -Text "$results" -Language $LanguageOut -Model $TranslateUsingLMStudioModel
 
                 # end of translation
                 return;
@@ -793,15 +793,15 @@ function Get-MediaFileAudioTranscription {
             # return the text results without translation
             $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "Start-AudioTranscription"
+                -FunctionName "GenXdev.AI\Start-AudioTranscription"
 
-            Start-AudioTranscription @invocationArguments
+            GenXdev.AI\Start-AudioTranscription @invocationArguments
         }
         catch {
 
             if ("$PSItem" -notlike "*aborted*") {
 
-                Write-Error $PSItem
+                Microsoft.PowerShell.Utility\Write-Error $PSItem
             }
         }
         finally {
@@ -809,7 +809,7 @@ function Get-MediaFileAudioTranscription {
             # Clean up the temporary file
             if ([IO.File]::Exists($outputFile)) {
 
-                Remove-Item -Path $outputFile -Force
+                Microsoft.PowerShell.Management\Remove-Item -Path $outputFile -Force
             }
         }
     }

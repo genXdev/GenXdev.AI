@@ -1,6 +1,6 @@
-Describe "Start-LMStudioApplication functionality tests" {
+Pester\Describe "Start-LMStudioApplication functionality tests" {
 
-    It "Should pass PSScriptAnalyzer rules" {
+    Pester\It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Start-LMStudioApplication.ps1"
@@ -10,7 +10,7 @@ Describe "Start-LMStudioApplication functionality tests" {
             -Path $scriptPath
 
         [string] $message = ""
-        $analyzerResults | ForEach-Object {
+        $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
 --------------------------------------------------
@@ -21,31 +21,31 @@ Message: $($_.Message)
 "@
         }
 
-        $analyzerResults.Count | Should -Be 0 -Because @"
+        $analyzerResults.Count | Pester\Should -Be 0 -Because @"
 The following PSScriptAnalyzer rules are being violated:
 $message
 "@;
     }
 
-    It "Should successfully start LM Studio application with default settings" {
+    Pester\It "Should successfully start LM Studio application with default settings" {
 
         # start lm studio
-        $result = Start-LMStudioApplication
+        $result = GenXdev.AI\Start-LMStudioApplication
 
         # verify process started
-        $result | Should -BeNull
+        $result | Pester\Should -BeNull
 
         # start lm studio
-        $result = Start-LMStudioApplication -Passthru
+        $result = GenXdev.AI\Start-LMStudioApplication -Passthru
 
         # verify process started
-        $result | Should -Not -BeNullOrEmpty
+        $result | Pester\Should -Not -BeNullOrEmpty
 
         # give it time to start
-        Start-Sleep -Seconds 2
+        Microsoft.PowerShell.Utility\Start-Sleep -Seconds 2
 
         # verify process is running
-        $process = Get-Process -Name "LM Studio" -ErrorAction SilentlyContinue
-        $process | Should -Not -BeNullOrEmpty
+        $process = Microsoft.PowerShell.Management\Get-Process -Name "LM Studio" -ErrorAction SilentlyContinue
+        $process | Pester\Should -Not -BeNullOrEmpty
     }
 }

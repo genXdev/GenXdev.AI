@@ -20,7 +20,7 @@ function Install-LMStudioApplication {
         # helper function to verify and install winget module
         function Test-WingetDependency {
             try {
-                $null = Import-Module "Microsoft.WinGet.Client" -ErrorAction Stop
+                $null = Microsoft.PowerShell.Core\Import-Module "Microsoft.WinGet.Client" -ErrorAction Stop
                 return $true
             }
             catch {
@@ -31,13 +31,13 @@ function Install-LMStudioApplication {
         # helper function to install winget if missing
         function Install-WingetDependency {
             if (-not (Test-WingetDependency)) {
-                Write-Verbose "Installing WinGet PowerShell module..."
-                $null = Install-Module "Microsoft.WinGet.Client" `
+                Microsoft.PowerShell.Utility\Write-Verbose "Installing WinGet PowerShell module..."
+                $null = PowerShellGet\Install-Module "Microsoft.WinGet.Client" `
                     -Force `
                     -AllowClobber `
                     -ErrorAction Stop
 
-                $null = Import-Module "Microsoft.WinGet.Client" -ErrorAction Stop
+                $null = Microsoft.PowerShell.Core\Import-Module "Microsoft.WinGet.Client" -ErrorAction Stop
             }
         }
     }
@@ -51,21 +51,21 @@ function Install-LMStudioApplication {
             $lmStudioId = "ElementLabs.LMStudio"
 
             # check if already installed
-            Write-Verbose "Checking if LM Studio is already installed..."
-            $installed = Get-WinGetPackage -Id $lmStudioId -ErrorAction Stop
+            Microsoft.PowerShell.Utility\Write-Verbose "Checking if LM Studio is already installed..."
+            $installed = Microsoft.WinGet.Client\Get-WinGetPackage -Id $lmStudioId -ErrorAction Stop
 
             if ($null -eq $installed) {
-                Write-Verbose "Installing LM Studio..."
+                Microsoft.PowerShell.Utility\Write-Verbose "Installing LM Studio..."
 
                 try {
                     # attempt install via powershell module
-                    $null = Install-WinGetPackage -Id $lmStudioId `
+                    $null = Microsoft.WinGet.Client\Install-WinGetPackage -Id $lmStudioId `
                         -Force `
                         -ErrorAction Stop
                 }
                 catch {
                     # fallback to winget cli
-                    Write-Verbose "Falling back to WinGet CLI..."
+                    Microsoft.PowerShell.Utility\Write-Verbose "Falling back to WinGet CLI..."
                     winget install $lmStudioId
 
                     if ($LASTEXITCODE -ne 0) {
@@ -76,12 +76,12 @@ function Install-LMStudioApplication {
                 # reset cached paths after install
                 $script:LMStudioExe = $null
                 $script:LMSExe = $null
-                Get-LMStudioPaths
-                $null = Get-Process "LM Studio" -ErrorAction SilentlyContinue | Stop-Process -Force
-                $null = Start-Process -FilePath ($script:LMStudioExe) -WindowStyle Maximized
+                GenXdev.AI\Get-LMStudioPaths
+                $null = Microsoft.PowerShell.Management\Get-Process "LM Studio" -ErrorAction SilentlyContinue | Microsoft.PowerShell.Management\Stop-Process -Force
+                $null = Microsoft.PowerShell.Management\Start-Process -FilePath ($script:LMStudioExe) -WindowStyle Maximized
             }
             else {
-                Write-Verbose "LM Studio is already installed"
+                Microsoft.PowerShell.Utility\Write-Verbose "LM Studio is already installed"
             }
         }
         catch {

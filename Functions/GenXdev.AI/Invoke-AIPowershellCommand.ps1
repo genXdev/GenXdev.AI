@@ -22,7 +22,7 @@ function Set-AICommandSuggestion {
         return @{
             command = $Command.Trim()
             success = $true
-        } | ConvertTo-Json -WarningAction SilentlyContinue
+        } | Microsoft.PowerShell.Utility\ConvertTo-Json -WarningAction SilentlyContinue
     }
 }
 
@@ -147,7 +147,7 @@ function Invoke-AIPowershellCommand {
     )
 
     begin {
-        Write-Verbose "Initializing AI command generation"
+        Microsoft.PowerShell.Utility\Write-Verbose "Initializing AI command generation"
 
         $commandInstructions = @"
 You are a PowerShell expert.
@@ -165,42 +165,42 @@ $Instructions
     }
 
     process {
-        Write-Verbose "Generating PowerShell command for query: $Query"
+        Microsoft.PowerShell.Utility\Write-Verbose "Generating PowerShell command for query: $Query"
 
         # Copy matching parameters to invoke transformation
         $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "Invoke-LLMTextTransformation"
+            -FunctionName "GenXdev.AI\Invoke-LLMTextTransformation"
 
         $invocationParams.Text = $Query
         $invocationParams.Instructions = $commandInstructions
         $invocationParams.SetClipboard = $Clipboard
 
         # Get the command from the AI
-        $command = Invoke-LLMTextTransformation @invocationParams
+        $command = GenXdev.AI\Invoke-LLMTextTransformation @invocationParams
 
         if ($Clipboard) {
-            Write-Verbose "Command copied to clipboard"
+            Microsoft.PowerShell.Utility\Write-Verbose "Command copied to clipboard"
         }
         else {
             if ($PSCmdlet.ShouldProcess("PowerShell window", "Send command")) {
 
-                $mainWindow = Get-PowershellMainWindow
+                $mainWindow = GenXdev.Windows\Get-PowershellMainWindow
                 if ($null -ne $mainWindow) {
                     $null = $mainWindow.SetForeground()
                 }
 
-                $oldClipboard = Get-Clipboard
+                $oldClipboard = Microsoft.PowerShell.Management\Get-Clipboard
                 try {
-                    ("$command".Trim().Replace("`n", " ```n")) | Set-Clipboard
+                    ("$command".Trim().Replace("`n", " ```n")) | Microsoft.PowerShell.Management\Set-Clipboard
 
-                    Send-Key "^v"
+                    GenXdev.Windows\Send-Key "^v"
 
-                    Start-Sleep 2
+                    Microsoft.PowerShell.Utility\Start-Sleep 2
                 }
                 finally {
 
-                    $oldClipboard | Set-Clipboard
+                    $oldClipboard | Microsoft.PowerShell.Management\Set-Clipboard
                 }
             }
         }

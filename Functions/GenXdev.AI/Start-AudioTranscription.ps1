@@ -404,11 +404,11 @@ function Start-AudioTranscription {
         if ([string]::IsNullOrWhiteSpace($Language)) {
 
             # get default language from system settings
-            $Language = Get-DefaultWebLanguage
-            Write-Verbose "Using system default language: $Language"
+            $Language = GenXdev.Helpers\Get-DefaultWebLanguage
+            Microsoft.PowerShell.Utility\Write-Verbose "Using system default language: $Language"
         }
 
-        Write-Verbose "Initializing audio transcription with selected options"
+        Microsoft.PowerShell.Utility\Write-Verbose "Initializing audio transcription with selected options"
 
         if ($PSBoundParameters.ContainsKey("MaxDurationOfSilence") -and (-not ($MaxDurationOfSilence -is [System.TimeSpan]))) {
 
@@ -443,12 +443,12 @@ function Start-AudioTranscription {
                 -CreateDirectory
         }
 
-        Write-Verbose "Using model path: $ModelFilePath"
+        Microsoft.PowerShell.Utility\Write-Verbose "Using model path: $ModelFilePath"
 
         # add or update model path parameter
         if (-not $PSBoundParameters.ContainsKey("ModelFilePath")) {
 
-            $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Out-Null
+            $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Microsoft.PowerShell.Core\Out-Null
         }
         else {
             $PSBoundParameters["ModelFilePath"] = $ModelFilePath
@@ -456,11 +456,11 @@ function Start-AudioTranscription {
 
         # configure voice activation detection (VOX) settings
         if ($VOX -eq $true) {
-            Write-Verbose "Configuring VOX settings"
+            Microsoft.PowerShell.Utility\Write-Verbose "Configuring VOX settings"
 
             if (-not $PSBoundParameters.ContainsKey("MaxDurationOfSilence")) {
 
-                $PSBoundParameters.Add("MaxDurationOfSilence", [System.TimeSpan]::FromSeconds(4)) | Out-Null;
+                $PSBoundParameters.Add("MaxDurationOfSilence", [System.TimeSpan]::FromSeconds(4)) | Microsoft.PowerShell.Core\Out-Null;
             }
             else {
 
@@ -469,7 +469,7 @@ function Start-AudioTranscription {
 
             if (-not $PSBoundParameters.ContainsKey("IgnoreSilence")) {
 
-                $PSBoundParameters.Add("IgnoreSilence", $true) | Out-Null;
+                $PSBoundParameters.Add("IgnoreSilence", $true) | Microsoft.PowerShell.Core\Out-Null;
             }
             else {
 
@@ -477,30 +477,30 @@ function Start-AudioTranscription {
             }
 
             if ($PSBoundParameters.ContainsKey("VOX")) {
-                $PSBoundParameters.Remove("VOX") | Out-Null;
+                $PSBoundParameters.Remove("VOX") | Microsoft.PowerShell.Core\Out-Null;
             }
         }
 
         # ensure error action is set
         if (-not $PSBoundParameters.ContainsKey("ErrorAction")) {
-            $PSBoundParameters.Add("ErrorAction", "Stop") | Out-Null
+            $PSBoundParameters.Add("ErrorAction", "Stop") | Microsoft.PowerShell.Core\Out-Null
         }
 
         # optimize for CPU when no capable GPU is present
-        if (-not (Get-HasCapableGpu)) {
-            Write-Verbose "No capable GPU detected, optimizing for CPU"
+        if (-not (GenXdev.AI\Get-HasCapableGpu)) {
+            Microsoft.PowerShell.Utility\Write-Verbose "No capable GPU detected, optimizing for CPU"
 
             if (-not $PSBoundParameters.ContainsKey("CpuThreads")) {
-                $PSBoundParameters.Add("CpuThreads", (Get-NumberOfCpuCores)) `
-                | Out-Null
+                $PSBoundParameters.Add("CpuThreads", (GenXdev.AI\Get-NumberOfCpuCores)) `
+                | Microsoft.PowerShell.Core\Out-Null
             }
         }
 
         # clean up null parameters
-        Write-Verbose "Cleaning up null parameters"
-        $PSBoundParameters.GetEnumerator() | ForEach-Object {
+        Microsoft.PowerShell.Utility\Write-Verbose "Cleaning up null parameters"
+        $PSBoundParameters.GetEnumerator() | Microsoft.PowerShell.Core\ForEach-Object {
             if ($null -eq $PSItem.Value -or ($PSItem.Value -eq -1)) {
-                $PSBoundParameters.Remove($PSItem.Key) | Out-Null
+                $PSBoundParameters.Remove($PSItem.Key) | Microsoft.PowerShell.Core\Out-Null
             }
         }
 
@@ -509,7 +509,7 @@ function Start-AudioTranscription {
         $ErrorActionPreference = "Stop"
 
         try {
-            Write-Verbose "Preparing transcription parameters"
+            Microsoft.PowerShell.Utility\Write-Verbose "Preparing transcription parameters"
 
             # prepare invocation arguments matching target function parameters
             $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -519,7 +519,7 @@ function Start-AudioTranscription {
             # ensure language parameter is set
             if ($PSBoundParameters.ContainsKey("Language")) {
 
-                $invocationArguments.Language = (Get-WebLanguageDictionary)[$Language]
+                $invocationArguments.Language = (GenXdev.Helpers\Get-WebLanguageDictionary)[$Language]
             }
 
             # determine the appropriate target description based on input type
@@ -534,12 +534,12 @@ function Start-AudioTranscription {
                 $targetDescription = "microphone audio transcription"
             }
 
-            Write-Verbose "Starting speech to text conversion"
+            Microsoft.PowerShell.Utility\Write-Verbose "Starting speech to text conversion"
 
             # add ShouldProcess check before executing the operation
             if ($PSCmdlet.ShouldProcess($targetDescription, "Start")) {
 
-                Get-SpeechToText @invocationArguments
+                GenXdev.Helpers\Get-SpeechToText @invocationArguments
             }
         }
         finally {

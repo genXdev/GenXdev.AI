@@ -25,14 +25,14 @@ function Test-LMStudioInstallation {
     begin {
 
         # retrieve the lmstudio installation paths using helper function
-        Write-Verbose "Retrieving LMStudio installation paths..."
-        $paths = Get-LMStudioPaths
+        Microsoft.PowerShell.Utility\Write-Verbose "Retrieving LMStudio installation paths..."
+        $paths = GenXdev.AI\Get-LMStudioPaths
     }
 
     process {
 
         # check if the exe exists and return result
-        Write-Verbose "Verifying LMStudio executable at: $($paths.LMSExe)"
+        Microsoft.PowerShell.Utility\Write-Verbose "Verifying LMStudio executable at: $($paths.LMSExe)"
 
         # use system.io for better performance
         return ((-not [string]::IsNullOrWhiteSpace($paths.LMSExe)) -and

@@ -199,9 +199,9 @@ function Invoke-LLMTextTransformation {
                     required   = @("response")
                 }
             }
-        } | ConvertTo-Json -Depth 10
+        } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
 
-        Write-Verbose "Starting text transformation with model: $Model"
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting text transformation with model: $Model"
     }
 
     process {
@@ -211,21 +211,21 @@ function Invoke-LLMTextTransformation {
 
         if ($isClipboardSource) {
 
-            Write-Verbose "No direct text input, reading from clipboard"
-            $Text = Get-Clipboard
+            Microsoft.PowerShell.Utility\Write-Verbose "No direct text input, reading from clipboard"
+            $Text = Microsoft.PowerShell.Management\Get-Clipboard
 
             if ([string]::IsNullOrWhiteSpace($Text)) {
-                Write-Warning "No text found in the clipboard."
+                Microsoft.PowerShell.Utility\Write-Warning "No text found in the clipboard."
                 return
             }
         }
 
         try {
-            Write-Verbose "Processing text block for transformation"
+            Microsoft.PowerShell.Utility\Write-Verbose "Processing text block for transformation"
 
             $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "Invoke-LLMQuery"
+                -FunctionName "GenXdev.AI\Invoke-LLMQuery"
 
             $invocationParams.Query = $Text
             $invocationParams.Instructions = $Instructions
@@ -237,14 +237,14 @@ function Invoke-LLMTextTransformation {
                 $invocationParams.ChatMode = "textprompt"
                 $invocationParams.ChatOnce = $true
             }
-            $enhancedText = (Invoke-LLMQuery @invocationParams |
-                ConvertFrom-Json).response
+            $enhancedText = (GenXdev.AI\Invoke-LLMQuery @invocationParams |
+                Microsoft.PowerShell.Utility\ConvertFrom-Json).response
 
             $null = $resultBuilder.Append("$enhancedText`r`n")
         }
         catch {
 
-            Write-Error "Failed to process text with AI model: $_"
+            Microsoft.PowerShell.Utility\Write-Error "Failed to process text with AI model: $_"
         }
     }
 
@@ -254,8 +254,8 @@ function Invoke-LLMTextTransformation {
         $finalResult = $resultBuilder.ToString()
 
         if ($SetClipboard) {
-            Write-Verbose "Copying enhanced text to clipboard"
-            Set-Clipboard -Value $finalResult
+            Microsoft.PowerShell.Utility\Write-Verbose "Copying enhanced text to clipboard"
+            Microsoft.PowerShell.Management\Set-Clipboard -Value $finalResult
         }
 
         # return enhanced text

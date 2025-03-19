@@ -46,28 +46,28 @@ function Get-LMStudioPaths {
         # check if paths need to be discovered
         if (-not $script:LMStudioExe -or -not $script:LMSexe) {
 
-            Write-Verbose "Searching for LM Studio executables..."
+            Microsoft.PowerShell.Utility\Write-Verbose "Searching for LM Studio executables..."
 
             # find main LM Studio executable
-            $script:LMStudioExe = Get-ChildItem `
+            $script:LMStudioExe = Microsoft.PowerShell.Management\Get-ChildItem `
                 -Path $searchPathsLMStudio `
                 -File `
                 -Recurse `
                 -ErrorAction SilentlyContinue |
-            Select-Object -First 1 |
-            ForEach-Object FullName
+            Microsoft.PowerShell.Utility\Select-Object -First 1 |
+            Microsoft.PowerShell.Core\ForEach-Object FullName
 
             # find LMS command-line executable
-            $script:LMSExe = Get-ChildItem `
+            $script:LMSExe = Microsoft.PowerShell.Management\Get-ChildItem `
                 -Path $searchPathsLMSexe `
                 -File `
                 -Recurse `
                 -ErrorAction SilentlyContinue |
-            Select-Object -First 1 |
-            ForEach-Object FullName
+            Microsoft.PowerShell.Utility\Select-Object -First 1 |
+            Microsoft.PowerShell.Core\ForEach-Object FullName
 
-            Write-Verbose "Found LM Studio: $script:LMStudioExe"
-            Write-Verbose "Found LMS: $script:LMSExe"
+            Microsoft.PowerShell.Utility\Write-Verbose "Found LM Studio: $script:LMStudioExe"
+            Microsoft.PowerShell.Utility\Write-Verbose "Found LMS: $script:LMSExe"
         }
     }
 

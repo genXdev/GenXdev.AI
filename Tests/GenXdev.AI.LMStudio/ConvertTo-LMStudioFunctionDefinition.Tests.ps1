@@ -1,6 +1,6 @@
-Describe "ConvertTo-LMStudioFunctionDefinition" {
+Pester\Describe "ConvertTo-LMStudioFunctionDefinition" {
 
-    It "Should pass PSScriptAnalyzer rules" {
+    Pester\It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\ConvertTo-LMStudioFunctionDefinition.ps1"
@@ -10,7 +10,7 @@ Describe "ConvertTo-LMStudioFunctionDefinition" {
             -Path $scriptPath
 
         [string] $message = ""
-        $analyzerResults | ForEach-Object {
+        $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
 --------------------------------------------------
@@ -21,13 +21,13 @@ Message: $($_.Message)
 "@
         }
 
-        $analyzerResults.Count | Should -Be 0 -Because @"
+        $analyzerResults.Count | Pester\Should -Be 0 -Because @"
 The following PSScriptAnalyzer rules are being violated:
 $message
 "@;
     }
 
-    It "Should check my sanity" {
+    Pester\It "Should check my sanity" {
 
         $number = 123;
 
@@ -35,27 +35,27 @@ $message
 
             param($a, $b, $c)
 
-            return (@($a, $b, $c, $number) | ConvertTo-Json -Compress -WarningAction SilentlyContinue)
+            return (@($a, $b, $c, $number) | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -WarningAction SilentlyContinue)
 
         }.GetNewClosure();
 
-        $callback.getType().FullName | Should -BeExactly "System.Management.Automation.ScriptBlock"
+        $callback.getType().FullName | Pester\Should -BeExactly "System.Management.Automation.ScriptBlock"
 
         $params = @{
             c = 3
             a = 1
         }
 
-        $params.getType().FullName | Should -BeExactly "System.Collections.Hashtable"
+        $params.getType().FullName | Pester\Should -BeExactly "System.Collections.Hashtable"
 
         $result = & $callback @params
 
-        $result | Should -Be (@(1, $null, 3, $number) | ConvertTo-Json -Compress -WarningAction SilentlyContinue)
+        $result | Pester\Should -Be (@(1, $null, 3, $number) | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -WarningAction SilentlyContinue)
     }
 
-    It "Should invoke function properly" {
+    Pester\It "Should invoke function properly" {
 
-        $converted = ConvertTo-LMStudioFunctionDefinition `
+        $converted = GenXdev.AI\ConvertTo-LMStudioFunctionDefinition `
             -ExposedCmdLets @(
             @{
                 Name          = "Get-ChildItem"
@@ -66,19 +66,19 @@ $message
 
         $functionDefinition = $converted.function
 
-        $functionDefinition | Should -Not -Be $null
+        $functionDefinition | Pester\Should -Not -Be $null
 
         $callback = $functionDefinition.callback;
 
-        $callback | Should -BeOfType [System.Management.Automation.CommandInfo]
+        $callback | Pester\Should -BeOfType [System.Management.Automation.CommandInfo]
 
         # Convert dictionary to proper parameter hashtable
-        $params = @{"Path" = "B:\" }
+        $params = @{"Path" = "$PSScriptRoot" }
 
-        Write-Verbose "Final parameter hashtable: $($params | ConvertTo-Json -WarningAction SilentlyContinue)"
+        Microsoft.PowerShell.Utility\Write-Verbose "Final parameter hashtable: $($params | Microsoft.PowerShell.Utility\ConvertTo-Json -WarningAction SilentlyContinue)"
 
         # Use $functionDefinition instead of undefined $matchedFunc
-        $callbackResult = & $callback @params | ConvertTo-Json -Compress -WarningAction SilentlyContinue
-        $callbackResult | Should -BeLike "*Movies*"
+        $callbackResult = & $callback @params | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -WarningAction SilentlyContinue
+        $callbackResult | Pester\Should -BeLike "*ConvertTo-LMStudioFunctionDefinition.Tests.ps1*"
     }
 }
