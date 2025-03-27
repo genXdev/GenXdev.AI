@@ -35,9 +35,6 @@
 
 * ✅ Text Processing and Enhancement
      * Add contextual emoticons with `Add-EmoticonsToText` -> `emojify`
-     * Convert between corporate and direct language styles:
-          * `ConvertTo-CorporateSpeak` -> `corporatize`
-          * `ConvertFrom-CorporateSpeak` -> `uncorporatize`
      * Translate text between languages with `Get-TextTranslation` -> `translate`
      * AI-powered text transformation with `Invoke-LLMTextTransformation` -> `spellcheck`
      * Extract string lists and evaluate statements with:
@@ -130,132 +127,132 @@ Update-Module
 # Cmdlets
 
 &nbsp;<hr/>
-###	GenXdev.AI<hr/> 
+###	GenXdev.AI<hr/>
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 &nbsp;<hr/>
-###	GenXdev.AI.LMStudio<hr/> 
+###	GenXdev.AI.LMStudio<hr/>
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 <br/><hr/><hr/><br/>
- 
+
 
 &nbsp;<hr/>
-###	GenXdev.AI.Queries<hr/> 
+###	GenXdev.AI.Queries<hr/>
 
 <br/><hr/><hr/><br/>
