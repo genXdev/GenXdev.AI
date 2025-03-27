@@ -29,7 +29,8 @@ function Test-LMStudioInstallation {
         $paths = GenXdev.AI\Get-LMStudioPaths
     }
 
-    process {
+
+process {
 
         # check if the exe exists and return result
         Microsoft.PowerShell.Utility\Write-Verbose "Verifying LMStudio executable at: $($paths.LMSExe)"

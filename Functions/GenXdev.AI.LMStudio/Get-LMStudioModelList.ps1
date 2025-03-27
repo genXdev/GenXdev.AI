@@ -39,7 +39,8 @@ function Get-LMStudioModelList {
         Microsoft.PowerShell.Utility\Write-Verbose "Retrieved LM Studio installation paths"
     }
 
-    process {
+
+process {
 
         try {
             # get path to lm studio executable

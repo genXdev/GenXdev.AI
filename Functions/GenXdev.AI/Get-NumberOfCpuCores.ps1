@@ -40,10 +40,11 @@ function Get-NumberOfCpuCores {
         Microsoft.PowerShell.Utility\Write-Verbose "Starting CPU core count calculation"
     }
 
-    process {
+
+process {
 
         # query all physical processors through WMI
-        $processors = Microsoft.PowerShell.Management\Get-WmiObject -Class Win32_Processor
+        $processors = CimCmdlets\Get-CimInstance -Class Win32_Processor
         Microsoft.PowerShell.Utility\Write-Verbose "Found $($processors.Count) physical processors"
 
         # sum up the number of cores from each physical processor

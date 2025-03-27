@@ -1,7 +1,7 @@
 ################################################################################
 Pester\Describe "Invoke-LLMBooleanEvaluation" {
 
-    Pester\It "should pass PSScriptAnalyzer rules" {
+    Pester\It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\Invoke-LLMBooleanEvaluation.ps1"

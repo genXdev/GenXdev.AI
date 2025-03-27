@@ -97,7 +97,7 @@ function Invoke-AIPowershellCommand {
             Mandatory = $false,
             HelpMessage = "Temperature for response randomness (0.0-1.0)")]
         [ValidateRange(0.0, 1.0)]
-        [double] $Temperature = 0.01,
+        [double] $Temperature = 0.2,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -164,7 +164,8 @@ $Instructions
 "@
     }
 
-    process {
+
+process {
         Microsoft.PowerShell.Utility\Write-Verbose "Generating PowerShell command for query: $Query"
 
         # Copy matching parameters to invoke transformation
@@ -194,7 +195,7 @@ $Instructions
                 try {
                     ("$command".Trim().Replace("`n", " ```n")) | Microsoft.PowerShell.Management\Set-Clipboard
 
-                    GenXdev.Windows\Send-Key "^v"
+                    GenXdev.Windows\Send-Key "^v" -WindowHandle ((GenXdev.Windows\Get-PowershellMainWindow).Handle)
 
                     Microsoft.PowerShell.Utility\Start-Sleep 2
                 }

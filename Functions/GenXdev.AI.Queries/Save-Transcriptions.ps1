@@ -377,7 +377,8 @@ function Save-Transcriptions {
         Microsoft.PowerShell.Utility\Write-Verbose "Current working directory stored for later restoration"
     }
 
-    process {
+
+process {
 
         # change to target directory for file processing
         Microsoft.PowerShell.Management\Set-Location (GenXdev.FileSystem\Expand-Path $DirectoryPath)

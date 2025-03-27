@@ -41,7 +41,8 @@ function Get-LMStudioPaths {
         )
     }
 
-    process {
+
+process {
 
         # check if paths need to be discovered
         if (-not $script:LMStudioExe -or -not $script:LMSexe) {

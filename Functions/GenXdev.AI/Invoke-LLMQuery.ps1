@@ -125,7 +125,7 @@ function Invoke-LLMQuery {
             Mandatory = $false,
             HelpMessage = "Temperature for response randomness (0.0-1.0)")]
         [ValidateRange(0.0, 1.0)]
-        [double] $Temperature = 0.0,
+        [double] $Temperature = 0.2,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -190,8 +190,8 @@ function Invoke-LLMQuery {
         ########################################################################
         # Array of command names that don't require confirmation
         [Parameter(Mandatory = $false)]
-        [string[]]
         [Alias("NoConfirmationFor")]
+        [string[]]
         $NoConfirmationToolFunctionNames = @(),
         ###########################################################################
         [Parameter(
@@ -281,7 +281,6 @@ function Invoke-LLMQuery {
         if ($PSBoundParameters.ContainsKey("ChatMode")) {
 
             $null = $PSBoundParameters.Remove("ChatMode")
-
             if (($ChatMode -ne "none" -or $ChatOnce)) {
 
                 return;
@@ -369,7 +368,8 @@ function Invoke-LLMQuery {
         Microsoft.PowerShell.Utility\Write-Verbose "Initialized conversation with system instructions"
     }
 
-    process {
+
+process {
 
         if ($ChatOnce) {
 

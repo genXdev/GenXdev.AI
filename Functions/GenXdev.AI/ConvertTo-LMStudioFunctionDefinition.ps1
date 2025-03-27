@@ -44,7 +44,8 @@ function ConvertTo-LMStudioFunctionDefinition {
         Microsoft.PowerShell.Utility\Write-Verbose "Starting conversion of PowerShell functions to LMStudio format"
     }
 
-    process {
+
+process {
 
         if ($ExposedCmdLets) {
 

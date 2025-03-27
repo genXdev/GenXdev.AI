@@ -40,7 +40,8 @@ function Set-GenXdevAICommandNotFoundAction {
         }
     }
 
-    process {
+
+process {
 
         if (-not $PSCmdlet.ShouldProcess("Command not found handling",
                 "Set AI assistance handler")) {

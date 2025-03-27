@@ -80,7 +80,8 @@ function Invoke-WinMerge {
     }
 
 
-    process {
+
+process {
 
         # prepare the process start parameters including executable and files
         $processArgs = @{

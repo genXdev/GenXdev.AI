@@ -52,7 +52,8 @@ function Start-LMStudioApplication {
         }
     }
 
-    process {
+
+process {
 
         # check if we need to start or show the process
         if (-not (GenXdev.AI\Test-LMStudioProcess -ShowWindow:$ShowWindow) -or $ShowWindow) {

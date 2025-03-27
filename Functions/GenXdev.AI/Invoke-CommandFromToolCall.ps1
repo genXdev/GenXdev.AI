@@ -62,8 +62,8 @@ function Invoke-CommandFromToolCall {
             Mandatory = $false,
             HelpMessage = "Array of command names that don't require confirmation"
         )]
-        [string[]]
         [Alias("NoConfirmationFor")]
+        [string[]]
         $NoConfirmationToolFunctionNames = @(),
         ########################################################################
         [Parameter(
@@ -98,7 +98,8 @@ function Invoke-CommandFromToolCall {
         $result.Error = $null
     }
 
-    process {
+
+process {
 
         $fullToolFunction = $ToolCall.function.name
         $toolFunction = $fullToolFunction.Split("\")[1];

@@ -68,7 +68,8 @@ function Get-VectorSimilarity {
         }
     }
 
-    process {
+
+process {
 
         try {
             Microsoft.PowerShell.Utility\Write-Verbose "Calculating vector similarity..."

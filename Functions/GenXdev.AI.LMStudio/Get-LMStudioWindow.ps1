@@ -6,12 +6,13 @@ Gets a window helper for the LM Studio application.
 .DESCRIPTION
 Gets a window helper for the LM Studio application. If LM Studio is not running,
 it will be started automatically unless prevented by NoAutoStart switch.
+The function handles process management and window positioning.
 
 .PARAMETER Model
 Name or partial path of the model to initialize.
 
 .PARAMETER ModelLMSGetIdentifier
-The LM-Studio model identifier to use.
+The specific LM-Studio model identifier to use.
 
 .PARAMETER MaxToken
 Maximum tokens in response. Use -1 for default value.
@@ -37,9 +38,12 @@ Get-LMStudioWindow "qwen2.5-14b-instruct" -ttl 3600
 function Get-LMStudioWindow {
 
     [CmdletBinding()]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseUsingScopeModifierInNewRunspaces", "")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSUseUsingScopeModifierInNewRunspaces", "")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSAvoidGlobalVars", "")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSUseDeclaredVarsMoreThanAssignments", "")]
     param(
         ########################################################################
         [Parameter(
@@ -92,55 +96,60 @@ function Get-LMStudioWindow {
             HelpMessage = "No auto start LM Studio if not running"
         )]
         [switch]$NoAutoStart
+        ########################################################################
     )
 
     begin {
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Starting search for LM Studio window"
+        Microsoft.PowerShell.Utility\Write-Verbose ("Attempting to locate or start " +
+            "LM Studio window")
 
-        # get paths for LM Studio
+        # get required paths for LM Studio operation
         $paths = GenXdev.AI\Get-LMStudioPaths
 
+        # handle force restart if requested and auto-start is enabled
         if ($Force -and (-not $NoAutoStart)) {
 
-            # copy matching parameters to AssureLMStudio function call
             $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\AssureLMStudio" `
-                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * `
-                    -ErrorAction SilentlyContinue)
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local -Name * -ErrorAction SilentlyContinue)
 
             $null = GenXdev.AI\AssureLMStudio @invocationArguments
         }
 
-        # get main lm studio process if running
-        $process = Microsoft.PowerShell.Management\Get-Process "LM Studio" -ErrorAction SilentlyContinue |
+        # attempt to find existing LM Studio window
+        $process = Microsoft.PowerShell.Management\Get-Process "LM Studio" `
+            -ErrorAction SilentlyContinue |
         Microsoft.PowerShell.Core\Where-Object { $_.MainWindowHandle -ne 0 } |
         Microsoft.PowerShell.Utility\Select-Object -First 1
     }
 
     process {
 
+        # define helper function to check for running instances
         function CheckRunningInstances {
 
-            # get all running lm studio processes
-            $others = @(Microsoft.PowerShell.Management\Get-Process "LM Studio" -ErrorAction SilentlyContinue)
+            # get all running LM Studio processes
+            $others = @(Microsoft.PowerShell.Management\Get-Process "LM Studio" `
+                    -ErrorAction SilentlyContinue)
 
             if ($others.Count -gt 0) {
 
-                # start new job to handle window initialization
+                # try to initialize window via background job
                 $null = Microsoft.PowerShell.Core\Start-Job -ScriptBlock {
 
                     param($paths)
 
-                    # launch lm studio normally
+                    # start primary instance
                     $null = Microsoft.PowerShell.Management\Start-Process `
                         -FilePath ($paths.LMStudioExe) `
                         -WindowStyle "Normal"
 
                     Microsoft.PowerShell.Utility\Start-Sleep 3
 
-                    # launch second instance
+                    # start secondary instance
                     $null = Microsoft.PowerShell.Management\Start-Process `
                         -FilePath ($paths.LMStudioExe) `
                         -WindowStyle "Normal"
@@ -149,19 +158,19 @@ function Get-LMStudioWindow {
 
                 Microsoft.PowerShell.Utility\Start-Sleep -Seconds 3
 
-                # get process with main window
+                # locate process with main window
                 $process = Microsoft.PowerShell.Management\Get-Process "LM Studio" |
                 Microsoft.PowerShell.Core\Where-Object { $_.MainWindowHandle -ne 0 } |
                 Microsoft.PowerShell.Utility\Select-Object -First 1
             }
         }
 
-        # try to find running process with main window
+        # initialize process if not found
         if ($null -eq $process) {
-
             CheckRunningInstances
         }
 
+        # handle auto-start scenario
         if ($null -eq $process) {
 
             if ($NoAutoStart) {
@@ -169,46 +178,52 @@ function Get-LMStudioWindow {
                 return
             }
 
-            Microsoft.PowerShell.Utility\Write-Verbose "Starting new LM Studio instance"
+            Microsoft.PowerShell.Utility\Write-Verbose "Initializing new LM Studio instance"
 
-            # prepare parameters for AssureLMStudio
             $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\AssureLMStudio" `
-                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * `
-                    -ErrorAction SilentlyContinue)
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local -Name * -ErrorAction SilentlyContinue)
 
             $null = GenXdev.AI\AssureLMStudio @invocationArguments
 
-            # get newly started process
             $process = Microsoft.PowerShell.Management\Get-Process "LM Studio" |
             Microsoft.PowerShell.Core\Where-Object { $_.MainWindowHandle -ne 0 } |
             Microsoft.PowerShell.Utility\Select-Object -First 1
         }
 
+        # final attempt to initialize
         if ($null -eq $process) {
-
             CheckRunningInstances
         }
 
+        # handle successful process initialization
         if ($process) {
 
-            Microsoft.PowerShell.Utility\Write-Verbose "Found LM Studio process (PID: $($process.Id))"
+            Microsoft.PowerShell.Utility\Write-Verbose ("Found LM Studio process " +
+                "(PID: $($process.Id))")
 
-            # get window helper for process
             $result = GenXdev.Windows\Get-Window -ProcessId ($process.Id)
 
             if ($ShowWindow -and $null -ne $result) {
 
-                # position windows and set focus
+                # set window positions and focus
                 $null = GenXdev.Windows\Set-WindowPosition -Left -Monitor 0
-                $null = GenXdev.Windows\Set-WindowPosition -WindowHelper $result -Right -Monitor 0
+                $null = GenXdev.Windows\Set-WindowPosition `
+                    -WindowHelper $result -Right -Monitor 0
 
+                # setup window state
                 $null = $result.Show()
                 $null = $result.Restore()
                 $null = $result.SetForeground()
-                $null = GenXdev.Windows\Send-Key "^2"
+
+                # send required keystrokes
+                $null = GenXdev.Windows\Send-Key "^2" -WindowHandle ($result.handle)
+
                 Microsoft.PowerShell.Utility\Start-Sleep 1
+
+                # restore powershell window focus
                 $null = (GenXdev.Windows\Get-PowershellMainWindow).SetForeground()
             }
 
@@ -216,7 +231,7 @@ function Get-LMStudioWindow {
             return
         }
 
-        Microsoft.PowerShell.Utility\Write-Error "Failed to start LM Studio"
+        Microsoft.PowerShell.Utility\Write-Error "Failed to initialize LM Studio"
     }
 
     end {

@@ -73,7 +73,7 @@ function Add-EmoticonsToText {
             Mandatory = $false,
             HelpMessage = "Temperature for response randomness (0.0-1.0)")]
         [ValidateRange(0.0, 1.0)]
-        [double] $Temperature = 0.0,
+        [double] $Temperature = 0.2,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -122,17 +122,29 @@ function Add-EmoticonsToText {
         ########################################################################
     )
 
+    begin {
+        Microsoft.PowerShell.Utility\Write-Verbose "Initializing emoticon enhancement"
+    }
+
     process {
         # construct instructions for emoticon enhancement
         $emotifyInstructions = (
             "Add funny or expressive emojii to the text provided as content " +
             "of the user-role message. Don't change the text otherwise. " +
-            "$Instructions"
+            "$Instructions"        # invoke the language model with emoticon instructions
+        )
+
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Processing text with instructions: $emotifyInstructions"
         )
 
         # invoke the language model with emoticon instructions
         GenXdev.AI\Invoke-LLMTextTransformation @PSBoundParameters `
             -Instructions $emotifyInstructions
+    }
+
+    end {
+        Microsoft.PowerShell.Utility\Write-Verbose "Completed emoticon enhancement"
     }
 }
 ################################################################################

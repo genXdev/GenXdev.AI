@@ -181,7 +181,7 @@ function New-LLMAudioChat {
             Mandatory = $false,
             HelpMessage = "Temperature for response randomness (0.0-1.0)")]
         [ValidateRange(0.0, 1.0)]
-        [double] $Temperature = 0.0,
+        [double] $Temperature = 0.2,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -649,7 +649,8 @@ function New-LLMAudioChat {
         $hadAQuery = -not [string]::IsNullOrEmpty($query)
     }
 
-    process {
+
+process {
         [string] $recognizedText = $query
 
         while (-not $stopping) {

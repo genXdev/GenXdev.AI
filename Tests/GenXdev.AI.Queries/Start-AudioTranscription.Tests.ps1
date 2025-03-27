@@ -3,7 +3,7 @@ Pester\Describe "Start-AudioTranscription Start-AudioTranscription" {
 
     Pester\BeforeAll {
         $Script:scriptPath = GenXdev.FileSystem\Expand-Path `
-            "$PSScriptRoot\..\..\Functions\GenXdev.AI\Start-AudioTranscription.ps1"
+            "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Start-AudioTranscription.ps1"
     }
 
     Pester\It "Should pass PSScriptAnalyzer rules" {

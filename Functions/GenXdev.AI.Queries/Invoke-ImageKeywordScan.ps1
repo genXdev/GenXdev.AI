@@ -70,7 +70,8 @@ function Invoke-ImageKeywordScan {
         }
     }
 
-    process {
+
+process {
 
         # search for jpg/jpeg/png files and process each one
         $results = Microsoft.PowerShell.Management\Get-ChildItem -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `

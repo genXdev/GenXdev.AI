@@ -84,7 +84,8 @@ function Invoke-ImageKeywordUpdate {
         }
     }
 
-    process {
+
+process {
 
         # get all supported image files from the specified directory
         Microsoft.PowerShell.Management\Get-ChildItem -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `

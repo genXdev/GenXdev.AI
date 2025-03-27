@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 <#
 .SYNOPSIS
 Generates a responsive masonry layout HTML gallery from image data.
@@ -124,7 +124,8 @@ function GenerateMasonryLayoutHtml {
 "@
     }
 
-    process {
+
+process {
 
         Microsoft.PowerShell.Utility\Write-Verbose "Generating HTML elements for image gallery"
 

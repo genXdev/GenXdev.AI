@@ -29,6 +29,7 @@ $message
     }
 
     Pester\It "Should verify LM Studio is properly installed and accessible" {
+
         # attempt to detect lm studio installation
         $result = GenXdev.AI\Test-LMStudioInstallation
 

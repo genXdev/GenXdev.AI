@@ -88,7 +88,7 @@ function Invoke-LLMTextTransformation {
             Mandatory = $false,
             HelpMessage = "Temperature for response randomness (0.0-1.0)")]
         [ValidateRange(0.0, 1.0)]
-        [double] $Temperature = 0.01,
+        [double] $Temperature = 0.2,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -143,8 +143,8 @@ function Invoke-LLMTextTransformation {
         ########################################################################
         # Array of command names that don't require confirmation
         [Parameter(Mandatory = $false)]
-        [string[]]
         [Alias("NoConfirmationFor")]
+        [string[]]
         $NoConfirmationToolFunctionNames = @(),
         ###########################################################################
         [Parameter(
@@ -204,7 +204,8 @@ function Invoke-LLMTextTransformation {
         Microsoft.PowerShell.Utility\Write-Verbose "Starting text transformation with model: $Model"
     }
 
-    process {
+
+process {
 
         # check if we should read from clipboard
         $isClipboardSource = [string]::IsNullOrWhiteSpace($Text)

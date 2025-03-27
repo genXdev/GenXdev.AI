@@ -4,28 +4,32 @@
 Initializes and loads an AI model in LM Studio.
 
 .DESCRIPTION
-Searches for and loads a specified AI model in LM Studio. The function handles
-installation verification, process management, and model loading with GPU
-support when available.
+Searches for and loads a specified AI model in LM Studio. Handles installation
+verification, process management, and model loading with GPU support.
 
 .PARAMETER Model
-Name or partial path of the model to initialize. Searched against available
-models.
+Name or partial path of the model to initialize. Searched against available models.
 
 .PARAMETER ModelLMSGetIdentifier
 The specific LM-Studio model identifier to use for download/initialization.
 
 .PARAMETER MaxToken
-Maximum number of tokens allowed in the response. Use -1 for default limit.
+Maximum tokens allowed in response. -1 for default limit.
 
 .PARAMETER TTLSeconds
-Time-to-live in seconds for models loaded via API requests. Use -1 for no TTL.
+Time-to-live in seconds for loaded models. -1 for no TTL.
+
+.PARAMETER Gpu
+GPU offloading level: -2=Auto, -1=LMStudio decides, 0=Off, 0-1=Layer fraction
 
 .PARAMETER ShowWindow
-Shows the LM Studio window during initialization if specified.
+Shows the LM Studio window during initialization.
+
+.PARAMETER Force
+Force stops LM Studio before initialization.
 
 .PARAMETER PreferredModels
-Array of model names to try if specified model is not found.
+Array of model names to try if specified model not found.
 
 .EXAMPLE
 Initialize-LMStudioModel -Model "qwen2.5-14b-instruct" -ShowWindow -MaxToken 2048
@@ -36,7 +40,9 @@ o "vicuna" -ttl 3600
 function Initialize-LMStudioModel {
 
     [CmdletBinding()]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseUsingScopeModifierInNewRunspaces", "")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        "PSUseUsingScopeModifierInNewRunspaces", ""
+    )]
     param(
         ########################################################################
         [Parameter(
@@ -89,7 +95,7 @@ function Initialize-LMStudioModel {
             HelpMessage = "Force stop LM Studio before initialization"
         )]
         [switch]$Force,
-        ################1################################################################################################################################
+        ########################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "List of preferred models to try if specified not found"
@@ -151,7 +157,7 @@ function Initialize-LMStudioModel {
                 }
                 else {
 
-                    $null = $PSBoundParameters["ModelLMSGetIdentifier"] = $ModelLMSGetIdentifier
+                    $PSBoundParameters["ModelLMSGetIdentifier"] = $ModelLMSGetIdentifier
                 }
 
                 if (-not $PSBoundParameters.ContainsKey("MaxToken")) {
@@ -160,7 +166,7 @@ function Initialize-LMStudioModel {
                 }
                 else {
 
-                    $null = $PSBoundParameters["MaxToken"] = $ModelLMSGetIdentifier
+                    $PSBoundParameters["MaxToken"] = $ModelLMSGetIdentifier
                 }
             }
         }
@@ -202,7 +208,8 @@ function Initialize-LMStudioModel {
         Microsoft.PowerShell.Utility\Write-Verbose "Using LM Studio CLI executable: $($paths.LMSExe)"
     }
 
-    process {
+
+process {
 
         # get current model list and search for requested model
         $modelList = GenXdev.AI\Get-LMStudioModelList
@@ -297,38 +304,66 @@ function Initialize-LMStudioModel {
                 $null = $params.Add($maxToken)
             }
 
-            Microsoft.PowerShell.Utility\Write-Verbose "Loading modeMicrosoft.PowerShell.Utility\ConvertTo-Jsoners: $($params|Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -WarningAction SilentlyContinue)"
+            # log the model loading parameters
+            Microsoft.PowerShell.Utility\Write-Verbose ("Loading model with params: " +
+                "$($params | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress `
+                -WarningAction SilentlyContinue)")
 
-            $success = Microsoft.PowerShell.Core\Start-Job -ArgumentList @($paths, $params) -ScriptBlock {
-                param($lmstudiopaths, $params)
+            # attempt to load the model in a background job
+            $success = Microsoft.PowerShell.Core\Start-Job `
+                -ArgumentList @($paths, $params) `
+                -ScriptBlock {
+                    param($lmstudiopaths, $params)
 
-                try {
-                    # Redirect stderr to stdout to capture all output
-                    $process = Microsoft.PowerShell.Management\Start-Process ($lmstudiopaths.LMSExe) -ArgumentList $params -Wait -NoNewWindow -PassThru `
-                        -RedirectStandardOutput $true
+                    try {
+                        # start lmstudio process and wait for completion
+                        $process = Microsoft.PowerShell.Management\Start-Process `
+                            -FilePath $lmstudiopaths.LMSExe `
+                            -ArgumentList $params `
+                            -Wait `
+                            -NoNewWindow `
+                            -PassThru `
+                            -ErrorAction SilentlyContinue
 
-                    # Consider success if process exits with code 0 or if we detect the model is actually loaded
-                    return ($process.ExitCode -eq 0) -or (GenXdev.AI\Get-LMStudioLoadedMMicrosoft.PowerShell.Core\Where-Objecticrosoft.PowerShell.Core\Where-Object { $_.path -like $params[1] })
-                }
-                catch {
-                    Microsoft.PowerShell.Utility\Write-Warning "Error during model load: $_"
-                    return $false
-                }
-            }.GetNewClosure() |
-            Microsoft.PowerShell.Core\Wait-Job -Timeout 1800 |
-            Microsoft.PowerShell.Core\Receive-Job
-
-            # retry after unloading all models if load failed
-            if (-not $success -and $loadedModels.Count -gt 0) {
-                $null = Microsoft.PowerShell.Core\Start-Job -ArgumentList $paths -ScriptBlock {
-                    param($lmstudiopaths)
-                    $null = Microsoft.PowerShell.Management\Start-Process ($lmstudiopaths.LMSExe) -ArgumentList @("unload", "--all") `
-                        -Wait -NoNewWindow
-                    $LASTEXITCODE -eq 0
-                } |
-                Microsoft.PowerShell.Core\Wait-Job -Timeout 10 |
+                        # check if model loaded successfully
+                        return ($process.ExitCode -eq 0) -or (
+                            GenXdev.AI\Get-LMStudioLoadedModelList |
+                            Microsoft.PowerShell.Core\Where-Object {
+                                $_.path -like $params[1]
+                            }
+                        )
+                    }
+                    catch {
+                        Microsoft.PowerShell.Utility\Write-Warning (
+                            "Error during model load: $_"
+                        )
+                        return $false
+                    }
+                }.GetNewClosure() |
+                Microsoft.PowerShell.Core\Wait-Job |
                 Microsoft.PowerShell.Core\Receive-Job
 
+            # retry after unloading if initial load failed
+            if (-not $success -and $loadedModels.Count -gt 0) {
+
+                # unload all models
+                $null = Microsoft.PowerShell.Core\Start-Job `
+                    -ArgumentList $paths `
+                    -ScriptBlock {
+                        param($lmstudiopaths)
+
+                        $null = Microsoft.PowerShell.Management\Start-Process `
+                            -FilePath $lmstudiopaths.LMSExe `
+                            -ArgumentList @("unload", "--all") `
+                            -Wait `
+                            -NoNewWindow
+
+                        return $LASTEXITCODE -eq 0
+                    } |
+                    Microsoft.PowerShell.Core\Wait-Job |
+                    Microsoft.PowerShell.Core\Receive-Job
+
+                # retry model initialization
                 return GenXdev.AI\Initialize-LMStudioModel @PSBoundParameters
             }
         }

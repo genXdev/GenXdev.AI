@@ -4,21 +4,24 @@
 Ensures LM Studio is properly initialized with the specified model.
 
 .DESCRIPTION
-Initializes or reinitializes LM Studio with a specified model, handling process
-management and configuration settings.
+Initializes or reinitializes LM Studio with a specified model. This function
+handles process management, configuration settings, and ensures the proper model
+is loaded. It can force a restart if needed and manages window visibility.
 
 .PARAMETER Model
-Name or partial path of the model to initialize, detects and excepts -like 'patterns*' for search
+Name or partial path of the model to initialize. Supports wildcard patterns.
 Defaults to "qwen2.5-14b-instruct".
 
 .PARAMETER ModelLMSGetIdentifier
-The specific LM-Studio model identifier to use.
+The specific LM-Studio model identifier to use. This should match an available
+model in LM Studio.
 
 .PARAMETER MaxToken
-Maximum number of tokens in response. Use -1 for default setting.
+Maximum number of tokens allowed in responses. Use -1 for default setting.
+Default is 8192.
 
 .PARAMETER TTLSeconds
-Time-to-live in seconds for models loaded via API requests.
+Time-to-live in seconds for models loaded via API requests. Use -1 for no TTL.
 
 .PARAMETER ShowWindow
 Shows the LM Studio window during initialization when specified.
@@ -30,7 +33,7 @@ Forces LM Studio to stop before initialization when specified.
 AssureLMStudio -Model "qwen2.5-14b-instruct" -MaxToken 8192 -ShowWindow
 
 .EXAMPLE
-AssureLMStudio "qwen2.5-14b-instruct" -ttl 3600 -Force
+AssureLMStudio "mistral-7b" -ttl 3600 -Force
 #>
 function AssureLMStudio {
 
@@ -52,6 +55,7 @@ function AssureLMStudio {
             Position = 1,
             HelpMessage = "The LM-Studio model to use"
         )]
+        [ValidateNotNullOrEmpty()]
         [string]$ModelLMSGetIdentifier = "qwen2.5-14b-instruct",
         ########################################################################
         [Parameter(
@@ -60,6 +64,7 @@ function AssureLMStudio {
             HelpMessage = "Maximum tokens in response (-1 for default)"
         )]
         [Alias("MaxTokens")]
+        [ValidateRange(-1, [int]::MaxValue)]
         [int]$MaxToken = 8192,
         ########################################################################
         [Parameter(
@@ -68,6 +73,7 @@ function AssureLMStudio {
             HelpMessage = "Set a TTL (in seconds) for models loaded via API"
         )]
         [Alias("ttl")]
+        [ValidateRange(-1, [int]::MaxValue)]
         [int]$TTLSeconds = -1,
         ########################################################################
         [Parameter(
@@ -95,24 +101,29 @@ function AssureLMStudio {
 
         # ensure default model identifier is set
         if (-not $PSBoundParameters.ContainsKey("ModelLMSGetIdentifier")) {
-            $null = $PSBoundParameters.Add("ModelLMSGetIdentifier", `
-                    "qwen2.5-14b-instruct")
+            $null = $PSBoundParameters.Add("ModelLMSGetIdentifier",
+                "qwen2.5-14b-instruct")
         }
 
         # ensure default max token is set
-        if (-not $PSBoundParameters.ContainsKey("MaxToken")) {
-            $null = $PSBoundParameters.Add("MaxToken", 8192)
+            if (-not $PSBoundParameters.ContainsKey("MaxToken")) {
+                $null = $PSBoundParameters.Add("MaxToken", 8192)
         }
     }
 
     process {
 
+        # prepare parameters for model initialization
         $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Initialize-LMStudioModel" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local -Name * -ErrorAction SilentlyContinue)
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Initializing LM Studio model with parameters"
+        Microsoft.PowerShell.Utility\Write-Verbose ("Initializing LM Studio model " +
+            "with parameters")
+
+        # initialize the model with prepared parameters
         $null = GenXdev.AI\Initialize-LMStudioModel @invocationArguments
     }
 

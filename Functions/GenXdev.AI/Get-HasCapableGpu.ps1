@@ -27,12 +27,13 @@ function Get-HasCapableGpu {
         Microsoft.PowerShell.Utility\Write-Verbose "Starting GPU capability verification"
     }
 
-    process {
+
+process {
         # define minimum required gpu memory (4GB in bytes)
         $requiredMemory = 1024 * 1024 * 1024 * 4
 
         # query system for video controllers meeting memory requirement
-        $videoControllers = Microsoft.PowerShell.Management\Get-WmiObject `
+        $videoControllers = CimCmdlets\Get-CimInstance `
             -Class Win32_VideoController |
         Microsoft.PowerShell.Core\Where-Object { $_.AdapterRAM -ge $requiredMemory }
 

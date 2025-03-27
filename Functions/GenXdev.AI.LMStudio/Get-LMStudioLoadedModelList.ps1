@@ -30,7 +30,8 @@ function Get-LMStudioLoadedModelList {
         $paths = GenXdev.AI\Get-LMStudioPaths
     }
 
-    process {
+
+process {
 
         Microsoft.PowerShell.Utility\Write-Verbose "Querying LM Studio for loaded models..."
 

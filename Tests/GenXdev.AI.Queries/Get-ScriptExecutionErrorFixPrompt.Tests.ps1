@@ -1,10 +1,10 @@
 ################################################################################
-Pester\Describe "ConvertFrom-CorporateSpeak" {
+Pester\Describe "Get-ScriptExecutionErrorFixPrompt" {
 
-    Pester\It "should pass PSScriptAnalyzer rules" {
+    Pester\It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\ConvertFrom-CorporateSpeak.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Get-ScriptExecutionErrorFixPrompt.ps1"
 
         # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
@@ -15,7 +15,7 @@ Pester\Describe "ConvertFrom-CorporateSpeak" {
 
             $message = $message + @"
 --------------------------------------------------
-Rule: $($_.RuleName)`
+Rule: $($_.RuleName)
 Description: $($_.Description)
 Message: $($_.Message)
 `r`n

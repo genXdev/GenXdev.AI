@@ -37,7 +37,8 @@ function Convert-DotNetTypeToLLMType {
         Microsoft.PowerShell.Utility\Write-Verbose "Converting .NET type '$DotNetType' to LLM type"
     }
 
-    process {
+
+process {
         # convert the .net type to a simplified llm type using a switch statement
         $result = switch ($DotNetType) {
             "System.Management.Automation.SwitchParameter]" { "boolean" }

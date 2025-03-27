@@ -584,7 +584,8 @@ function Get-MediaFileAudioTranscription {
         $ffmpegPath = (Microsoft.PowerShell.Management\Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Microsoft.PowerShell.Utility\Select-Object -First 1 | Microsoft.PowerShell.Core\ForEach-Object FullName)
     }
 
-    process {
+
+process {
 
         $MaxSrtChars = [System.Math]::Min(200, [System.Math]::Max(20, $MaxSrtChars))
 

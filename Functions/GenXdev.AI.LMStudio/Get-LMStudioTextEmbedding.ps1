@@ -1,4 +1,53 @@
+################################################################################
+<#
+.SYNOPSIS
+Gets text embeddings from LM Studio model.
+
+.DESCRIPTION
+Gets text embeddings for the provided text using LM Studio's API. Can work with
+both local and remote LM Studio instances. Handles model initialization and API
+communication.
+
+.PARAMETER Text
+The text to get embeddings for. Can be a single string or an array of strings.
+
+.PARAMETER Model
+The LM Studio model to use for embeddings.
+
+.PARAMETER ModelLMSGetIdentifier
+Specific identifier used for getting model from LM Studio.
+
+.PARAMETER ShowWindow
+Shows the LM Studio window during processing.
+
+.PARAMETER TTLSeconds
+Time-to-live in seconds for models loaded via API requests.
+
+.PARAMETER Gpu
+GPU offloading configuration:
+-2 = Auto
+-1 = LM Studio decides
+0-1 = Fraction of layers to offload
+"off" = Disabled
+"max" = Maximum offloading
+
+.PARAMETER Force
+Forces LM Studio restart before processing.
+
+.PARAMETER ApiEndpoint
+API endpoint URL, defaults to http://localhost:1234/v1/embeddings.
+
+.PARAMETER ApiKey
+The API key to use for requests.
+
+.EXAMPLE
+Get-LMStudioTextEmbedding -Text "Hello world" -Model "llama2" -ShowWindow
+
+.EXAMPLE
+"Sample text" | embed-text -ttl 3600
+#>
 function Get-LMStudioTextEmbedding {
+
     [CmdletBinding()]
     [Alias("embed-text", "Get-TextEmbedding")]
     param(
@@ -9,8 +58,8 @@ function Get-LMStudioTextEmbedding {
             HelpMessage = "Text to get embeddings for",
             ValueFromPipeline = $true
         )]
-        [string[]] $Text,
-
+        [ValidateNotNullOrEmpty()]
+        [string[]]$Text,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -18,7 +67,7 @@ function Get-LMStudioTextEmbedding {
             HelpMessage = "The LM-Studio model to use"
         )]
         [SupportsWildcards()]
-        [string] $Model,
+        [string]$Model,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -62,64 +111,68 @@ function Get-LMStudioTextEmbedding {
     )
 
     begin {
-        Microsoft.PowerShell.Utility\Write-Verbose "Starting text embedding process..."
+        Microsoft.PowerShell.Utility\Write-Verbose ("Starting text embedding process " +
+            "with model: $Model")
 
-        # initialize lm studio if using localhost
+        # setup api configuration for local or remote endpoint
         if ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or
             $ApiEndpoint.Contains("localhost")) {
 
+            # initialize local lm studio instance
             $initParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
-                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * `
-                    -ErrorAction SilentlyContinue)
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local -Name * -ErrorAction SilentlyContinue)
 
+            # handle force parameter separately
             if ($PSBoundParameters.ContainsKey("Force")) {
                 $null = $PSBoundParameters.Remove("Force")
                 $Force = $false
             }
 
+            # initialize model and get identifier
             $modelInfo = GenXdev.AI\Initialize-LMStudioModel @initParams
             $Model = $modelInfo.identifier
         }
 
-        # prepare api endpoint
-        $apiUrl = "http://localhost:1234/v1/embeddings"
+        # setup api endpoint and headers
+        $apiUrl = [string]::IsNullOrWhiteSpace($ApiEndpoint) ?
+            "http://localhost:1234/v1/embeddings" : $ApiEndpoint
 
-        if (-not [string]::IsNullOrWhiteSpace($ApiEndpoint)) {
-            $apiUrl = $ApiEndpoint
-        }
-
-        $headers = @{ "Content-Type" = "application/json" }
-        if (-not [string]::IsNullOrWhiteSpace($ApiKey)) {
-            $headers."Authorization" = "Bearer $ApiKey"
+        $headers = @{
+            "Content-Type" = "application/json"
+            "Authorization" = (-not [string]::IsNullOrWhiteSpace($ApiKey)) ?
+                "Bearer $ApiKey" : $null
         }
     }
 
     process {
-        Microsoft.PowerShell.Utility\Write-Verbose "Getting embeddings for text with model: $Model"
 
-        # prepare api payload
+        Microsoft.PowerShell.Utility\Write-Verbose ("Processing embeddings request " +
+            "for $($Text.Length) text items")
+
+        # prepare request payload
         $payload = @{
             model = $Model
             input = $Text
         }
 
-        # convert payload to json
-        $json = $payload | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 60 -Compress
+        # convert to json and encode
+        $json = $payload |
+            Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 60 -Compress
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Requesting embeddings from LM-Studio model '$Model'"
-
-        # send request with long timeouts
-        $response = Microsoft.PowerShell.Utility\Invoke-RestMethod -Uri $apiUrl `
+        # invoke api with extended timeouts
+        $response = Microsoft.PowerShell.Utility\Invoke-RestMethod `
+            -Uri $apiUrl `
             -Method Post `
             -Body $bytes `
             -Headers $headers `
             -OperationTimeoutSeconds (3600 * 24) `
             -ConnectionTimeoutSeconds (3600 * 24)
 
-        # Output embedding data
+        # process and output embeddings
         foreach ($embedding in $response.data) {
             [PSCustomObject]@{
                 embedding = $embedding.embedding
@@ -128,4 +181,8 @@ function Get-LMStudioTextEmbedding {
             }
         }
     }
+
+    end {
+    }
 }
+################################################################################

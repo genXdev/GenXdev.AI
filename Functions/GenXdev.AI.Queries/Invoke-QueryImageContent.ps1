@@ -97,7 +97,8 @@ function Invoke-QueryImageContent {
         }
     }
 
-    process {
+
+process {
 
         # log the start of actual image processing
         Microsoft.PowerShell.Utility\Write-Verbose "Processing image: $imagePath"

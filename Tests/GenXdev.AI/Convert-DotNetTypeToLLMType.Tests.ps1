@@ -1,12 +1,11 @@
 ################################################################################
-Pester\Describe "ConvertTo-CorporateSpeak" {
+Pester\Describe "Convert-DotNetTypeToLLMType" {
 
-    Pester\It "should pass PSScriptAnalyzer rules" {
+    Pester\It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\ConvertTo-CorporateSpeak.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\Convert-DotNetTypeToLLMType.ps1"
 
-        # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 

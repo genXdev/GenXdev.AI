@@ -57,7 +57,8 @@ function Approve-NewTextFileContent {
         Microsoft.PowerShell.Utility\Write-Verbose "Target file path: $contentPath"
     }
 
-    process {
+
+process {
 
         # check initial file existence for tracking deletion
         $existed = [System.IO.File]::Exists($contentPath)

@@ -67,7 +67,8 @@ function AssureWinMergeInstalled {
         }
     }
 
-    process {
+
+process {
 
         # verify if winmerge is available in current session
         if (@(Microsoft.PowerShell.Core\Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue).Length -eq 0) {

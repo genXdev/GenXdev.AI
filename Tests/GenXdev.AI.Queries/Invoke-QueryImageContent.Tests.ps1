@@ -1,11 +1,12 @@
 ################################################################################
-Pester\Describe "Save-Transcriptions" {
+Pester\Describe "Invoke-QueryImageContent" {
 
     Pester\It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\Save-Transcriptions.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Invoke-QueryImageContent.ps1"
 
+        # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 

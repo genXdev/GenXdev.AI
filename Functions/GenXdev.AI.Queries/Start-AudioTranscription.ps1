@@ -435,7 +435,8 @@ function Start-AudioTranscription {
         }
     }
 
-    process {
+
+process {
 
         if ([string]::IsNullOrWhiteSpace($ModelFilePath) -or (-not ([IO.Directory]::Exists($ModelFilePath)))) {
 

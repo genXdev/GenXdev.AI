@@ -1,10 +1,10 @@
 ################################################################################
-Pester\Describe "Get-MediaFileAudioTranscription" {
+Pester\Describe "Invoke-ImageKeywordUpdate" {
 
     Pester\It "Should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\Get-MediaFileAudioTranscription.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Invoke-ImageKeywordUpdate.ps1"
 
         # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
@@ -27,14 +27,5 @@ The following PSScriptAnalyzer rules are being violated:
 $message
 "@;
     }
-
-
-    # It "Should get audio transcription from a media file" -Skip:(-not ($Global:AllowLongRunningTests -eq $true)) {
-
-    #     # test with default model name that Should be available
-    #     $result = Get-MediaFileAudioTranscription -FilePath "$PSScriptRoot\escalated-quickly.mp3" -Verbose
-    #     $result | Should -Not -BeNullOrEmpty
-    #     $result | Should -Contain "escalated quickly"
-    # }
 }
 ################################################################################

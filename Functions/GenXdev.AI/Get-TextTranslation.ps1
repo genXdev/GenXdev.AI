@@ -73,6 +73,7 @@ function Get-TextTranslation {
             ValueFromPipeline = $true,
             HelpMessage = "The text to translate"
         )]
+        [ValidateNotNull()]
         [string]$Text,
         ########################################################################
         [Parameter(
@@ -137,7 +138,7 @@ function Get-TextTranslation {
             Mandatory = $false,
             HelpMessage = "Temperature for response randomness (0.0-1.0)")]
         [ValidateRange(0.0, 1.0)]
-        [double] $Temperature = 0.0,
+        [double] $Temperature = 0.2,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -187,18 +188,21 @@ function Get-TextTranslation {
     )
 
     begin {
-        Microsoft.PowerShell.Utility\Write-Verbose "Initializing text translation to $Language"
+
+        Microsoft.PowerShell.Utility\Write-Verbose ("Starting translation " +
+            "process to target language: $Language")
 
         if ([string]::IsNullOrWhiteSpace($Language)) {
 
-            # get default language from system settings
+            # get system default language when none specified
             $Language = GenXdev.Helpers\Get-DefaultWebLanguage
-            Microsoft.PowerShell.Utility\Write-Verbose "Using system default language: $Language"
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "Using system default language: $Language")
         }
     }
 
     process {
-        # construct translation instructions with smart format preservation
+# construct translation instructions with smart format preservation
         $translationInstructions = (
             "Translate the following text into $Language. " +
             "IMPORTANT TRANSLATION RULES:" +
@@ -211,15 +215,16 @@ function Get-TextTranslation {
             "`n4. Maintain exact formatting, indentation, and line breaks." +
             "`n5. Never translate identifiers, function names, variables, or " +
             "technical keywords." +
-            " $Instructions"
-        )
+            " $Instructions")
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Preparing to invoke LLM translation"
+        Microsoft.PowerShell.Utility\Write-Verbose "Preparing translation request"
 
-        # copy matching parameters to invoke translation
+        # copy matching parameters for invocation
         $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Invoke-LLMTextTransformation"
+
+        Microsoft.PowerShell.Utility\Write-Verbose "Invoking LLM translation"
 
         # perform the translation
         GenXdev.AI\Invoke-LLMTextTransformation @invocationParams `

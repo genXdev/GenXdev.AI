@@ -42,7 +42,8 @@ function Install-LMStudioApplication {
         }
     }
 
-    process {
+
+process {
         try {
             # ensure winget module is available
             Install-WingetDependency

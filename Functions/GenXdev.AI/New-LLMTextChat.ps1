@@ -131,7 +131,7 @@ function New-LLMTextChat {
             Mandatory = $false,
             HelpMessage = "Temperature for response randomness (0.0-1.0)")]
         [ValidateRange(0.0, 1.0)]
-        [double] $Temperature = 0.0,
+        [double] $Temperature = 0.2,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -481,7 +481,8 @@ $Instructions
         }
     }
 
-    process {
+
+process {
 
         Microsoft.PowerShell.Utility\Write-Verbose "Starting chat interaction loop"
 
@@ -567,7 +568,8 @@ $Instructions
 
             $invocationArguments.ChatOnce = $false
 
-            @(GenXdev.AI\Invoke-LLMQuery @invocationArguments) | Microsoft.PowerShell.Core\ForEach-Object -Process {
+            @(GenXdev.AI\Invoke-LLMQuery @invocationArguments) | Microsoft.PowerShell.Core\ForEach-Object {
+                
                 $result = $_
                 if (($null -eq $result) -or ([string]::IsNullOrEmpty("$result".trim()))) { return }
 
