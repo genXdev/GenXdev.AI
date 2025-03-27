@@ -195,7 +195,7 @@ process {
                 try {
                     ("$command".Trim().Replace("`n", " ```n")) | Microsoft.PowerShell.Management\Set-Clipboard
 
-                    GenXdev.Windows\Send-Key "^v" -WindowHandle ((GenXdev.Windows\Get-PowershellMainWindow).Handle)
+                    GenXdev.Windows\Send-Key "^v"
 
                     Microsoft.PowerShell.Utility\Start-Sleep 2
                 }

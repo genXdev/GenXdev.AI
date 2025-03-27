@@ -86,7 +86,7 @@ Regex pattern to suppress tokens from output.
 Size of the audio context window.
 
 .PARAMETER SilenceThreshold
-Threshold for silence detection. Range: 0.0-1.0. Default: 0.3
+Silence detect threshold (0..32767 defaults to 30)
 
 .PARAMETER LengthPenalty
 Penalty factor for response length. Range: 0-1
@@ -429,9 +429,9 @@ function New-LLMAudioChat {
         [Parameter(Mandatory = $false, HelpMessage = "Size of the audio context")]
         [int] $AudioContextSize,
         ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Maximum duration of the audio")]
-        [ValidateRange(0.0, 1.0)]
-        [float] $SilenceThreshold = 0.3,
+        [Parameter(Mandatory = $false, HelpMessage = "Silence detect threshold (0..32767 defaults to 30)")]
+        [ValidateRange(0, 32767)]
+        [int] $SilenceThreshold = 30,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Length penalty")]
         [ValidateRange(0, 1)]

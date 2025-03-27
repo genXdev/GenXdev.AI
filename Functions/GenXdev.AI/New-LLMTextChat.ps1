@@ -569,7 +569,7 @@ process {
             $invocationArguments.ChatOnce = $false
 
             @(GenXdev.AI\Invoke-LLMQuery @invocationArguments) | Microsoft.PowerShell.Core\ForEach-Object {
-                
+
                 $result = $_
                 if (($null -eq $result) -or ([string]::IsNullOrEmpty("$result".trim()))) { return }
 

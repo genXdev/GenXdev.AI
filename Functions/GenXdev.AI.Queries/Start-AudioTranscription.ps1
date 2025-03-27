@@ -171,7 +171,7 @@ function Start-AudioTranscription {
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Silence detect threshold (0..32767 defaults to 30)")]
         [ValidateRange(0, 32767)]
-        [int] $SilenceThreshold,
+        [int] $SilenceThreshold = 30,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Sets the language to detect")]
         [ValidateSet(
@@ -396,7 +396,10 @@ function Start-AudioTranscription {
         [switch] $NoContext,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Use beam search sampling strategy")]
-        [switch] $WithBeamSearchSamplingStrategy
+        [switch] $WithBeamSearchSamplingStrategy,
+        ################################################################################
+        [Parameter(Mandatory = $false, HelpMessage = "Enable real-time transcription mode")]
+        [switch] $Realtime
     )
 
     begin {
@@ -512,10 +515,13 @@ process {
         try {
             Microsoft.PowerShell.Utility\Write-Verbose "Preparing transcription parameters"
 
+            # Determine whether to use batch or realtime transcription
+            $useRealtime = $Realtime -or ([string]::IsNullOrWhiteSpace($WaveFile))
+
             # prepare invocation arguments matching target function parameters
             $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "GenXdev.Helpers\Get-SpeechToText"
+                -FunctionName ($useRealtime ? "GenXdev.Helpers\Receive-RealTimeSpeechToText" : "GenXdev.Helpers\Get-SpeechToText")
 
             # ensure language parameter is set
             if ($PSBoundParameters.ContainsKey("Language")) {
@@ -527,6 +533,7 @@ process {
             $targetDescription = "audio transcription"
             if ($PSBoundParameters.ContainsKey("WaveFile") -and (-not [string]::IsNullOrWhiteSpace($WaveFile))) {
                 $targetDescription = "transcription of file '$WaveFile'"
+                $useRealtime = $false
             }
             elseif ($PSBoundParameters.ContainsKey("UseDesktopAudioCapture") -and $UseDesktopAudioCapture) {
                 $targetDescription = "desktop audio transcription"
@@ -535,12 +542,15 @@ process {
                 $targetDescription = "microphone audio transcription"
             }
 
-            Microsoft.PowerShell.Utility\Write-Verbose "Starting speech to text conversion"
+            Microsoft.PowerShell.Utility\Write-Verbose "Starting speech to text conversion using $($useRealtime ? 'realtime' : 'batch') processing"
 
             # add ShouldProcess check before executing the operation
             if ($PSCmdlet.ShouldProcess($targetDescription, "Start")) {
-
-                GenXdev.Helpers\Get-SpeechToText @invocationArguments
+                if ($useRealtime) {
+                    GenXdev.Helpers\Receive-RealTimeSpeechToText @invocationArguments
+                } else {
+                    GenXdev.Helpers\Get-SpeechToText @invocationArguments
+                }
             }
         }
         finally {

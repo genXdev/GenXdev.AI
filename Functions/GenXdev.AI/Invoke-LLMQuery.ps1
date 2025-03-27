@@ -24,17 +24,35 @@ System instructions to provide context to the model.
 .PARAMETER Attachments
 Array of file paths to attach to the query. Supports images and text files.
 
+.PARAMETER ResponseFormat
+A JSON schema for the requested output format.
+
 .PARAMETER Temperature
 Controls response randomness (0.0-1.0). Lower values are more deterministic.
 
 .PARAMETER MaxToken
 Maximum tokens allowed in the response. Use -1 for model default.
 
+.PARAMETER ShowWindow
+Show the LM Studio window during processing.
+
+.PARAMETER TTLSeconds
+Time-to-live in seconds for loaded models.
+
+.PARAMETER Gpu
+How much to offload to the GPU. Values range from -2 (Auto) to 1 (max).
+
+.PARAMETER Force
+Force stop LM Studio before initialization.
+
 .PARAMETER ImageDetail
 Detail level for image processing (low/medium/high).
 
 .PARAMETER IncludeThoughts
 Include model's thought process in output.
+
+.PARAMETER DontAddThoughtsToHistory
+Exclude thought processes from conversation history.
 
 .PARAMETER ContinueLast
 Continue from the last conversation context.
@@ -45,14 +63,8 @@ Array of function definitions that the model can call.
 .PARAMETER ExposedCmdLets
 PowerShell commands to expose as tools to the model.
 
-.PARAMETER NoConfirmationFor
+.PARAMETER NoConfirmationToolFunctionNames
 Tool functions that don't require user confirmation.
-
-.PARAMETER ShowWindow
-Show the LM Studio window during processing.
-
-.PARAMETER TTLSeconds
-Time-to-live in seconds for loaded models.
 
 .PARAMETER Speak
 Enable text-to-speech for AI responses.
@@ -60,11 +72,26 @@ Enable text-to-speech for AI responses.
 .PARAMETER SpeakThoughts
 Enable text-to-speech for AI thought process.
 
+.PARAMETER OutputMarkupBlocksOnly
+Only output markup block responses.
+
+.PARAMETER MarkupBlocksTypeFilter
+Only output markup blocks of the specified types.
+
 .PARAMETER ChatMode
 Enable interactive chat mode with specified input method.
 
 .PARAMETER ChatOnce
 Internal parameter to control chat mode invocation.
+
+.PARAMETER NoSessionCaching
+Don't store session in session cache.
+
+.PARAMETER ApiEndpoint
+API endpoint URL, defaults to http://localhost:1234/v1/chat/completions.
+
+.PARAMETER ApiKey
+The API key to use for the request.
 
 .EXAMPLE
 Invoke-LLMQuery -Query "What is 2+2?" -Model "qwen" -Temperature 0.7
@@ -189,32 +216,34 @@ function Invoke-LLMQuery {
         $ExposedCmdLets = $null,
         ########################################################################
         # Array of command names that don't require confirmation
-        [Parameter(Mandatory = $false)]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Tool functions that don't require user confirmation")]
         [Alias("NoConfirmationFor")]
         [string[]]
         $NoConfirmationToolFunctionNames = @(),
         ###########################################################################
         [Parameter(
-            HelpMessage = "Enable text-to-speech for AI responses",
-            Mandatory = $false
+            Mandatory = $false,
+            HelpMessage = "Enable text-to-speech for AI responses"
         )]
         [switch] $Speak,
         ###########################################################################
         [Parameter(
-            HelpMessage = "Enable text-to-speech for AI thought responses",
-            Mandatory = $false
+            Mandatory = $false,
+            HelpMessage = "Enable text-to-speech for AI thought responses"
         )]
         [switch] $SpeakThoughts,
         ###########################################################################
         [Parameter(
-            HelpMessage = "Will only output markup block responses",
-            Mandatory = $false
+            Mandatory = $false,
+            HelpMessage = "Will only output markup block responses"
         )]
         [switch] $OutputMarkupBlocksOnly,
         ########################################################################
         [Parameter(
-            HelpMessage = "Will only output markup blocks of the specified types",
-            Mandatory = $false
+            Mandatory = $false,
+            HelpMessage = "Will only output markup blocks of the specified types"
         )]
         [ValidateNotNull()]
         [string[]] $MarkupBlocksTypeFilter = @("json", "powershell", "C#", "python", "javascript", "typescript", "html", "css", "yaml", "xml", "bash"),
@@ -251,44 +280,48 @@ function Invoke-LLMQuery {
     begin {
         Microsoft.PowerShell.Utility\Write-Verbose "Starting LLM interaction..."
 
-        $MarkupBlocksTypeFilter = $MarkupBlocksTypeFilter | Microsoft.PowerShell.Core\ForEach-Object { $_.ToLowerInvariant() }
+        # convert markup block types to lowercase for case-insensitive comparison
+        $MarkupBlocksTypeFilter = $MarkupBlocksTypeFilter |
+            Microsoft.PowerShell.Core\ForEach-Object { $_.ToLowerInvariant() }
 
         # initialize lm studio if using localhost
         if ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or
             $ApiEndpoint.Contains("localhost")) {
 
+            # copy identical parameter values to initialize the model
             $initParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * `
                     -ErrorAction SilentlyContinue)
 
+            # handle force parameter separately
             if ($PSBoundParameters.ContainsKey("Force")) {
                 $null = $PSBoundParameters.Remove("Force")
                 $Force = $false
             }
 
+            # initialize the model and get model information
             $modelInfo = GenXdev.AI\Initialize-LMStudioModel @initParams
             $Model = $modelInfo.identifier
         }
 
+        # remove show window parameter after initialization
         if ($PSBoundParameters.ContainsKey("ShowWindow")) {
-
             $null = $PSBoundParameters.Remove("ShowWindow")
             $ShowWindow = $false
         }
 
+        # handle chat mode parameter
         if ($PSBoundParameters.ContainsKey("ChatMode")) {
-
             $null = $PSBoundParameters.Remove("ChatMode")
             if (($ChatMode -ne "none" -or $ChatOnce)) {
-
                 return;
             }
         }
 
-        # convert tool functions if needed
-        # or take from global cache if available and user wants to continue last conversation
+        # convert tool functions if needed or use cached ones
+        # for continue last conversation
         if ($ContinueLast -and (-not ($ExposedCmdLets -and $ExposedCmdLets.Count -gt 0)) -and
             $Global:LMStudioGlobalExposedCmdlets -and ($Global:LMStudioGlobalExposedCmdlets.Count -gt 0)) {
 
@@ -299,19 +332,19 @@ function Invoke-LLMQuery {
         # user has provided exposed cmdlet definitions?
         if ($ExposedCmdLets -and $ExposedCmdLets.Count -gt 0) {
 
-            # set global cache
+            # set global cache if session caching is enabled
             if (-not $NoSessionCaching) {
-
                 $Global:LMStudioGlobalExposedCmdlets = $ExposedCmdLets
             }
 
             Microsoft.PowerShell.Utility\Write-Verbose "Converting tool functions to LM Studio format"
 
-            # convert them
+            # convert exposed cmdlets to function definitions
             $functions = GenXdev.AI\ConvertTo-LMStudioFunctionDefinition `
                 -ExposedCmdLets $ExposedCmdLets
         }
 
+        # create messages list for conversation context
         $messages = [System.Collections.Generic.List[PSCustomObject]] (
 
             # from cache if available and user wants to continue last conversation?
@@ -324,23 +357,25 @@ function Invoke-LLMQuery {
             @()
         )
 
+        # update global chat history if session caching is enabled
         if (-not $NoSessionCaching) {
-
-            # initialize message array for conversation
             $Global:LMStudioChatHistory = $messages
         }
 
-        # add system instructions if provided
+        # create system instruction message
         $newMessage = @{
             role    = "system"
             content = $Instructions
         }
 
-        # add if not already present
-        $newMessageJson = $newMessage | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+        # add system message if not already present (avoid duplicates)
+        $newMessageJson = $newMessage |
+            Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress `
+            -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
         $isDuplicate = $false
         foreach ($msg in $messages) {
-            if (($msg | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) -eq $newMessageJson) {
+            if (($msg | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress `
+                    -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) -eq $newMessageJson) {
                 $isDuplicate = $true
                 break
             }
@@ -350,27 +385,23 @@ function Invoke-LLMQuery {
             $null = $messages.Add($newMessage)
         }
 
-        # prepare api endpoint
-
+        # prepare api endpoint and headers
         $apiUrl = "http://localhost:1234/v1/chat/completions"
 
         if (-not [string]::IsNullOrWhiteSpace($ApiEndpoint)) {
-
             $apiUrl = $ApiEndpoint
         }
 
+        # set up http headers including authorization if api key provided
         $headers = @{ "Content-Type" = "application/json" }
         if (-not [string]::IsNullOrWhiteSpace($ApiKey)) {
-
             $headers."Authorization" = "Bearer $ApiKey"
         }
 
         Microsoft.PowerShell.Utility\Write-Verbose "Initialized conversation with system instructions"
     }
 
-
-process {
-
+    process {
         if ($ChatOnce) {
 
             $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -380,12 +411,12 @@ process {
 
             return (GenXdev.AI\New-LLMTextChat @invocationArgs)
         }
+
         # Just before sending request
         Microsoft.PowerShell.Utility\Write-Verbose "Sending request to LLM with:"
         Microsoft.PowerShell.Utility\Write-Verbose "Model: $Model"
         Microsoft.PowerShell.Utility\Write-Verbose "Query: $Query"
         Microsoft.PowerShell.Utility\Write-Verbose "Temperature: $Temperature"
-
 
         switch ($ChatMode) {
 
@@ -421,7 +452,8 @@ process {
 
         # process attachments if provided
         foreach ($attachment in $Attachments) {
-            # Process attachments (text or image) as before...
+            # Process attachments (text or image) as befo
+            re...
             $filePath = GenXdev.FileSystem\Expand-Path $attachment;
             $fileExtension = [IO.Path]::GetExtension($filePath).ToLowerInvariant();
             $mimeType = "application/octet-stream";
@@ -995,146 +1027,185 @@ process {
             $content = $msg.content
 
             # Extract and process embedded tool calls
+            # Try multiple formats that LLMs might use for tool function calls
+
+            # Format 1: <tool_call>{...}</tool_call>
             while ($content -match '<tool_call>\s*({[^}]+})\s*</tool_call>') {
-
                 $toolCallJson = $matches[1]
-                $toolCall = $null
-
                 try {
-                    $toolCall = $toolCallJson | Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue -WarningAction SilentlyContinue | GenXdev.Helpers\ConvertTo-HashTable
+                    # parse the json into a tool call object
+                    $toolCall = $toolCallJson |
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue -WarningAction SilentlyContinue |
+                        GenXdev.Helpers\ConvertTo-HashTable
 
-                    Microsoft.PowerShell.Utility\Write-Verbose "Tool call detected: $($toolCall.function.name)"
+                    # verify this has the expected properties for a function call
+                    if ($toolCall.function -and $toolCall.function.name) {
+                        Microsoft.PowerShell.Utility\Write-Verbose "Tool call detected (Format 1): $($toolCall.function.name)"
 
-                    # Format parameters as PowerShell command line style
-                    $foundArguments = ($toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json)
-                    $paramLine = $toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json |
-                    Microsoft.PowerShell.Utility\Get-Member -MemberType NoteProperty |
-                    Microsoft.PowerShell.Core\ForEach-Object {
-                        $name = $_.Name
-                        $value = $foundArguments.$name
-                        "-$name $($value | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue)"
-                    } | Microsoft.PowerShell.Utility\Join-String -Separator " "
+                        # invoke the command from the tool call
+                        [GenXdev.Helpers.ExposedToolCallInvocationResult] $invocationResult = GenXdev.AI\Invoke-CommandFromToolCall `
+                            -ToolCall:$toolCall `
+                            -Functions:$Functions `
+                            -ExposedCmdLets:$ExposedCmdLets `
+                            -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames |
+                            Microsoft.PowerShell.Utility\Select-Object -First 1
 
-                    Microsoft.PowerShell.Utility\Write-Verbose "PS> $($toolCall.function.name) $paramLine"
-                    if (-not ($Verbose -or $VerbosePreference -eq "Continue")) {
-                        Microsoft.PowerShell.Utility\Write-Host "PS> $($toolCall.function.name) $paramLine" -ForegroundColor Cyan
-                    }
-                    # Check if this tool_call_id is already in messages
-                    $existingResponse = $messages | Microsoft.PowerShell.Core\Where-Object {
-                        $_.tool_call_id -eq $toolCall.id
-                    } | Microsoft.PowerShell.Utility\Select-Object -First 1
+                        # create replacement text with the function result
+                        $replacement = "**Function Call Result:** $($invocationResult.Output)"
 
-                    if ($existingResponse) {
-                        # Replace the tool call with existing response
-                        $replacement = [string]::IsNullOrWhiteSpace($existingResponse.Content) ?
-                            ($existingResponse.Error | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) :
-                        $existingResponse.Content;
-
+                        # replace the original tool call with the result
                         $content = $content.Replace($matches[0], $replacement)
-                        continue
-                    }
-
-                    [GenXdev.Helpers.ExposedToolCallInvocationResult] $invocationResult = GenXdev.AI\Invoke-CommandFromToolCall `
-                        -ToolCall:$toolCall `
-                        -Functions:$Functions `
-                        -ExposedCmdLets:$ExposedCmdLets `
-                        -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames `
-                        -ForceAsText | Microsoft.PowerShell.Utility\Select-Object -First 1
-
-                    if ((-not ($Verbose -or $VerbosePreference -eq "Continue")) -and
-                        ($null -ne $invocationResult.Output)) {
-
-                        Microsoft.PowerShell.Utility\Write-Host "$($invocationResult.Output | Microsoft.PowerShell.Core\ForEach-Object { if ($_ -is [string]) { $_ } else { $_ | Microsoft.PowerShell.Utility\Out-String } })" -ForegroundColor Green
-                    }
-
-                    Microsoft.PowerShell.Utility\Write-Verbose "Tool function result: $($invocationResult | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 3 -Compress)"
-
-                    if (-not $invocationResult.CommandExposed) {
-
-                        $newMessage = @{
-                            role         = "tool"
-                            name         = $toolCall.function.name
-                            content      = $invocationResult.Error ? ($invocationResult.Error | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue) : $invocationResult.Reason
-                            tool_call_id = $toolCall.id
-                            id           = $toolCall.id
-                            arguments    = $toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json
-                        };
-
-                        # Add tool response to history
-                        $null = $messages.Add($newMessage)
-
-                        $content = $content.Replace($matches[0], $newMessage.error)
-                    }
-                    else {
-
-                        $newMessage = @{
-                            role         = "tool"
-                            name         = $toolCall.function.name
-                            content      = "$($invocationResult.Output)".Trim()
-                            content_type = $invocationResult.OutputType
-                            tool_call_id = $toolCall.id
-                            id           = $toolCall.id
-                            arguments    = $toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json
-                        };
-
-                        # Add tool response to history
-                        $null = $messages.Add($newMessage)
-
-                        $content = $content.Replace($matches[0], $newMessage.content)
                     }
                 }
                 catch {
-
-                    $newMessage = @{
-                        role         = "tool"
-                        name         = $toolCall.function.name
-                        error        = @{
-                            error           = $_.Exception.Message
-                            exceptionThrown = $true
-                            exceptionClass  = $_.Exception.GetType().FullName
-                        } | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 3 -WarningAction SilentlyContinue -ErrorAction SilentlyContinue;
-                        tool_call_id = $toolCall.id
-                        id           = $toolCall.id
-                        arguments    = $toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json
-                    };
-
-                    # Add tool response to history
-                    $null = $messages.Add($newMessage)
-
-                    $content = $content.Replace($matches[0], $newMessage.error)
+                    # if we can't process it, replace with error message
+                    $content = $content.Replace($matches[0], "Error processing tool call: $($_.Exception.Message)")
                 }
             }
 
-            # Update chat history with assistant's response
-            if (-not $DontAddThoughtsToHistory) {
-                $msg.content = $content;
-                $null = $messages.Add($msg)
+            # Format 2: [FUNCTION_CALL]{...}[/FUNCTION_CALL]
+            while ($content -match '\[FUNCTION_CALL\]\s*({[^}]+})\s*\[/FUNCTION_CALL\]') {
+                $toolCallJson = $matches[1]
+                try {
+                    # parse the json into a tool call object
+                    $toolCall = $toolCallJson |
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue -WarningAction SilentlyContinue |
+                        GenXdev.Helpers\ConvertTo-HashTable
+
+                    # verify this has the expected properties for a function call
+                    if ($toolCall.function -and $toolCall.function.name) {
+                        Microsoft.PowerShell.Utility\Write-Verbose "Tool call detected (Format 2): $($toolCall.function.name)"
+
+                        # invoke the command from the tool call
+                        [GenXdev.Helpers.ExposedToolCallInvocationResult] $invocationResult = GenXdev.AI\Invoke-CommandFromToolCall `
+                            -ToolCall:$toolCall `
+                            -Functions:$Functions `
+                            -ExposedCmdLets:$ExposedCmdLets `
+                            -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames |
+                            Microsoft.PowerShell.Utility\Select-Object -First 1
+
+                        # create replacement text with the function result
+                        $replacement = "**Function Call Result:** $($invocationResult.Output)"
+
+                        # replace the original tool call with the result
+                        $content = $content.Replace($matches[0], $replacement)
+                    }
+                }
+                catch {
+                    # if we can't process it, replace with error message
+                    $content = $content.Replace($matches[0], "Error processing tool call: $($_.Exception.Message)")
+                }
             }
 
+            # Format 3: <function>{...}</function>
+            while ($content -match '<function>\s*({[^}]+})\s*</function>') {
+                $toolCallJson = $matches[1]
+                try {
+                    # parse the json into a tool call object
+                    $toolCall = $toolCallJson |
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue -WarningAction SilentlyContinue |
+                        GenXdev.Helpers\ConvertTo-HashTable
+
+                    # verify this has the expected properties for a function call
+                    if ($toolCall.function -and $toolCall.function.name) {
+                        Microsoft.PowerShell.Utility\Write-Verbose "Tool call detected (Format 3): $($toolCall.function.name)"
+
+                        # invoke the command from the tool call
+                        [GenXdev.Helpers.ExposedToolCallInvocationResult] $invocationResult = GenXdev.AI\Invoke-CommandFromToolCall `
+                            -ToolCall:$toolCall `
+                            -Functions:$Functions `
+                            -ExposedCmdLets:$ExposedCmdLets `
+                            -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames |
+                            Microsoft.PowerShell.Utility\Select-Object -First 1
+
+                        # create replacement text with the function result
+                        $replacement = "**Function Call Result:** $($invocationResult.Output)"
+
+                        # replace the original tool call with the result
+                        $content = $content.Replace($matches[0], $replacement)
+                    }
+                }
+                catch {
+                    # if we can't process it, replace with error message
+                    $content = $content.Replace($matches[0], "Error processing tool call: $($_.Exception.Message)")
+                }
+            }
+
+            # Format 4: Check for code blocks with function calls
+            while ($content -match '```(?:json)?\s*({[\s\S]*?"function"[\s\S]*?})\s*```') {
+                $potentialJson = $matches[1].Trim()
+                try {
+                    # Try to parse as a function call
+                    $toolCall = $potentialJson |
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue -WarningAction SilentlyContinue |
+                        GenXdev.Helpers\ConvertTo-HashTable
+
+                    # Verify this is actually a function call with the expected properties
+                    if ($toolCall.function -and $toolCall.function.name) {
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Tool call detected (Format 4): $($toolCall.function.name)")
+
+                        # invoke the command from the tool call
+                        [GenXdev.Helpers.ExposedToolCallInvocationResult] $invocationResult = GenXdev.AI\Invoke-CommandFromToolCall `
+                            -ToolCall:$toolCall `
+                            -Functions:$Functions `
+                            -ExposedCmdLets:$ExposedCmdLets `
+                            -NoConfirmationToolFunctionNames:$NoConfirmationToolFunctionNames |
+                            Microsoft.PowerShell.Utility\Select-Object -First 1
+
+                        # create replacement text with the function result
+                        $replacement = "**Function Call Result:** $($invocationResult.Output)"
+
+                        # replace the original tool call with the result
+                        $content = $content.Replace($matches[0], $replacement)
+                    }
+                }
+                catch {
+                    # not a valid function call, leave it as is
+                    # only replace if we're sure it's a function call
+                }
+            }
+
+            # update chat history with assistant's response
+            # convert message to json and back to create a copy
+            $messageForHistory = $msg |
+                Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -WarningAction SilentlyContinue |
+                Microsoft.PowerShell.Utility\ConvertFrom-Json -WarningAction SilentlyContinue
+
+            # decide whether to include thoughts in history based on parameter
+            $messageForHistory.content = $DontAddThoughtsToHistory ?
+                [regex]::Replace($content, "<think>.*?</think>", "") :
+                $content
+
+            # add the message to conversation history
+            $null = $messages.Add($messageForHistory)
+
+            # process content if not empty
             if (-not [string]::IsNullOrWhiteSpace($content)) {
 
+                # if including thoughts, add raw content to output
                 if ($IncludeThoughts) {
-
-                    $finalOutput.Add($content)
+                    $null = $finalOutput.Add($content)
                 }
 
-                # Process thoughts as before
+                # extract and process thought content between <think> tags
                 $i = $content.IndexOf("<think>")
                 if ($i -ge 0) {
+                    # skip the opening tag
                     $i += 7
                     $i2 = $content.IndexOf("</think>")
                     if ($i2 -ge 0) {
-
+                        # extract thought content between tags
                         $thoughts = $content.Substring($i, $i2 - $i)
                         Microsoft.PowerShell.Utility\Write-Verbose "LLM Thoughts: $thoughts"
 
+                        # display thoughts if not including them in output
                         if (-not $IncludeThoughts) {
-
                             Microsoft.PowerShell.Utility\Write-Host $thoughts -ForegroundColor Yellow
                         }
 
+                        # speak thoughts if enabled
                         if ($SpeakThoughts) {
-
                             $null = GenXdev.Console\Start-TextToSpeech $thoughts
                         }
                     }
@@ -1143,12 +1214,6 @@ process {
                 # Remove <think> patterns
                 $cleaned = [regex]::Replace($content, "<think>.*?</think>", "")
                 Microsoft.PowerShell.Utility\Write-Verbose "LLM Response: $cleaned"
-
-                if ($DontAddThoughtsToHistory) {
-
-                    $msg.content = $cleaned;
-                    $null = $messages.Add($msg)
-                }
 
                 if ($OutputMarkupBlocksOnly) {
 
