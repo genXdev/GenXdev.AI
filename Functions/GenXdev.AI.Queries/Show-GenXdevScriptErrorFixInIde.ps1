@@ -269,7 +269,7 @@ function Show-GenXdevScriptErrorFixInIde {
                     # prepare key sequences for opening files in VSCode
                     # first file gets different key sequence than subsequent files
                     $invocationArgs.KeysToSend = @(
-                        @("{ESCAPE}", "^{F12}")
+                        @("{ESCAPE}", "^+%{F12}")
                     )
 
                     # open the source file in the IDE with the given parameters

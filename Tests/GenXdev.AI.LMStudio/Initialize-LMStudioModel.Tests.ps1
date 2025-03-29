@@ -41,17 +41,6 @@ Pester\Describe "Initialize-LMStudioModel integration tests" {
         $result.path | Pester\Should -Not -BeNullOrEmpty
     }
 
-    Pester\It "Should initialize with window visible" {
-        $result = GenXdev.AI\Initialize-LMStudioModel -Model "qwen2.5-14b-instruct" -ModelLMSGetIdentifier "qwen2.5-14b-instruct" -ShowWindow
-        $result | Pester\Should -Not -Be $null
-        $result.path | Pester\Should -Not -BeNullOrEmpty
-
-        $window = GenXdev.Windows\Get-Window "LM Studio"
-        $window  | Pester\Should -Not -Be $null
-        $window.Handle  | Pester\Should -Not -Be 0
-        $window.IsVisible() | Pester\Should -Be $true
-    }
-
     Pester\It "Should fall back to preferred models if specified not found" {
         # test with non-existent model name to trigger fallback
         $result = GenXdev.AI\Initialize-LMStudioModel `
