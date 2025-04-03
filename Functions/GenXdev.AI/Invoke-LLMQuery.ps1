@@ -452,8 +452,7 @@ function Invoke-LLMQuery {
 
         # process attachments if provided
         foreach ($attachment in $Attachments) {
-            # Process attachments (text or image) as befo
-            re...
+            # Process attachments (text or image) as before
             $filePath = GenXdev.FileSystem\Expand-Path $attachment;
             $fileExtension = [IO.Path]::GetExtension($filePath).ToLowerInvariant();
             $mimeType = "application/octet-stream";
