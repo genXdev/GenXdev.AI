@@ -108,10 +108,10 @@ process {
                 }
 
                 # handle directory navigation
-                if (Microsoft.PowerShell.Management\Test-Path -Path $CommandName -PathType Container) {
+                if (Microsoft.PowerShell.Management\Test-Path -LiteralPath $CommandName -PathType Container) {
 
                     $CommandLookupEventArgs.CommandScriptBlock = {
-                        Microsoft.PowerShell.Management\Set-Location $CommandName
+                        Microsoft.PowerShell.Management\Set-Location -LiteralPath $CommandName
                         Microsoft.PowerShell.Management\Get-ChildItem
                     }.GetNewClosure()
 
