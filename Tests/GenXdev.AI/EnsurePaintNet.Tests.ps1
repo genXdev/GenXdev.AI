@@ -1,11 +1,12 @@
 ################################################################################
-Pester\Describe "AssureLMStudio" {
+Pester\Describe "EnsurePaintNet" {
 
-    Pester\It "Should pass PSScriptAnalyzer rules" {
+    Pester\It "should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\AssureLMStudio.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\EnsurePaintNet.ps1"
 
+        # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 

@@ -214,7 +214,7 @@ function Show-GenXdevScriptErrorFixInIde {
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\Get-ScriptExecutionErrorFixPrompt"
 
-            $null = GenXdev.Coding\AssureVSCodeInstallation
+            $null = GenXdev.Coding\EnsureVSCodeInstallation
 
             code (GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\..\..\..\")
 

@@ -371,8 +371,6 @@ process {
                             $oldErrorActionPreference = $ErrorActionPreference
                             $oldWarningPreference = $WarningPreference
                             $VerbosePreference = 'Continue'
-                            $ErrorActionPreference = 'Continue'
-                            $WarningPreference = 'Continue'
                             $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier "Verbose" -Action $verboseScriptBlock
                             $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier "Error" -Action $errorScriptBlock
                             $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier "Warning" -Action $warningScriptBlock

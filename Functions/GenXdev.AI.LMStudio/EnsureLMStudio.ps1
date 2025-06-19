@@ -30,12 +30,12 @@ Shows the LM Studio window during initialization when specified.
 Forces LM Studio to stop before initialization when specified.
 
 .EXAMPLE
-AssureLMStudio -Model "qwen2.5-14b-instruct" -MaxToken 8192 -ShowWindow
+EnsureLMStudio -Model "qwen2.5-14b-instruct" -MaxToken 8192 -ShowWindow
 
 .EXAMPLE
-AssureLMStudio "mistral-7b" -ttl 3600 -Force
+EnsureLMStudio "mistral-7b" -ttl 3600 -Force
 #>
-function AssureLMStudio {
+function EnsureLMStudio {
 
     [CmdletBinding()]
     param (
@@ -92,7 +92,7 @@ function AssureLMStudio {
 
     begin {
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Starting AssureLMStudio with Model: $Model"
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting EnsureLMStudio with Model: $Model"
 
         # ensure default model parameter is set
         if (-not $PSBoundParameters.ContainsKey("Model")) {

@@ -1,4 +1,4 @@
-. "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\AssureLMStudio.ps1"
+. "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\EnsureLMStudio.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Get-LMStudioLoadedModelList.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Get-LMStudioModelList.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Get-LMStudioPaths.ps1"

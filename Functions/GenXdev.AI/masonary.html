@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Image Gallery - Masonry Layout</title>
+        <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        #bg {
+            background-color: #333333;
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color:#333333;
+            color: #333;
+        }
+
+        html {
+            background-color: #333333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: white;
+            margin-top: 2em;
+            font-weight: 300;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            margin: 0;
+        }
+
+        .gallery-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .masonry {
+            column-count: 1;
+            column-gap: 20px;
+            column-fill: balance;
+        }
+
+        @media (min-width: 768px) {
+            .masonry { column-count: 2; }
+        }
+
+        @media (min-width: 1024px) {
+            .masonry { column-count: 3; }
+        }
+
+        @media (min-width: 1400px) {
+            .masonry { column-count: 4; }
+        }        .gallery-item {
+            break-inside: avoid;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid black;
+            overflow: hidden;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+            position: relative;
+        }        .gallery-item:hover {
+            background: #fafafa;
+            border-color: #666;
+        }
+
+        .image-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-bottom: 1px solid black;
+            transition: filter 0.2s ease;
+        }
+
+        .gallery-item:hover img {
+            filter: brightness(1.05);
+        }
+
+        .face-overlay {
+            position: absolute;
+            border: 2px solid #000000;
+            background-color: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .gallery-item:hover .face-overlay {
+            opacity: 1;
+        }
+
+        .face-label {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.3;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+
+        .content {
+            padding: 15px;
+        }
+
+        .description {
+            margin-bottom: 12px;
+        }
+
+        .short-description {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .long-description {
+            color: #5d6d7e;
+            font-size: 13px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .metadata {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .metadata-item {
+            background-color: #ecf0f1;
+            color: #34495e;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .metadata-item.people {
+            background-color: #e8f5e8;
+            color: #27ae60;
+        }
+
+        .metadata-item.faces {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .keywords {
+            margin-bottom: 10px;
+        }
+
+        .keywords-label {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .keyword-tag {
+            display: inline-block;
+            background-color: #f8f9fa;
+            color: #495057;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            margin: 2px 2px 2px 0;
+            border: 1px solid #dee2e6;
+        }
+
+        .recognized-faces {
+            margin-bottom: 10px;
+        }
+
+        .faces-label {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .face-name-tag {
+            display: inline-block;
+            background-color: #e8f5e8;
+            color: #27ae60;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            margin: 2px 2px 2px 0;
+            border: 1px solid #c3e6cb;
+            font-weight: 500;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .copy-path-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-weight: 500;
+        }
+
+        .copy-path-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .copy-path-btn:active {
+            transform: scale(0.98);
+        }
+
+        .view-original {
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: inline-block;
+        }
+
+        .view-original:hover {
+            background-color: #2980b9;
+            color: white;
+            text-decoration: none;
+        }        .view-original:active {
+            transform: scale(0.98);
+        }
+
+        .edit-btn {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-weight: 500;
+        }
+
+        .edit-btn:hover {
+            background-color: #219a52;
+        }        .edit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-weight: 500;
+        }
+
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .delete-btn:active {
+            transform: scale(0.98);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .no-images {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+
+        .no-images h3 {
+            margin-bottom: 10px;
+            color: #95a5a6;
+        }
+
+        @media print {
+            .actions,
+            .copy-path-btn,
+            .view-original,
+            .edit-btn,
+            .delete-btn {
+                display: none !important;
+            }            /* Ensure gallery items never split across pages */
+            .gallery-item {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                page-break-before: auto;
+                page-break-after: auto;
+                margin-bottom: 15px;
+                display: block;
+                box-shadow: none !important;
+                border: none !important;
+            }            /* Optimize images for print */
+            .gallery-item img {
+                max-width: 100%;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                border-bottom: none !important;
+            }
+
+            /* Ensure content sections don't break */
+            .content {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Optimize masonry layout for print */
+            .masonry {
+                column-count: 1 !important;
+                column-gap: 0;
+            }            /* Remove hover effects for print */
+            .gallery-item:hover {
+                transform: none;
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            /* Hide face overlays in print */
+            .face-overlay {
+                display: none !important;
+            }
+
+            /* Optimize text for print */
+            .short-description,
+            .long-description {
+                page-break-inside: avoid;
+            }            /* Ensure metadata stays with content */
+            .metadata,
+            .keywords,
+            .recognized-faces {
+                page-break-inside: avoid;
+            }
+
+            /* Use white background for print */
+            html,
+            body,
+            #bg {
+                background-color: white !important;
+            }
+
+            /* Ensure text is dark for print readability */
+            .header h1 {
+                color: #333 !important;
+            }
+
+            .header p {
+                color: #666 !important;
+            }
+        }
+        </style>
+    </head>
+    <body>
+        <div id="bg">
+            <div class="header">
+                <h1 id="gallery-title">Family Photo Gallery</h1>
+                <p id="gallery-description">Hover over images to see face recognition data</p>
+            </div>
+            <div class="gallery-container">
+                <div id="gallery" class="masonry">
+                    <div class="loading">Loading images...</div>
+                </div>
+            </div>
+        </div>
+        <script>
+
+        let imageGallery;
+
+        class ImageGallery {
+            mydata;
+            constructor(mydata) {
+                this.mydata = mydata;
+                this.images = [];
+                this.galleryElement = document.getElementById('gallery');
+                this.init();
+            }
+
+            init() {
+                // Check if data.images exists
+                if (typeof this.mydata !== 'undefined' && this.mydata.images) {
+                    this.images = this.mydata.images;
+                    this.renderGallery();
+                } else {
+                    this.showNoImagesMessage();
+                }
+
+                // Set title and description from window.data if available
+                if (typeof this.mydata !== 'undefined') {
+                    if (this.mydata.title) {
+                        document.getElementById('gallery-title').textContent = this.mydata.title;
+                        document.title = this.mydata.title; // Also update the page title
+                    }
+                    if (this.mydata.description) {
+                        document.getElementById('gallery-description').textContent = this.mydata.description;
+                    }
+                }
+
+                // Add resize event listener to reposition face overlays when layout changes
+                let resizeTimeout;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(() => {
+                        this.repositionAllFaceOverlays();
+                    }, 250); // Debounce resize events
+                });
+            }
+
+            renderGallery() {
+                if (this.images.length === 0) {
+                    this.showNoImagesMessage();
+                    return;
+                }
+
+                this.galleryElement.innerHTML = '';
+
+                this.images.forEach((image, index) => {
+                    const galleryItem = this.createGalleryItem(image, index);
+                    this.galleryElement.appendChild(galleryItem);
+                });
+            }
+
+            createGalleryItem(image, index) {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                item.id = `image-${index}`;
+
+                // Parse keywords if they're JSON strings
+                let keywords = [];
+                try {
+                    keywords = typeof image.keywords === 'string'
+                        ? JSON.parse(image.keywords)
+                        : (Array.isArray(image.keywords) ? image.keywords : []);
+                } catch (e) {
+                    keywords = [];                }
+
+                // Parse faces
+                const faces = Array.isArray(image.people?.faces) ? image.people.faces : [];
+                const faceCount = image.people?.count || 0;
+
+                item.innerHTML = `
+                    <div class="image-container">
+                        <img src="${this.escapeHtml(image.path)}"
+                             alt="${this.escapeHtml(image.description?.short_description || 'Image')}"
+                             loading="lazy"
+                             onload="imageGallery.onImageLoad(this, ${index})"
+                             onerror="imageGallery.onImageError(this)" />
+                    </div>
+                    <div class="content">
+                        <div class="description">
+                            <div class="short-description">${this.escapeHtml(image.description?.short_description || 'No description')}</div>
+                            <div class="long-description">${this.escapeHtml(image.description?.long_description || '')}</div>
+                        </div>
+
+                        <div class="metadata">
+                            ${faceCount > 0 ? `<span class="metadata-item people">${faceCount} ${faceCount === 1 ? 'person' : 'people'}</span>` : ''}                            ${faces.length > 0 ? `<span class="metadata-item faces">${faces.length} ${faces.length === 1 ? 'face' : 'faces'} recognized</span>` : ''}
+                            <span class="metadata-item">${image.description?.picture_type || 'Photo'}</span>
+                            <span class="metadata-item">${image.description?.style_type || 'Unknown style'}</span>
+                        </div>
+
+                        ${keywords.length > 0 ? `
+                        <div class="keywords">
+                            <div class="keywords-label">Keywords:</div>
+                            ${keywords.map(keyword => `<span class="keyword-tag">${this.escapeHtml(keyword)}</span>`).join('')}
+                        </div>
+                        ` : ''}
+
+                        ${faces.length > 0 ? `
+                        <div class="recognized-faces">
+                            <div class="faces-label">Recognized faces:</div>
+                            ${faces.map(faceName => `<span class="face-name-tag">${this.escapeHtml(faceName)}</span>`).join('')}
+                        </div>
+                        ` : ''}
+                        <div class="actions">
+                            <button class="copy-path-btn" onclick="imageGallery.copyPath(${index})">Copy Path</button>
+                            <a href="${this.escapeHtml(image.path)}" target="_blank" class="view-original">View Original</a>
+                            ${(typeof this.mydata !== 'undefined' && this.mydata.canEdit) ? `<button class="edit-btn" onclick="imageGallery.editImage(${index})">Edit</button>` : ''}
+                            ${(typeof this.mydata !== 'undefined' && this.mydata.canDelete) ? `<button class="delete-btn" onclick="imageGallery.deleteImage(${index})">Delete</button>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                return item;
+            }
+
+            onImageLoad(imgElement, imageIndex) {
+                // Image loaded successfully, now we can add face overlays
+                console.log('Image loaded:', imageIndex, 'Adding face overlays...');
+                this.addFaceOverlays(imgElement, imageIndex);
+            }
+
+            onImageError(imgElement) {
+                // Handle image loading error
+                const container = imgElement.closest('.gallery-item');
+                imgElement.style.display = 'none';
+
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'image-error';
+                errorDiv.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #e74c3c; background: #fff5f5;">
+                        <div style="font-size: 24px; margin-bottom: 8px;">📷</div>
+                        <div style="font-size: 12px;">Image not found</div>
+                    </div>
+                `;
+
+                imgElement.parentNode.appendChild(errorDiv);
+            }
+
+            addFaceOverlays(imgElement, imageIndex) {
+                const image = this.images[imageIndex];
+                console.log('addFaceOverlays called for image:', imageIndex, 'people data:', image.people);
+
+                // Use actual predictions if available, otherwise fall back to faces data
+                const predictions = Array.isArray(image.people?.predictions) ? image.people.predictions : [];
+                const faces = Array.isArray(image.people?.faces) ? image.people.faces : [];
+
+                console.log('Predictions found:', predictions);
+                console.log('Faces found:', faces);
+
+                if (predictions.length === 0 && faces.length === 0) {
+                    console.log('No faces or predictions to overlay');
+                    return;
+                }
+
+                const container = imgElement.parentElement;
+
+                // Get image dimensions and original image dimensions
+                const displayWidth = imgElement.clientWidth;
+                const displayHeight = imgElement.clientHeight;
+                const originalWidth = imgElement.naturalWidth;
+                const originalHeight = imgElement.naturalHeight;
+
+                console.log('Display dimensions:', displayWidth, 'x', displayHeight);
+                console.log('Original dimensions:', originalWidth, 'x', originalHeight);
+
+                // If we have predictions with coordinates, use those
+                if (predictions.length > 0) {
+                    predictions.forEach((prediction, index) => {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'face-overlay';
+
+                        // Convert absolute coordinates to ratios of the original image
+                        const leftRatio = prediction.x_min / originalWidth;
+                        const topRatio = prediction.y_min / originalHeight;
+                        const widthRatio = (prediction.x_max - prediction.x_min) / originalWidth;
+                        const heightRatio = (prediction.y_max - prediction.y_min) / originalHeight;
+
+                        // Apply ratios to the displayed image dimensions
+                        const left = leftRatio * displayWidth;
+                        const top = topRatio * displayHeight;
+                        const width = widthRatio * displayWidth;
+                        const height = heightRatio * displayHeight;
+
+                        overlay.style.left = left + 'px';
+                        overlay.style.top = top + 'px';
+                        overlay.style.width = width + 'px';
+                        overlay.style.height = height + 'px';
+
+                        // Find the corresponding face name by userid or use index
+                        let faceName = 'Unknown';
+                        if (prediction.userid) {
+                            // Extract name from userid (remove the _number suffix)
+                            faceName = prediction.userid.replace(/_\d+$/, '');
+                        } else if (faces[index]) {
+                            faceName = faces[index];
+                        }
+
+                        overlay.innerHTML = `<span class="face-label">${this.escapeHtml(faceName)}<br>confidence: ${Math.round(prediction.confidence * 100)}%</span>`;
+                        container.appendChild(overlay);
+                    });
+                } else {
+                    // Fall back to generated positions for faces without predictions
+                    faces.forEach((faceName, index) => {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'face-overlay';
+
+                        // Generate positions as before when no predictions are available
+                        const facePositions = this.generateFacePositions(faces.length, displayWidth, displayHeight);
+                        const position = facePositions[index];
+
+                        overlay.style.left = position.left + 'px';
+                        overlay.style.top = position.top + 'px';
+                        overlay.style.width = position.width + 'px';
+                        overlay.style.height = position.height + 'px';
+
+                        overlay.innerHTML = `<span class="face-label">${this.escapeHtml(faceName)}<br>recognized</span>`;
+                        container.appendChild(overlay);
+                    });
+                }
+            }
+
+            generateFacePositions(faceCount, imgWidth, imgHeight) {
+                const positions = [];
+                const faceSize = Math.min(imgWidth, imgHeight) * 0.15; // Face size is 15% of smallest dimension
+                const minFaceSize = 60; // Minimum face size in pixels
+                const maxFaceSize = 120; // Maximum face size in pixels
+
+                const actualFaceSize = Math.max(minFaceSize, Math.min(maxFaceSize, faceSize));
+
+                // Define realistic areas where faces typically appear in photos
+                const faceAreas = [
+                    { x: 0.2, y: 0.15, w: 0.25, h: 0.4 }, // Left side, upper third
+                    { x: 0.4, y: 0.1, w: 0.2, h: 0.35 },  // Center, upper third
+                    { x: 0.55, y: 0.15, w: 0.25, h: 0.4 }, // Right side, upper third
+                    { x: 0.15, y: 0.4, w: 0.3, h: 0.35 }, // Left side, middle
+                    { x: 0.55, y: 0.4, w: 0.3, h: 0.35 }, // Right side, middle
+                    { x: 0.35, y: 0.45, w: 0.3, h: 0.35 } // Center, middle-lower
+                ];
+
+                for (let i = 0; i < faceCount; i++) {
+                    const area = faceAreas[i % faceAreas.length];
+
+                    // Add some randomness within the area
+                    const randomX = Math.random() * 0.5; // 50% randomness within area
+                    const randomY = Math.random() * 0.5;
+
+                    const left = (area.x + randomX * area.w) * imgWidth;
+                    const top = (area.y + randomY * area.h) * imgHeight;
+
+                    // Ensure the overlay doesn't go outside image bounds
+                    const maxLeft = imgWidth - actualFaceSize;
+                    const maxTop = imgHeight - actualFaceSize;
+
+                    positions.push({
+                        left: Math.max(0, Math.min(maxLeft, left)),
+                        top: Math.max(0, Math.min(maxTop, top)),
+                        width: actualFaceSize,
+                        height: actualFaceSize
+                    });
+                }
+
+                return positions;
+            }
+
+            copyPath(index) {
+                const image = this.images[index];
+                const path = `"${image.path}"`;
+
+                // Try modern clipboard API first
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(path).then(() => {
+                        this.showCopyFeedback(index, true);
+                    }).catch(err => {
+                        console.error('Failed to copy:', err);
+                        this.fallbackCopy(path, index);
+                    });
+                } else {
+                    this.fallbackCopy(path, index);
+                }
+            }
+
+            editImage(index) {
+                // Check if editing is allowed
+                if (typeof this.mydata === 'undefined' || !this.mydata.canEdit) {
+                    console.warn('Edit action not allowed - canEdit is false or undefined');
+                    return;
+                }
+
+                const image = this.images[index];
+
+                // Add edit action to data.actions
+                const editAction = {
+                    action: "edit",
+                    path: image.path
+                };
+
+                this.mydata.actions.push(editAction);
+
+                // Optional: Show feedback to user
+                this.showEditFeedback(index);
+            }
+
+
+            showEditFeedback(index) {
+                const button = document.querySelector(`#image-${index} .edit-btn`);
+                if (!button) return;
+
+                const originalText = button.textContent;
+                button.textContent = 'Added to Queue';
+                button.style.backgroundColor = '#f39c12';
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = '';
+                }, 1500);
+            }
+            deleteImage(index) {
+
+                const image = this.images[index];
+
+                // Add delete action to data.actions
+                const deleteAction = {
+                    action: "delete",
+                    path: image.path
+                };
+
+                this.mydata.actions.push(deleteAction);
+
+                // Remove the image tile from the DOM
+                const imageTile = document.getElementById(`image-${index}`);
+                if (imageTile) {
+                    // Add a fade-out animation before removing
+                    imageTile.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    imageTile.style.opacity = '0';
+                    imageTile.style.transform = 'scale(0.95)';
+
+                    // Remove the element after animation completes
+                    setTimeout(() => {
+                        imageTile.remove();
+                    }, 300);
+                }
+
+                // Optional: Show feedback to user (only if tile still exists)
+                this.showDeleteFeedback(index);
+            }
+            showDeleteFeedback(index) {
+                const button = document.querySelector(`#image-${index} .delete-btn`);
+                if (!button) return;
+
+                const originalText = button.textContent;
+                button.textContent = 'Deleting...';
+                button.style.backgroundColor = '#e74c3c';
+                button.disabled = true;
+
+                // Since we're removing the tile, we don't need to reset the button
+                // The timeout is removed as the element will be gone
+            }
+
+            fallbackCopy(text, index) {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+
+                try {
+                    const result = document.execCommand('copy');
+                    this.showCopyFeedback(index, result);
+                } catch (err) {
+                    console.error('Fallback copy failed:', err);
+                    this.showCopyFeedback(index, false);
+                }
+
+                document.body.removeChild(textArea);
+            }
+
+            showCopyFeedback(index, success) {
+                const button = document.querySelector(`#image-${index} .copy-path-btn`);
+                if (!button) return;
+
+                const originalText = button.textContent;
+                button.textContent = success ? 'Copied!' : 'Failed';
+                button.style.backgroundColor = success ? '#27ae60' : '#e74c3c';
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = '';
+                }, 2000);
+            }
+
+            showNoImagesMessage() {
+                this.galleryElement.innerHTML = `
+                    <div class="no-images">
+                        <h3>No Images Found</h3>
+                    </div>
+                `;
+            }
+
+            escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            repositionAllFaceOverlays() {
+                // Re-add face overlays for all loaded images after layout changes
+                this.images.forEach((image, index) => {
+                    const imgElement = document.querySelector(`#image-${index} img`);
+                    if (imgElement && imgElement.complete && imgElement.naturalWidth > 0) {
+                        // Remove existing overlays first
+                        const existingOverlays = document.querySelectorAll(`#image-${index} .face-overlay`);
+                        existingOverlays.forEach(overlay => overlay.remove());
+
+                        // Re-add overlays with updated positioning
+                        this.addFaceOverlays(imgElement, index);
+                    }
+                });
+            }
+        }
+
+        let mydata = {
+            images: JSON.parse("[]"),
+            title : "Photo Gallery",
+            description: "Hover over images to see face recognition data",
+            actions: [],
+            canEdit: false,
+            canDelete: false
+        }
+
+            // If no images are available, show the no images message
+            document.addEventListener('DOMContentLoaded', () => {
+                imageGallery = new ImageGallery(mydata);
+            });
+
+            window.getActions = function () {
+                let results = mydata.actions
+                mydata.actions = [];
+                return results;
+            }
+        </script>
+    </body>
+</html>

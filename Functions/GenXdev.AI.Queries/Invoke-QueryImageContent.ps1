@@ -80,7 +80,12 @@ function Invoke-QueryImageContent {
             HelpMessage = "Maximum tokens in the generated response"
         )]
         [ValidateRange(-1, [int]::MaxValue)]
-        [int]$MaxToken = -1
+        [int]$MaxToken = -1,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Timeout in seconds for the request, defaults to 24 hours")]
+        [int] $TimeoutSeconds = (3600 * 24)
     )
 
     begin {

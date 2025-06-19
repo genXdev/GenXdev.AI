@@ -1,10 +1,10 @@
 ################################################################################
-Pester\Describe "AssureWinMergeInstalled" {
+Pester\Describe "Get-ImageScene" {
 
-    Pester\It "Should pass PSScriptAnalyzer rules" {
+    Pester\It "should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\AssureWinMergeInstalled.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.DeepStack\Get-ImageScene.ps1"
 
         # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `

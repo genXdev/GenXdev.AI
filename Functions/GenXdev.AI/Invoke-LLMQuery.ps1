@@ -273,8 +273,12 @@ function Invoke-LLMQuery {
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The API key to use for the request")]
-        [string] $ApiKey = $null
+        [string] $ApiKey = $null,
         ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Timeout in seconds for the request, defaults to 24 hours")]
+        [int] $TimeoutSeconds = (3600 * 24)
     )
 
     begin {
@@ -915,8 +919,8 @@ function Invoke-LLMQuery {
             -Method Post `
             -Body $bytes `
             -Headers $headers `
-            -OperationTimeoutSeconds (3600 * 24) `
-            -ConnectionTimeoutSeconds (3600 * 24)
+            -OperationTimeoutSeconds $TimeoutSeconds `
+            -ConnectionTimeoutSeconds $TimeoutSeconds
 
         # First handle tool calls if present
         if ($response.choices[0].message.tool_calls) {

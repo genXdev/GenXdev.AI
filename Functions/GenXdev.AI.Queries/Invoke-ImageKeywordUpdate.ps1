@@ -26,11 +26,14 @@ files.
 When specified, reprocesses images where previous metadata generation attempts
 failed.
 
+.PARAMETER Language
+Specifies the language for generated descriptions and keywords. Defaults to English.
+
 .EXAMPLE
 Invoke-ImageKeywordUpdate -ImageDirectory "C:\Photos" -Recurse -OnlyNew
 
 .EXAMPLE
-updateimages -Recurse -RetryFailed
+updateimages -Recurse -RetryFailed -Language "Spanish"
 #>
 function Invoke-ImageKeywordUpdate {
 
@@ -68,7 +71,161 @@ function Invoke-ImageKeywordUpdate {
             Position = 3,
             HelpMessage = "Will retry previously failed images."
         )]
-        [switch] $RetryFailed
+        [switch] $RetryFailed,
+
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 4,
+            HelpMessage = "The language for generated descriptions and keywords."
+        )]
+        [PSDefaultValue(Value = "English")]
+        [ValidateSet(
+            "Afrikaans",
+            "Akan",
+            "Albanian",
+            "Amharic",
+            "Arabic",
+            "Armenian",
+            "Azerbaijani",
+            "Basque",
+            "Belarusian",
+            "Bemba",
+            "Bengali",
+            "Bihari",
+            "Bosnian",
+            "Breton",
+            "Bulgarian",
+            "Cambodian",
+            "Catalan",
+            "Cherokee",
+            "Chichewa",
+            "Chinese (Simplified)",
+            "Chinese (Traditional)",
+            "Corsican",
+            "Croatian",
+            "Czech",
+            "Danish",
+            "Dutch",
+            "English",
+            "Esperanto",
+            "Estonian",
+            "Ewe",
+            "Faroese",
+            "Filipino",
+            "Finnish",
+            "French",
+            "Frisian",
+            "Ga",
+            "Galician",
+            "Georgian",
+            "German",
+            "Greek",
+            "Guarani",
+            "Gujarati",
+            "Haitian Creole",
+            "Hausa",
+            "Hawaiian",
+            "Hebrew",
+            "Hindi",
+            "Hungarian",
+            "Icelandic",
+            "Igbo",
+            "Indonesian",
+            "Interlingua",
+            "Irish",
+            "Italian",
+            "Japanese",
+            "Javanese",
+            "Kannada",
+            "Kazakh",
+            "Kinyarwanda",
+            "Kirundi",
+            "Kongo",
+            "Korean",
+            "Krio (Sierra Leone)",
+            "Kurdish",
+            "Kurdish (Soranî)",
+            "Kyrgyz",
+            "Laothian",
+            "Latin",
+            "Latvian",
+            "Lingala",
+            "Lithuanian",
+            "Lozi",
+            "Luganda",
+            "Luo",
+            "Macedonian",
+            "Malagasy",
+            "Malay",
+            "Malayalam",
+            "Maltese",
+            "Maori",
+            "Marathi",
+            "Mauritian Creole",
+            "Moldavian",
+            "Mongolian",
+            "Montenegrin",
+            "Nepali",
+            "Nigerian Pidgin",
+            "Northern Sotho",
+            "Norwegian",
+            "Norwegian (Nynorsk)",
+            "Occitan",
+            "Oriya",
+            "Oromo",
+            "Pashto",
+            "Persian",
+            "Polish",
+            "Portuguese (Brazil)",
+            "Portuguese (Portugal)",
+            "Punjabi",
+            "Quechua",
+            "Romanian",
+            "Romansh",
+            "Runyakitara",
+            "Russian",
+            "Scots Gaelic",
+            "Serbian",
+            "Serbo-Croatian",
+            "Sesotho",
+            "Setswana",
+            "Seychellois Creole",
+            "Shona",
+            "Sindhi",
+            "Sinhalese",
+            "Slovak",
+            "Slovenian",
+            "Somali",
+            "Spanish",
+            "Spanish (Latin American)",
+            "Sundanese",
+            "Swahili",
+            "Swedish",
+            "Tajik",
+            "Tamil",
+            "Tatar",
+            "Telugu",
+            "Thai",
+            "Tigrinya",
+            "Tonga",
+            "Tshiluba",
+            "Tumbuka",
+            "Turkish",
+            "Turkmen",
+            "Twi",
+            "Uighur",
+            "Ukrainian",
+            "Urdu",
+            "Uzbek",
+            "Vietnamese",
+            "Welsh",
+            "Wolof",
+            "Xhosa",
+            "Yiddish",
+            "Yoruba",
+            "Zulu")]
+        [string] $Language = "English"
     )
 
     begin {
@@ -191,9 +348,10 @@ process {
                 $query = (
                     "Analyze image and return a object with properties: " +
                     "'short_description' (max 80 chars), 'long_description', " +
-                    "'has_nudity, keywords' (array of strings), " +
+                    "'has_nudity, keywords' (array of strings with all detected objects, text or anything describing this picture, max 500 keywords), " +
                     "'has_explicit_content', 'overall_mood_of_image', " +
                     "'picture_type' and 'style_type'. " +
+                    "Generate all descriptions and keywords in $Language language. " +
                     "Output only json, no markdown or anything other then json."
                 );
 

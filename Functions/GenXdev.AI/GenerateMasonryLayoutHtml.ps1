@@ -57,120 +57,94 @@ function GenerateMasonryLayoutHtml {
             Position = 1,
             HelpMessage = "Output path for the generated HTML file"
         )]
-        [string]$FilePath = $null
+        [string]$FilePath = $null,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Title for the gallery"
+        )]
+        [string]$Title = "Photo Gallery",
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Description for the gallery"
+        )]
+        [string]$Description = "Hover over images to see face recognition data",
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Whether editing is enabled"
+        )]
+        [Switch]$CanEdit = $false,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Whether deletion is enabled"
+        )]
+        [Switch]$CanDelete = $false
         ###############################################################################
     )
 
     begin {
+        $templatePath = "$PSScriptRoot\masonary.html"
 
-        # load system.web for html encoding
+        # Load System.Web for HTML encoding
         Microsoft.PowerShell.Utility\Add-Type -AssemblyName System.Web
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Starting HTML generation for $($Images.Count) images"
+        Microsoft.PowerShell.Utility\Write-Verbose "Starting HTML generation for $($Images.Count) images using template: $templatePath"
 
-        # initialize html template with styles and javascript
-        $html = @"
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masonry Image Layout</title>
-    <script type="text/javascript">
-        function setClipboard(index) {
-            let imageInfo = JSON.parse($(($Images | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 `
-                -WarningAction SilentlyContinue | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 `
-                -WarningAction SilentlyContinue)));
-            while (imageInfo instanceof String) { imageInfo = JSON.parse(imageInfo); }
-            path = imageInfo[index].path;
-            navigator.clipboard.writeText('"'+path+'"');
+        # Verify template file exists
+        if (-not (Microsoft.PowerShell.Management\Test-Path $templatePath)) {
+            throw "Template file not found: $templatePath"
         }
-    </script>
-    <style type="text/css">
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 1em;
-        }
-        .masonry {
-            column-count: 3;
-            column-gap: 1em;
-        }
-        .item {
-            break-inside: avoid;
-            margin-bottom: 1em;
-        }
-        .item img {
-            width: 100%;
-            display: block;
-        }
-        .keywords {
-            font-size: 0.9em;
-            color: #555;
-        }
-        .description {
-            white-space: pre-wrap;
-            font-size: 0.9em;
-            color: #333;
-        }
-        a, a:visited {
-            cursor: pointer;
-            text-decoration: none;
-        }
-    </style>
-</head>
-<body>
-    <div class="masonry">
-"@
     }
 
+    process {
+        # Read the HTML template
+        Microsoft.PowerShell.Utility\Write-Verbose "Reading HTML template from: $templatePath"
+        $html = Microsoft.PowerShell.Management\Get-Content -Path $templatePath -Raw -Encoding UTF8
 
-process {
+        # Convert images array to JSON with proper escaping
+        Microsoft.PowerShell.Utility\Write-Verbose "Converting $($Images.Count) images to JSON"
+        $imagesJson = $Images | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 -WarningAction SilentlyContinue
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Generating HTML elements for image gallery"
+        # Escape the JSON for JavaScript string literal
+        $escapedJson = $imagesJson | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress
 
-        # track image index for javascript callbacks
-        $index = 0
+        # Replace the placeholder with actual image data
+        Microsoft.PowerShell.Utility\Write-Verbose "Replacing placeholder JSON.parse(`"[]`") with actual image data"
+        $html = "$html".Replace('images: JSON.parse("[]")', "images: JSON.parse($escapedJson)")
 
-        # generate html for each image with tooltips and click handlers
-        foreach ($image in $Images) {
-
-            # combine keywords into single tooltip string
-            $keywords = $image.keywords -join ", "
-
-            # create container div with image and interactive elements
-            $html += @"
-        <div class="item" id="img$index">
-            <a href="$($image.path)" target="_blank" onclick="setClipboard($index)">
-                <img src="$($image.path)"
-                    alt="$($image.description.short_description)"
-                    title='$(([System.Web.HttpUtility]::HtmlAttributeEncode(
-                        "$($image.description.long_description)`r`n$keywords")))' />
-            </a>
-        </div>
-"@
-            $index++
+        # Replace other template variables if they exist
+        if (-not [String]::IsNullOrWhiteSpace($Title))  {
+            $escapedTitle = $Title | Microsoft.PowerShell.Utility\ConvertTo-Json
+            $html = "$html".Replace("title : `"Photo Gallery`"", "title : $escapedTitle")
+            Microsoft.PowerShell.Utility\Write-Verbose "Updated title to: $Title"
+        }
+        if (-not [String]::IsNullOrWhiteSpace($Description))  {
+            $escapedDescription = $Description | Microsoft.PowerShell.Utility\ConvertTo-Json
+            $html = "$html".Replace("`"Hover over images to see face recognition data`"", $escapedDescription)
+            Microsoft.PowerShell.Utility\Write-Verbose "Updated description to: $Description"
+        }
+        if ($CanEdit)  {
+            $html = "$html".Replace("canEdit: false", "canEdit: true")
+            Microsoft.PowerShell.Utility\Write-Verbose "Updated canEdit to: $CanEdit"
+        }
+        if ($CanDelete)  {
+            $html = "$html".Replace("canDelete: false", "canDelete: true")
+            Microsoft.PowerShell.Utility\Write-Verbose "Updated canDelete to: $CanDelete"
         }
     }
 
     end {
-
-        # close html document structure
-        $html += @"
-    </div>
-</body>
-</html>
-"@
-
-        # either return html string or save to file based on parameters
+        # Either return HTML string or save to file based on parameters
         if ($null -eq $FilePath) {
             Microsoft.PowerShell.Utility\Write-Verbose "Returning HTML as string output"
-            $html
+            return $html
         }
         else {
             Microsoft.PowerShell.Utility\Write-Verbose "Saving HTML gallery to: $FilePath"
-            $html | Microsoft.PowerShell.Utility\Out-File -FilePath (GenXdev.FileSystem\Expand-Path $FilePath -CreateDirectory) `
-                -Encoding utf8
+            $html | Microsoft.PowerShell.Utility\Out-File -FilePath (GenXdev.FileSystem\Expand-Path $FilePath -CreateDirectory) -Encoding utf8
         }
     }
 }

@@ -66,7 +66,7 @@ function Invoke-WinMerge {
 
         # verify that winmerge is installed and accessible
         Microsoft.PowerShell.Utility\Write-Verbose "Verifying WinMerge installation status..."
-        GenXdev.AI\AssureWinMergeInstalled
+        GenXdev.AI\EnsureWinMergeInstalled
 
 
         # convert any relative paths to full paths for reliability

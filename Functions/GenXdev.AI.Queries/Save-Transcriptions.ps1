@@ -402,6 +402,10 @@ process {
             # determine target language and output path for new subtitle file
             $lang = [string]::IsNullOrWhiteSpace($LanguageOut) ? $LanguageIn : `
                 $LanguageOut
+            $langCode = (GenXdev.Helpers\Get-WebLanguageDictionary)[$lang]
+            if ($null -ne $langCode) {
+                $lang = $langCode
+            }
             $newPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".$lang.srt")
 
             # handle legacy Dutch subtitle file naming convention

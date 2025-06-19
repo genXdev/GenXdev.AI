@@ -8,6 +8,7 @@
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-ScriptExecutionErrorFixPrompt.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-SimularMovieTitles.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Invoke-AIPowershellCommand.ps1"
+. "$PSScriptRoot\Functions\GenXdev.AI.Queries\Invoke-ImageFacesUpdate.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Invoke-ImageKeywordScan.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Invoke-ImageKeywordUpdate.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Invoke-QueryImageContent.ps1"

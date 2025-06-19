@@ -112,11 +112,11 @@ function Get-LMStudioWindow {
 
             $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "GenXdev.AI\AssureLMStudio" `
+                -FunctionName "GenXdev.AI\EnsureLMStudio" `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local -Name * -ErrorAction SilentlyContinue)
 
-            $null = GenXdev.AI\AssureLMStudio @invocationArguments
+            $null = GenXdev.AI\EnsureLMStudio @invocationArguments
         }
 
         # attempt to find existing LM Studio window
@@ -182,11 +182,11 @@ function Get-LMStudioWindow {
 
             $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "GenXdev.AI\AssureLMStudio" `
+                -FunctionName "GenXdev.AI\EnsureLMStudio" `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local -Name * -ErrorAction SilentlyContinue)
 
-            $null = GenXdev.AI\AssureLMStudio @invocationArguments
+            $null = GenXdev.AI\EnsureLMStudio @invocationArguments
 
             $process = Microsoft.PowerShell.Management\Get-Process "LM Studio" |
             Microsoft.PowerShell.Core\Where-Object { $_.MainWindowHandle -ne 0 } |

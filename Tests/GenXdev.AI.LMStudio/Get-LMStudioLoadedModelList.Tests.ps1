@@ -31,7 +31,7 @@ $message
 
     Pester\It "Should return loaded models from LM Studio" {
 
-        GenXdev.AI\AssureLMStudio
+        GenXdev.AI\EnsureLMStudio
 
         $result = GenXdev.AI\Get-LMStudioLoadedModelList
 
