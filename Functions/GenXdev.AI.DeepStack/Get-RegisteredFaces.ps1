@@ -91,10 +91,12 @@ function Get-RegisteredFaces {
         [string] $FacesPath = "/datastore"
     )begin {
 
-                # Use script-scoped variables set by EnsureDeepStack, with fallback defaults
-                if (-not $script:ApiBaseUrl) {
-                    $NoDockerInitialize = $false
-                }        # Ensure the DeepStack face recognition module is loaded and available
+        # Use script-scoped variables set by EnsureDeepStack, with fallback defaults
+        if (-not $script:ApiBaseUrl) {
+            $NoDockerInitialize = $false
+        }
+
+        # Ensure the DeepStack face recognition module is loaded and available
         if (-not $NoDockerInitialize) {
 
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `

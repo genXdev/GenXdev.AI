@@ -307,21 +307,7 @@ function Register-Face {
         catch [System.Net.WebException] {
 
             Microsoft.PowerShell.Utility\Write-Error `
-                "Network error during face registration: $_"
-
-            # attempt cleanup on network failure
-            try {
-
-                $null = GenXdev.AI\Unregister-Face `
-                    -Identifier $Identifier `
-                    -NoDockerInitialize `
-                    -ErrorAction SilentlyContinue
-            }
-            catch {
-
-                Microsoft.PowerShell.Utility\Write-Warning `
-                    "Failed to cleanup partial registration for $Identifier"
-            }
+               "Network error during face registration: $_"
         }
         catch [System.TimeoutException] {
 

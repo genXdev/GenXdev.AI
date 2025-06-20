@@ -66,7 +66,7 @@ function Unregister-AllFaces {
 
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
-    
+
     param(
         ###########################################################################
         [Parameter(

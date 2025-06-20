@@ -233,7 +233,8 @@ function Register-AllFaces {
                     if ($ForceRebuild) {
 
                         $ensureParams.Force = $true
-                    }                    else {
+                    }
+                     else {
 
                         $ensureParams.Force = if ($PSBoundParameters.ContainsKey("ForceRebuild")) {
                             $false
