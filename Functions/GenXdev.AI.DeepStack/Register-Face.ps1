@@ -18,15 +18,6 @@ Array of local paths to image files (png, jpg, jpeg, or gif). All files must
 exist and be valid image formats. Multiple images can be registered for the
 same identifier in a single API call.
 
-.PARAMETER NoDockerInitialize
-Skip Docker initialization (used when already called by parent function).
-
-.PARAMETER Force
-Force rebuild of Docker container and remove existing data.
-
-.PARAMETER UseGPU
-Use GPU-accelerated version (requires NVIDIA GPU).
-
 .PARAMETER ContainerName
 The name for the Docker container.
 
@@ -47,6 +38,15 @@ Custom Docker image name to use.
 
 .PARAMETER FacesPath
 The path inside the container where faces are stored.
+
+.PARAMETER NoDockerInitialize
+Skip Docker initialization (used when already called by parent function).
+
+.PARAMETER Force
+Force rebuild of Docker container and remove existing data.
+
+.PARAMETER UseGPU
+Use GPU-accelerated version (requires NVIDIA GPU).
 
 .EXAMPLE
 Register-Face -Identifier "JohnDoe" -ImagePath @("C:\Users\YourName\faces\john1.jpg", "C:\Users\YourName\faces\john2.jpg")
@@ -156,19 +156,18 @@ function Register-Face {
         )]
         [switch] $UseGPU
         ###################################################################
-    )
+    )    begin {
 
-    begin {
-
-        # use script-scoped variables set by EnsureDeepStack with fallback defaults
-        if (-not $script:ApiBaseUrl) {
+        # use script-scoped variables set by ensuredeepstack with fallback defaults
+        if (-not $ApiBaseUrl) {
 
             $noDockerInitialize = $false
         }
 
-        # ensure deepstack face recognition service is running
+        # ensure deepstack face recognition service is running if not skipped
         if (-not $NoDockerInitialize) {
 
+            # copy parameters that match ensuredeepstack function
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'EnsureDeepStack' `
@@ -176,29 +175,31 @@ function Register-Face {
                     -Scope Local `
                     -ErrorAction SilentlyContinue)
 
+            # initialize deepstack service with matching parameters
             $null = GenXdev.AI\EnsureDeepStack @ensureParams
         } else {
 
+            # log that docker initialization was skipped
             Microsoft.PowerShell.Utility\Write-Verbose `
                 "Skipping Docker initialization as requested"
         }
 
+        # log the start of face registration process
         Microsoft.PowerShell.Utility\Write-Verbose `
             "Starting face registration process for $Identifier"
 
-        <#
-        .SYNOPSIS
-        Validates the identifier format.
-        #>
+        # validate the identifier format for api compatibility
         function Test-IdentifierFormat {
 
             param([string]$identifier)
 
+            # check for empty or whitespace identifier
             if ([string]::IsNullOrWhiteSpace($identifier)) {
 
                 throw "Identifier cannot be empty or whitespace"
             }
 
+            # check for excessively long identifier
             if ($identifier.Length -gt 100) {
 
                 throw "Identifier cannot be longer than 100 characters"
@@ -209,6 +210,7 @@ function Register-Face {
 
             foreach ($char in $invalidChars) {
 
+                # warn about potentially problematic characters
                 if ($identifier.Contains($char)) {
 
                     Microsoft.PowerShell.Utility\Write-Warning `
@@ -219,28 +221,39 @@ function Register-Face {
         }
     }    process {
 
-        try {            # validate identifier format
+        try {
+
+            # validate identifier format before proceeding with registration
             Test-IdentifierFormat -identifier $Identifier
 
             # expand any relative paths to absolute paths and validate all images
             $validatedImagePaths = @()
+
             foreach ($path in $ImagePath) {
+
+                # expand relative path to absolute path for api compatibility
                 $expandedPath = GenXdev.FileSystem\Expand-Path $path
 
+                # log the image being processed
                 Microsoft.PowerShell.Utility\Write-Verbose `
                     "Processing image: $expandedPath"
 
                 # validate that the file is a supported image format
-                GenXdev.AI\Test-ImageFile -Path $expandedPath
+                GenXdev.AI\Test-DeepLinkImageFile -Path $expandedPath
+
+                # add validated path to array for registration
                 $validatedImagePaths += $expandedPath
             }
 
+            # log the number of images being registered
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Registering $($validatedImagePaths.Count) images for: $Identifier"
+                ("Registering $($validatedImagePaths.Count) images for: " +
+                 "$Identifier")
 
             # construct the api endpoint uri for deepstack face registration
             $uri = "$($script:ApiBaseUrl)/v1/vision/face/register"
 
+            # log the registration endpoint being used
             Microsoft.PowerShell.Utility\Write-Verbose `
                 "Registration endpoint: $uri"
 
@@ -251,11 +264,23 @@ function Register-Face {
 
             # add each image to the form with sequential naming (image1, image2, etc.)
             for ($i = 0; $i -lt $validatedImagePaths.Count; $i++) {
-                $imageKey = if ($validatedImagePaths.Count -eq 1) { "image" } else { "image$($i + 1)" }
-                $form[$imageKey] = Microsoft.PowerShell.Management\Get-Item $validatedImagePaths[$i]
-            }            # send the http request to the deepstack face recognition api
+
+                # use 'image' for single image, 'image1', 'image2' for multiple
+                $imageKey = if ($validatedImagePaths.Count -eq 1) {
+                    "image"
+                } else {
+                    "image$($i + 1)"
+                }
+
+                # add image file to form data
+                $form[$imageKey] = Microsoft.PowerShell.Management\Get-Item `
+                    $validatedImagePaths[$i]
+            }
+
+            # send the http request to the deepstack face recognition api
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Uploading $($validatedImagePaths.Count) face image(s) for: $Identifier"
+                ("Uploading $($validatedImagePaths.Count) face image(s) " +
+                 "for: $Identifier")
 
             # add connection retry logic with exponential backoff
             $maxAttempts = 3
@@ -268,6 +293,7 @@ function Register-Face {
 
                 try {
 
+                    # attempt to upload face images to deepstack api
                     $response = Microsoft.PowerShell.Utility\Invoke-RestMethod `
                         -Uri $uri `
                         -Method Post `
@@ -279,6 +305,7 @@ function Register-Face {
                 }
                 catch [System.Net.WebException] {
 
+                    # check if this is the final attempt
                     if ($attempt -eq $maxAttempts) {
 
                         # final attempt failed - re-throw the exception
@@ -288,40 +315,49 @@ function Register-Face {
                     # calculate delay with exponential backoff (2, 4, 8 seconds)
                     $delay = $baseDelay * [Math]::Pow(2, $attempt - 1)
 
+                    # log retry attempt with delay information
                     Microsoft.PowerShell.Utility\Write-Warning `
                         ("Connection attempt $attempt failed for $Identifier. " +
                          "Retrying in $delay seconds...")
 
+                    # wait before retrying with exponential backoff
                     Microsoft.PowerShell.Utility\Start-Sleep -Seconds $delay
 
+                    # increment attempt counter for next iteration
                     $attempt++
                 }
             }
 
+            # log successful face registration
             Microsoft.PowerShell.Utility\Write-Output `
-                "Face(s) registered successfully for $Identifier ($($validatedImagePaths.Count) image(s))"
+                ("Face(s) registered successfully for $Identifier " +
+                 "($($validatedImagePaths.Count) image(s))")
 
             # return the response from deepstack
             return $response
         }
         catch [System.Net.WebException] {
 
+            # handle network-related errors during registration
             Microsoft.PowerShell.Utility\Write-Error `
                "Network error during face registration: $_"
         }
         catch [System.TimeoutException] {
 
+            # handle timeout errors during registration
             Microsoft.PowerShell.Utility\Write-Error `
                 "Timeout during face registration for $Identifier"
         }
         catch {
 
+            # handle any other errors during registration
             Microsoft.PowerShell.Utility\Write-Error `
                 "Failed to register face for $Identifier`: $_"
 
             # attempt cleanup on any failure
             try {
 
+                # try to remove partial registration data
                 $null = GenXdev.AI\Unregister-Face `
                     -Identifier $Identifier `
                     -NoDockerInitialize `
@@ -329,6 +365,7 @@ function Register-Face {
             }
             catch {
 
+                # warn if cleanup also failed
                 Microsoft.PowerShell.Utility\Write-Warning `
                     "Failed to cleanup partial registration for $Identifier"
             }

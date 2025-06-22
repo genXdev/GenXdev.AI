@@ -1,10 +1,10 @@
 ################################################################################
-Pester\Describe "Invoke-ImageKeywordScan" {
+Pester\Describe "Set-ImageDirectories" {
 
-    Pester\It "Should pass PSScriptAnalyzer rules" {
+    Pester\It "should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Invoke-ImageKeywordScan.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Set-ImageDirectories.ps1"
 
         # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `

@@ -9,4 +9,3 @@
 . "$PSScriptRoot\Functions\GenXdev.AI.DeepStack\Register-Face.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.DeepStack\Unregister-AllFaces.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.DeepStack\Unregister-Face.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI.DeepStack\Update-AllImageKeywordsAndFaces.ps1"

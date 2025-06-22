@@ -60,23 +60,30 @@ The path inside the container where faces are stored. This should match the
 DeepStack configuration. Default is "/datastore".
 
 .EXAMPLE
-Get-ImageDetectedFaces -ImagePath "C:\Users\YourName\test.jpg"
-Recognizes faces in the specified image using default settings.
+Get-ImageDetectedFaces -ImagePath "C:\Users\YourName\test.jpg" `
+                       -ConfidenceThreshold 0.5 `
+                       -ContainerName "deepstack_face_recognition" `
+                       -VolumeName "deepstack_face_data" `
+                       -ServicePort 5000 `
+                       -HealthCheckTimeout 60 `
+                       -HealthCheckInterval 3 `
+                       -FacesPath "/datastore"
+Recognizes faces in the specified image using full parameter names.
 
 .EXAMPLE
-Get-ImageDetectedFaces -ImagePath "C:\photos\family.jpg" `
-                         -ConfidenceThreshold 0.7 `
-                         -UseGPU
-Recognizes faces with higher confidence threshold using GPU acceleration.
+Get-ImageDetectedFaces "C:\photos\family.jpg" -Force -UseGPU
+Recognizes faces using positional parameter and aliases.
 
 .EXAMPLE
 "C:\Users\YourName\test.jpg" | Get-ImageDetectedFaces
+Recognizes faces using pipeline input.
 
 .NOTES
 DeepStack API Documentation: POST /v1/vision/face/recognize endpoint for face
 identification. Example: curl -X POST -F "image=@person1.jpg"
 http://localhost:5000/v1/vision/face/recognize
 #>
+###############################################################################
 function Get-ImageDetectedFaces {
 
     [CmdletBinding()]
@@ -96,33 +103,11 @@ function Get-ImageDetectedFaces {
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Skip Docker initialization (used when already " +
-                          "called by parent function)")
-        )]
-        [switch] $NoDockerInitialize,
-        ###########################################################################
-        [Parameter(
-            Mandatory = $false,
             HelpMessage = ("Minimum confidence threshold (0.0-1.0). " +
                           "Default is 0.5")
         )]
         [ValidateRange(0.0, 1.0)]
         [double] $ConfidenceThreshold = 0.5,
-        ###########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Force rebuild of Docker container and remove " +
-                          "existing data")
-        )]
-        [Alias("ForceRebuild")]
-        [switch] $Force,
-        ###########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Use GPU-accelerated version (requires NVIDIA " +
-                          "GPU)")
-        )]
-        [switch] $UseGPU,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
@@ -175,23 +160,48 @@ function Get-ImageDetectedFaces {
                           "stored")
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore"
+        [string] $FacesPath = "/datastore",
         ###########################################################################
-    )    begin {
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Skip Docker initialization (used when already " +
+                          "called by parent function)")
+        )]
+        [switch] $NoDockerInitialize,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Force rebuild of Docker container and remove " +
+                          "existing data")
+        )]
+        [Alias("ForceRebuild")]
+        [switch] $Force,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Use GPU-accelerated version (requires NVIDIA " +
+                          "GPU)")
+        )]
+        [switch] $UseGPU
+        ###########################################################################
+    )
+
+    begin {
 
         # use script-scoped variables set by EnsureDeepStack, with fallback
         # defaults
-        if (-not $script:ApiBaseUrl) {
+        if (-not $ApiBaseUrl) {
             $NoDockerInitialize = $false
         }
 
-        # already a decimal from 0-1
+        # set the confidence threshold for filtering face recognition results
         $script:ConfidenceThreshold = $ConfidenceThreshold
 
         # ensure that the DeepStack face recognition service is running
         if (-not $NoDockerInitialize) {
             Microsoft.PowerShell.Utility\Write-Verbose `
-                ("Ensuring DeepStack face recognition service is available")
+                ("Ensuring DeepStack face recognition service is " +
+                 "available")
 
             # copy parameter values for the EnsureDeepStack function call
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -205,71 +215,28 @@ function Get-ImageDetectedFaces {
             $null = GenXdev.AI\EnsureDeepStack @ensureParams
         } else {
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Skipping Docker initialization as requested"
-        }
+                "Skipping Docker initialization as requested"        }
 
         Microsoft.PowerShell.Utility\Write-Verbose `
             "Using DeepStack face recognition API at: $script:ApiBaseUrl"
+    }
 
-        <#
-        .SYNOPSIS
-        Filters face recognition results based on confidence threshold.
-        #>
-        function Select-FaceResult {
-
-            param($FaceData)
-
-            # check if face data is valid and successful
-            if (-not $FaceData -or -not $FaceData.success) {
-                Microsoft.PowerShell.Utility\Write-Verbose `
-                    "No successful face data received"
-                return @{ faces = @(); count = 0; predictions = @() }
-            }
-
-            # check if predictions are available
-            if (-not $FaceData.predictions) {
-                Microsoft.PowerShell.Utility\Write-Verbose `
-                    "No face predictions received"
-                return @{ faces = @(); count = 0; predictions = @() }
-            }
-
-            # filter faces based on confidence threshold
-            $filteredPredictions = @($FaceData.predictions |
-                Microsoft.PowerShell.Core\Where-Object {
-                    $_.confidence -gt $script:ConfidenceThreshold
-                })
-
-            # extract just the face names for backward compatibility
-            $faceNames = @($filteredPredictions |
-                Microsoft.PowerShell.Core\ForEach-Object {
-                    $_.userid
-                })
-
-            Microsoft.PowerShell.Utility\Write-Verbose `
-                ("Found $($filteredPredictions.Count) recognized face(s) " +
-                 "with confidence > $script:ConfidenceThreshold")
-
-            return @{
-                faces = $faceNames
-                count = $faceNames.Count
-                # include full prediction data with positions and confidence
-                predictions = $filteredPredictions
-            }
-        }
-    }    process {
+    process {
 
         try {
 
             # expand and validate the image path
             $imagePath = GenXdev.FileSystem\Expand-Path $ImagePath
+
             Microsoft.PowerShell.Utility\Write-Verbose `
                 "Processing image: $imagePath"
 
             # validate that the file is a valid image
-            $null = GenXdev.AI\Test-ImageFile -Path $imagePath
+            $null = GenXdev.AI\Test-DeepLinkImageFile -Path $imagePath
 
             # construct the API endpoint URI for DeepStack face recognition
             $uri = "$($script:ApiBaseUrl)/v1/vision/face/recognize"
+
             Microsoft.PowerShell.Utility\Write-Verbose "Sending request to: $uri"
 
             # create form data for DeepStack API (it expects multipart form
@@ -281,6 +248,7 @@ function Get-ImageDetectedFaces {
             # send the request to the DeepStack face recognition API
             Microsoft.PowerShell.Utility\Write-Verbose `
                 "Sending image data to DeepStack face recognition API"
+
             $response = Microsoft.PowerShell.Utility\Invoke-RestMethod `
                 -Uri $uri `
                 -Method Post `
@@ -288,8 +256,23 @@ function Get-ImageDetectedFaces {
                 -TimeoutSec 30
 
             # process the response from DeepStack
-            $filteredResults = Select-FaceResult -FaceData $response
-            Microsoft.PowerShell.Utility\Write-Output $filteredResults
+            if ($response.success -and $response.predictions) {
+                $originalPredictionCount = $response.predictions.Count
+
+                $filteredPredictions = @($response.predictions |
+                    Microsoft.PowerShell.Core\Where-Object {
+                        $_.confidence -gt $script:ConfidenceThreshold
+                    })
+
+                Microsoft.PowerShell.Utility\Write-Verbose `
+                    ("Found $($filteredPredictions.Count) recognized " +
+                     "face(s) out of $originalPredictionCount with " +
+                     "confidence > $script:ConfidenceThreshold")
+
+                $response.predictions = $filteredPredictions
+            }
+
+            Microsoft.PowerShell.Utility\Write-Output $response
         }
         catch [System.Net.WebException] {
             Microsoft.PowerShell.Utility\Write-Error `
@@ -305,9 +288,10 @@ function Get-ImageDetectedFaces {
             Microsoft.PowerShell.Utility\Write-Error `
                 "Failed to recognize faces: $_"
         }
-    }    end {
+    }
 
-        # no cleanup required for this function
+    end {
+
     }
 }
 ################################################################################

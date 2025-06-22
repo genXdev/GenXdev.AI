@@ -251,14 +251,35 @@ process {
 
             # handle retry logic for previously failed images
             if ($RetryFailed) {
+                # Try to find any language version first
+                $existingMetadata = $false
+                if ($Language -ne "English") {
+                    $existingMetadata = [System.IO.File]::Exists("$($PSItem):description.$Language.json")
+                }
 
-                if ([System.IO.File]::Exists("$($PSItem):description.json")) {
+                # If no language-specific file or English is requested, check standard file
+                if (-not $existingMetadata) {
+                    $existingMetadata = [System.IO.File]::Exists("$($PSItem):description.json")
+                }
 
-                    # delete empty metadata files to force reprocessing
-                    if ("$([System.IO.File]::ReadAllText(`
-                        "$($PSItem):description.json"))".StartsWith("{}")) {
+                if ($existingMetadata) {
+                    # For language-specific file
+                    if ($Language -ne "English" -and [System.IO.File]::Exists("$($PSItem):description.$Language.json")) {
+                        # delete empty metadata files to force reprocessing
+                        if ("$([System.IO.File]::ReadAllText(`
+                            "$($PSItem):description.$Language.json"))".StartsWith("{}")) {
 
-                        [System.IO.File]::Delete("$($PSItem):description.json")
+                            [System.IO.File]::Delete("$($PSItem):description.$Language.json")
+                        }
+                    }
+                    # For standard English file
+                    elseif ([System.IO.File]::Exists("$($PSItem):description.json")) {
+                        # delete empty metadata files to force reprocessing
+                        if ("$([System.IO.File]::ReadAllText(`
+                            "$($PSItem):description.json"))".StartsWith("{}")) {
+
+                            [System.IO.File]::Delete("$($PSItem):description.json")
+                        }
                     }
                 }
             }
@@ -267,20 +288,25 @@ process {
 
             # ensure image is writable by removing read-only flag if present
             if ($PSItem.Attributes -band [System.IO.FileAttributes]::ReadOnly) {
-
                 $PSItem.Attributes = $PSItem.Attributes -bxor `
                     [System.IO.FileAttributes]::ReadOnly
             }
 
-            $fileExists = [System.IO.File]::Exists("$($image):description.json")
+            # Determine which file to check based on language
+            $metadataFile = if ($Language -eq "English") {
+                "$($image):description.json"
+            } else {
+                "$($image):description.$Language.json"
+            }
+
+            $fileExists = [System.IO.File]::Exists($metadataFile)
 
             # process image if new or update requested
             if ((-not $OnlyNew) -or (-not $fileExists)) {
 
                 # create empty metadata file if needed
                 if (-not $fileExists) {
-
-                    "{}" > "$($image):description.json"
+                    "{}" > $metadataFile
                 }
 
                 # Define response format schema
@@ -343,7 +369,7 @@ process {
                     }
                 } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
 
-                Microsoft.PowerShell.Utility\Write-Verbose "Analyzing image content: $image"
+                Microsoft.PowerShell.Utility\Write-Verbose "Analyzing image content: $image with language: $Language"
 
                 $query = (
                     "Analyze image and return a object with properties: " +
@@ -369,19 +395,17 @@ process {
                     $i0 = $description.IndexOf("{")
                     $i1 = $description.LastIndexOf("}")
                     if ($i0 -ge 0) {
-
                         $description = $description.Substring($i0, $i1 - $i0 + 1)
                     }
 
                     # save formatted JSON metadata
                     [System.IO.File]::WriteAllText(
-                        "$($image):description.json",
+                        $metadataFile,
                         ($description | Microsoft.PowerShell.Utility\ConvertFrom-Json |
                         Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 `
                             -WarningAction SilentlyContinue))
                 }
                 catch {
-
                     Microsoft.PowerShell.Utility\Write-Warning "$PSItem`r`n$description"
                 }
             }

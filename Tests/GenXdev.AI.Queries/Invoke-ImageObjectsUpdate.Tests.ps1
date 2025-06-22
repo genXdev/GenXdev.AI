@@ -1,11 +1,10 @@
 ################################################################################
+Pester\Describe "Invoke-ImageObjectsUpdate" {
 
-Pester\Describe "Initialize-LMStudioModel.Tests" {
-
-    Pester\It "Should pass PSScriptAnalyzer rules" {
+    Pester\It "should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Initialize-LMStudioModel.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Invoke-ImageObjectsUpdate.ps1"
 
         # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
@@ -29,5 +28,4 @@ $message
 "@;
     }
 }
-
 ################################################################################

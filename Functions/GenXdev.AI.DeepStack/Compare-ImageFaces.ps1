@@ -19,18 +19,6 @@ valid file path that can be resolved by the system.
 The local path to the second image file to compare. This parameter accepts any
 valid file path that can be resolved by the system.
 
-.PARAMETER NoDockerInitialize
-Skip Docker initialization when this switch is used. This is typically used
-when already called by parent function to avoid duplicate initialization.
-
-.PARAMETER Force
-Force rebuild of Docker container and remove existing data when this switch
-is used. This is useful for troubleshooting or updating the DeepStack image.
-
-.PARAMETER UseGPU
-Use GPU-accelerated version when this switch is used. This requires an
-NVIDIA GPU with proper Docker GPU support configured.
-
 .PARAMETER ContainerName
 The name for the Docker container. This allows multiple DeepStack instances
 or custom naming conventions. Default is "deepstack_face_recognition".
@@ -59,6 +47,18 @@ allows using custom or updated DeepStack images.
 The path inside the container where faces are stored. This should match the
 DeepStack configuration. Default is "/datastore".
 
+.PARAMETER NoDockerInitialize
+Skip Docker initialization when this switch is used. This is typically used
+when already called by parent function to avoid duplicate initialization.
+
+.PARAMETER Force
+Force rebuild of Docker container and remove existing data when this switch
+is used. This is useful for troubleshooting or updating the DeepStack image.
+
+.PARAMETER UseGPU
+Use GPU-accelerated version when this switch is used. This requires an
+NVIDIA GPU with proper Docker GPU support configured.
+
 .EXAMPLE
 Compare-ImageFaces -ImagePath1 "C:\Users\YourName\photo1.jpg" `
                    -ImagePath2 "C:\Users\YourName\photo2.jpg"
@@ -66,7 +66,7 @@ Compare-ImageFaces -ImagePath1 "C:\Users\YourName\photo1.jpg" `
 Compares faces between two images using default settings.
 
 .EXAMPLE
-cfaces "C:\docs\id_photo.jpg" "C:\photos\person.jpg" -UseGPU
+comparefaces "C:\docs\id_photo.jpg" "C:\photos\person.jpg" -UseGPU
 
 Compares faces using GPU acceleration for identity verification with alias and
 positional parameters.
@@ -80,6 +80,7 @@ http://localhost:5000/v1/vision/face/match
 function Compare-ImageFaces {
 
     [CmdletBinding()]
+    [OutputType([System.Collections.Hashtable])]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
     [Alias("comparefaces")]
 
@@ -102,6 +103,66 @@ function Compare-ImageFaces {
         [string] $ImagePath2,
         ###############################################################################
         [Parameter(
+            Position = 2,
+            Mandatory = $false,
+            HelpMessage = "The name for the Docker container"
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $ContainerName = "deepstack_face_recognition",
+        ###############################################################################
+        [Parameter(
+            Position = 3,
+            Mandatory = $false,
+            HelpMessage = ("The name for the Docker volume for persistent " +
+                          "storage")
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $VolumeName = "deepstack_face_data",
+        ###############################################################################
+        [Parameter(
+            Position = 4,
+            Mandatory = $false,
+            HelpMessage = "The port number for the DeepStack service"
+        )]
+        [ValidateRange(1, 65535)]
+        [int] $ServicePort = 5000,
+        ###############################################################################
+        [Parameter(
+            Position = 5,
+            Mandatory = $false,
+            HelpMessage = ("Maximum time in seconds to wait for service " +
+                          "health check")
+        )]
+        [ValidateRange(10, 300)]
+        [int] $HealthCheckTimeout = 60,
+        ###############################################################################
+        [Parameter(
+            Position = 6,
+            Mandatory = $false,
+            HelpMessage = ("Interval in seconds between health check " +
+                          "attempts")
+        )]
+        [ValidateRange(1, 10)]
+        [int] $HealthCheckInterval = 3,
+        ###############################################################################
+        [Parameter(
+            Position = 7,
+            Mandatory = $false,
+            HelpMessage = "Custom Docker image name to use"
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $ImageName,
+        ###############################################################################
+        [Parameter(
+            Position = 8,
+            Mandatory = $false,
+            HelpMessage = ("The path inside the container where faces are " +
+                          "stored")
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $FacesPath = "/datastore",
+        ###############################################################################
+        [Parameter(
             Mandatory = $false,
             HelpMessage = ("Skip Docker initialization (used when already " +
                           "called by parent function)")
@@ -121,68 +182,13 @@ function Compare-ImageFaces {
             HelpMessage = ("Use GPU-accelerated version (requires NVIDIA " +
                           "GPU)")
         )]
-        [switch] $UseGPU,
+        [switch] $UseGPU
         ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The name for the Docker container"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $ContainerName = "deepstack_face_recognition",
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("The name for the Docker volume for persistent " +
-                          "storage")
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $VolumeName = "deepstack_face_data",
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The port number for the DeepStack service"
-        )]
-        [ValidateRange(1, 65535)]
-        [int] $ServicePort = 5000,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Maximum time in seconds to wait for service " +
-                          "health check")
-        )]
-        [ValidateRange(10, 300)]
-        [int] $HealthCheckTimeout = 60,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Interval in seconds between health check " +
-                          "attempts")
-        )]
-        [ValidateRange(1, 10)]
-        [int] $HealthCheckInterval = 3,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Custom Docker image name to use"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $ImageName,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("The path inside the container where faces are " +
-                          "stored")
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore"
-        ###############################################################################
-    )
-
-    begin {
+    )    begin {
 
         # use script-scoped variables set by ensuredeepstack, with fallback
         # defaults
-        if (-not $script:ApiBaseUrl) {
+        if (-not $ApiBaseUrl) {
 
             $noDockerInitialize = $false
         }
@@ -203,15 +209,12 @@ function Compare-ImageFaces {
 
             # initialize deepstack docker container if needed
             $null = GenXdev.AI\EnsureDeepStack @ensureParams
-
         }
         else {
 
             Microsoft.PowerShell.Utility\Write-Verbose `
                 "Skipping Docker initialization as requested"
-        }
-
-        Microsoft.PowerShell.Utility\Write-Verbose `
+        }        Microsoft.PowerShell.Utility\Write-Verbose `
             "Using DeepStack face match API at: $script:ApiBaseUrl"
 
         ###############################################################################
@@ -230,7 +233,11 @@ function Compare-ImageFaces {
         .EXAMPLE
         $result = Format-FaceMatchResult -MatchData $response
         #>
+
         function Format-FaceMatchResult {
+
+            [CmdletBinding()]
+            [OutputType([System.Collections.Hashtable])]
 
             param(
                 ###################################################################
@@ -243,38 +250,48 @@ function Compare-ImageFaces {
                 ###################################################################
             )
 
-            # check if match data is valid and successful
-            if (-not $MatchData -or -not $MatchData.success) {
+            begin {
+
+            }
+
+            process {
+
+                # check if match data is valid and successful
+                if (-not $MatchData -or -not $MatchData.success) {
+
+                    Microsoft.PowerShell.Utility\Write-Verbose `
+                        "No successful face match data received"
+
+                    return @{
+                        success = $false
+                        similarity = 0.0
+                        message = "Face match failed"
+                    }
+                }
+
+                # extract similarity score from the response data
+                $similarity = if ($MatchData.similarity) {
+
+                    $MatchData.similarity
+                } else {
+
+                    0.0
+                }
 
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "No successful face match data received"
+                    "Face similarity score: $similarity"
 
+                # return formatted result object with all relevant metrics
                 return @{
-                    success = $false
-                    similarity = 0.0
-                    message = "Face match failed"
+                    success = $true
+                    similarity = $similarity
+                    confidence = $similarity
+                    match_percentage = [math]::Round($similarity * 100, 2)
                 }
             }
 
-            # extract similarity score from the response data
-            $similarity = if ($MatchData.similarity) {
+            end {
 
-                $MatchData.similarity
-
-            } else {
-
-                0.0
-            }
-
-            Microsoft.PowerShell.Utility\Write-Verbose `
-                "Face similarity score: $similarity"
-
-            # return formatted result object with all relevant metrics
-            return @{
-                success = $true
-                similarity = $similarity
-                confidence = $similarity
-                match_percentage = [math]::Round($similarity * 100, 2)
             }
         }
     }
@@ -292,9 +309,9 @@ function Compare-ImageFaces {
                 "Comparing images: $imagePath1 and $imagePath2"
 
             # validate that both files are valid image files
-            $null = GenXdev.AI\Test-ImageFile -Path $imagePath1
+            $null = GenXdev.AI\Test-DeepLinkImageFile -Path $imagePath1
 
-            $null = GenXdev.AI\Test-ImageFile -Path $imagePath2
+            $null = GenXdev.AI\Test-DeepLinkImageFile -Path $imagePath2
 
             # construct the api endpoint uri for deepstack face match service
             $uri = "$($script:ApiBaseUrl)/v1/vision/face/match"
@@ -327,7 +344,6 @@ function Compare-ImageFaces {
             $matchResult = Format-FaceMatchResult -MatchData $response
 
             Microsoft.PowerShell.Utility\Write-Output $matchResult
-
         }
         catch [System.Net.WebException] {
 
@@ -341,6 +357,7 @@ function Compare-ImageFaces {
                  "$imagePath2")
         }
         catch {
+
             Microsoft.PowerShell.Utility\Write-Error `
                 ("Failed to compare faces between $imagePath1 and " +
                  "$imagePath2`: $_")

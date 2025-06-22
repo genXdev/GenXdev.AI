@@ -1,15 +1,16 @@
 ################################################################################
 <#
 .SYNOPSIS
-Batch updates image keywords and faces across multiple system directories.
+Batch updates image keywords, faces, and objects across multiple system
+directories.
 
 .DESCRIPTION
 This function systematically processes images across various system directories
-to update their keywords and face recognition data using AI services. It covers
-media storage, system files, downloads, OneDrive, and personal pictures
-folders. The function uses parallel processing to efficiently handle both
-keyword extraction and face recognition tasks simultaneously across multiple
-directories.
+to update their keywords, face recognition data, and object detection data
+using AI services. It covers media storage, system files, downloads, OneDrive,
+and personal pictures folders. The function uses parallel processing to
+efficiently handle keyword extraction, face recognition, and object detection
+tasks simultaneously across multiple directories.
 
 .PARAMETER ImageDirectories
 Array of directory paths to process for image keyword and face recognition
@@ -41,6 +42,10 @@ Specifies whether to retry previously failed image keyword updates. When
 enabled, the function will attempt to process images that failed in previous
 runs.
 
+.PARAMETER ConfidenceThreshold
+Minimum confidence threshold (0.0-1.0) for object detection. Objects with
+confidence below this threshold will be filtered out. Default is 0.5.
+
 .PARAMETER RedoAll
 Forces reprocessing of all images regardless of previous processing status.
 
@@ -55,23 +60,28 @@ Force rebuild of Docker container and remove existing data for clean start.
 Use GPU-accelerated version for faster processing (requires NVIDIA GPU).
 
 .PARAMETER Language
-Specifies the language for generated descriptions and keywords. Defaults to English.
+Specifies the language for generated descriptions and keywords. Defaults to
+English.
 
 .EXAMPLE
-Update-AllImageKeywordsAndFaces -ImageDirectories @("C:\Pictures", "D:\Photos") -ServicePort 5000
+Update-AllImageMetaData -ImageDirectories @("C:\Pictures", "D:\Photos") `
+    -ServicePort 5000
 
 .EXAMPLE
-Update-AllImageKeywordsAndFaces -RetryFailed -Force -Language "Spanish"
+Update-AllImageMetaData -RetryFailed -Force -Language "Spanish"
 
 .EXAMPLE
-Update-AllImageKeywordsAndFaces @("C:\MyImages") -ContainerName "custom_face_recognition"
+updateallimages @("C:\MyImages") -ContainerName "custom_face_recognition"
 #>
-function Update-AllImageKeywordsAndFaces {
+function Update-AllImageMetaData {
+
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "")]
     [Alias("updateallimages")]
+
     param(
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 0,
@@ -79,7 +89,7 @@ function Update-AllImageKeywordsAndFaces {
         )]
         [ValidateNotNullOrEmpty()]
         [string[]] $ImageDirectories,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 1,
@@ -87,7 +97,7 @@ function Update-AllImageKeywordsAndFaces {
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ContainerName = "deepstack_face_recognition",
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 2,
@@ -95,7 +105,7 @@ function Update-AllImageKeywordsAndFaces {
         )]
         [ValidateNotNullOrEmpty()]
         [string] $VolumeName = "deepstack_face_data",
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 3,
@@ -103,7 +113,7 @@ function Update-AllImageKeywordsAndFaces {
         )]
         [ValidateRange(1, 65535)]
         [int] $ServicePort = 5000,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 4,
@@ -111,7 +121,7 @@ function Update-AllImageKeywordsAndFaces {
         )]
         [ValidateRange(10, 300)]
         [int] $HealthCheckTimeout = 60,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 5,
@@ -119,7 +129,7 @@ function Update-AllImageKeywordsAndFaces {
         )]
         [ValidateRange(1, 10)]
         [int] $HealthCheckInterval = 3,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 6,
@@ -127,7 +137,7 @@ function Update-AllImageKeywordsAndFaces {
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImageName,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 7,
@@ -135,40 +145,18 @@ function Update-AllImageKeywordsAndFaces {
         )]
         [ValidateNotNullOrEmpty()]
         [string] $FacesPath = "/datastore",
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Retry previously failed image keyword updates"
+            Position = 8,
+            HelpMessage = "Minimum confidence threshold (0.0-1.0) for object detection"
         )]
-        [switch] $RetryFailed,
-        ###############################################################################
+        [ValidateRange(0.0, 1.0)]
+        [double] $ConfidenceThreshold = 0.5,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Redo all images regardless of previous processing"
-        )]
-        [switch] $RedoAll,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Skip Docker initialization (used when already called by parent function)"
-        )]
-        [switch] $NoDockerInitialize,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Force rebuild of Docker container and remove existing data"
-        )]
-        [Alias("ForceRebuild")]
-        [switch] $Force,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Use GPU-accelerated version (requires NVIDIA GPU)"
-        )]
-        [switch] $UseGPU,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
+            Position = 9,
             HelpMessage = "The language for generated descriptions and keywords"
         )]
         [PSDefaultValue(Value = "English")]
@@ -317,14 +305,49 @@ function Update-AllImageKeywordsAndFaces {
             "Yiddish",
             "Yoruba",
             "Zulu")]
-        [string] $Language = "English"
-        ###############################################################################
+        [string] $Language = "English",
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Will retry previously failed image keyword updates"
+        )]
+        [switch] $RetryFailed,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Redo all images regardless of previous processing"
+        )]
+        [switch] $RedoAll,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Skip Docker initialization (used when already " +
+                "called by parent function)")
+        )]
+        [switch] $NoDockerInitialize,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Force rebuild of Docker container and remove " +
+                "existing data")
+        )]
+        [Alias("ForceRebuild")]
+        [switch] $Force,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Use GPU-accelerated version (requires NVIDIA GPU)"
+        )]
+        [switch] $UseGPU
+        #######################################################################
     )
+
     begin {
 
         # log start of processing
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Starting systematic image keyword update across directories"
+            "Starting systematic image keyword, faces, and objects update " +
+            "across directories"
         )
 
         # copy identical parameter values from bound parameters for deepstack setup
@@ -342,7 +365,8 @@ function Update-AllImageKeywordsAndFaces {
         }
         else {
 
-            $ensureParams.Force = $PSBoundParameters.ContainsKey("ForceRebuild") ? $false : $null
+            $ensureParams.Force = $PSBoundParameters.ContainsKey("ForceRebuild") ?
+                $false : $null
         }
 
         # ensure deepstack service is running for face recognition
@@ -357,24 +381,58 @@ function Update-AllImageKeywordsAndFaces {
             # convert provided directories to simple path array
             $directories = $ImageDirectories
         }
+        elseif ($Global:ImageDirectories) {
+
+            $json = GenXdev.Data\Get-GenXdevPreference `
+                -Name "ImageDirectories" `
+                -DefaultValue $Global:ImageDirectories `
+                -ErrorAction SilentlyContinue
+
+            if (-not [string]::IsNullOrEmpty($json)) {
+
+                # parse json configuration for image directories
+                $directories = $json |
+                    Microsoft.PowerShell.Utility\ConvertFrom-Json
+            }
+            if ($null -eq $directories -or $directories.Count -eq 0) {
+
+                # use global variable if it exists
+                $directories = $Global:ImageDirectories
+            }
+        }
         else {
-            $picturesPath = GenXdev.FileSystem\Expand-Path "~\Pictures"
-            try {
-                # attempt to get known folder path for Pictures
-                $picturesPath = GenXdev.Windows\Get-KnownFolderPath Pictures
+
+            $json = GenXdev.Data\Get-GenXdevPreference `
+                -Name "ImageDirectories" `
+                -DefaultValue $Global:ImageDirectories `
+                -ErrorAction SilentlyContinue
+
+            if ([string]::IsNullOrEmpty($json)) {
+
+                # parse json configuration for image directories
+                $directories = $json |
+                    Microsoft.PowerShell.Utility\ConvertFrom-Json
             }
-            catch {
-                # fallback to default if known folder retrieval fails
+            if ($null -eq $directories -or $directories.Count -eq 0) {
+
                 $picturesPath = GenXdev.FileSystem\Expand-Path "~\Pictures"
+
+                try {
+                    # attempt to get known folder path for Pictures
+                    $picturesPath = GenXdev.Windows\Get-KnownFolderPath Pictures
+                }
+                catch {
+                    # fallback to default if known folder retrieval fails
+                    $picturesPath = GenXdev.FileSystem\Expand-Path "~\Pictures"
+                }
+
+                # define default directories for processing
+                $directories = @(
+                    (GenXdev.FileSystem\Expand-Path '~\downloads'),
+                    (GenXdev.FileSystem\Expand-Path '~\\onedrive'),
+                    $picturesPath
+                )
             }
-
-            # define default directories for processing
-            $directories = @(
-                (GenXdev.FileSystem\Expand-Path '~\downloads'),
-                (GenXdev.FileSystem\Expand-Path '~\\onedrive'),
-                $picturesPath
-            )
-
         }
 
         # process each directory in parallel for maximum efficiency
@@ -385,21 +443,26 @@ function Update-AllImageKeywordsAndFaces {
                 $redoAll = $using:RedoAll
                 $retryFailed = $using:RetryFailed
                 $language = $using:Language
+                $confidenceThreshold = $using:ConfidenceThreshold
 
                 # check if this is a onedrive folder for special handling
-                $isOneDriveFolder = $dir -like '*\OneDrive\*' -or $dir -like '*/OneDrive/*'
+                $isOneDriveFolder = $dir -like '*\OneDrive\*' -or
+                    $dir -like '*/OneDrive/*'
 
                 # log which directory is being processed
                 Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Processing $dir (keywords & faces)" +
-                    $(if ($isOneDriveFolder) { " [OneDrive - only new]" } else { "" })
+                    "Processing $dir (keywords, faces & objects)" +
+                    $(if ($isOneDriveFolder) { " [OneDrive - only new]" }
+                        else { "" })
                 )
 
                 $jobs = @()
 
                 # start thread job for keyword extraction processing
                 $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
-                    param($dir, $isOneDriveFolder, $redoAll, $retryFailed, $language)
+
+                    param($dir, $isOneDriveFolder, $redoAll, $retryFailed,
+                        $language)
 
                     # run image keyword update with appropriate flags
                     GenXdev.AI\Invoke-ImageKeywordUpdate `
@@ -409,10 +472,13 @@ function Update-AllImageKeywordsAndFaces {
                         -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
                         -retryFailed:$retryFailed `
                         -Language $language
-                } -ArgumentList $dir, $isOneDriveFolder, $redoAll, $retryFailed, $language
+
+                } -ArgumentList $dir, $isOneDriveFolder, $redoAll,
+                    $retryFailed, $language
 
                 # start thread job for face recognition processing
                 $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
+
                     param($dir, $isOneDriveFolder, $redoAll, $retryFailed)
 
                     # run image faces update with appropriate flags
@@ -423,9 +489,29 @@ function Update-AllImageKeywordsAndFaces {
                         -NoDockerInitialize `
                         -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
                         -retryFailed:$retryFailed
+
                 } -ArgumentList $dir, $isOneDriveFolder, $redoAll, $retryFailed
 
-                # wait for both jobs to finish and collect results
+                # start thread job for object detection processing
+                $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
+
+                    param($dir, $isOneDriveFolder, $redoAll, $retryFailed,
+                        $confidenceThreshold)
+
+                    # run image objects update with appropriate flags
+                    GenXdev.AI\Invoke-ImageObjectsUpdate `
+                        -imageDirectory $dir `
+                        -recurse `
+                        -Verbose `
+                        -NoDockerInitialize `
+                        -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
+                        -retryFailed:$retryFailed `
+                        -ConfidenceThreshold $confidenceThreshold
+
+                } -ArgumentList $dir, $isOneDriveFolder, $redoAll,
+                    $retryFailed, $confidenceThreshold
+
+                # wait for all jobs to finish and collect results
                 $jobs |
                     Microsoft.PowerShell.Core\Wait-Job |
                     Microsoft.PowerShell.Core\Receive-Job
@@ -433,6 +519,7 @@ function Update-AllImageKeywordsAndFaces {
                 # clean up completed jobs
                 $jobs |
                     Microsoft.PowerShell.Core\Remove-Job
+
             } -ThrottleLimit 5
     }
 
@@ -440,7 +527,8 @@ function Update-AllImageKeywordsAndFaces {
 
         # log completion of all directory processing
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Completed image keyword and faces updates across all directories"
+            "Completed image keyword, faces, and objects updates across " +
+            "all directories"
         )
     }
 }

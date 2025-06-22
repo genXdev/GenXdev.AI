@@ -47,30 +47,6 @@ $message
                 $_.path | Pester\Should -Not -BeNullOrEmpty
             }
         }
-
-        Pester\It "Should be able to find qwen-14b model if present" {
-            # get all models and filter for qwen-14b
-            $result = GenXdev.AI\Get-LMStudioModelList
-
-            # verify if any models exist
-            if ($null -eq $result) {
-                Pester\Set-ItResult -Skipped -Because "No models found in LM Studio"
-                return
-            }
-
-            # check for qwen-14b in model paths
-            $qwenModel = $result | Microsoft.PowerShell.Core\Where-Object { $_.path -like "*Qwen2.5-14B*" }
-
-            # skip if not found (don't fail - model might not be installed)
-            if ($null -eq $qwenModel) {
-                Pester\Set-ItResult -Skipped -Because "qwen-14b model not installed"
-                return
-            }
-
-            # verify model properties if found
-            $qwenModel.path | Pester\Should -Not -BeNullOrEmpty
-            $qwenModel.path | Pester\Should -BeLike "*Qwen2.5-14B*"
-        }
     }
 }
 

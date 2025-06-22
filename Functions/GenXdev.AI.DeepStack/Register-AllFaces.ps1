@@ -62,17 +62,15 @@ Force rebuild of Docker container and remove existing data.
 Use GPU-accelerated version (requires NVIDIA GPU).
 
 .EXAMPLE
-Register-AllFaces
-
-.EXAMPLE
-Register-AllFaces -FacesDirectory "C:\MyFaces" -Force
+Register-AllFaces -FacesDirectory "b:\media\faces\" -MaxRetries 3 `
+    -ContainerName "deepstack_face_recognition" -VolumeName "deepstack_face_data" `
+    -ServicePort 5000 -HealthCheckTimeout 60 -HealthCheckInterval 3 `
+    -FacesPath "/datastore"
 
 .EXAMPLE
 updatefaces -RenameFailed
 #>
-###############################################################################
-
-
+################################################################################
 function Register-AllFaces {
     [CmdletBinding()]
     [Alias("UpdateFaces")]
@@ -189,21 +187,28 @@ function Register-AllFaces {
         # initialize script-level tracking variables for registration results
         $script:RegistrationErrors = @()
         $script:SuccessfulRegistrations = 0
-        $script:SkippedRegistrations = 0
-
-        # validate that the faces directory exists before proceeding
+        $script:SkippedRegistrations = 0        # validate that the faces directory exists before proceeding
         if (-not (Microsoft.PowerShell.Management\Test-Path $FacesDirectory `
-                 -PathType Container)) {
+                -PathType Container)) {
 
             throw "Faces directory does not exist: $FacesDirectory"
         }
 
         # output verbose information about the faces directory being processed
         Microsoft.PowerShell.Utility\Write-Verbose `
-            "Processing faces from directory: $FacesDirectory"        ########################################################################
+            "Processing faces from directory: $FacesDirectory"
+
+        ########################################################################
         <#
         .SYNOPSIS
         Ensures the face recognition service is properly initialized.
+
+        .DESCRIPTION
+        This nested function handles the initialization of the DeepStack face
+        recognition service with retry logic and proper error handling.
+
+        .PARAMETER None
+        Uses parent function parameters through scope inheritance.
         #>
         ########################################################################
 
@@ -216,27 +221,26 @@ function Register-AllFaces {
             # retry loop for service initialization
             while ($attempt -le $maxAttempts) {
 
-                try {
-
-                    # output verbose information about current initialization attempt
+                try {                    # output verbose information about current initialization attempt
                     Microsoft.PowerShell.Utility\Write-Verbose `
-                        "Attempt $attempt to initialize DeepStack face recognition service"
-
-                    # copy parameters for the EnsureDeepStack function call
+                        ("Attempt $attempt to initialize DeepStack face " +
+                        "recognition service")                    # copy parameters for the EnsureDeepStack function call
                     $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
                         -FunctionName 'EnsureDeepStack' `
-                        -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
-                                       -ErrorAction SilentlyContinue)
+                        -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                            -Scope Local `
+                            -ErrorAction SilentlyContinue)
 
                     # configure force rebuild parameter based on ForceRebuild switch
                     if ($ForceRebuild) {
 
                         $ensureParams.Force = $true
                     }
-                     else {
+                    else {
 
-                        $ensureParams.Force = if ($PSBoundParameters.ContainsKey("ForceRebuild")) {
+                        $ensureParams.Force = if ($PSBoundParameters.ContainsKey(
+                            "ForceRebuild")) {
                             $false
                         } else {
                             $null
@@ -254,7 +258,8 @@ function Register-AllFaces {
 
                     # output success message for service initialization
                     Microsoft.PowerShell.Utility\Write-Verbose `
-                        "DeepStack face recognition service initialized successfully"
+                        ("DeepStack face recognition service initialized " +
+                        "successfully")
 
                     return $true
                 }
@@ -284,10 +289,25 @@ function Register-AllFaces {
             throw ("Failed to initialize DeepStack face recognition service " +
                   "after $maxAttempts attempts")
         }
+
         ########################################################################
         <#
         .SYNOPSIS
         Registers a single face with retry logic.
+
+        .DESCRIPTION
+        This nested function handles the registration of face images for a
+        specific person with retry logic and error handling including support
+        for renaming failed image files.
+
+        .PARAMETER Identifier
+        The name identifier for the person to register.
+
+        .PARAMETER ImagePaths
+        Array of image file paths to register for this person.
+
+        .PARAMETER MaxRetries
+        Maximum number of retry attempts for failed registrations.
         #>
         ########################################################################
         function Register-FaceWithRetry {
@@ -308,20 +328,20 @@ function Register-AllFaces {
 
                     # output verbose information about registration attempt
                     Microsoft.PowerShell.Utility\Write-Verbose `
-                        "Registering face: $Identifier with $($ImagePaths.Count) image(s) (attempt $attempt)"
-
-                    # copy parameters for the Register-Face function call
+                        "Registering face: $Identifier with $($ImagePaths.Count) image(s) (attempt $attempt)"                    # copy parameters for the Register-Face function call
                     $registerParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
                         -FunctionName 'Register-Face' `
-                        -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
-                                       -ErrorAction SilentlyContinue)
+                        -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                            -Scope Local `
+                            -ErrorAction SilentlyContinue)
 
                     # override ImagePath parameter with array of paths
                     $registerParams.ImagePath = $ImagePaths
 
                     # register the face using the deepstack service
-                    $null = GenXdev.AI\Register-Face @registerParams -NoDockerInitialize
+                    $null = GenXdev.AI\Register-Face @registerParams `
+                        -NoDockerInitialize
 
                     # add delay between successful registrations to prevent service overload
                     Microsoft.PowerShell.Utility\Start-Sleep -Milliseconds 500
@@ -340,8 +360,8 @@ function Register-AllFaces {
 
                     # check if this is a "no face found" error and handle accordingly
                     if ($RenameFailed -and ($errorMessage -like "*400*" -and
-                        $errorMessage -like "*Bad Request*" -and
-                        $errorMessage -like "*Could not find any face*")) {
+                            $errorMessage -like "*Bad Request*" -and
+                            $errorMessage -like "*Could not find any face*")) {
 
                         # output verbose information about detected no face error
                         Microsoft.PowerShell.Utility\Write-Verbose `
@@ -363,14 +383,16 @@ function Register-AllFaces {
 
                                 # output information about renamed file
                                 Microsoft.PowerShell.Utility\Write-Output `
-                                    "Renamed failed image: $imagePath -> $newPath"
+                                    ("Renamed failed image: $imagePath -> " +
+                                    "$newPath")
                             }
 
                             # add error to tracking collection
                             $script:RegistrationErrors += @{
                                 Identifier = $Identifier
                                 ImagePaths = $ImagePaths
-                                Error = "No face found - files renamed to .failed"
+                                Error = ("No face found - files renamed to " +
+                                        ".failed")
                             }
 
                             return $false
@@ -411,10 +433,21 @@ function Register-AllFaces {
 
             return $false
         }
+
         ########################################################################
         <#
         .SYNOPSIS
         Processes images in a person's directory.
+
+        .DESCRIPTION
+        This nested function processes all valid image files in a person's
+        directory and registers them as a batch for face recognition.
+
+        .PARAMETER PersonDirectory
+        The directory containing images for a specific person.
+
+        .PARAMETER ForceUpdate
+        Whether to force re-registration even if already registered.
         #>
         ########################################################################
 
@@ -445,9 +478,9 @@ function Register-AllFaces {
             # check if any image files were found
             if ($imageFiles.Count -eq 0) {
 
-                # output warning if no images found for person
-                Microsoft.PowerShell.Utility\Write-Warning `
-                    "No image files found for person: $personName"
+            # output warning if no images found for person
+            Microsoft.PowerShell.Utility\Write-Warning `
+                "No image files found for person: $personName"
 
                 return
             }
@@ -474,14 +507,15 @@ function Register-AllFaces {
             }
 
             # collect all image paths for batch registration
-            $imagePaths = $imageFiles | Microsoft.PowerShell.Core\ForEach-Object { $_.FullName }
+            $imagePaths = $imageFiles |
+                Microsoft.PowerShell.Core\ForEach-Object { $_.FullName }
 
             try {
 
                 # attempt to register all faces for this person in a single call
                 if (Register-FaceWithRetry -Identifier $personName `
-                    -ImagePaths $imagePaths `
-                    -MaxRetries $MaxRetries) {
+                        -ImagePaths $imagePaths `
+                        -MaxRetries $MaxRetries) {
 
                     # increment success counters
                     $script:SuccessfulRegistrations++
@@ -526,11 +560,12 @@ function Register-AllFaces {
                     "Force flag specified - clearing existing faces"
 
                 # copy parameters for the Unregister-AllFaces function call
-                $unregisterParams =  GenXdev.Helpers\Copy-IdenticalParamValues `
+                $unregisterParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'Unregister-AllFaces' `
-                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
-                                   -ErrorAction SilentlyContinue)
+                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                        -Scope Local `
+                        -ErrorAction SilentlyContinue)
 
                 # unregister all existing faces
                 $null = GenXdev.AI\Unregister-AllFaces @unregisterParams
@@ -559,18 +594,17 @@ function Register-AllFaces {
                         "No person directories found in: $FacesDirectory"
 
                     return
-                }
-
-                # output verbose information about found directories
+                }                # output verbose information about found directories
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "Found $($personDirectories.Count) person directories to process"
+                    ("Found $($personDirectories.Count) person directories " +
+                    "to process")
 
                 # process each person directory
                 foreach ($personDir in $personDirectories) {
 
                     # call function to process individual person directory
                     ProcessPersonDirectory -PersonDirectory $personDir `
-                                          -ForceUpdate $Force
+                        -ForceUpdate $Force
                 }
             }
             finally {
@@ -582,7 +616,7 @@ function Register-AllFaces {
             # report final results to user
             Microsoft.PowerShell.Utility\Write-Output "Face registration completed:"
             Microsoft.PowerShell.Utility\Write-Output `
-                "  Successful registrations: $script:SuccessfulRegistrations"
+                ("  Successful registrations: $script:SuccessfulRegistrations")
             Microsoft.PowerShell.Utility\Write-Output `
                 "  Skipped registrations: $script:SkippedRegistrations"
             Microsoft.PowerShell.Utility\Write-Output `
@@ -612,7 +646,6 @@ function Register-AllFaces {
     }
 
     end {
-
         # output verbose information about process completion
         Microsoft.PowerShell.Utility\Write-Verbose `
             "Face registration process completed"

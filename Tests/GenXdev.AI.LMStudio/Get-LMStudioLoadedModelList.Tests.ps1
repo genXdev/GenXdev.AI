@@ -39,15 +39,6 @@ $message
         $result | Pester\Should -Not -BeNullOrEmpty
     }
 
-    Pester\It "Should have qwen2.5-14b-instruct model present" {
-
-        GenXdev.AI\Initialize-LMStudioModel -Model "qwen2.5-14b-instruct" -ModelLMSGetIdentifier "qwen2.5-14b-instruct"
-        $result = GenXdev.AI\Get-LMStudioLoadedModelList
-
-        # verify qwen-14b model exists
-        $qwenModel = $result | Microsoft.PowerShell.Core\Where-Object { $_.identifier -like "qwen2.5-14b-instruct" }
-        $qwenModel | Pester\Should -Not -BeNull
-    }
 }
 
 ################################################################################

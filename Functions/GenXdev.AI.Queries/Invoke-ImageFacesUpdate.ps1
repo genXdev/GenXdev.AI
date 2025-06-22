@@ -7,7 +7,7 @@ Updates face recognition metadata for image files in a specified directory.
 This function processes images in a specified directory to identify and analyze
 faces using AI recognition technology. It creates or updates metadata files
 containing face information for each image. The metadata is stored in a
-separate file with the same name as the image but with a ':faces.json' suffix.
+separate file with the same name as the image but with a ':people.json' suffix.
 
 .PARAMETER ImageDirectory
 The directory path containing images to process. Can be relative or absolute.
@@ -22,110 +22,161 @@ If specified, only processes images that don't already have face metadata files.
 .PARAMETER RetryFailed
 If specified, retries processing previously failed images (empty metadata files).
 
+.PARAMETER NoDockerInitialize
+Skip Docker initialization when this switch is used. Used when already called by
+parent function.
+
+.PARAMETER Force
+Force rebuild of Docker container and remove existing data when this switch is
+used.
+
+.PARAMETER UseGPU
+Use GPU-accelerated version when this switch is used. Requires an NVIDIA GPU.
+
+.PARAMETER ContainerName
+The name for the Docker container. Default is "deepstack_face_recognition".
+
+.PARAMETER VolumeName
+The name for the Docker volume for persistent storage. Default is
+"deepstack_face_data".
+
+.PARAMETER ServicePort
+The port number for the DeepStack service. Default is 5000.
+
+.PARAMETER HealthCheckTimeout
+Maximum time in seconds to wait for service health check. Default is 60.
+
+.PARAMETER HealthCheckInterval
+Interval in seconds between health check attempts. Default is 3.
+
+.PARAMETER ImageName
+Custom Docker image name to use instead of the default DeepStack image.
+
+.PARAMETER FacesPath
+The path inside the container where faces are stored. Default is "/datastore".
+
 .EXAMPLE
 Invoke-ImageFacesUpdate -ImageDirectory "C:\Photos" -Recurse
 
 .EXAMPLE
-Invoke-ImageFacesUpdate "C:\Photos" -RetryFailed -OnlyNew
+facerecognition "C:\Photos" -RetryFailed -OnlyNew
 #>
+###############################################################################
 function Invoke-ImageFacesUpdate {
 
     [CmdletBinding()]
     [Alias("facerecognition")]
 
     param(
-        ###############################################################################
-        <#
-        .SYNOPSIS
-        Specifies the directory containing images to process.
-
-        .DESCRIPTION
-        The directory path containing images to process. Can be relative or absolute.
-        Default is the current directory.
-
-        .PARAMETER ImageDirectory
-        The directory path containing images to process. Can be relative or absolute.
-        Default is the current directory.
-
-        .EXAMPLE
-        Invoke-ImageFacesUpdate -ImageDirectory "C:\Photos"
-        #>
+        #######################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
-            HelpMessage = "The image directory path."
+            HelpMessage = "The directory path containing images to process"
         )]
         [string] $ImageDirectory = ".\",
-
-        ###############################################################################
-        <#
-        .SYNOPSIS
-        If specified, processes images in the specified directory and all subdirectories.
-
-        .DESCRIPTION
-        When this switch is provided, the function will search for images not only in
-        the specified directory but also in all of its subdirectories.
-
-        .PARAMETER Recurse
-        If specified, processes images in the specified directory and all subdirectories.
-
-        .EXAMPLE
-        Invoke-ImageFacesUpdate -Recurse
-        #>
+        #######################################################################
+        [Parameter(
+            Position = 1,
+            Mandatory = $false,
+            HelpMessage = "Custom Docker image name to use instead of default"
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $ImageName,
+        #######################################################################
+        [Parameter(
+            Position = 2,
+            Mandatory = $false,
+            HelpMessage = "The name for the Docker container"
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $ContainerName = "deepstack_face_recognition",
+        #######################################################################
+        [Parameter(
+            Position = 3,
+            Mandatory = $false,
+            HelpMessage = "The name for the Docker volume for persistent storage"
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $VolumeName = "deepstack_face_data",
+        #######################################################################
+        [Parameter(
+            Position = 4,
+            Mandatory = $false,
+            HelpMessage = "The path inside the container where faces are stored"
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $FacesPath = "/datastore",
+        #######################################################################
+        [Parameter(
+            Position = 5,
+            Mandatory = $false,
+            HelpMessage = "The port number for the DeepStack service"
+        )]
+        [ValidateRange(1, 65535)]
+        [int] $ServicePort = 5000,
+        #######################################################################
+        [Parameter(
+            Position = 6,
+            Mandatory = $false,
+            HelpMessage = ("Maximum time in seconds to wait for service " +
+                          "health check")
+        )]
+        [ValidateRange(10, 300)]
+        [int] $HealthCheckTimeout = 60,
+        #######################################################################
+        [Parameter(
+            Position = 7,
+            Mandatory = $false,
+            HelpMessage = "Interval in seconds between health check attempts"
+        )]
+        [ValidateRange(1, 10)]
+        [int] $HealthCheckInterval = 3,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Recurse directories."
+            HelpMessage = ("Process images in specified directory and all " +
+                          "subdirectories")
         )]
         [switch] $Recurse,
-
-        ###############################################################################
-        <#
-        .SYNOPSIS
-        If specified, only processes images that don't already have face metadata files.
-
-        .DESCRIPTION
-        When this switch is provided, the function will skip processing images that
-        already have a corresponding face metadata file.
-
-        .PARAMETER OnlyNew
-        If specified, only processes images that don't already have face metadata files.
-
-        .EXAMPLE
-        Invoke-ImageFacesUpdate -OnlyNew
-        #>
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Skip if already has meta data."
+            HelpMessage = ("Only process images that don't already have face " +
+                          "metadata files")
         )]
         [switch] $OnlyNew,
-
-        ###############################################################################
-        <#
-        .SYNOPSIS
-        If specified, retries processing previously failed images (empty metadata files).
-
-        .DESCRIPTION
-        When this switch is provided, the function will reprocess images that have
-        empty metadata files (indicating a previous processing failure).
-
-        .PARAMETER RetryFailed
-        If specified, retries processing previously failed images (empty metadata files).
-
-        .EXAMPLE
-        Invoke-ImageFacesUpdate -RetryFailed
-        #>
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Will retry previously failed images."
+            HelpMessage = ("Retry processing previously failed images with " +
+                          "empty metadata files")
         )]
         [switch] $RetryFailed,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Skip Docker initialization (used when already called by parent function)"
+            HelpMessage = ("Skip Docker initialization when already called by " +
+                          "parent function")
         )]
-        [switch] $NoDockerInitialize
+        [switch] $NoDockerInitialize,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Force rebuild of Docker container and remove " +
+                          "existing data")
+        )]
+        [Alias("ForceRebuild")]
+        [switch] $Force,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Use GPU-accelerated version which requires an " +
+                          "NVIDIA GPU")
+        )]
+        [switch] $UseGPU
+        #######################################################################
     )
-
     begin {
 
         # convert the possibly relative path to an absolute path for reliable access
@@ -134,127 +185,180 @@ function Invoke-ImageFacesUpdate {
         # ensure the target directory exists before proceeding with any operations
         if (-not [System.IO.Directory]::Exists($path)) {
 
-            Microsoft.PowerShell.Utility\Write-Host "The directory '$path' does not exist."
+            Microsoft.PowerShell.Utility\Write-Host ("The directory '$path' " +
+                                                     "does not exist.")
             return
         }
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Processing images in directory: $path"
+        Microsoft.PowerShell.Utility\Write-Verbose ("Processing images in " +
+                                                    "directory: $path")
     }
 
     process {
 
-        # retrieve all supported image files (jpg, jpeg, png) from the specified directory
+        # retrieve all supported image files from the specified directory
         # applying recursion only if the -Recurse switch was provided
-        Microsoft.PowerShell.Management\Get-ChildItem -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
-            -Recurse:$Recurse -File -ErrorAction SilentlyContinue |        Microsoft.PowerShell.Core\ForEach-Object {
-            # store the full path to the current image for better readability
-            $image = $PSItem.FullName
+        Microsoft.PowerShell.Management\Get-ChildItem `
+            -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
+            -Recurse:$Recurse `
+            -File `
+            -ErrorAction SilentlyContinue |
+            Microsoft.PowerShell.Core\ForEach-Object {
 
-            # if retry mode is active, handle previously failed images
-            if ($RetryFailed) {
+                # store the full path to the current image for better readability
+                $image = $PSItem.FullName
 
-                if ([System.IO.File]::Exists("$($image):people.json")) {
+                # if retry mode is active, handle previously failed images
+                if ($RetryFailed) {
 
-                    # if metadata file exists but is empty or has no faces, delete it to force reprocessing
-                    $content = [System.IO.File]::ReadAllText("$($image):people.json")
-                    if ($content.StartsWith("{}") -or $content -eq '{"predictions":null,"count":1,"faces":[""]}') {
+                    if ([System.IO.File]::Exists("$($image):people.json")) {
 
-                        $content = "{}"
-                    }
-                }
-            }
+                        # read existing metadata to check for empty or invalid content
+                        $content = [System.IO.File]::ReadAllText(
+                            "$($image):people.json")
 
-            Microsoft.PowerShell.Utility\Write-Verbose "Processing image: $image"
+                        # check if metadata file contains no faces or invalid data
+                        if ($content.StartsWith("{}") -or
+                            $content -eq ('{"predictions":null,"count":1,' +
+                                         '"faces":[""]}')) {
 
-            # remove read-only attribute if present to ensure file can be modified
-            if ($PSItem.Attributes -band [System.IO.FileAttributes]::ReadOnly) {
-
-                $PSItem.Attributes = $PSItem.Attributes -bxor
-                [System.IO.FileAttributes]::ReadOnly
-            }
-            # check if a metadata file already exists for this image
-            $metadataFilePath = "$($image):people.json"
-            $fileExists = [System.IO.File]::Exists($metadataFilePath)
-
-            # process image if either we're updating all images or this is a new image without metadata
-            $content = $fileExists ? [System.IO.File]::ReadAllText($metadataFilePath) : "{}"
-            if (
-                (-not $OnlyNew) -or
-                (-not $fileExists) -or
-                ($content -eq "{}") -or
-                (-not $content.Contains("predictions"))) {
-
-                # create an empty metadata file as a placeholder if one doesn't exist
-                if (-not $fileExists) {
-
-                    $null = [System.IO.File]::WriteAllText($metadataFilePath, "{}")
-                    Microsoft.PowerShell.Utility\Write-Verbose "Created new metadata file for: $image"
-                }                # obtain face recognition data using AI recognition technology
-                # store the complete data including positions, confidence, and face names
-                $faceData = GenXdev.AI\Get-ImageDetectedFaces -ImagePath $image -NoDockerInitialize:$NoDockerInitialize -ConfidenceThreshold 0.6
-
-                # Process the face data to extract unique person names and store full prediction data
-                $processedData = @{
-                    count = $faceData.count
-                    faces = @($faceData.faces | Microsoft.PowerShell.Core\ForEach-Object {
-                        # Remove everything after and including the last underscore to get base person name
-                        $name = "$_"
-                        $lastUnderscoreIndex = $name.LastIndexOf("_")
-                        if ($lastUnderscoreIndex -gt 0) {
-
-                            # Changed from -ge to -gt to avoid empty strings
-                            $name.Substring(0, $lastUnderscoreIndex)
-                        } else {
-                            $name
+                            $content = "{}"
                         }
-                    } | Microsoft.PowerShell.Utility\Sort-Object | Microsoft.PowerShell.Utility\Select-Object -Unique)
-                    predictions = $faceData.predictions
-                    # Store complete prediction data with positions and confidence
+                    }
                 }
 
-                # Update count to reflect unique faces
-                $processedData.count = $processedData.faces.Count
+                Microsoft.PowerShell.Utility\Write-Verbose ("Processing image: " +
+                                                            "$image")
 
-                # If no faces are detected, use empty structure
-                if ($processedData.count -eq 0) {
-                    $processedData = @{count = 0; faces = @(); predictions = @()}
+                # remove read-only attribute if present to ensure file modification
+                if ($PSItem.Attributes -band [System.IO.FileAttributes]::ReadOnly) {
+
+                    $PSItem.Attributes = $PSItem.Attributes -bxor
+                    [System.IO.FileAttributes]::ReadOnly
                 }
 
-                $faces = $processedData | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 20 -WarningAction SilentlyContinue
+                # check if a metadata file already exists for this image
+                $metadataFilePath = "$($image):people.json"
+                $fileExists = [System.IO.File]::Exists($metadataFilePath)
 
-                Microsoft.PowerShell.Utility\Write-Verbose "Received face analysis for: $image"
+                # read existing content or use empty JSON object as default
+                $content = if ($fileExists) {
+                    [System.IO.File]::ReadAllText($metadataFilePath)
+                } else {
+                    "{}"
+                }
 
-                try {
-                    $newContent =  ($faces |
-                        Microsoft.PowerShell.Utility\ConvertFrom-Json |
-                        Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 `
-                            -WarningAction SilentlyContinue)
+                # determine if image should be processed based on options
+                $shouldProcess = (
+                    (-not $OnlyNew) -or
+                    (-not $fileExists) -or
+                    ($content -eq "{}") -or
+                    (-not $content.Contains("predictions"))
+                )
 
-                    if ($newContent -eq '{"predictions":null,"count":1,"faces":[""]}') {
+                if ($shouldProcess) {
 
-                        $newContent = '{}'
+                    # create an empty metadata file as placeholder if needed
+                    if (-not $fileExists) {
+
+                        $null = [System.IO.File]::WriteAllText($metadataFilePath,
+                                                               "{}")
+
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Created new metadata file for: $image")
                     }
 
-                    # save the processed face data to a metadata file
-                    # re-parse and re-serialize to ensure consistent JSON format
-                    [System.IO.File]::WriteAllText(
-                        $metadataFilePath,
-                        $newContent
-                    );
+                    # obtain face recognition data using ai recognition technology
+                    $faceData = GenXdev.AI\Get-ImageDetectedFaces `
+                        -ImagePath $image `
+                        -NoDockerInitialize:$NoDockerInitialize `
+                        -ConfidenceThreshold 0.6
 
-                    Microsoft.PowerShell.Utility\Write-Verbose "Successfully saved face metadata for: $image"
-                }
-                catch {
+                    # process the returned face data into standardized format
+                    $processedData = if ($faceData -and
+                                         $faceData.success -and
+                                         $faceData.predictions) {
 
-                    # log any errors that occur during metadata processing
-                    Microsoft.PowerShell.Utility\Write-Warning "$PSItem`r`n$faces"
+                        $predictions = $faceData.predictions
+
+                        # extract unique face names from predictions data
+                        $faceNames = $predictions |
+                            Microsoft.PowerShell.Core\ForEach-Object {
+
+                                $name = $_.userid
+                                $lastUnderscoreIndex = $name.LastIndexOf("_")
+
+                                # remove timestamp suffix if present in face name
+                                if ($lastUnderscoreIndex -gt 0) {
+                                    $name.Substring(0, $lastUnderscoreIndex)
+                                } else {
+                                    $name
+                                }
+                            } |
+                            Microsoft.PowerShell.Utility\Sort-Object -Unique
+
+                        # create standardized data structure for face metadata
+                        @{
+                            success     = $true
+                            count       = $faceNames.Count
+                            faces       = $faceNames
+                            predictions = $predictions
+                        }
+                    } else {
+
+                        # create empty structure when no faces are detected
+                        @{
+                            success = $true
+                            count = 0
+                            faces = @()
+                            predictions = @()
+                        }
+                    }
+
+                    # convert processed data to json format for storage
+                    $faces = $processedData |
+                        Microsoft.PowerShell.Utility\ConvertTo-Json `
+                            -Depth 20 `
+                            -WarningAction SilentlyContinue
+
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Received face analysis for: $image")
+
+                    try {
+
+                        # reformat json to ensure consistent compressed format
+                        $newContent = ($faces |
+                            Microsoft.PowerShell.Utility\ConvertFrom-Json |
+                            Microsoft.PowerShell.Utility\ConvertTo-Json `
+                                -Compress `
+                                -Depth 20 `
+                                -WarningAction SilentlyContinue)
+
+                        # handle invalid json response by resetting to empty object
+                        if ($newContent -eq ('{"predictions":null,"count":1,' +
+                                             '"faces":[""]}')) {
+
+                            $newContent = '{}'
+                        }
+
+                        # save the processed face data to metadata file
+                        [System.IO.File]::WriteAllText($metadataFilePath,
+                                                       $newContent)
+
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Successfully saved face metadata for: $image")
+                    }
+                    catch {
+
+                        # log any errors that occur during metadata processing
+                        Microsoft.PowerShell.Utility\Write-Warning (
+                            "$PSItem`r`n$faces")
+                    }
                 }
             }
-        }
     }
 
     end {
     }
 }
-
 ################################################################################

@@ -46,16 +46,12 @@ If specified, uses the GPU-accelerated version of DeepStack (requires NVIDIA
 GPU).
 
 .EXAMPLE
-EnsureDeepStack
-
-.EXAMPLE
-EnsureDeepStack -ContainerName "my_deepstack" -ServicePort 8080
-
-.EXAMPLE
-EnsureDeepStack -VolumeName "custom_face_data" -HealthCheckTimeout 120
-
-.EXAMPLE
-EnsureDeepStack -FacesPath "/custom/faces/path"
+EnsureDeepStack -ContainerName "deepstack_face_recognition" `
+                -VolumeName "deepstack_face_data" `
+                -ServicePort 5000 `
+                -HealthCheckTimeout 60 `
+                -HealthCheckInterval 3 `
+                -FacesPath "/datastore"
 
 .EXAMPLE
 EnsureDeepStack -Force -UseGPU
@@ -182,6 +178,7 @@ function EnsureDeepStack {
 
         # set script-scoped variable for persistent storage path
         $script:facesPath = $FacesPath
+
         # store original location for cleanup at the end of the function
         $script:originalLocation = `
             (Microsoft.PowerShell.Management\Get-Location).Path
@@ -190,6 +187,10 @@ function EnsureDeepStack {
         <#
         .SYNOPSIS
         Tests if Docker is available and responsive.
+
+        .DESCRIPTION
+        Verifies that Docker Desktop is running and accessible by attempting to
+        query the Docker version. Returns true if Docker responds properly.
         #>
         function Test-DockerAvailability {
 
@@ -206,11 +207,13 @@ function EnsureDeepStack {
             }
         }
         ###################################################################
-
-        ###################################################################
         <#
         .SYNOPSIS
         Tests if a Docker image exists.
+
+        .DESCRIPTION
+        Checks if a specified Docker image exists locally by querying the
+        Docker image registry. Returns true if the image is found.
         #>
         function Test-DockerImage {
 
@@ -233,6 +236,10 @@ function EnsureDeepStack {
         <#
         .SYNOPSIS
         Tests if a Docker container exists (running or stopped).
+
+        .DESCRIPTION
+        Searches for a Docker container with the specified name, regardless of
+        its current state. Returns true if a container with the name is found.
         #>
         function Test-DockerContainer {
 
@@ -251,10 +258,15 @@ function EnsureDeepStack {
                 return $false
             }
         }
+
         ###################################################################
         <#
         .SYNOPSIS
         Tests if a Docker container is running.
+
+        .DESCRIPTION
+        Checks if a Docker container with the specified name is currently in a
+        running state. Returns true only if the container is actively running.
         #>
         function Test-DockerContainerRunning {
 
@@ -273,10 +285,15 @@ function EnsureDeepStack {
                 return $false
             }
         }
+
         ###################################################################
         <#
         .SYNOPSIS
         Safely removes a Docker container.
+
+        .DESCRIPTION
+        Stops and removes a Docker container if it exists. Uses ShouldProcess
+        to confirm the action before proceeding with container removal.
         #>
         function Remove-DockerContainer {
 
@@ -310,10 +327,15 @@ function EnsureDeepStack {
                     "Failed to remove container ${ContainerName}: $_"
             }
         }
+
         ###################################################################
         <#
         .SYNOPSIS
         Safely removes a Docker volume.
+
+        .DESCRIPTION
+        Removes a Docker volume by name using ShouldProcess to confirm the
+        action before proceeding with volume deletion.
         #>
         function Remove-DockerVolume {
 
@@ -339,10 +361,15 @@ function EnsureDeepStack {
                     "Failed to remove volume ${VolumeName}: $_"
             }
         }
+
         ###################################################################
         <#
         .SYNOPSIS
         Tests if the DeepStack service is healthy by checking the API endpoint.
+
+        .DESCRIPTION
+        Performs a health check by making an HTTP request to the DeepStack
+        service root endpoint. Returns true if the service responds successfully.
         #>
         function Test-ServiceHealth {
 
@@ -369,10 +396,15 @@ function EnsureDeepStack {
                 return $false
             }
         }
+
         ###################################################################
         <#
         .SYNOPSIS
         Waits for the service to become healthy.
+
+        .DESCRIPTION
+        Continuously checks the DeepStack service health until it becomes ready
+        or the timeout period expires. Uses configurable retry intervals.
         #>
         function Wait-ServiceReady {
 
@@ -418,10 +450,15 @@ function EnsureDeepStack {
 
             return $false
         }
+
         ###################################################################
         <#
         .SYNOPSIS
         Pulls the latest DeepStack Docker image.
+
+        .DESCRIPTION
+        Downloads the specified DeepStack Docker image from the registry. Handles
+        both standard and GPU-accelerated versions based on configuration.
         #>
         function Get-DeepStackImage {
 
@@ -460,6 +497,10 @@ function EnsureDeepStack {
         <#
         .SYNOPSIS
         Creates and starts a new DeepStack container.
+
+        .DESCRIPTION
+        Creates a new Docker container with the DeepStack image, configures
+        networking, volume mounts, and environment variables for face recognition.
         #>
         function New-DeepStackContainer {
 
@@ -505,6 +546,8 @@ function EnsureDeepStack {
                     "-p", "$($script:servicePort):5000"
                     "-v", "$($script:volumeName):/datastore"
                     "-e", "VISION-FACE=True"
+                    "-e", "VISION-DETECTION=True"
+                    "-e", "VISION-SCENE=True"
                     "--restart", "unless-stopped"
                 )
 
@@ -515,7 +558,9 @@ function EnsureDeepStack {
                 }
 
                 # add the docker image name as final argument
-                $dockerArgs += $script:imageName                # output verbose information about docker command
+                $dockerArgs += $script:imageName
+
+                # output verbose information about docker command
                 Microsoft.PowerShell.Utility\Write-Verbose `
                     "Docker command: docker $($dockerArgs -join ' ')"
 
@@ -560,7 +605,7 @@ function EnsureDeepStack {
             Microsoft.PowerShell.Utility\Write-Verbose `
                 "Ensuring Docker Desktop is available..."
 
-            GenXdev.AI\EnsureDockerDesktop
+            GenXdev.Windows\EnsureDockerDesktop
 
             # verify docker is responding to commands
             if (-not (Test-DockerAvailability)) {

@@ -81,7 +81,13 @@ function GenerateMasonryLayoutHtml {
             Mandatory = $false,
             HelpMessage = "Whether deletion is enabled"
         )]
-        [Switch]$CanDelete = $false
+        [Switch]$CanDelete = $false,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Embed images as base64 data URLs instead of file:// URLs for better portability"
+        )]
+        [Switch]$EmbedImages = $false
         ###############################################################################
     )
 
@@ -97,16 +103,88 @@ function GenerateMasonryLayoutHtml {
         if (-not (Microsoft.PowerShell.Management\Test-Path $templatePath)) {
             throw "Template file not found: $templatePath"
         }
-    }
 
-    process {
+        # Helper function to convert image to base64 data URL
+        function ConvertTo-Base64DataUrl {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$ImagePath
+            )
+
+            try {
+                # Check if file exists
+                if (-not (Microsoft.PowerShell.Management\Test-Path $ImagePath)) {
+                    Microsoft.PowerShell.Utility\Write-Warning "Image file not found: $ImagePath"
+                    return $null
+                }
+
+                # Determine MIME type based on file extension
+                $extension = [System.IO.Path]::GetExtension($ImagePath).ToLower()
+                $mimeType = switch ($extension) {
+                    ".jpg"  { "image/jpeg" }
+                    ".jpeg" { "image/jpeg" }
+                    ".png"  { "image/png" }
+                    default {
+                        Microsoft.PowerShell.Utility\Write-Warning "Unsupported image format: $extension"
+                        return $null
+                    }
+                }
+
+                # Read image file and convert to base64
+                $imageBytes = [System.IO.File]::ReadAllBytes($ImagePath)
+                $base64String = [System.Convert]::ToBase64String($imageBytes)
+
+                # Create data URL
+                $dataUrl = "data:$mimeType;base64,$base64String"
+
+                Microsoft.PowerShell.Utility\Write-Verbose "Converted image to base64 data URL: $ImagePath ($(($imageBytes.Length / 1KB).ToString('F1')) KB)"
+
+                return $dataUrl
+            }
+            catch {
+                Microsoft.PowerShell.Utility\Write-Warning "Failed to convert image to base64: $ImagePath - $_"
+                return $null
+            }
+        }
+    }    process {
         # Read the HTML template
         Microsoft.PowerShell.Utility\Write-Verbose "Reading HTML template from: $templatePath"
-        $html = Microsoft.PowerShell.Management\Get-Content -Path $templatePath -Raw -Encoding UTF8
+        $html = Microsoft.PowerShell.Management\Get-Content -Path $templatePath -Raw -Encoding UTF8        # Convert image paths for browser compatibility
+        if ($EmbedImages) {
+            Microsoft.PowerShell.Utility\Write-Verbose "Converting image paths to base64 data URLs"
+        } else {
+            Microsoft.PowerShell.Utility\Write-Verbose "Converting image paths to file:// URLs"
+        }
+
+        $processedImages = @()
+        foreach ($image in $Images) {
+            $imageCopy = $image.PSObject.Copy()
+            if ($imageCopy.path) {
+                # Store original path for copy functionality
+                $imageCopy | Microsoft.PowerShell.Utility\Add-Member -MemberType NoteProperty -Name "originalPath" -Value $imageCopy.path -Force
+
+                if ($EmbedImages) {
+                    # Convert to base64 data URL for embedded display
+                    $dataUrl = ConvertTo-Base64DataUrl -ImagePath $imageCopy.path
+                    if ($null -ne $dataUrl) {
+                        $imageCopy.path = $dataUrl
+                    } else {
+                        # Fallback to file:// URL if base64 conversion fails
+                        $fileUrl = "file:///" + ($imageCopy.path -replace '\\', '/')
+                        $imageCopy.path = $fileUrl
+                    }
+                } else {
+                    # Convert Windows path to file:// URL for display
+                    $fileUrl = "file:///" + ($imageCopy.path -replace '\\', '/')
+                    $imageCopy.path = $fileUrl
+                }
+            }
+            $processedImages += $imageCopy
+        }
 
         # Convert images array to JSON with proper escaping
-        Microsoft.PowerShell.Utility\Write-Verbose "Converting $($Images.Count) images to JSON"
-        $imagesJson = $Images | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 -WarningAction SilentlyContinue
+        Microsoft.PowerShell.Utility\Write-Verbose "Converting $($processedImages.Count) images to JSON"
+        $imagesJson = $processedImages | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 -WarningAction SilentlyContinue
 
         # Escape the JSON for JavaScript string literal
         $escapedJson = $imagesJson | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress

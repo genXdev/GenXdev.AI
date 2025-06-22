@@ -28,7 +28,7 @@
 
 * ✅ Image Analysis and Management
      * Generate and store AI-powered image descriptions and keywords
-     * Search images by content and metadata with `Invoke-ImageKeywordScan` -> `findimages`
+     * Search images by content and metadata with `Find-Image` -> `findimages`
      * Analyze image content using AI vision with `Invoke-QueryImageContent` -> `query-image`
      * Update image metadata automatically with `Invoke-ImageKeywordUpdate` -> `updateimages`
      * Generate responsive image galleries with `GenerateMasonryLayoutHtml`
@@ -68,7 +68,6 @@ Update-Module
 | [Approve-NewTextFileContent](#Approve-NewTextFileContent) |  | Interactive file content comparison and approval using WinMerge. |
 | [Convert-DotNetTypeToLLMType](#Convert-DotNetTypeToLLMType) |  | Converts .NET type names to LLM (Language Model) type names. |
 | [ConvertTo-LMStudioFunctionDefinition](#ConvertTo-LMStudioFunctionDefinition) |  | Converts PowerShell functions to LMStudio function definitions. |
-| [EnsureDockerDesktop](#EnsureDockerDesktop) |  | Checks if the WinGet PowerShell module is installed. |
 | [EnsureGithubCLIInstalled](#EnsureGithubCLIInstalled) |  | Ensures GitHub CLI is properly installed and configured on the system. |
 | [EnsurePaintNet](#EnsurePaintNet) |  | Ensures Paint.NET is properly installed and accessible on the system. |
 | [EnsureWinMergeInstalled](#EnsureWinMergeInstalled) |  | Ensures WinMerge is installed and available for file comparison operations. |
@@ -81,13 +80,13 @@ Update-Module
 | [Invoke-CommandFromToolCall](#Invoke-CommandFromToolCall) |  | Executes a tool call function with validation and parameter filtering. |
 | [Invoke-LLMBooleanEvaluation](#Invoke-LLMBooleanEvaluation) | equalstrue | Evaluates a statement using AI to determine if it's true or false. |
 | [Invoke-LLMQuery](#Invoke-LLMQuery) | qllm, llm, invoke-lmstudioquery, qlms |  |
-| [Invoke-LLMStringListEvaluation](#Invoke-LLMStringListEvaluation) | getlist | Extracts or generates a list of relevant strings from input text using AI analysis. |
+| [Invoke-LLMStringListEvaluation](#Invoke-LLMStringListEvaluation) | getlist |  |
 | [Invoke-LLMTextTransformation](#Invoke-LLMTextTransformation) | spellcheck | Transforms text using AI-powered processing. |
 | [Invoke-WinMerge](#Invoke-WinMerge) |  | Launches WinMerge to compare two files side by side. |
 | [New-LLMAudioChat](#New-LLMAudioChat) | llmaudiochat | Creates an interactive audio chat session with an LLM model. |
 | [New-LLMTextChat](#New-LLMTextChat) | llmchat | Starts an interactive text chat session with AI capabilities. |
 | [Set-GenXdevAICommandNotFoundAction](#Set-GenXdevAICommandNotFoundAction) |  | Sets up custom command not found handling with AI assistance. |
-| [Test-ImageFile](#Test-ImageFile) |  |  |
+| [Test-DeepLinkImageFile](#Test-DeepLinkImageFile) |  | Tests if the specified file path is a valid image file with a supported format. |
 
 <hr/>
 &nbsp;
@@ -106,7 +105,6 @@ Update-Module
 | [Register-Face](#Register-Face) |  | Registers a new face with the DeepStack face recognition API. |
 | [Unregister-AllFaces](#Unregister-AllFaces) |  | Removes all registered faces from the DeepStack face recognition system. |
 | [Unregister-Face](#Unregister-Face) |  | Deletes a registered face by its identifier from DeepStack. |
-| [Update-AllImageKeywordsAndFaces](#Update-AllImageKeywordsAndFaces) | updateallimages | Batch updates image keywords and faces across multiple system directories. |
 
 <hr/>
 &nbsp;
@@ -137,18 +135,23 @@ Update-Module
 | [ConvertFrom-DiplomaticSpeak](#ConvertFrom-DiplomaticSpeak) | undiplomatize |  |
 | [ConvertTo-CorporateSpeak](#ConvertTo-CorporateSpeak) | corporatize | Converts direct or blunt text into polite, professional corporate speak using AI. |
 | [ConvertTo-DiplomaticSpeak](#ConvertTo-DiplomaticSpeak) | diplomatize |  |
-| [Get-Fallacy](#Get-Fallacy) | moremovietitles |  |
+| [Find-Image](#Find-Image) | findimages, li | Scans image files for keywords and descriptions using metadata files. |
+| [Get-Fallacy](#Get-Fallacy) | dispicetext | Analyzes text to identify logical fallacies using AI-powered detection. |
 | [Get-MediaFileAudioTranscription](#Get-MediaFileAudioTranscription) | transcribefile | Transcribes an audio or video file to text.. |
 | [Get-ScriptExecutionErrorFixPrompt](#Get-ScriptExecutionErrorFixPrompt) | getfixprompt | Captures error messages from various streams and uses LLM to suggest fixes. |
 | [Get-SimularMovieTitles](#Get-SimularMovieTitles) | moremovietitles | Finds similar movie titles based on common properties. |
 | [Invoke-AIPowershellCommand](#Invoke-AIPowershellCommand) | hint | Generates and executes PowerShell commands using AI assistance. |
 | [Invoke-ImageFacesUpdate](#Invoke-ImageFacesUpdate) | facerecognition | Updates face recognition metadata for image files in a specified directory. |
-| [Invoke-ImageKeywordScan](#Invoke-ImageKeywordScan) | findimages | Scans image files for keywords and descriptions using metadata files. |
 | [Invoke-ImageKeywordUpdate](#Invoke-ImageKeywordUpdate) | updateimages | Updates image metadata with AI-generated descriptions and keywords. |
+| [Invoke-ImageObjectsUpdate](#Invoke-ImageObjectsUpdate) | objectdetection | Updates object detection metadata for image files in a specified directory. |
 | [Invoke-QueryImageContent](#Invoke-QueryImageContent) | query-image, analyze-image | Analyzes image content using AI vision capabilities through the LM-Studio API. |
+| [Remove-ImageMetaData](#Remove-ImageMetaData) | removeimagedata | Removes image metadata files from image directories. |
 | [Save-Transcriptions](#Save-Transcriptions) |  | Generates subtitle files for audio and video files using OpenAI Whisper. |
+| [Set-ImageDirectories](#Set-ImageDirectories) |  | Sets the directories for image files used in GenXdev.AI operations. |
 | [Show-GenXdevScriptErrorFixInIde](#Show-GenXdevScriptErrorFixInIde) | letsfixthis | Parses error messages and fixes them using Github Copilot in VSCode. |
+| [Show-ImageGallery](#Show-ImageGallery) | showfoundimages | Displays image search results in a masonry layout web gallery. |
 | [Start-AudioTranscription](#Start-AudioTranscription) | transcribe, recordandtranscribe |  |
+| [Update-AllImageMetaData](#Update-AllImageMetaData) | updateallimages |  |
 
 <br/><hr/><hr/><br/>
 
@@ -337,52 +340,6 @@ REMARKS
 <br/><hr/><hr/><br/>
  
 NAME
-    EnsureDockerDesktop
-    
-SYNOPSIS
-    Ensures Docker Desktop is installed and available for containerization
-    operations.
-    
-    
-SYNTAX
-    EnsureDockerDesktop [<CommonParameters>]
-    
-    
-DESCRIPTION
-    Verifies if Docker Desktop is installed and properly configured on the system.
-    If not found, installs Docker Desktop using WinGet and handles the complete
-    installation process automatically. This function also manages Docker Desktop
-    service startup, daemon readiness verification, and handles authentication
-    requirements when necessary.
-    
-
-PARAMETERS
-    <CommonParameters>
-        This cmdlet supports the common parameters: Verbose, Debug,
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
-    
-INPUTS
-    
-OUTPUTS
-    
-    -------------------------- EXAMPLE 1 --------------------------
-    
-    PS > EnsureDockerDesktop
-    Ensures Docker Desktop is installed and properly configured.
-    
-    
-    
-    
-    
-    
-    
-RELATED LINKS 
-
-<br/><hr/><hr/><br/>
- 
-NAME
     EnsureGithubCLIInstalled
     
 SYNOPSIS
@@ -526,7 +483,7 @@ SYNOPSIS
     
     
 SYNTAX
-    GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [-Title <String>] [-Description <String>] [-CanEdit] [-CanDelete] [<CommonParameters>]
+    GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [-Title <String>] [-Description <String>] [-CanEdit] [-CanDelete] [-EmbedImages] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -590,6 +547,15 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -CanDelete [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EmbedImages [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -1794,23 +1760,26 @@ NAME
     Invoke-LLMStringListEvaluation
     
 SYNOPSIS
-    Extracts or generates a list of relevant strings from input text using AI analysis.
+    Extracts or generates a list of relevant strings from input text using AI
+    analysis.
     
     
 SYNTAX
-    Invoke-LLMStringListEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-SetClipboard] [-ShowWindow] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-AllowDefaultTools] [<CommonParameters>]
+    Invoke-LLMStringListEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-ApiEndpoint <String>] [-ApiKey <String>] [-SetClipboard] [-ShowWindow] [-Force] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function uses AI models to analyze input text and extract or generate a list of relevant strings.
-    It can process text to identify key points, extract items from lists, or generate related concepts.
-    Input can be provided directly through parameters, from the pipeline, or from the system clipboard.
+    This function uses AI models to analyze input text and extract or generate a
+    list of relevant strings. It can process text to identify key points, extract
+    items from lists, or generate related concepts. Input can be provided directly
+    through parameters, from the pipeline, or from the system clipboard. The
+    function returns a string array and optionally copies results to clipboard.
     
 
 PARAMETERS
     -Text <String>
-        The text to analyze and extract strings from. If not provided, the function will read from the
-        system clipboard.
+        The text to analyze and extract strings from. If not provided, the function
+        will read from the system clipboard.
         
         Required?                    false
         Position?                    1
@@ -1820,8 +1789,9 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Instructions <String>
-        Optional instructions to guide the AI model in generating the string list. By default, it will
-        extract key points, items, or relevant concepts from the input text.
+        Optional instructions to guide the AI model in generating the string list. By
+        default, it will extract key points, items, or relevant concepts from the
+        input text.
         
         Required?                    false
         Position?                    2
@@ -1831,7 +1801,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Model <String>
-        Specifies which AI model to use for the analysis. Different models may produce varying results.
+        Specifies which AI model to use for the analysis. Different models may produce
+        varying results. Supports wildcard patterns.
         
         Required?                    false
         Position?                    3
@@ -1841,6 +1812,8 @@ PARAMETERS
         Accept wildcard characters?  true
         
     -ModelLMSGetIdentifier <String>
+        Identifier used for getting specific model from LM Studio. Used for precise
+        model selection when multiple models are available.
         
         Required?                    false
         Position?                    named
@@ -1850,6 +1823,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Attachments <String[]>
+        Array of file paths to attach to the AI query. These files will be included
+        in the context for analysis.
         
         Required?                    false
         Position?                    4
@@ -1858,8 +1833,117 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -Temperature <Double>
+        Temperature for response randomness (0.0-1.0). Lower values produce more
+        deterministic responses, higher values increase creativity.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0.2
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        Maximum tokens in response (-1 for default). Controls the length of the AI
+        response.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        Set a TTL (in seconds) for models loaded via API requests. Determines how long
+        the model stays loaded in memory.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        How much to offload to the GPU. Options: "off" disables GPU, "max" uses all
+        GPU layers, 0-1 sets fraction, -1 lets LM Studio decide, -2 for auto.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDetail <String>
+        Image detail level for image processing. Valid values are "low", "medium",
+        or "high".
+        
+        Required?                    false
+        Position?                    named
+        Default value                low
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <Hashtable[]>
+        Array of function definitions that can be called by the AI model during
+        processing.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        Array of PowerShell command definitions to use as tools that the AI can
+        invoke.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        Array of command names that don't require confirmation before execution.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        API endpoint URL, defaults to http://localhost:1234/v1/chat/completions for
+        LM Studio.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key to use for the request when connecting to external AI services.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SetClipboard [<SwitchParameter>]
-        When specified, copies the resulting string list back to the system clipboard after processing.
+        When specified, copies the resulting string list back to the system clipboard
+        after processing.
         
         Required?                    false
         Position?                    named
@@ -1877,56 +1961,11 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Temperature <Double>
-        
-        Required?                    false
-        Position?                    named
-        Default value                0.2
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxToken <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Gpu <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Force [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
         Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ImageDetail <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                low
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -1958,34 +1997,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Functions <Hashtable[]>
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ExposedCmdLets <ExposedCmdletDefinition[]>
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoConfirmationToolFunctionNames <String[]>
-        Array of command names that don't require confirmation
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Speak [<SwitchParameter>]
         
         Required?                    false
@@ -2009,24 +2020,6 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ApiEndpoint <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ApiKey <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -3311,21 +3304,32 @@ RELATED LINKS
 <br/><hr/><hr/><br/>
  
 NAME
-    Test-ImageFile
+    Test-DeepLinkImageFile
+    
+SYNOPSIS
+    Tests if the specified file path is a valid image file with a supported format.
+    
     
 SYNTAX
-    Test-ImageFile [-Path] <string> [<CommonParameters>]
+    Test-DeepLinkImageFile [-Path] <String> [<CommonParameters>]
     
     
+DESCRIPTION
+    This function validates that a file exists at the specified path and has a
+    supported image file extension. It checks for common image formats including
+    PNG, JPG, JPEG, and GIF files. The function throws exceptions for invalid
+    paths or unsupported file formats.
+    
+
 PARAMETERS
-    -Path <string>
+    -Path <String>
+        The file path to the image file to be tested. Must be a valid file system path.
         
         Required?                    true
-        Position?                    0
+        Position?                    1
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
     <CommonParameters>
@@ -3334,20 +3338,30 @@ PARAMETERS
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
         about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
     
-    
 INPUTS
-    None
-    
     
 OUTPUTS
-    System.Object
     
-ALIASES
-    None
+    -------------------------- EXAMPLE 1 --------------------------
     
-
-REMARKS
-    None 
+    PS > Test-DeepLinkImageFile -Path "C:\Images\photo.jpg"
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Test-DeepLinkImageFile "C:\Images\logo.png"
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
 
 <br/><hr/><hr/><br/>
  
@@ -3363,7 +3377,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Compare-ImageFaces [-ImagePath1] <String> [-ImagePath2] <String> [-NoDockerInitialize] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-FacesPath <String>] [<CommonParameters>]
+    Compare-ImageFaces [-ImagePath1] <String> [-ImagePath2] <String> [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -3393,6 +3407,83 @@ PARAMETERS
         Required?                    true
         Position?                    2
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContainerName <String>
+        The name for the Docker container. This allows multiple DeepStack instances
+        or custom naming conventions. Default is "deepstack_face_recognition".
+        
+        Required?                    false
+        Position?                    3
+        Default value                deepstack_face_recognition
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -VolumeName <String>
+        The name for the Docker volume for persistent storage. This ensures face data
+        persists between container restarts. Default is "deepstack_face_data".
+        
+        Required?                    false
+        Position?                    4
+        Default value                deepstack_face_data
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ServicePort <Int32>
+        The port number for the DeepStack service. Must be between 1 and 65535.
+        Default is 5000.
+        
+        Required?                    false
+        Position?                    5
+        Default value                5000
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckTimeout <Int32>
+        Maximum time in seconds to wait for service health check. Must be between 10
+        and 300 seconds. Default is 60.
+        
+        Required?                    false
+        Position?                    6
+        Default value                60
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckInterval <Int32>
+        Interval in seconds between health check attempts. Must be between 1 and 10
+        seconds. Default is 3.
+        
+        Required?                    false
+        Position?                    7
+        Default value                3
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageName <String>
+        Custom Docker image name to use instead of the default DeepStack image. This
+        allows using custom or updated DeepStack images.
+        
+        Required?                    false
+        Position?                    8
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesPath <String>
+        The path inside the container where faces are stored. This should match the
+        DeepStack configuration. Default is "/datastore".
+        
+        Required?                    false
+        Position?                    9
+        Default value                /datastore
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -3430,83 +3521,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ContainerName <String>
-        The name for the Docker container. This allows multiple DeepStack instances
-        or custom naming conventions. Default is "deepstack_face_recognition".
-        
-        Required?                    false
-        Position?                    named
-        Default value                deepstack_face_recognition
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -VolumeName <String>
-        The name for the Docker volume for persistent storage. This ensures face data
-        persists between container restarts. Default is "deepstack_face_data".
-        
-        Required?                    false
-        Position?                    named
-        Default value                deepstack_face_data
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ServicePort <Int32>
-        The port number for the DeepStack service. Must be between 1 and 65535.
-        Default is 5000.
-        
-        Required?                    false
-        Position?                    named
-        Default value                5000
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HealthCheckTimeout <Int32>
-        Maximum time in seconds to wait for service health check. Must be between 10
-        and 300 seconds. Default is 60.
-        
-        Required?                    false
-        Position?                    named
-        Default value                60
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HealthCheckInterval <Int32>
-        Interval in seconds between health check attempts. Must be between 1 and 10
-        seconds. Default is 3.
-        
-        Required?                    false
-        Position?                    named
-        Default value                3
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ImageName <String>
-        Custom Docker image name to use instead of the default DeepStack image. This
-        allows using custom or updated DeepStack images.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -FacesPath <String>
-        The path inside the container where faces are stored. This should match the
-        DeepStack configuration. Default is "/datastore".
-        
-        Required?                    false
-        Position?                    named
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -3516,6 +3530,8 @@ PARAMETERS
 INPUTS
     
 OUTPUTS
+    System.Collections.Hashtable
+    
     
 NOTES
     
@@ -3537,7 +3553,7 @@ NOTES
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > cfaces "C:\docs\id_photo.jpg" "C:\photos\person.jpg" -UseGPU
+    PS > comparefaces "C:\docs\id_photo.jpg" "C:\photos\person.jpg" -UseGPU
     
     Compares faces using GPU acceleration for identity verification with alias and
     positional parameters.
@@ -3693,7 +3709,12 @@ NOTES
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > EnsureDeepStack
+    PS > EnsureDeepStack -ContainerName "deepstack_face_recognition" `
+                    -VolumeName "deepstack_face_data" `
+                    -ServicePort 5000 `
+                    -HealthCheckTimeout 60 `
+                    -HealthCheckInterval 3 `
+                    -FacesPath "/datastore"
     
     
     
@@ -3701,33 +3722,6 @@ NOTES
     
     
     -------------------------- EXAMPLE 2 --------------------------
-    
-    PS > EnsureDeepStack -ContainerName "my_deepstack" -ServicePort 8080
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 3 --------------------------
-    
-    PS > EnsureDeepStack -VolumeName "custom_face_data" -HealthCheckTimeout 120
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 4 --------------------------
-    
-    PS > EnsureDeepStack -FacesPath "/custom/faces/path"
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 5 --------------------------
     
     PS > EnsureDeepStack -Force -UseGPU
     
@@ -3750,7 +3744,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ImageDetectedFaces [-ImagePath] <String> [-NoDockerInitialize] [-ConfidenceThreshold <Double>] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-FacesPath <String>] [<CommonParameters>]
+    Get-ImageDetectedFaces [-ImagePath] <String> [-ConfidenceThreshold <Double>] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-FacesPath <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -3773,17 +3767,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -NoDockerInitialize [<SwitchParameter>]
-        Skip Docker initialization when this switch is used. This is typically used
-        when already called by parent function to avoid duplicate initialization.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -ConfidenceThreshold <Double>
         Minimum confidence threshold (0.0-1.0) for face recognition matches. Faces
         with confidence below this threshold will be filtered out. Default is 0.5.
@@ -3791,28 +3774,6 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                0.5
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Force [<SwitchParameter>]
-        Force rebuild of Docker container and remove existing data when this switch
-        is used. This is useful for troubleshooting or updating the DeepStack image.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -UseGPU [<SwitchParameter>]
-        Use GPU-accelerated version when this switch is used. This requires an
-        NVIDIA GPU with proper Docker GPU support configured.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -3890,6 +3851,39 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                /datastore
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoDockerInitialize [<SwitchParameter>]
+        Skip Docker initialization when this switch is used. This is typically used
+        when already called by parent function to avoid duplicate initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Force rebuild of Docker container and remove existing data when this switch
+        is used. This is useful for troubleshooting or updating the DeepStack image.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseGPU [<SwitchParameter>]
+        Use GPU-accelerated version when this switch is used. This requires an
+        NVIDIA GPU with proper Docker GPU support configured.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -3913,8 +3907,15 @@ NOTES
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Get-ImageDetectedFaces -ImagePath "C:\Users\YourName\test.jpg"
-    Recognizes faces in the specified image using default settings.
+    PS > Get-ImageDetectedFaces -ImagePath "C:\Users\YourName\test.jpg" `
+                           -ConfidenceThreshold 0.5 `
+                           -ContainerName "deepstack_face_recognition" `
+                           -VolumeName "deepstack_face_data" `
+                           -ServicePort 5000 `
+                           -HealthCheckTimeout 60 `
+                           -HealthCheckInterval 3 `
+                           -FacesPath "/datastore"
+    Recognizes faces in the specified image using full parameter names.
     
     
     
@@ -3923,10 +3924,8 @@ NOTES
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > Get-ImageDetectedFaces -ImagePath "C:\photos\family.jpg" `
-                             -ConfidenceThreshold 0.7 `
-                             -UseGPU
-    Recognizes faces with higher confidence threshold using GPU acceleration.
+    PS > Get-ImageDetectedFaces "C:\photos\family.jpg" -Force -UseGPU
+    Recognizes faces using positional parameter and aliases.
     
     
     
@@ -3936,6 +3935,7 @@ NOTES
     -------------------------- EXAMPLE 3 --------------------------
     
     PS > "C:\Users\YourName\test.jpg" | Get-ImageDetectedFaces
+    Recognizes faces using pipeline input.
     
     
     
@@ -3955,7 +3955,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ImageDetectedObjects [-ImagePath] <String> [-NoDockerInitialize] [-ConfidenceThreshold <Double>] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-FacesPath <String>] [<CommonParameters>]
+    Get-ImageDetectedObjects [-ImagePath] <String> [-ConfidenceThreshold <Double>] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-FacesPath <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -3978,17 +3978,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -NoDockerInitialize [<SwitchParameter>]
-        Skip Docker initialization when this switch is used. This is typically used
-        when already called by parent function to avoid duplicate initialization.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -ConfidenceThreshold <Double>
         Minimum confidence threshold (0.0-1.0) for object detection. Objects with
         confidence below this threshold will be filtered out. Default is 0.5.
@@ -3996,28 +3985,6 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                0.5
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Force [<SwitchParameter>]
-        Force rebuild of Docker container and remove existing data when this switch
-        is used. This is useful for troubleshooting or updating the DeepStack image.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -UseGPU [<SwitchParameter>]
-        Use GPU-accelerated version when this switch is used. This requires an
-        NVIDIA GPU with proper Docker GPU support configured.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -4099,6 +4066,39 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -NoDockerInitialize [<SwitchParameter>]
+        Skip Docker initialization when this switch is used. This is typically used
+        when already called by parent function to avoid duplicate initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Force rebuild of Docker container and remove existing data when this switch
+        is used. This is useful for troubleshooting or updating the DeepStack image.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseGPU [<SwitchParameter>]
+        Use GPU-accelerated version when this switch is used. This requires an
+        NVIDIA GPU with proper Docker GPU support configured.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -4112,48 +4112,37 @@ OUTPUTS
 NOTES
     
     
-        DeepStack API Documentation: POST /v1/vision/detection endpoint for object detection.
-        Example: curl -X POST -F "image=@street.jpg"
+        DeepStack API Documentation: POST /v1/vision/detection endpoint for object
+        detection. Example: curl -X POST -F "image=@street.jpg"
         http://localhost:5000/v1/vision/detection
         
-        Supported object classes include: person, bicycle, car, motorcycle, airplane, bus,
-        train, truck, boat, traffic light, fire hydrant, stop sign, parking meter, bench,
-        bird, cat, dog, horse, sheep, cow, elephant, bear, zebra, giraffe, backpack,
-        umbrella, handbag, tie, suitcase, frisbee, skis, snowboard, sports ball, kite,
-        baseball bat, baseball glove, skateboard, surfboard, tennis racket, bottle,
-        wine glass, cup, fork, knife, spoon, bowl, banana, apple, sandwich, orange,
-        broccoli, carrot, hot dog, pizza, donut, cake, chair, couch, potted plant, bed,
-        dining table, toilet, tv, laptop, mouse, remote, keyboard, cell phone, microwave,
-        oven, toaster, sink, refrigerator, book, clock, vase, scissors, teddy bear,
-        hair drier, toothbrush.
+        Supported object classes include: person, bicycle, car, motorcycle, airplane,
+        bus, train, truck, boat, traffic light, fire hydrant, stop sign, parking
+        meter, bench, bird, cat, dog, horse, sheep, cow, elephant, bear, zebra,
+        giraffe, backpack, umbrella, handbag, tie, suitcase, frisbee, skis, snowboard,
+        sports ball, kite, baseball bat, baseball glove, skateboard, surfboard, tennis
+        racket, bottle, wine glass, cup, fork, knife, spoon, bowl, banana, apple,
+        sandwich, orange, broccoli, carrot, hot dog, pizza, donut, cake, chair, couch,
+        potted plant, bed, dining table, toilet, tv, laptop, mouse, remote, keyboard,
+        cell phone, microwave, oven, toaster, sink, refrigerator, book, clock, vase,
+        scissors, teddy bear, hair drier, toothbrush.
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Get-ImageDetectedObjects -ImagePath "C:\Users\YourName\test.jpg"
-    Detects objects in the specified image using default settings.
+    PS > Get-ImageDetectedObjects -ImagePath "C:\Users\YourName\test.jpg" `
+                             -ConfidenceThreshold 0.5 `
+                             -ServicePort 5000
     
-    
+    Detects objects in the specified image with full parameter names.
     
     
     
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > Get-ImageDetectedObjects -ImagePath "C:\photos\street.jpg" `
-                             -ConfidenceThreshold 0.7 `
-                             -UseGPU
-    Detects objects with higher confidence threshold using GPU acceleration.
+    PS > Get-ImageDetectedObjects "C:\photos\street.jpg"
     
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 3 --------------------------
-    
-    PS > "C:\Users\YourName\test.jpg" | Get-ImageDetectedObjects
-    
-    
+    Detects objects using positional parameter and default settings.
     
     
     
@@ -4171,7 +4160,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ImageScene [-ImagePath] <String> [-NoDockerInitialize] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-FacesPath <String>] [<CommonParameters>]
+    Get-ImageScene [-ImagePath] <String> [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [-ImageName <String>] [-FacesPath <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -4193,6 +4182,83 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ContainerName <String>
+        The name for the Docker container. This allows multiple DeepStack instances
+        or custom naming conventions. Default is "deepstack_face_recognition".
+        
+        Required?                    false
+        Position?                    2
+        Default value                deepstack_face_recognition
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -VolumeName <String>
+        The name for the Docker volume for persistent storage. This ensures face data
+        persists between container restarts. Default is "deepstack_face_data".
+        
+        Required?                    false
+        Position?                    3
+        Default value                deepstack_face_data
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ServicePort <Int32>
+        The port number for the DeepStack service. Must be between 1 and 65535.
+        Default is 5000.
+        
+        Required?                    false
+        Position?                    4
+        Default value                5000
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckTimeout <Int32>
+        Maximum time in seconds to wait for service health check. Must be between 10
+        and 300 seconds. Default is 60.
+        
+        Required?                    false
+        Position?                    5
+        Default value                60
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckInterval <Int32>
+        Interval in seconds between health check attempts. Must be between 1 and 10
+        seconds. Default is 3.
+        
+        Required?                    false
+        Position?                    6
+        Default value                3
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageName <String>
+        Custom Docker image name to use instead of the default DeepStack image. This
+        allows using custom or updated DeepStack images.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesPath <String>
+        The path inside the container where faces are stored. This should match the
+        DeepStack configuration. Default is "/datastore".
+        
+        Required?                    false
+        Position?                    named
+        Default value                /datastore
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -NoDockerInitialize [<SwitchParameter>]
         Skip Docker initialization when this switch is used. This is typically used
         when already called by parent function to avoid duplicate initialization.
@@ -4226,83 +4292,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ContainerName <String>
-        The name for the Docker container. This allows multiple DeepStack instances
-        or custom naming conventions. Default is "deepstack_face_recognition".
-        
-        Required?                    false
-        Position?                    named
-        Default value                deepstack_face_recognition
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -VolumeName <String>
-        The name for the Docker volume for persistent storage. This ensures face data
-        persists between container restarts. Default is "deepstack_face_data".
-        
-        Required?                    false
-        Position?                    named
-        Default value                deepstack_face_data
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ServicePort <Int32>
-        The port number for the DeepStack service. Must be between 1 and 65535.
-        Default is 5000.
-        
-        Required?                    false
-        Position?                    named
-        Default value                5000
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HealthCheckTimeout <Int32>
-        Maximum time in seconds to wait for service health check. Must be between 10
-        and 300 seconds. Default is 60.
-        
-        Required?                    false
-        Position?                    named
-        Default value                60
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HealthCheckInterval <Int32>
-        Interval in seconds between health check attempts. Must be between 1 and 10
-        seconds. Default is 3.
-        
-        Required?                    false
-        Position?                    named
-        Default value                3
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ImageName <String>
-        Custom Docker image name to use instead of the default DeepStack image. This
-        allows using custom or updated DeepStack images.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -FacesPath <String>
-        The path inside the container where faces are stored. This should match the
-        DeepStack configuration. Default is "/datastore".
-        
-        Required?                    false
-        Position?                    named
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -4316,57 +4305,66 @@ OUTPUTS
 NOTES
     
     
-        DeepStack API Documentation: POST /v1/vision/scene endpoint for scene recognition.
+        DeepStack API Documentation: POST /v1/vision/scene endpoint for scene
+        recognition.
         Example: curl -X POST -F "image=@landscape.jpg"
         http://localhost:5000/v1/vision/scene
         
         Scene categories include places like: abbey, airplane_cabin, airport_terminal,
-        alley, amphitheater, amusement_arcade, amusement_park, anechoic_chamber, apartment_building,
-        aquarium, aqueduct, arcade, arch, archive, art_gallery, art_school, art_studio,
-        assembly_line, athletic_field, atrium, attic, auditorium, auto_factory, badlands,
-        balcony, ball_pit, ballroom, bamboo_forest, banquet_hall, bar, barn, barndoor,
-        baseball_field, basement, basilica, basketball_court, bathroom, bathtub, battlefield,
-        beach, beauty_salon, bedroom, berth, biology_laboratory, boardwalk, boat_deck,
-        boathouse, bookstore, booth, botanical_garden, bowling_alley, boxing_ring, bridge,
-        building_facade, bullring, burial_chamber, bus_interior, bus_station, butchers_shop,
-        butte, cabin, cafeteria, campsite, campus, canal, candy_store, canyon, car_interior,
-        castle, catacomb, cemetery, chalet, chemistry_lab, chinatown, church, classroom,
-        clean_room, cliff, cloister, closet, clothing_store, coast, cockpit, coffee_shop,
-        computer_room, conference_center, conference_room, construction_site, corn_field,
-        corridor, cottage, courthouse, courtyard, creek, crevasse, crosswalk, dam, delicatessen,
-        department_store, desert, diner, dining_hall, dining_room, discotheque, dock,
-        doorway, dorm_room, downtown, driveway, drugstore, elevator, engine_room, entrance_hall,
-        escalator, excavation, fabric_store, farm, fastfood_restaurant, field, fire_escape,
-        fire_station, fishpond, flea_market, florist_shop, food_court, football_field,
-        forest, forest_path, forest_road, formal_garden, fountain, galley, game_room,
-        garage, garbage_dump, gas_station, gazebo, general_store, gift_shop, glacier,
-        golf_course, greenhouse, grotto, gymnasium, hangar, harbor, hardware_store,
-        hayfield, heliport, highway, home_office, home_theater, hospital, hospital_room,
-        hot_spring, hotel, hotel_room, house, hunting_lodge, ice_cream_parlor, ice_rink,
-        ice_shelf, iceberg, igloo, industrial_area, inn, islet, jacuzzi, jail_cell,
-        japanese_garden, jewelry_shop, junkyard, kasbah, kennel, kindergarten_classroom,
-        kitchen, lagoon, lake, laundromat, lawn, lecture_room, legislature, library,
-        lighthouse, living_room, lobby, lock_chamber, locker_room, mansion, manufactured_home,
-        market, marsh, martial_arts_gym, mausoleum, medina, moat, monastery, mosque,
-        motel, mountain, mountain_path, mountain_snowy, movie_theater, museum, music_studio,
-        nursery, nursing_home, oast_house, ocean, office, office_building, oil_refinery,
-        oilrig, operating_room, orchard, orchestra_pit, pagoda, palace, pantry, park,
-        parking_garage, parking_lot, pasture, patio, pavilion, pharmacy, phone_booth,
-        physics_laboratory, picnic_area, pier, pizzeria, playground, playroom, plaza,
-        pond, porch, promenade, pub, public_pool, racecourse, raceway, raft, railroad_track,
-        rainforest, reception, recreation_room, residential_neighborhood, restaurant,
-        restaurant_kitchen, restaurant_patio, rice_paddy, river, rock_arch, rope_bridge,
-        ruin, runway, sandbox, sauna, schoolhouse, science_museum, server_room, shed,
-        shoe_shop, shopfront, shopping_mall, shower, ski_resort, ski_slope, sky, skyscraper,
-        slum, snowfield, soccer_field, stable, stadium, stage, staircase, storage_room,
-        storm_cellar, street, strip_mall, subway_station, supermarket, swamp, swimming_hole,
-        swimming_pool, synagogue, television_room, television_studio, temple, throne_room,
-        ticket_booth, topiary_garden, tower, toyshop, track, train_interior, train_station,
-        tree_farm, tree_house, trench, tundra, underwater, university, upholstery_shop,
-        urban_canal, valley, vegetable_garden, veterinarians_office, viaduct, village,
-        vineyard, volcano, volleyball_court, waiting_room, water_park, water_tower,
-        waterfall, watering_hole, wave, wet_bar, wheat_field, wind_farm, windmill,
-        yard, youth_hostel, zen_garden.
+        alley, amphitheater, amusement_arcade, amusement_park, anechoic_chamber,
+        apartment_building, aquarium, aqueduct, arcade, arch, archive, art_gallery,
+        art_school, art_studio, assembly_line, athletic_field, atrium, attic,
+        auditorium, auto_factory, badlands, balcony, ball_pit, ballroom,
+        bamboo_forest, banquet_hall, bar, barn, barndoor, baseball_field, basement,
+        basilica, basketball_court, bathroom, bathtub, battlefield, beach,
+        beauty_salon, bedroom, berth, biology_laboratory, boardwalk, boat_deck,
+        boathouse, bookstore, booth, botanical_garden, bowling_alley, boxing_ring,
+        bridge, building_facade, bullring, burial_chamber, bus_interior,
+        bus_station, butchers_shop, butte, cabin, cafeteria, campsite, campus,
+        canal, candy_store, canyon, car_interior, castle, catacomb, cemetery,
+        chalet, chemistry_lab, chinatown, church, classroom, clean_room, cliff,
+        cloister, closet, clothing_store, coast, cockpit, coffee_shop,
+        computer_room, conference_center, conference_room, construction_site,
+        corn_field, corridor, cottage, courthouse, courtyard, creek, crevasse,
+        crosswalk, dam, delicatessen, department_store, desert, diner, dining_hall,
+        dining_room, discotheque, dock, doorway, dorm_room, downtown, driveway,
+        drugstore, elevator, engine_room, entrance_hall, escalator, excavation,
+        fabric_store, farm, fastfood_restaurant, field, fire_escape, fire_station,
+        fishpond, flea_market, florist_shop, food_court, football_field, forest,
+        forest_path, forest_road, formal_garden, fountain, galley, game_room,
+        garage, garbage_dump, gas_station, gazebo, general_store, gift_shop,
+        glacier, golf_course, greenhouse, grotto, gymnasium, hangar, harbor,
+        hardware_store, hayfield, heliport, highway, home_office, home_theater,
+        hospital, hospital_room, hot_spring, hotel, hotel_room, house,
+        hunting_lodge, ice_cream_parlor, ice_rink, ice_shelf, iceberg, igloo,
+        industrial_area, inn, islet, jacuzzi, jail_cell, japanese_garden,
+        jewelry_shop, junkyard, kasbah, kennel, kindergarten_classroom, kitchen,
+        lagoon, lake, laundromat, lawn, lecture_room, legislature, library,
+        lighthouse, living_room, lobby, lock_chamber, locker_room, mansion,
+        manufactured_home, market, marsh, martial_arts_gym, mausoleum, medina,
+        moat, monastery, mosque, motel, mountain, mountain_path, mountain_snowy,
+        movie_theater, museum, music_studio, nursery, nursing_home, oast_house,
+        ocean, office, office_building, oil_refinery, oilrig, operating_room,
+        orchard, orchestra_pit, pagoda, palace, pantry, park, parking_garage,
+        parking_lot, pasture, patio, pavilion, pharmacy, phone_booth,
+        physics_laboratory, picnic_area, pier, pizzeria, playground, playroom,
+        plaza, pond, porch, promenade, pub, public_pool, racecourse, raceway,
+        raft, railroad_track, rainforest, reception, recreation_room,
+        residential_neighborhood, restaurant, restaurant_kitchen,
+        restaurant_patio, rice_paddy, river, rock_arch, rope_bridge, ruin,
+        runway, sandbox, sauna, schoolhouse, science_museum, server_room, shed,
+        shoe_shop, shopfront, shopping_mall, shower, ski_resort, ski_slope, sky,
+        skyscraper, slum, snowfield, soccer_field, stable, stadium, stage,
+        staircase, storage_room, storm_cellar, street, strip_mall,
+        subway_station, supermarket, swamp, swimming_hole, swimming_pool,
+        synagogue, television_room, television_studio, temple, throne_room,
+        ticket_booth, topiary_garden, tower, toyshop, track, train_interior,
+        train_station, tree_farm, tree_house, trench, tundra, underwater,
+        university, upholstery_shop, urban_canal, valley, vegetable_garden,
+        veterinarians_office, viaduct, village, vineyard, volcano,
+        volleyball_court, waiting_room, water_park, water_tower, waterfall,
+        watering_hole, wave, wet_bar, wheat_field, wind_farm, windmill, yard,
+        youth_hostel, zen_garden.
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -4391,6 +4389,7 @@ NOTES
     -------------------------- EXAMPLE 3 --------------------------
     
     PS > "C:\Users\YourName\beach.jpg" | Get-ImageScene
+    Pipeline support for processing multiple images.
     
     
     
@@ -4414,12 +4413,18 @@ SYNTAX
     
     
 DESCRIPTION
-    This function connects to a local DeepStack face recognition API and retrieves all
-    registered face identifiers. It uses the /v1/vision/face/list endpoint.
+    This function connects to a local DeepStack face recognition API and retrieves
+    all registered face identifiers. It uses the /v1/vision/face/list endpoint to
+    query the DeepStack service and returns an array of face identifier strings. The
+    function handles Docker container initialization, API communication, and error
+    handling for various failure scenarios.
     
 
 PARAMETERS
     -NoDockerInitialize [<SwitchParameter>]
+        Skip Docker initialization when this parameter is specified. This is used when
+        the function is called by a parent function that has already initialized the
+        DeepStack service.
         
         Required?                    false
         Position?                    named
@@ -4429,6 +4434,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Force [<SwitchParameter>]
+        Force rebuild of the Docker container and remove existing data. This will
+        recreate the container from scratch and clear all stored face data.
         
         Required?                    false
         Position?                    named
@@ -4438,6 +4445,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -UseGPU [<SwitchParameter>]
+        Use GPU-accelerated version of DeepStack. This requires an NVIDIA GPU and
+        appropriate drivers to be installed on the system.
         
         Required?                    false
         Position?                    named
@@ -4447,6 +4456,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ContainerName <String>
+        The name for the Docker container running DeepStack. Defaults to
+        "deepstack_face_recognition" if not specified.
         
         Required?                    false
         Position?                    1
@@ -4456,6 +4467,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -VolumeName <String>
+        The name for the Docker volume used for persistent storage of face data.
+        Defaults to "deepstack_face_data" if not specified.
         
         Required?                    false
         Position?                    2
@@ -4465,6 +4478,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ServicePort <Int32>
+        The port number for the DeepStack service. Must be between 1 and 65535.
+        Defaults to 5000 if not specified.
         
         Required?                    false
         Position?                    3
@@ -4474,6 +4489,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -HealthCheckTimeout <Int32>
+        Maximum time in seconds to wait for service health check to complete. Must be
+        between 10 and 300 seconds. Defaults to 60 seconds if not specified.
         
         Required?                    false
         Position?                    4
@@ -4483,6 +4500,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -HealthCheckInterval <Int32>
+        Interval in seconds between health check attempts. Must be between 1 and 10
+        seconds. Defaults to 3 seconds if not specified.
         
         Required?                    false
         Position?                    5
@@ -4492,6 +4511,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ImageName <String>
+        Custom Docker image name to use instead of the default DeepStack image. This
+        allows using custom or modified DeepStack images.
         
         Required?                    false
         Position?                    6
@@ -4501,6 +4522,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -FacesPath <String>
+        The path inside the container where faces are stored. Defaults to "/datastore"
+        if not specified.
         
         Required?                    false
         Position?                    7
@@ -4523,22 +4546,40 @@ NOTES
     
     
         DeepStack API Documentation: POST /v1/vision/face/list endpoint
-        Example: curl -X POST http://localhost:5000/v1/vision/face/list
     
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > Get-RegisteredFaces
     
-    
+    This example retrieves all registered faces using default parameters.
     
     
     
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > Get-RegisteredFaces | Where-Object { $_ -like "John*" }
+    PS > Get-RegisteredFaces -Force -UseGPU
+    
+    This example forces a rebuild of the container and uses GPU acceleration.
     
     
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Get-RegisteredFaces -ContainerName "my_deepstack" -ServicePort 8080
+    
+    This example uses a custom container name and port number.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > Get-RegisteredFaces |
+    Where-Object { $_ -like "John*" }
+    
+    This example retrieves all faces and filters for those starting with "John".
     
     
     
@@ -4713,11 +4754,12 @@ OUTPUTS
 NOTES
     
     
-        DeepStack API Documentation: POST /v1/vision/enhance endpoint for image enhancement.
-        Example: curl -X POST -F "image=@low_quality.jpg"
+        DeepStack API Documentation: POST /v1/vision/enhance endpoint for image
+        enhancement. Example: curl -X POST -F "image=@low_quality.jpg"
         http://localhost:5000/v1/vision/enhance
         
-        The enhanced image will be 4 times larger (2x width, 2x height) than the original.
+        The enhanced image will be 4 times larger (2x width, 2x height) than the
+        original.
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -4732,8 +4774,8 @@ NOTES
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > $enhanced = Invoke-ImageEnhancement -ImagePath "C:\photos\low_quality.jpg"
-    Enhances the image and returns the base64 data and dimensions.
+    PS > enhanceimage "C:\photos\low_quality.jpg"
+    Enhances the image and returns the base64 data and dimensions using alias.
     
     
     
@@ -4758,163 +4800,170 @@ RELATED LINKS
 NAME
     Register-AllFaces
     
+SYNOPSIS
+    Updates all face recognition profiles from image files in the faces directory.
+    
+    
 SYNTAX
-    Register-AllFaces [[-FacesDirectory] <string>] [[-MaxRetries] <int>] [[-ContainerName] <string>] [[-VolumeName] <string>] [[-ServicePort] <int>] [[-HealthCheckTimeout] <int>] [[-HealthCheckInterval] <int>] [[-ImageName] <string>] [[-FacesPath] <string>] [-NoDockerInitialize] [-Force] [-RenameFailed] [-ForceRebuild] [-UseGPU] [<CommonParameters>]
+    Register-AllFaces [[-FacesDirectory] <String>] [[-MaxRetries] <Int32>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [-NoDockerInitialize] [-Force] [-RenameFailed] [-ForceRebuild] [-UseGPU] [<CommonParameters>]
     
     
+DESCRIPTION
+    This function updates the face recognition database with all images found in
+    the specified faces directory. The process involves:
+    1. Ensuring the face recognition service is running
+    2. Processing all images in each person's folder, registering all faces for
+       that person with a single identifier (the folder name) in a batch operation
+    3. Supporting retry logic for failed registrations
+    
+    Each person's folder can contain multiple images, and all images will be
+    registered under the same identifier (person name) in a single API call,
+    eliminating the need for _1, _2, etc. suffixes.
+    
+
 PARAMETERS
-    -ContainerName <string>
-        The name for the Docker container
-        
-        Required?                    false
-        Position?                    2
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -FacesDirectory <string>
-        The directory containing face images organized by person folders
-        
-        Required?                    false
-        Position?                    0
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -FacesPath <string>
-        The path inside the container where faces are stored
-        
-        Required?                    false
-        Position?                    8
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Force
-        Force re-registration of all faces
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -ForceRebuild
-        Force rebuild of Docker container and remove existing data
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -HealthCheckInterval <int>
-        Interval in seconds between health check attempts
-        
-        Required?                    false
-        Position?                    6
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -HealthCheckTimeout <int>
-        Maximum time in seconds to wait for service health check
-        
-        Required?                    false
-        Position?                    5
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -ImageName <string>
-        Custom Docker image name to use
-        
-        Required?                    false
-        Position?                    7
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -MaxRetries <int>
-        Maximum number of retry attempts for failed registrations
+    -FacesDirectory <String>
+        The directory containing face images organized by person folders.
+        Default: "b:\media\faces\"
         
         Required?                    false
         Position?                    1
+        Default value                b:\media\faces\
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -NoDockerInitialize
-        Skip Docker Desktop initialization (used when already called by parent function)
+    -MaxRetries <Int32>
+        Maximum number of retry attempts for failed registrations.
+        Default: 3
         
         Required?                    false
-        Position?                    Named
+        Position?                    2
+        Default value                3
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -RenameFailed
-        Rename failed image files that could not be processed due to no face found
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -ServicePort <int>
-        The port number for the DeepStack service
-        
-        Required?                    false
-        Position?                    4
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -UseGPU
-        Use GPU-accelerated version (requires NVIDIA GPU)
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -VolumeName <string>
-        The name for the Docker volume for persistent storage
+    -ContainerName <String>
+        The name for the Docker container.
         
         Required?                    false
         Position?                    3
+        Default value                deepstack_face_recognition
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -VolumeName <String>
+        The name for the Docker volume for persistent storage.
+        
+        Required?                    false
+        Position?                    4
+        Default value                deepstack_face_data
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ServicePort <Int32>
+        The port number for the DeepStack service.
+        
+        Required?                    false
+        Position?                    5
+        Default value                5000
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckTimeout <Int32>
+        Maximum time in seconds to wait for service health check.
+        
+        Required?                    false
+        Position?                    6
+        Default value                60
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckInterval <Int32>
+        Interval in seconds between health check attempts.
+        
+        Required?                    false
+        Position?                    7
+        Default value                3
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageName <String>
+        Custom Docker image name to use.
+        
+        Required?                    false
+        Position?                    8
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesPath <String>
+        The path inside the container where faces are stored.
+        
+        Required?                    false
+        Position?                    9
+        Default value                /datastore
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoDockerInitialize [<SwitchParameter>]
+        Skip Docker Desktop initialization (used when already called by parent
+        function).
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        If specified, forces re-registration of all faces.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RenameFailed [<SwitchParameter>]
+        If specified, renames image files that fail with "400 Bad Request - Could not
+        find any face" by adding a ".failed" extension to the filename.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ForceRebuild [<SwitchParameter>]
+        Force rebuild of Docker container and remove existing data.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseGPU [<SwitchParameter>]
+        Use GPU-accelerated version (requires NVIDIA GPU).
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
         Accept wildcard characters?  false
         
     <CommonParameters>
@@ -4923,20 +4972,33 @@ PARAMETERS
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
         about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
     
-    
 INPUTS
-    None
-    
     
 OUTPUTS
-    System.Object
     
-ALIASES
-    UpdateFaces
+    -------------------------- EXAMPLE 1 --------------------------
     
-
-REMARKS
-    None 
+    PS > Register-AllFaces -FacesDirectory "b:\media\faces\" -MaxRetries 3 `
+        -ContainerName "deepstack_face_recognition" -VolumeName "deepstack_face_data" `
+        -ServicePort 5000 -HealthCheckTimeout 60 -HealthCheckInterval 3 `
+        -FacesPath "/datastore"
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > updatefaces -RenameFailed
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
 
 <br/><hr/><hr/><br/>
  
@@ -5132,7 +5194,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Unregister-AllFaces [[-Force]] [[-NoDockerInitialize]] [[-ForceRebuild]] [[-UseGPU]] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Unregister-AllFaces [-Force] [-NoDockerInitialize] [-ForceRebuild] [-UseGPU] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -5147,7 +5209,7 @@ PARAMETERS
         Bypasses confirmation prompts when removing all registered faces.
         
         Required?                    false
-        Position?                    1
+        Position?                    named
         Default value                False
         Accept pipeline input?       false
         Aliases                      
@@ -5158,7 +5220,7 @@ PARAMETERS
         to avoid duplicate initialization overhead.
         
         Required?                    false
-        Position?                    2
+        Position?                    named
         Default value                False
         Accept pipeline input?       false
         Aliases                      
@@ -5169,7 +5231,7 @@ PARAMETERS
         the entire DeepStack container from scratch.
         
         Required?                    false
-        Position?                    3
+        Position?                    named
         Default value                False
         Accept pipeline input?       false
         Aliases                      
@@ -5180,7 +5242,7 @@ PARAMETERS
         Docker GPU support configured.
         
         Required?                    false
-        Position?                    4
+        Position?                    named
         Default value                False
         Accept pipeline input?       false
         Aliases                      
@@ -5190,7 +5252,7 @@ PARAMETERS
         The name for the Docker container running DeepStack face recognition service.
         
         Required?                    false
-        Position?                    5
+        Position?                    1
         Default value                deepstack_face_recognition
         Accept pipeline input?       false
         Aliases                      
@@ -5200,7 +5262,7 @@ PARAMETERS
         The name for the Docker volume used for persistent storage of face data.
         
         Required?                    false
-        Position?                    6
+        Position?                    2
         Default value                deepstack_face_data
         Accept pipeline input?       false
         Aliases                      
@@ -5210,7 +5272,7 @@ PARAMETERS
         The port number for the DeepStack face recognition service HTTP API.
         
         Required?                    false
-        Position?                    7
+        Position?                    3
         Default value                5000
         Accept pipeline input?       false
         Aliases                      
@@ -5221,7 +5283,7 @@ PARAMETERS
         container operations.
         
         Required?                    false
-        Position?                    8
+        Position?                    4
         Default value                60
         Accept pipeline input?       false
         Aliases                      
@@ -5232,7 +5294,7 @@ PARAMETERS
         availability.
         
         Required?                    false
-        Position?                    9
+        Position?                    5
         Default value                3
         Accept pipeline input?       false
         Aliases                      
@@ -5242,7 +5304,7 @@ PARAMETERS
         Custom Docker image name to use instead of the default DeepStack image.
         
         Required?                    false
-        Position?                    10
+        Position?                    6
         Default value                
         Accept pipeline input?       false
         Aliases                      
@@ -5252,7 +5314,7 @@ PARAMETERS
         The path inside the container where face data files are stored.
         
         Required?                    false
-        Position?                    11
+        Position?                    7
         Default value                /datastore
         Accept pipeline input?       false
         Aliases                      
@@ -5326,7 +5388,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Unregister-Face [-Identifier] <String> [-NoDockerInitialize] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-FacesPath <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Unregister-Face [-Identifier] <String> [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -5343,6 +5405,76 @@ PARAMETERS
         Position?                    1
         Default value                
         Accept pipeline input?       true (ByValue, ByPropertyName)
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContainerName <String>
+        The name for the Docker container.
+        
+        Required?                    false
+        Position?                    2
+        Default value                deepstack_face_recognition
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -VolumeName <String>
+        The name for the Docker volume for persistent storage.
+        
+        Required?                    false
+        Position?                    3
+        Default value                deepstack_face_data
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ServicePort <Int32>
+        The port number for the DeepStack service.
+        
+        Required?                    false
+        Position?                    4
+        Default value                5000
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckTimeout <Int32>
+        Maximum time in seconds to wait for service health check.
+        
+        Required?                    false
+        Position?                    5
+        Default value                60
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckInterval <Int32>
+        Interval in seconds between health check attempts.
+        
+        Required?                    false
+        Position?                    6
+        Default value                3
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageName <String>
+        Custom Docker image name to use.
+        
+        Required?                    false
+        Position?                    7
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesPath <String>
+        The path inside the container where faces are stored.
+        
+        Required?                    false
+        Position?                    8
+        Default value                /datastore
+        Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
@@ -5372,76 +5504,6 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ContainerName <String>
-        The name for the Docker container.
-        
-        Required?                    false
-        Position?                    named
-        Default value                deepstack_face_recognition
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -VolumeName <String>
-        The name for the Docker volume for persistent storage.
-        
-        Required?                    false
-        Position?                    named
-        Default value                deepstack_face_data
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ServicePort <Int32>
-        The port number for the DeepStack service.
-        
-        Required?                    false
-        Position?                    named
-        Default value                5000
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HealthCheckTimeout <Int32>
-        Maximum time in seconds to wait for service health check.
-        
-        Required?                    false
-        Position?                    named
-        Default value                60
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HealthCheckInterval <Int32>
-        Interval in seconds between health check attempts.
-        
-        Required?                    false
-        Position?                    named
-        Default value                3
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ImageName <String>
-        Custom Docker image name to use.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -FacesPath <String>
-        The path inside the container where faces are stored.
-        
-        Required?                    false
-        Position?                    named
-        Default value                /datastore
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -5495,231 +5557,6 @@ NOTES
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > rface "JohnDoe"
-    
-    
-    
-    
-    
-    
-    
-RELATED LINKS 
-
-<br/><hr/><hr/><br/>
- 
-NAME
-    Update-AllImageKeywordsAndFaces
-    
-SYNOPSIS
-    Batch updates image keywords and faces across multiple system directories.
-    
-    
-SYNTAX
-    Update-AllImageKeywordsAndFaces [[-ImageDirectories] <String[]>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [-RetryFailed] [-RedoAll] [-NoDockerInitialize] [-Force] [-UseGPU] [-Language <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
-    
-    
-DESCRIPTION
-    This function systematically processes images across various system directories
-    to update their keywords and face recognition data using AI services. It covers
-    media storage, system files, downloads, OneDrive, and personal pictures
-    folders. The function uses parallel processing to efficiently handle both
-    keyword extraction and face recognition tasks simultaneously across multiple
-    directories.
-    
-
-PARAMETERS
-    -ImageDirectories <String[]>
-        Array of directory paths to process for image keyword and face recognition
-        updates. If not specified, uses default system directories.
-        
-        Required?                    false
-        Position?                    1
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ContainerName <String>
-        The name for the Docker container used for face recognition processing.
-        
-        Required?                    false
-        Position?                    2
-        Default value                deepstack_face_recognition
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -VolumeName <String>
-        The name for the Docker volume for persistent storage of face recognition data.
-        
-        Required?                    false
-        Position?                    3
-        Default value                deepstack_face_data
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ServicePort <Int32>
-        The port number for the DeepStack face recognition service.
-        
-        Required?                    false
-        Position?                    4
-        Default value                5000
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HealthCheckTimeout <Int32>
-        Maximum time in seconds to wait for service health check during startup.
-        
-        Required?                    false
-        Position?                    5
-        Default value                60
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HealthCheckInterval <Int32>
-        Interval in seconds between health check attempts during service startup.
-        
-        Required?                    false
-        Position?                    6
-        Default value                3
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ImageName <String>
-        Custom Docker image name to use for face recognition processing.
-        
-        Required?                    false
-        Position?                    7
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -FacesPath <String>
-        The path inside the container where face recognition data is stored.
-        
-        Required?                    false
-        Position?                    8
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -RetryFailed [<SwitchParameter>]
-        Specifies whether to retry previously failed image keyword updates. When
-        enabled, the function will attempt to process images that failed in previous
-        runs.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -RedoAll [<SwitchParameter>]
-        Forces reprocessing of all images regardless of previous processing status.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoDockerInitialize [<SwitchParameter>]
-        Skip Docker initialization when already called by parent function to avoid
-        duplicate container setup.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Force [<SwitchParameter>]
-        Force rebuild of Docker container and remove existing data for clean start.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -UseGPU [<SwitchParameter>]
-        Use GPU-accelerated version for faster processing (requires NVIDIA GPU).
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Language <String>
-        Specifies the language for generated descriptions and keywords. Defaults to English.
-        
-        Required?                    false
-        Position?                    named
-        Default value                English
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -WhatIf [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Confirm [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    <CommonParameters>
-        This cmdlet supports the common parameters: Verbose, Debug,
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
-    
-INPUTS
-    
-OUTPUTS
-    
-    -------------------------- EXAMPLE 1 --------------------------
-    
-    PS > Update-AllImageKeywordsAndFaces -ImageDirectories @("C:\Pictures", "D:\Photos") -ServicePort 5000
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 2 --------------------------
-    
-    PS > Update-AllImageKeywordsAndFaces -RetryFailed -Force -Language "Spanish"
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 3 --------------------------
-    
-    PS > Update-AllImageKeywordsAndFaces @("C:\MyImages") -ContainerName "custom_face_recognition"
     
     
     
@@ -7541,264 +7378,389 @@ REMARKS
 <br/><hr/><hr/><br/>
  
 NAME
-    Get-Fallacy
+    Find-Image
+    
+SYNOPSIS
+    Scans image files for keywords and descriptions using metadata files.
+    
     
 SYNTAX
-    Get-Fallacy [-Text] <string[]> [[-Instructions] <string>] [[-Model] <string>] [[-Attachments] <string[]>] [-ModelLMSGetIdentifier <string>] [-OpenInImdb] [-ShowWindow] [-Temperature <double>] [-MaxToken <int>] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ApiEndpoint <string>] [-ApiKey <string>] [-ImageDetail {low | medium | high}] [-IncludeThoughts] [-ContinueLast] [-Functions <hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <string[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [<CommonParameters>]
+    Find-Image [[-Keywords] <String[]>] [[-People] <String[]>] [[-Objects] <String[]>] [[-ImageDirectories] <String[]>] [-InputObject <Object[]>] [-ShowImageGallery] [-PassThru] [-Interactive] [-Title <String>] [-Description <String>] [-Language <String>] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-Monitor <Int32>] [-FullScreen] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-AcceptLang <String>] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [<CommonParameters>]
     
     
+DESCRIPTION
+    Searches for image files (jpg, jpeg, png) in the specified directory and its
+    subdirectories. For each image, checks associated description.json,
+    keywords.json, people.json, and objects.json files for metadata. Can filter images
+    based on keyword matches, people recognition, and object detection, then return
+    the results as objects. Use -ShowImageGallery to display results in a browser-based
+    masonry layout.
+    
+    The function searches through image directories and examines alternate data
+    streams containing metadata in JSON format. It can match keywords using wildcard
+    patterns, filter for specific people, and search for detected objects. By default,
+    returns image data objects. Use -ShowImageGallery to display in a web browser.
+    
+
 PARAMETERS
-    -ApiEndpoint <string>
-        Api endpoint url, defaults to http://localhost:1234/v1/chat/completions
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -ApiKey <string>
-        The API key to use for the request
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Attachments <string[]>
-        Array of file paths to attach
-        
-        Required?                    false
-        Position?                    3
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -ContinueLast
-        Continue from last conversation
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -ExposedCmdLets <ExposedCmdletDefinition[]>
-        Array of PowerShell command definitions to use as tools
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Force
-        Force stop LM Studio before initialization
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Functions <hashtable[]>
-        Array of function definitions
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Gpu <int>
-        How much to offload to the GPU. If "off", GPU offloading is disabled. If "max", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto 
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -ImageDetail <string>
-        Image detail level
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -IncludeThoughts
-        Include model's thoughts in output
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Instructions <string>
-        Instructions for the AI model on how to generate the string list
+    -Keywords <String[]>
+        Array of keywords to search for in image metadata. Supports wildcards. If empty,
+        returns all images with any metadata. Keywords are matched against both the
+        description content and keywords arrays in metadata files.
         
         Required?                    false
         Position?                    1
+        Default value                @()
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -MaxToken <int>
-        Maximum tokens in response (-1 for default)
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      MaxTokens
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Model <string>
-        The LM-Studio model to use
+    -People <String[]>
+        Array of people names to search for in image metadata. Supports wildcards. Used
+        to filter images based on face recognition metadata stored in people.json files.
         
         Required?                    false
         Position?                    2
+        Default value                @()
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <string>
-        Identifier used for getting specific model from LM Studio
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -NoConfirmationToolFunctionNames <string[]>
-        Array of command names that don't require confirmation
+    -Objects <String[]>
+        Array of object names to search for in image metadata. Supports wildcards. Used
+        to filter images based on object detection metadata stored in objects.json files.
         
         Required?                    false
-        Position?                    Named
+        Position?                    3
+        Default value                @()
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      NoConfirmationFor
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -NoSessionCaching
-        Don't store session in session cache
+    -ImageDirectories <String[]>
+        Array of directory paths to search for images. Each directory is searched
+        recursively for jpg, jpeg, and png files. Relative paths are converted to
+        absolute paths automatically.
         
         Required?                    false
-        Position?                    Named
+        Position?                    4
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -OpenInImdb
-        Opens IMDB searches for each result
+    -InputObject <Object[]>
         
         Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      imdb
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -ShowWindow
-        Show the LM Studio window
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Speak
-        Enable text-to-speech for AI responses
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -SpeakThoughts
-        Enable text-to-speech for AI thought responses
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <int>
-        Set a TTL (in seconds) for models loaded via API requests
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      ttl
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Temperature <double>
-        Temperature for response randomness (0.0-1.0)
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Text <string[]>
-        Text to parse to find Fallacies in
-        
-        Required?                    true
-        Position?                    0
+        Position?                    named
+        Default value                
         Accept pipeline input?       true (ByValue)
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowImageGallery [<SwitchParameter>]
+        Switch to display the search results in a browser-based masonry layout gallery.
+        When used, the results are shown in an interactive web view. Can be combined with
+        -PassThru to also return the objects.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
+        Switch to return image data as objects. When used with -ShowImageGallery, both
+        displays the gallery and returns the objects. When used alone with -ShowImageGallery,
+        only displays the gallery without returning objects.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Interactive [<SwitchParameter>]
+        When specified with -ShowImageGallery, connects to browser and adds additional
+        buttons like Edit and Delete.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Title <String>
+        The title to display at the top of the image gallery.
+        
+        Required?                    false
+        Position?                    named
+        Default value                Photo Gallery
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Description <String>
+        The description text to display in the image gallery.
+        
+        Required?                    false
+        Position?                    named
+        Default value                Hover over images to see face recognition and object detection data
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        The language for retrieving descriptions and keywords. Will try to find metadata in
+        the specified language first, then fall back to English if not available. This allows
+        you to have metadata in multiple languages for the same images.
+        
+        Required?                    false
+        Position?                    named
+        Default value                English
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Private [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Edge [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chrome [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chromium [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Firefox [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -All [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                -2
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -X <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                -999999
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Y <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                -999999
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Top [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApplicationMode [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBrowserExtensions [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DisablePopupBlocker [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AcceptLang <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NewWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyReturnHtml [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EmbedImages [<SwitchParameter>]
+        Switch to embed images as base64 data URLs instead of file:// URLs. This makes the
+        generated HTML file completely self-contained and portable, but results in larger file
+        sizes. Useful when the HTML needs to be shared or viewed on different systems where
+        the original image files may not be accessible.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
         Accept wildcard characters?  false
         
     <CommonParameters>
@@ -7807,21 +7769,379 @@ PARAMETERS
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
         about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
     
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Find-Image -Keywords "cat","dog" -ImageDirectories "C:\Photos"
+    Searches for images containing 'cat' or 'dog' keywords and returns the image objects.
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > findimages cat,dog "C:\Photos"
+    Same as above using the alias and positional parameters.
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Find-Image -People "John","Jane" -ImageDirectories "C:\Family" -ShowImageGallery
+    Searches for photos containing John or Jane and displays them in a web gallery.
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > Find-Image -Objects "car","bicycle" -ImageDirectories "C:\Photos" -ShowImageGallery -PassThru
+    Searches for images containing detected cars or bicycles, displays them in a gallery, and also returns the objects.
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 5 --------------------------
+    
+    PS > findimages -Language "Spanish" -Keywords "playa","sol" -ImageDirectories "C:\Vacations" -ShowImageGallery
+    Searches for images with Spanish metadata containing the keywords "playa" (beach) or "sol" (sun) and displays in gallery.
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 6 --------------------------
+    
+    PS > Find-Image -Keywords "vacation" -People "John" -Objects "beach*" -ImageDirectories "C:\Photos"
+    Searches for vacation photos with John in them that also contain beach-related objects and returns the data objects.
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Get-Fallacy
+    
+SYNOPSIS
+    Analyzes text to identify logical fallacies using AI-powered detection.
+    
+    
+SYNTAX
+    Get-Fallacy [-Text] <String[]> [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-ApiKey <String>] [-ApiEndpoint <String>] [-Functions <Hashtable[]>] [-Gpu <Int32>] [-ImageDetail <String>] [-MaxToken <Int32>] [-NoConfirmationToolFunctionNames <String[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Temperature <Double>] [-TTLSeconds <Int32>] [-ContinueLast] [-Force] [-IncludeThoughts] [-NoSessionCaching] [-OpenInImdb] [-ShowWindow] [-Speak] [-SpeakThoughts] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function analyzes provided text to detect logical fallacies using an AI
+    model trained on Wikipedia's List of Fallacies. It returns detailed information
+    about each fallacy found, including the specific quote, fallacy name,
+    description, explanation, and formal classification. The function uses a
+    structured response format to ensure consistent output.
+    
+
+PARAMETERS
+    -Text <String[]>
+        The text content to analyze for logical fallacies. Can accept multiple text
+        inputs through pipeline or array.
+        
+        Required?                    true
+        Position?                    1
+        Default value                
+        Accept pipeline input?       true (ByValue)
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Instructions <String>
+        Additional instructions for the AI model on how to analyze the text or focus
+        on specific types of fallacies.
+        
+        Required?                    false
+        Position?                    2
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The specific LM-Studio model to use for fallacy detection. Supports wildcard
+        patterns for model selection.
+        
+        Required?                    false
+        Position?                    3
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  true
+        
+    -ModelLMSGetIdentifier <String>
+        Identifier used to retrieve a specific model from LM Studio when multiple
+        models are available.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Attachments <String[]>
+        Array of file paths to attach to the analysis request for additional context.
+        
+        Required?                    false
+        Position?                    4
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        API key for authentication when using external language model services.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        Custom API endpoint URL for the language model service. Defaults to
+        http://localhost:1234/v1/chat/completions.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <Hashtable[]>
+        Array of custom function definitions to make available to the AI model during
+        analysis.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        Controls GPU offloading for model processing. -1 lets LM Studio decide, -2 for
+        auto, 0-1 for fractional offloading, "off" disables GPU, "max" uses full GPU.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDetail <String>
+        Detail level for image processing when attachments include images. Options are
+        low, medium, or high.
+        
+        Required?                    false
+        Position?                    named
+        Default value                low
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        Maximum number of tokens allowed in the AI response. Use -1 for model default
+        settings.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        Array of function names that don't require user confirmation before execution
+        when used by the AI model.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        Array of PowerShell command definitions that the AI model can use as tools
+        during analysis.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Temperature <Double>
+        Controls the randomness of the AI response. Lower values (0.0-0.3) provide
+        more focused analysis, higher values (0.7-1.0) allow more creative
+        interpretation.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0.2
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        Time-to-live in seconds for models loaded via API requests. Use -1 for no
+        expiration.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        Switch to continue from the last conversation context instead of starting a
+        new analysis session.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Forces LM Studio to stop and restart before initializing the model for
+        analysis.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -IncludeThoughts [<SwitchParameter>]
+        Switch to include the model's reasoning process in the output alongside the
+        final analysis.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSessionCaching [<SwitchParameter>]
+        Switch to disable storing the analysis session in the session cache for
+        privacy or performance reasons.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OpenInImdb [<SwitchParameter>]
+        Switch to open IMDB searches for each detected fallacy result (legacy parameter
+        from inherited function structure).
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
+        Switch to display the LM Studio window during processing for monitoring
+        purposes.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Speak [<SwitchParameter>]
+        Switch to enable text-to-speech output for the AI analysis results.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SpeakThoughts [<SwitchParameter>]
+        Switch to enable text-to-speech output for the AI model's reasoning process
+        when IncludeThoughts is enabled.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
     
 INPUTS
-    System.String[]
-    
     
 OUTPUTS
     System.Object[]
     
     
-ALIASES
-    None
+    -------------------------- EXAMPLE 1 --------------------------
     
-
-REMARKS
-    None 
+    PS > Get-Fallacy -Text "All politicians are corrupt because John was corrupt and he was a politician"
+    
+    Analyzes the provided text for logical fallacies and returns structured
+    information about any fallacies detected.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > "This product is the best because everyone uses it" | Get-Fallacy -Temperature 0.1
+    
+    Uses pipeline input to analyze text with low temperature for focused analysis.
+    
+    
+    
+    
+    
+RELATED LINKS 
 
 <br/><hr/><hr/><br/>
  
@@ -8836,14 +9156,14 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageFacesUpdate [[-ImageDirectory] <String>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [<CommonParameters>]
+    Invoke-ImageFacesUpdate [[-ImageDirectory] <String>] [[-ImageName] <String>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-FacesPath] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
     This function processes images in a specified directory to identify and analyze
     faces using AI recognition technology. It creates or updates metadata files
     containing face information for each image. The metadata is stored in a
-    separate file with the same name as the image but with a ':faces.json' suffix.
+    separate file with the same name as the image but with a ':people.json' suffix.
     
 
 PARAMETERS
@@ -8854,6 +9174,77 @@ PARAMETERS
         Required?                    false
         Position?                    1
         Default value                .\
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageName <String>
+        Custom Docker image name to use instead of the default DeepStack image.
+        
+        Required?                    false
+        Position?                    2
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContainerName <String>
+        The name for the Docker container. Default is "deepstack_face_recognition".
+        
+        Required?                    false
+        Position?                    3
+        Default value                deepstack_face_recognition
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -VolumeName <String>
+        The name for the Docker volume for persistent storage. Default is
+        "deepstack_face_data".
+        
+        Required?                    false
+        Position?                    4
+        Default value                deepstack_face_data
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesPath <String>
+        The path inside the container where faces are stored. Default is "/datastore".
+        
+        Required?                    false
+        Position?                    5
+        Default value                /datastore
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ServicePort <Int32>
+        The port number for the DeepStack service. Default is 5000.
+        
+        Required?                    false
+        Position?                    6
+        Default value                5000
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckTimeout <Int32>
+        Maximum time in seconds to wait for service health check. Default is 60.
+        
+        Required?                    false
+        Position?                    7
+        Default value                60
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckInterval <Int32>
+        Interval in seconds between health check attempts. Default is 3.
+        
+        Required?                    false
+        Position?                    8
+        Default value                3
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -8889,6 +9280,29 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -NoDockerInitialize [<SwitchParameter>]
+        Skip Docker initialization when this switch is used. Used when already called by
+        parent function.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Force rebuild of Docker container and remove existing data when this switch is
+        used.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseGPU [<SwitchParameter>]
+        Use GPU-accelerated version when this switch is used. Requires an NVIDIA GPU.
         
         Required?                    false
         Position?                    named
@@ -8918,155 +9332,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > Invoke-ImageFacesUpdate "C:\Photos" -RetryFailed -OnlyNew
-    
-    
-    
-    
-    
-    
-    
-RELATED LINKS 
-
-<br/><hr/><hr/><br/>
- 
-NAME
-    Invoke-ImageKeywordScan
-    
-SYNOPSIS
-    Scans image files for keywords and descriptions using metadata files.
-    
-    
-SYNTAX
-    Invoke-ImageKeywordScan [[-Keywords] <String[]>] [[-People] <String[]>] [[-ImageDirectories] <String[]>] [-Title <String>] [-Description <String>] [<CommonParameters>]
-    
-    Invoke-ImageKeywordScan [[-Keywords] <String[]>] [[-People] <String[]>] [[-ImageDirectories] <String[]>] [-PassThru] [-Title <String>] [-Description <String>] [<CommonParameters>]
-    
-    Invoke-ImageKeywordScan [[-Keywords] <String[]>] [[-People] <String[]>] [[-ImageDirectories] <String[]>] [-Interactive] [-Title <String>] [-Description <String>] [<CommonParameters>]
-    
-    
-DESCRIPTION
-    Searches for image files (jpg, jpeg, png) in the specified directory and its
-    subdirectories. For each image, checks associated description.json and
-    keywords.json files for metadata. Can filter images based on keyword matches
-    and display results in a masonry layout web view or return as objects.
-    
-    The function searches through image directories and examines alternate data
-    streams containing metadata in JSON format. It can match keywords using wildcard
-    patterns and filter for specific people. Results are displayed in a browser-based
-    masonry layout unless PassThru is specified.
-    
-
-PARAMETERS
-    -Keywords <String[]>
-        Array of keywords to search for in image metadata. Supports wildcards. If empty,
-        returns all images with any metadata. Keywords are matched against both the
-        description content and keywords arrays in metadata files.
-        
-        Required?                    false
-        Position?                    1
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -People <String[]>
-        Array of people names to search for in image metadata. Supports wildcards. Used
-        to filter images based on face recognition metadata stored in people.json files.
-        
-        Required?                    false
-        Position?                    2
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ImageDirectories <String[]>
-        Array of directory paths to search for images. Each directory is searched
-        recursively for jpg, jpeg, and png files. Relative paths are converted to
-        absolute paths automatically.
-        
-        Required?                    false
-        Position?                    3
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -PassThru [<SwitchParameter>]
-        Switch to return image data as objects instead of displaying in browser. When
-        used, the function returns an array of hashtables containing image metadata
-        rather than opening a web browser view.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Interactive [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Title <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                Photo Gallery
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Description <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                Hover over images to see face recognition data
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    <CommonParameters>
-        This cmdlet supports the common parameters: Verbose, Debug,
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
-    
-INPUTS
-    
-OUTPUTS
-    
-    -------------------------- EXAMPLE 1 --------------------------
-    
-    PS > Invoke-ImageKeywordScan -Keywords "cat","dog" -ImageDirectories "C:\Photos"
-    Searches for images containing 'cat' or 'dog' keywords in the C:\Photos directory.
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 2 --------------------------
-    
-    PS > findimages cat,dog "C:\Photos"
-    Same as above using the alias and positional parameters.
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 3 --------------------------
-    
-    PS > Invoke-ImageKeywordScan -People "John","Jane" -ImageDirectories "C:\Family" `
-        -PassThru
-    Returns image objects for photos containing John or Jane without opening browser.
+    PS > facerecognition "C:\Photos" -RetryFailed -OnlyNew
     
     
     
@@ -9185,6 +9451,237 @@ RELATED LINKS
 <br/><hr/><hr/><br/>
  
 NAME
+    Invoke-ImageObjectsUpdate
+    
+SYNOPSIS
+    Updates object detection metadata for image files in a specified directory.
+    
+    
+SYNTAX
+    Invoke-ImageObjectsUpdate [[-ImageDirectory] <String>] [[-ConfidenceThreshold] <Double>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-FacesPath <String>] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function processes images in a specified directory to detect objects using
+    artificial intelligence. It creates JSON metadata files containing detected
+    objects, their positions, confidence scores, and labels. The function supports
+    batch processing with configurable confidence thresholds and can optionally
+    skip existing metadata files or retry previously failed detections.
+    
+
+PARAMETERS
+    -ImageDirectory <String>
+        The directory path containing images to process. Can be relative or absolute
+        path. Default is the current directory.
+        
+        Required?                    false
+        Position?                    1
+        Default value                .\
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ConfidenceThreshold <Double>
+        Minimum confidence threshold (0.0-1.0) for object detection. Objects detected
+        with confidence below this threshold will be filtered out. Default is 0.5.
+        
+        Required?                    false
+        Position?                    2
+        Default value                0.5
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Recurse [<SwitchParameter>]
+        If specified, processes images in the specified directory and all
+        subdirectories recursively.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyNew [<SwitchParameter>]
+        If specified, only processes images that don't already have object metadata
+        files or have empty metadata files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RetryFailed [<SwitchParameter>]
+        If specified, retries processing previously failed images that have empty
+        metadata files or contain error indicators.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoDockerInitialize [<SwitchParameter>]
+        Skip Docker initialization when this switch is used. Used when already called
+        by parent function to avoid redundant container setup.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Force rebuild of Docker container and remove existing data when this switch
+        is used. This will recreate the entire detection environment.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseGPU [<SwitchParameter>]
+        Use GPU-accelerated version when this switch is used. Requires an NVIDIA GPU
+        with appropriate drivers and CUDA support.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContainerName <String>
+        The name for the Docker container running the object detection service.
+        Default is "deepstack_face_recognition".
+        
+        Required?                    false
+        Position?                    named
+        Default value                deepstack_face_recognition
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -VolumeName <String>
+        The name for the Docker volume for persistent storage of detection models
+        and data. Default is "deepstack_face_data".
+        
+        Required?                    false
+        Position?                    named
+        Default value                deepstack_face_data
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ServicePort <Int32>
+        The port number for the DeepStack service to listen on. Must be between
+        1 and 65535. Default is 5000.
+        
+        Required?                    false
+        Position?                    named
+        Default value                5000
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckTimeout <Int32>
+        Maximum time in seconds to wait for service health check before timing out.
+        Must be between 10 and 300 seconds. Default is 60.
+        
+        Required?                    false
+        Position?                    named
+        Default value                60
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckInterval <Int32>
+        Interval in seconds between health check attempts when waiting for service
+        startup. Must be between 1 and 10 seconds. Default is 3.
+        
+        Required?                    false
+        Position?                    named
+        Default value                3
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageName <String>
+        Custom Docker image name to use instead of the default DeepStack image.
+        Allows using alternative object detection models or configurations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesPath <String>
+        The path inside the container where faces and detection data are stored.
+        Default is "/datastore" which matches DeepStack's expected structure.
+        
+        Required?                    false
+        Position?                    named
+        Default value                /datastore
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Invoke-ImageObjectsUpdate -ImageDirectory "C:\Photos" -Recurse
+    
+    This example processes all images in C:\Photos and all subdirectories using
+    default settings with 0.5 confidence threshold.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Invoke-ImageObjectsUpdate "C:\Photos" -RetryFailed -OnlyNew
+    
+    This example processes only new images and retries previously failed ones
+    in the C:\Photos directory using positional parameter syntax.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Invoke-ImageObjectsUpdate -ImageDirectory "C:\Photos" -UseGPU `
+        -ConfidenceThreshold 0.7
+    
+    This example uses GPU acceleration with higher confidence threshold of 0.7
+    for more accurate but fewer object detections.
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
     Invoke-QueryImageContent
     
 SYNOPSIS
@@ -9192,14 +9689,14 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Temperature] <Double>] [-ResponseFormat <String>] [[-MaxToken] <Int32>] [-TimeoutSeconds <Int32>] [<CommonParameters>]
+    Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [-Model <String>] [-ModelLMSGetIdentifier <String>] [[-Instructions] <String>] [-ResponseFormat <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-ImageDetail <String>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-ShowWindow] [-Force] [-IncludeThoughts] [<CommonParameters>]
     
     
 DESCRIPTION
-    Processes images using the MiniCPM model via LM-Studio API to analyze content and
-    answer queries about the image. The function supports various analysis parameters
-    including temperature control for response randomness and token limits for output
-    length.
+    Processes images using a specified model via the LM-Studio API to analyze
+    content and answer queries about the image. The function supports various
+    analysis parameters including temperature control for response randomness and
+    token limits for output length.
     
 
 PARAMETERS
@@ -9209,7 +9706,7 @@ PARAMETERS
         
         Required?                    true
         Position?                    1
-        Default value                
+        Default value                Describe the content of this image
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9225,19 +9722,40 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Temperature <Double>
-        Controls the randomness in the AI's response generation. Lower values (closer
-        to 0) produce more focused and deterministic responses, while higher values
-        increase creativity and variability. Valid range: 0.0 to 1.0.
+    -Model <String>
+        The LM-Studio model to use for the analysis.
+        Defaults to "qwen2.5-14b-instruct".
+        
+        Required?                    false
+        Position?                    named
+        Default value                MiniCPM
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  true
+        
+    -ModelLMSGetIdentifier <String>
+        Identifier used for getting a specific model from LM Studio.
+        Defaults to "qwen2.5-14b-instruct".
+        
+        Required?                    false
+        Position?                    named
+        Default value                lmstudio-community/MiniCPM-V-2_6-GGUF/MiniCPM-V-2_6-Q4_K_M.gguf
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Instructions <String>
+        System instructions for the model to follow during the analysis.
         
         Required?                    false
         Position?                    3
-        Default value                0.01
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -ResponseFormat <String>
+        A JSON schema that specifies the requested output format for the response.
         
         Required?                    false
         Position?                    named
@@ -9246,22 +9764,121 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -MaxToken <Int32>
-        Limits the length of the generated response by specifying maximum tokens.
-        Use -1 for unlimited response length. Valid range: -1 to MaxInt.
+    -Temperature <Double>
+        Controls the randomness in the AI's response generation. Lower values (closer
+        to 0) produce more focused and deterministic responses, while higher values
+        increase creativity and variability. Valid range: 0.0 to 1.0.
         
         Required?                    false
-        Position?                    4
+        Position?                    named
+        Default value                0.2
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        Limits the length of the generated response by specifying the maximum number of
+        tokens. Use -1 for an unlimited response length.
+        
+        Required?                    false
+        Position?                    named
         Default value                -1
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
+    -TTLSeconds <Int32>
+        Sets a Time-To-Live (in seconds) for models loaded via API requests.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        Specifies how much of the model to offload to the GPU.
+        - "off": Disables GPU offloading.
+        - "max": Offloads all layers to the GPU.
+        - 0 to 1: Offloads a fraction of layers to the GPU.
+        - -1: Lets LM Studio decide the offload amount.
+        - -2: Uses an automatic setting.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDetail <String>
+        Sets the detail level for image analysis.
+        Valid values are "low", "medium", or "high".
+        
+        Required?                    false
+        Position?                    named
+        Default value                high
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        The API endpoint URL. Defaults to '''http://localhost:1234/v1/chat/completions'''.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key to use for the request.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -TimeoutSeconds <Int32>
+        The timeout in seconds for the API request. Defaults to 24 hours.
         
         Required?                    false
         Position?                    named
         Default value                86400
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
+        If specified, the LM Studio window will be shown.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        If specified, forces LM Studio to stop before initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -IncludeThoughts [<SwitchParameter>]
+        If specified, includes the model's thoughts in the output.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9294,6 +9911,190 @@ OUTPUTS
     PS > Query-Image "Describe this image" "C:\Images\photo.jpg"
     
     
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Remove-ImageMetaData
+    
+SYNOPSIS
+    Removes image metadata files from image directories.
+    
+    
+SYNTAX
+    Remove-ImageMetaData [[-ImageDirectory] <String[]>] [[-Recurse]] [-OnlyKeywords] [-OnlyPeople] [-OnlyObjects] [-Language <String>] [-AllLanguages] [-WhatIf] [-Confirm] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    The Remove-ImageMetaData function removes companion JSON metadata files that
+    are associated with images. It can selectively remove only keywords
+    (description.json), people data (people.json), or objects data (objects.json),
+    or remove all metadata files if no specific switch is provided. Language-specific
+    metadata files can be removed by specifying the Language parameter, and all
+    language variants can be removed using the AllLanguages switch.
+    
+
+PARAMETERS
+    -ImageDirectory <String[]>
+        Specifies the directory containing images to process. Defaults to current
+        directory if not specified.
+        
+        Required?                    false
+        Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Recurse [<SwitchParameter>]
+        When specified, searches for images in the specified directory and all
+        subdirectories.
+        
+        Required?                    false
+        Position?                    2
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyKeywords [<SwitchParameter>]
+        When specified, only removes the description.json files (keywords/descriptions).
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyPeople [<SwitchParameter>]
+        When specified, only removes the people.json files (face recognition data).
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyObjects [<SwitchParameter>]
+        When specified, only removes the objects.json files (object detection data).
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        Specifies the language for removing language-specific metadata files. When
+        specified, removes both the default English description.json and the
+        language-specific file. Defaults to English.
+        
+        Required?                    false
+        Position?                    named
+        Default value                English
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AllLanguages [<SwitchParameter>]
+        When specified, removes metadata files for all supported languages by iterating
+        through all languages from Get-WebLanguageDictionary.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WhatIf [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Confirm [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+NOTES
+    
+    
+        If none of the -OnlyKeywords, -OnlyPeople, or -OnlyObjects switches are
+        specified, all three types of metadata files will be removed.
+        When Language is specified, both the default English and language-specific
+        files are removed.
+        When AllLanguages is specified, metadata files for all supported languages
+        are removed.
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Remove-ImageMetaData -ImageDirectory "C:\Photos" -Recurse
+    
+    Removes all metadata files for images in C:\Photos and all subdirectories.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Remove-ImageMetaData -Recurse -OnlyKeywords
+    
+    Removes only description.json files from current directory and subdirectories.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Remove-ImageMetaData -OnlyPeople -ImageDirectory ".\MyPhotos"
+    
+    Removes only people.json files from the MyPhotos directory.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > Remove-ImageMetaData -Language "Spanish" -OnlyKeywords -Recurse
+    
+    Removes both English and Spanish description files recursively.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 5 --------------------------
+    
+    PS > removeimagedata -AllLanguages -OnlyKeywords
+    
+    Uses alias to remove keyword files for all supported languages.
     
     
     
@@ -9389,6 +10190,88 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > Save-Transcriptions "C:\Media" "Japanese" "English" "qwen"
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Set-ImageDirectory
+    
+SYNOPSIS
+    Sets the directories for image files used in GenXdev.AI operations.
+    
+    
+SYNTAX
+    Set-ImageDirectory [-ImageDirectories] <String[]> [-WhatIf] [-Confirm] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function configures the global image directories used by the GenXdev.AI
+    module for various image processing and AI operations. It updates both the
+    global variable and the module's preference storage to persist the
+    configuration across sessions.
+    
+
+PARAMETERS
+    -ImageDirectories <String[]>
+        An array of directory paths where image files are located. These directories
+        will be used by GenXdev.AI functions for image discovery and processing
+        operations.
+        
+        Required?                    true
+        Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WhatIf [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Confirm [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Set-ImageDirectories -ImageDirectories @("C:\Images", "D:\Photos")
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Set-ImageDirectories @("C:\Pictures", "E:\Graphics\Stock")
     
     
     
@@ -9635,6 +10518,376 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > $errorOutput | letsfixthis
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Show-ImageGallery
+    
+SYNOPSIS
+    Displays image search results in a masonry layout web gallery.
+    
+    
+SYNTAX
+    Show-ImageGallery [-InputObject] <Object[]> [-Interactive] [-Title <String>] [-Description <String>] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-Monitor <Int32>] [-FullScreen] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-AcceptLang <String>] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    Takes image search results and displays them in a browser-based masonry layout.
+    Can operate in interactive mode with edit and delete capabilities, or in simple
+    display mode. Accepts image data objects typically from Find-Image and renders
+    them with hover tooltips showing metadata like face recognition and object
+    detection data.
+    
+
+PARAMETERS
+    -InputObject <Object[]>
+        Array of image data objects containing path, keywords, description, people,
+        and objects metadata.
+        
+        Required?                    true
+        Position?                    1
+        Default value                
+        Accept pipeline input?       true (ByValue)
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Interactive [<SwitchParameter>]
+        When specified, connects to browser and adds additional buttons like Edit and
+        Delete for image management.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Title <String>
+        The title to display at the top of the image gallery.
+        
+        Required?                    false
+        Position?                    named
+        Default value                Photo Gallery
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Description <String>
+        The description text to display in the image gallery.
+        
+        Required?                    false
+        Position?                    named
+        Default value                Hover over images to see face recognition and object detection data
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Private [<SwitchParameter>]
+        Opens in incognito/private browsing mode.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Force enable debugging port, stopping existing browsers if needed.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Edge [<SwitchParameter>]
+        Opens in Microsoft Edge.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chrome [<SwitchParameter>]
+        Opens in Google Chrome.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chromium [<SwitchParameter>]
+        Opens in Microsoft Edge or Google Chrome, depending on what the default
+        browser is.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Firefox [<SwitchParameter>]
+        Opens in Firefox.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -All [<SwitchParameter>]
+        Opens in all registered modern browsers.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <Int32>
+        The monitor to use, 0 = default, -1 is discard, -2 = Configured secondary
+        monitor, defaults to Global:DefaultSecondaryMonitor or 2 if not found.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -2
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        Opens in fullscreen mode.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        The initial width of the webbrowser window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        The initial height of the webbrowser window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -X <Int32>
+        The initial X position of the webbrowser window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -999999
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Y <Int32>
+        The initial Y position of the webbrowser window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -999999
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        Place browser window on the left side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        Place browser window on the right side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Top [<SwitchParameter>]
+        Place browser window on the top side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        Place browser window on the bottom side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        Place browser window in the center of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApplicationMode [<SwitchParameter>]
+        Hide the browser controls.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBrowserExtensions [<SwitchParameter>]
+        Prevent loading of browser extensions.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DisablePopupBlocker [<SwitchParameter>]
+        Disable the popup blocker.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AcceptLang <String>
+        Set the browser accept-lang http header.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        Restore PowerShell window focus.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NewWindow [<SwitchParameter>]
+        Don't re-use existing browser window, instead, create a new one.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyReturnHtml [<SwitchParameter>]
+        Only return the generated HTML instead of displaying it in a browser.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EmbedImages [<SwitchParameter>]
+        Embed images as base64 data URLs instead of file:// URLs for better
+        portability.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > $images | Show-ImageGallery
+    Displays the image results in a simple web gallery.
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > $images | Show-ImageGallery -Interactive -Title "My Photos"
+    Displays images in interactive mode with edit/delete buttons.
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > showfoundimages $images -Private -FullScreen
+    Opens the gallery in private browsing mode in fullscreen.
     
     
     
@@ -10075,6 +11328,245 @@ OUTPUTS
     PS > # Advanced transcription with silence detection and desktop audio
     $result = Start-AudioTranscription -VOX -UseDesktopAudioCapture `
         -Language "English" -WithTokenTimestamps
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Update-AllImageMetaData
+    
+SYNOPSIS
+    Batch updates image keywords, faces, and objects across multiple system
+    directories.
+    
+    
+SYNTAX
+    Update-AllImageMetaData [[-ImageDirectories] <String[]>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [[-ConfidenceThreshold] <Double>] [[-Language] <String>] [-RetryFailed] [-RedoAll] [-NoDockerInitialize] [-Force] [-UseGPU] [-WhatIf] [-Confirm] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function systematically processes images across various system directories
+    to update their keywords, face recognition data, and object detection data
+    using AI services. It covers media storage, system files, downloads, OneDrive,
+    and personal pictures folders. The function uses parallel processing to
+    efficiently handle keyword extraction, face recognition, and object detection
+    tasks simultaneously across multiple directories.
+    
+
+PARAMETERS
+    -ImageDirectories <String[]>
+        Array of directory paths to process for image keyword and face recognition
+        updates. If not specified, uses default system directories.
+        
+        Required?                    false
+        Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContainerName <String>
+        The name for the Docker container used for face recognition processing.
+        
+        Required?                    false
+        Position?                    2
+        Default value                deepstack_face_recognition
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -VolumeName <String>
+        The name for the Docker volume for persistent storage of face recognition data.
+        
+        Required?                    false
+        Position?                    3
+        Default value                deepstack_face_data
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ServicePort <Int32>
+        The port number for the DeepStack face recognition service.
+        
+        Required?                    false
+        Position?                    4
+        Default value                5000
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckTimeout <Int32>
+        Maximum time in seconds to wait for service health check during startup.
+        
+        Required?                    false
+        Position?                    5
+        Default value                60
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckInterval <Int32>
+        Interval in seconds between health check attempts during service startup.
+        
+        Required?                    false
+        Position?                    6
+        Default value                3
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageName <String>
+        Custom Docker image name to use for face recognition processing.
+        
+        Required?                    false
+        Position?                    7
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesPath <String>
+        The path inside the container where face recognition data is stored.
+        
+        Required?                    false
+        Position?                    8
+        Default value                /datastore
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ConfidenceThreshold <Double>
+        Minimum confidence threshold (0.0-1.0) for object detection. Objects with
+        confidence below this threshold will be filtered out. Default is 0.5.
+        
+        Required?                    false
+        Position?                    9
+        Default value                0.5
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        Specifies the language for generated descriptions and keywords. Defaults to
+        English.
+        
+        Required?                    false
+        Position?                    10
+        Default value                English
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RetryFailed [<SwitchParameter>]
+        Specifies whether to retry previously failed image keyword updates. When
+        enabled, the function will attempt to process images that failed in previous
+        runs.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RedoAll [<SwitchParameter>]
+        Forces reprocessing of all images regardless of previous processing status.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoDockerInitialize [<SwitchParameter>]
+        Skip Docker initialization when already called by parent function to avoid
+        duplicate container setup.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Force rebuild of Docker container and remove existing data for clean start.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseGPU [<SwitchParameter>]
+        Use GPU-accelerated version for faster processing (requires NVIDIA GPU).
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WhatIf [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Confirm [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Update-AllImageMetaData -ImageDirectories @("C:\Pictures", "D:\Photos") `
+        -ServicePort 5000
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Update-AllImageMetaData -RetryFailed -Force -Language "Spanish"
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > updateallimages @("C:\MyImages") -ContainerName "custom_face_recognition"
     
     
     

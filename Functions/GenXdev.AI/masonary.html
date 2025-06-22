@@ -20,7 +20,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color:#333333;
+            background-color: #333333;
             color: #333;
         }
 
@@ -65,7 +65,9 @@
 
         @media (min-width: 1400px) {
             .masonry { column-count: 4; }
-        }        .gallery-item {
+        }
+
+        .gallery-item {
             break-inside: avoid;
             margin-bottom: 20px;
             background: white;
@@ -74,7 +76,9 @@
             overflow: hidden;
             transition: border-color 0.2s ease, background-color 0.2s ease;
             position: relative;
-        }        .gallery-item:hover {
+        }
+
+        .gallery-item:hover {
             background: #fafafa;
             border-color: #666;
         }
@@ -124,6 +128,35 @@
             line-height: 1.3;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
             white-space: nowrap;
+        }
+
+        .object-label {
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            background-color: rgba(255, 107, 107, 0.9);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 600;
+            line-height: 1.2;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+
+        .object-overlay {
+            position: absolute;
+            border: 2px solid #ff6b6b;
+            background-color: rgba(255, 107, 107, 0.2);
+            pointer-events: none;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .gallery-item:hover .object-overlay {
+            opacity: 1;
         }
 
         .content {
@@ -209,14 +242,54 @@
 
         .face-name-tag {
             display: inline-block;
-            background-color: #e8f5e8;
-            color: #27ae60;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 10px;
+            background-color: #27ae60;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
             margin: 2px 2px 2px 0;
-            border: 1px solid #c3e6cb;
+            border: none;
             font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .face-name-tag:hover {
+            background-color: #219a52;
+        }
+
+        .detected-objects {
+            margin-bottom: 10px;
+        }
+
+        .objects-label {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .object-name-tag {
+            display: inline-block;
+            background-color: #f1c40f;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin: 2px 2px 2px 0;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .object-name-tag:hover {
+            background-color: #f39c12;
+        }
+
+        .metadata-item.objects {
+            background-color: #fff3cd;
+            color: #856404;
         }
 
         .actions {
@@ -263,7 +336,9 @@
             background-color: #2980b9;
             color: white;
             text-decoration: none;
-        }        .view-original:active {
+        }
+
+        .view-original:active {
             transform: scale(0.98);
         }
 
@@ -281,7 +356,9 @@
 
         .edit-btn:hover {
             background-color: #219a52;
-        }        .edit-btn:active {
+        }
+
+        .edit-btn:active {
             transform: scale(0.98);
         }
 
@@ -322,78 +399,117 @@
             color: #95a5a6;
         }
 
+        .sentinel {
+            height: 100px;
+            width: 100%;
+            visibility: hidden;
+        }
+
         @media print {
-            .actions,
-            .copy-path-btn,
-            .view-original,
-            .edit-btn,
-            .delete-btn {
-                display: none !important;
-            }            /* Ensure gallery items never split across pages */
+            /* Prevent page breaks within key elements */
+            html, body, #bg, .gallery-container, .masonry {
+                height: auto !important;
+                min-height: unset !important;
+                overflow: visible !important;
+                page-break-before: avoid;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+                margin: 0;
+                padding: 0;
+            }
+
+            /* Ensure single-column layout for print */
+            .masonry {
+                column-count: 1 !important;
+                column-gap: 0 !important;
+                display: block !important;
+            }
+
+            /* Prevent splitting of gallery items */
             .gallery-item {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 page-break-before: auto;
                 page-break-after: auto;
-                margin-bottom: 15px;
-                display: block;
+                margin-bottom: 15px !important;
+                display: block !important;
                 box-shadow: none !important;
                 border: none !important;
-            }            /* Optimize images for print */
+                width: 100% !important;
+            }
+
+            /* Optimize images for print */
             .gallery-item img {
-                max-width: 100%;
+                max-width: 100% !important;
+                max-height: 45vh !important;
+                height: auto !important;
+                object-fit: contain !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 border-bottom: none !important;
+                display: block !important;
             }
 
-            /* Ensure content sections don't break */
-            .content {
+            /* Prevent content splitting */
+            .content, .description, .metadata, .keywords, .recognized-faces, .detected-objects {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
 
-            /* Optimize masonry layout for print */
-            .masonry {
-                column-count: 1 !important;
-                column-gap: 0;
-            }            /* Remove hover effects for print */
+            /* Hide interactive and non-essential elements */
+            .actions, .copy-path-btn, .view-original, .edit-btn, .delete-btn, .sentinel {
+                display: none !important;
+            }
+
+            /* Remove hover effects */
             .gallery-item:hover {
-                transform: none;
+                transform: none !important;
                 box-shadow: none !important;
                 border: none !important;
             }
 
-            /* Hide face overlays in print */
-            .face-overlay {
+            /* Hide overlays */
+            .face-overlay, .object-overlay {
                 display: none !important;
             }
 
-            /* Optimize text for print */
-            .short-description,
-            .long-description {
-                page-break-inside: avoid;
-            }            /* Ensure metadata stays with content */
-            .metadata,
-            .keywords,
-            .recognized-faces {
-                page-break-inside: avoid;
+            /* Style tags for print */
+            .face-name-tag, .object-name-tag {
+                background-color: #f8f9fa !important;
+                color: #495057 !important;
+                padding: 2px 6px !important;
+                border-radius: 10px !important;
+                font-size: 10px !important;
+                border: 1px solid #dee2e6 !important;
+                font-weight: normal !important;
+                cursor: auto !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
             }
 
-            /* Use white background for print */
-            html,
-            body,
-            #bg {
+            /* Optimize text */
+            .short-description, .long-description {
+                page-break-inside: avoid !important;
+                color: #333 !important;
+            }
+
+            /* Ensure white background */
+            html, body, #bg {
                 background-color: white !important;
             }
 
-            /* Ensure text is dark for print readability */
+            /* Text color for readability */
             .header h1 {
                 color: #333 !important;
             }
 
             .header p {
                 color: #666 !important;
+            }
+
+            /* Remove any overflow constraints */
+            * {
+                overflow: visible !important;
             }
         }
         </style>
@@ -408,49 +524,236 @@
                 <div id="gallery" class="masonry">
                     <div class="loading">Loading images...</div>
                 </div>
+                <div id="sentinel" class="sentinel"></div>
             </div>
         </div>
         <script>
-
         let imageGallery;
 
+        function parsePsObject(str) {
+            if (!str || typeof str !== 'string' || !str.startsWith('@{')) return null;
+            const content = str.substring(2, str.length - 1);
+            const obj = {};
+            const parts = content.split(';');
+            parts.forEach(part => {
+                const eqIndex = part.indexOf('=');
+                if (eqIndex > -1) {
+                    const key = part.substring(0, eqIndex).trim();
+                    const value = part.substring(eqIndex + 1).trim();
+                    obj[key] = isNaN(value) ? value : parseFloat(value);
+                }
+            });
+            return obj;
+        }
+
+        function parsePsObjectArray(str) {
+            if (Array.isArray(str)) return str;
+            if (!str || typeof str !== 'string') return [];
+
+            const objects = [];
+            const regex = /@\{.*?\}/g;
+            const matches = str.match(regex);
+
+            if (matches) {
+                matches.forEach(match => {
+                    const obj = parsePsObject(match);
+                    if (obj) {
+                        objects.push(obj);
+                    }
+                });
+            }
+            return objects;
+        }
+
+        // Mock API to simulate fetching images
+        async function fetchImages(page, pageSize) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            const images = [];
+            const startIndex = (page - 1) * pageSize;
+            for (let i = 0; i < pageSize; i++) {
+                const index = startIndex + i;
+                images.push({
+                    path: `https://picsum.photos/seed/${index}/400/300`,
+                    description: {
+                        short_description: `Image ${index + 1}`,
+                        long_description: `Description for image ${index + 1}`,
+                        picture_type: 'Photo',
+                        style_type: 'Portrait'
+                    },
+                    keywords: ['photo', 'sample', `tag${index}`],
+                    people: {
+                        count: 2,
+                        faces: ['Person A', 'Person B'],
+                        predictions: [
+                            '@{label=person; x_min=50; y_min=50; x_max=150; y_max=150; confidence=0.95; userid=Person_A_1}',
+                            '@{label=person; x_min=200; y_min=50; x_max=300; y_max=150; confidence=0.92; userid=Person_B_1}'
+                        ]
+                    },
+                    objects: {
+                        count: 1,
+                        objects: ['Car'],
+                        object_counts: '@{Car=1}',
+                        predictions: ['@{label=Car; x_min=100; y_min=200; x_max=300; y_max=250; confidence=0.89}']
+                    }
+                });
+            }
+            return images;
+        }        // Mock API to fetch all images for print
+        async function fetchAllImages(maxImages = 50) {
+            const pageSize = 20;  // Increased from 10 to 20 for consistency
+            const totalPages = Math.ceil(maxImages / pageSize);
+            let allImages = [];
+            for (let page = 1; page <= totalPages; page++) {
+                const images = await fetchImages(page, pageSize);
+                allImages = [...allImages, ...images];
+                if (images.length < pageSize || allImages.length >= maxImages) {
+                    break;
+                }
+            }
+            return allImages.slice(0, maxImages);
+        }
+
         class ImageGallery {
-            mydata;
-            constructor(mydata) {
-                this.mydata = mydata;
+            constructor(mydata) {                this.mydata = mydata;
                 this.images = [];
                 this.galleryElement = document.getElementById('gallery');
+                this.sentinel = document.getElementById('sentinel');
+                this.page = 1;
+                this.pageSize = 20;  // Increased from 10 to 20 for smoother scrolling
+                this.isLoading = false;
+                this.hasMore = true;
+                this.isPrinting = false;
                 this.init();
-            }
-
-            init() {
-                // Check if data.images exists
-                if (typeof this.mydata !== 'undefined' && this.mydata.images) {
+            }            async init() {
+                if (typeof this.mydata !== 'undefined' && this.mydata.images && this.mydata.images.length > 0) {
+                    // Use provided image data
                     this.images = this.mydata.images;
+                    this.hasMore = false; // Disable infinite scroll for provided data
                     this.renderGallery();
                 } else {
-                    this.showNoImagesMessage();
+                    // Use mock data for testing
+                    await this.loadImages();
                 }
 
-                // Set title and description from window.data if available
                 if (typeof this.mydata !== 'undefined') {
                     if (this.mydata.title) {
                         document.getElementById('gallery-title').textContent = this.mydata.title;
-                        document.title = this.mydata.title; // Also update the page title
+                        document.title = this.mydata.title;
                     }
                     if (this.mydata.description) {
                         document.getElementById('gallery-description').textContent = this.mydata.description;
                     }
                 }
 
-                // Add resize event listener to reposition face overlays when layout changes
                 let resizeTimeout;
                 window.addEventListener('resize', () => {
                     clearTimeout(resizeTimeout);
                     resizeTimeout = setTimeout(() => {
-                        this.repositionAllFaceOverlays();
-                    }, 250); // Debounce resize events
+                        this.repositionAllOverlays();
+                    }, 250);
                 });
+
+                // Handle print events
+                window.addEventListener('beforeprint', () => this.handleBeforePrint());
+                window.addEventListener('afterprint', () => this.handleAfterPrint());
+
+                this.setupIntersectionObserver();
+            }setupIntersectionObserver() {
+                this.observer = new IntersectionObserver(
+                    entries => {
+                        if (entries[0].isIntersecting && !this.isLoading && this.hasMore && !this.isPrinting) {
+                            this.loadImages();
+                        }
+                    },
+                    {
+                        root: null,
+                        rootMargin: '1200px',  // Load content when sentinel is 1200px away from viewport
+                        threshold: 0.1
+                    }
+                );
+                this.observer.observe(this.sentinel);
+            }
+
+            async handleBeforePrint() {
+                this.isPrinting = true;
+                this.observer.disconnect(); // Disable infinite scroll
+                this.isLoading = true;
+                this.showLoading();
+
+                try {
+                    // Fetch all images (up to a reasonable limit, e.g., 50)
+                    const allImages = await fetchAllImages(50);
+                    this.images = allImages;
+                    this.hasMore = false;
+                    this.renderGallery();
+                } catch (error) {
+                    console.error('Error loading images for print:', error);
+                    this.showError();
+                } finally {
+                    this.isLoading = false;
+                    this.hideLoading();
+                }
+            }
+
+            handleAfterPrint() {
+                this.isPrinting = false;
+                this.images = []; // Reset images
+                this.page = 1;
+                this.hasMore = true;
+                this.loadImages(); // Reload initial set
+                this.setupIntersectionObserver(); // Re-enable infinite scroll
+            }
+
+            async loadImages() {
+                if (this.isLoading || !this.hasMore || this.isPrinting) return;
+                this.isLoading = true;
+                this.showLoading();
+
+                try {
+                    const newImages = await fetchImages(this.page, this.pageSize);
+                    if (newImages.length === 0) {
+                        this.hasMore = false;
+                        this.hideLoading();
+                        return;
+                    }
+
+                    this.images = [...this.images, ...newImages];
+                    this.page += 1;
+
+                    if (this.images.length === newImages.length) {
+                        this.renderGallery();
+                    } else {
+                        newImages.forEach((image, index) => {
+                            const globalIndex = this.images.length - newImages.length + index;
+                            const galleryItem = this.createGalleryItem(image, globalIndex);
+                            this.galleryElement.appendChild(galleryItem);
+                        });
+                    }
+
+                    if (newImages.length < this.pageSize) {
+                        this.hasMore = false;
+                    }
+                } catch (error) {
+                    console.error('Error loading images:', error);
+                    this.showError();
+                } finally {
+                    this.isLoading = false;
+                    this.hideLoading();
+                }
+            }
+
+            showLoading() {
+                this.sentinel.classList.add('loading');
+                this.sentinel.innerHTML = 'Loading more images...';
+            }
+
+            hideLoading() {
+                this.sentinel.classList.remove('loading');
+                this.sentinel.innerHTML = '';
+            }
+
+            showError() {
+                this.sentinel.innerHTML = '<div class="no-images"><h3>Error loading images</h3></div>';
             }
 
             renderGallery() {
@@ -472,18 +775,28 @@
                 item.className = 'gallery-item';
                 item.id = `image-${index}`;
 
-                // Parse keywords if they're JSON strings
                 let keywords = [];
-                try {
-                    keywords = typeof image.keywords === 'string'
-                        ? JSON.parse(image.keywords)
-                        : (Array.isArray(image.keywords) ? image.keywords : []);
-                } catch (e) {
-                    keywords = [];                }
+                if (typeof image.keywords === 'string' && image.keywords.startsWith('[')) {
+                    try {
+                        keywords = JSON.parse(image.keywords);
+                    } catch (e) {
+                        keywords = [];
+                    }
+                } else if (Array.isArray(image.keywords)) {
+                    keywords = image.keywords;
+                }
 
-                // Parse faces
-                const faces = Array.isArray(image.people?.faces) ? image.people.faces : [];
+                const faces = (typeof image.people?.faces === 'string') ? [image.people.faces] : (Array.isArray(image.people?.faces) ? image.people.faces : []);
                 const faceCount = image.people?.count || 0;
+
+                console.log('Processing image:', image.path);
+                console.log('People data:', image.people);
+                console.log('Faces array:', faces);
+                console.log('Face count:', faceCount);
+
+                const objects = Array.isArray(image.objects?.objects) ? image.objects.objects : [];
+                const objectCount = image.objects?.count || 0;
+                const objectCounts = (typeof image.objects?.object_counts === 'string') ? (parsePsObject(image.objects.object_counts) || {}) : (image.objects?.object_counts || {});
 
                 item.innerHTML = `
                     <div class="image-container">
@@ -498,24 +811,39 @@
                             <div class="short-description">${this.escapeHtml(image.description?.short_description || 'No description')}</div>
                             <div class="long-description">${this.escapeHtml(image.description?.long_description || '')}</div>
                         </div>
-
                         <div class="metadata">
-                            ${faceCount > 0 ? `<span class="metadata-item people">${faceCount} ${faceCount === 1 ? 'person' : 'people'}</span>` : ''}                            ${faces.length > 0 ? `<span class="metadata-item faces">${faces.length} ${faces.length === 1 ? 'face' : 'faces'} recognized</span>` : ''}
+                            ${faceCount > 0 ? `<span class="metadata-item people">${faceCount} ${faceCount === 1 ? 'person' : 'people'}</span>` : ''}
+                            ${faces.length > 0 ? `<span class="metadata-item faces">${faces.length} ${faces.length === 1 ? 'face' : 'faces'} recognized</span>` : ''}
+                            ${objectCount > 0 ? `<span class="metadata-item objects">${objectCount} ${objectCount === 1 ? 'object' : 'objects'} detected</span>` : ''}
                             <span class="metadata-item">${image.description?.picture_type || 'Photo'}</span>
                             <span class="metadata-item">${image.description?.style_type || 'Unknown style'}</span>
                         </div>
-
                         ${keywords.length > 0 ? `
                         <div class="keywords">
                             <div class="keywords-label">Keywords:</div>
                             ${keywords.map(keyword => `<span class="keyword-tag">${this.escapeHtml(keyword)}</span>`).join('')}
                         </div>
                         ` : ''}
-
                         ${faces.length > 0 ? `
                         <div class="recognized-faces">
                             <div class="faces-label">Recognized faces:</div>
-                            ${faces.map(faceName => `<span class="face-name-tag">${this.escapeHtml(faceName)}</span>`).join('')}
+                            ${faces.map((faceName, faceIndex) => {
+                                const clickHandler = (typeof this.mydata !== 'undefined' && this.mydata.canEdit)
+                                    ? ` onclick="imageGallery.editFace(${index}, '${this.escapeHtml(faceName)}', ${faceIndex})" class="face-name-tag clickable"`
+                                    : ' class="face-name-tag"';
+                                return `<span${clickHandler}>${this.escapeHtml(faceName)}</span>`;
+                            }).join('')}
+                        </div>
+                        ` : ''}
+                        ${Object.keys(objectCounts).length > 0 ? `
+                        <div class="detected-objects">
+                            <div class="objects-label">Detected objects:</div>
+                            ${Object.entries(objectCounts).map(([objectName, count]) => {
+                                const clickHandler = (typeof this.mydata !== 'undefined' && this.mydata.canEdit)
+                                    ? ` onclick="imageGallery.editObject(${index}, '${this.escapeHtml(objectName)}', ${count})" class="object-name-tag clickable"`
+                                    : ' class="object-name-tag"';
+                                return `<span${clickHandler}>${this.escapeHtml(objectName)} (${count})</span>`;
+                            }).join('')}
                         </div>
                         ` : ''}
                         <div class="actions">
@@ -531,13 +859,12 @@
             }
 
             onImageLoad(imgElement, imageIndex) {
-                // Image loaded successfully, now we can add face overlays
-                console.log('Image loaded:', imageIndex, 'Adding face overlays...');
+                console.log('Image loaded:', imageIndex, 'Adding face and object overlays...');
                 this.addFaceOverlays(imgElement, imageIndex);
+                this.addObjectOverlays(imgElement, imageIndex);
             }
 
             onImageError(imgElement) {
-                // Handle image loading error
                 const container = imgElement.closest('.gallery-item');
                 imgElement.style.display = 'none';
 
@@ -549,7 +876,6 @@
                         <div style="font-size: 12px;">Image not found</div>
                     </div>
                 `;
-
                 imgElement.parentNode.appendChild(errorDiv);
             }
 
@@ -557,21 +883,23 @@
                 const image = this.images[imageIndex];
                 console.log('addFaceOverlays called for image:', imageIndex, 'people data:', image.people);
 
-                // Use actual predictions if available, otherwise fall back to faces data
-                const predictions = Array.isArray(image.people?.predictions) ? image.people.predictions : [];
-                const faces = Array.isArray(image.people?.faces) ? image.people.faces : [];
+                const facePredictions = parsePsObjectArray(image.people?.predictions);
+                const faces = (typeof image.people?.faces === 'string') ? image.people.faces.split(' ').filter(Boolean) : (Array.isArray(image.people?.faces) ? image.people.faces : []);
+                const objectPredictions = parsePsObjectArray(image.objects?.predictions);
 
-                console.log('Predictions found:', predictions);
+                console.log('Face predictions found:', facePredictions);
                 console.log('Faces found:', faces);
+                console.log('Object predictions found:', objectPredictions);
 
-                if (predictions.length === 0 && faces.length === 0) {
-                    console.log('No faces or predictions to overlay');
+                const personObjects = objectPredictions.filter(pred => pred.label === 'person');
+                console.log('Person objects found:', personObjects);
+
+                if (facePredictions.length === 0 && faces.length === 0 && personObjects.length === 0) {
+                    console.log('No faces, predictions, or person objects to overlay');
                     return;
                 }
 
                 const container = imgElement.parentElement;
-
-                // Get image dimensions and original image dimensions
                 const displayWidth = imgElement.clientWidth;
                 const displayHeight = imgElement.clientHeight;
                 const originalWidth = imgElement.naturalWidth;
@@ -580,48 +908,49 @@
                 console.log('Display dimensions:', displayWidth, 'x', displayHeight);
                 console.log('Original dimensions:', originalWidth, 'x', originalHeight);
 
-                // If we have predictions with coordinates, use those
-                if (predictions.length > 0) {
-                    predictions.forEach((prediction, index) => {
-                        const overlay = document.createElement('div');
-                        overlay.className = 'face-overlay';
+                const mergedOverlays = this.createMergedOverlays(facePredictions, personObjects, faces);
 
-                        // Convert absolute coordinates to ratios of the original image
-                        const leftRatio = prediction.x_min / originalWidth;
-                        const topRatio = prediction.y_min / originalHeight;
-                        const widthRatio = (prediction.x_max - prediction.x_min) / originalWidth;
-                        const heightRatio = (prediction.y_max - prediction.y_min) / originalHeight;
+                mergedOverlays.forEach((overlayData, index) => {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'face-overlay';
 
-                        // Apply ratios to the displayed image dimensions
-                        const left = leftRatio * displayWidth;
-                        const top = topRatio * displayHeight;
-                        const width = widthRatio * displayWidth;
-                        const height = heightRatio * displayHeight;
+                    const leftRatio = overlayData.x_min / originalWidth;
+                    const topRatio = overlayData.y_min / originalHeight;
+                    const widthRatio = (overlayData.x_max - overlayData.x_min) / originalWidth;
+                    const heightRatio = (overlayData.y_max - overlayData.y_min) / originalHeight;
 
-                        overlay.style.left = left + 'px';
-                        overlay.style.top = top + 'px';
-                        overlay.style.width = width + 'px';
-                        overlay.style.height = height + 'px';
+                    const left = leftRatio * displayWidth;
+                    const top = topRatio * displayHeight;
+                    const width = widthRatio * displayWidth;
+                    const height = heightRatio * displayHeight;
 
-                        // Find the corresponding face name by userid or use index
-                        let faceName = 'Unknown';
-                        if (prediction.userid) {
-                            // Extract name from userid (remove the _number suffix)
-                            faceName = prediction.userid.replace(/_\d+$/, '');
-                        } else if (faces[index]) {
-                            faceName = faces[index];
-                        }
+                    overlay.style.left = left + 'px';
+                    overlay.style.top = top + 'px';
+                    overlay.style.width = width + 'px';
+                    overlay.style.height = height + 'px';
 
-                        overlay.innerHTML = `<span class="face-label">${this.escapeHtml(faceName)}<br>confidence: ${Math.round(prediction.confidence * 100)}%</span>`;
-                        container.appendChild(overlay);
-                    });
-                } else {
-                    // Fall back to generated positions for faces without predictions
+                    overlay.setAttribute('data-bounds', JSON.stringify({
+                        x_min: overlayData.x_min,
+                        y_min: overlayData.y_min,
+                        x_max: overlayData.x_max,
+                        y_max: overlayData.y_max,
+                        confidence: overlayData.confidence
+                    }));
+
+                    const clickHandler = overlayData.type === 'face'
+                        ? `imageGallery.editFace(${imageIndex}, '${this.escapeHtml(overlayData.label)}', ${index})`
+                        : `imageGallery.editObject(${imageIndex}, '${this.escapeHtml(overlayData.label)}', ${index})`;
+
+                    const labelClass = overlayData.type === 'face' ? 'face-label' : 'object-label';
+                    overlay.innerHTML = `<span class="${labelClass} clickable" onclick="${clickHandler}">${this.escapeHtml(overlayData.label)}<br>confidence: ${Math.round(overlayData.confidence * 100)}%</span>`;
+                    container.appendChild(overlay);
+                });
+
+                if (mergedOverlays.length === 0 && faces.length > 0) {
                     faces.forEach((faceName, index) => {
                         const overlay = document.createElement('div');
                         overlay.className = 'face-overlay';
 
-                        // Generate positions as before when no predictions are available
                         const facePositions = this.generateFacePositions(faces.length, displayWidth, displayHeight);
                         const position = facePositions[index];
 
@@ -636,35 +965,96 @@
                 }
             }
 
+            createMergedOverlays(facePredictions, personObjects, faces) {
+                const mergedOverlays = [];
+                const usedPersonIndices = new Set();
+
+                facePredictions.forEach((facePred, faceIndex) => {
+                    let faceName = 'Unknown';
+                    if (facePred.userid) {
+                        faceName = facePred.userid.replace(/_\d+$/, '');
+                    } else if (faces && faces.length > faceIndex && faces[faceIndex] && faces[faceIndex].trim() !== '') {
+                        faceName = faces[faceIndex].trim();
+                    } else if (faces && faces.length > 0) {
+                        for (let i = 0; i < faces.length; i++) {
+                            if (faces[i] && faces[i].trim() !== '') {
+                                faceName = faces[i].trim();
+                                break;
+                            }
+                        }
+                    }
+
+                    mergedOverlays.push({
+                        x_min: facePred.x_min,
+                        y_min: facePred.y_min,
+                        x_max: facePred.x_max,
+                        y_max: facePred.y_max,
+                        confidence: facePred.confidence,
+                        label: faceName,
+                        type: 'face'
+                    });
+
+                    personObjects.forEach((personObj, personIndex) => {
+                        if (this.boundingBoxesOverlap(facePred, personObj)) {
+                            usedPersonIndices.add(personIndex);
+                        }
+                    });
+                });
+
+                personObjects.forEach((personObj, personIndex) => {
+                    if (!usedPersonIndices.has(personIndex)) {
+                        mergedOverlays.push({
+                            x_min: personObj.x_min,
+                            y_min: personObj.y_min,
+                            x_max: personObj.x_max,
+                            y_max: personObj.y_max,
+                            confidence: personObj.confidence,
+                            label: 'Person',
+                            type: 'person'
+                        });
+                    }
+                });
+
+                return mergedOverlays;
+            }
+
+            boundingBoxesOverlap(box1, box2) {
+                const overlapX = Math.max(0, Math.min(box1.x_max, box2.x_max) - Math.max(box1.x_min, box2.x_min));
+                const overlapY = Math.max(0, Math.min(box1.y_max, box2.y_max) - Math.max(box1.y_min, box2.y_min));
+                const overlapArea = overlapX * overlapY;
+
+                const box1Area = (box1.x_max - box1.x_min) * (box1.y_max - box1.y_min);
+                const box2Area = (box2.x_max - box2.x_min) * (box2.y_max - box2.y_min);
+                const smallerArea = Math.min(box1Area, box2Area);
+
+                return overlapArea > (smallerArea * 0.5);
+            }
+
             generateFacePositions(faceCount, imgWidth, imgHeight) {
                 const positions = [];
-                const faceSize = Math.min(imgWidth, imgHeight) * 0.15; // Face size is 15% of smallest dimension
-                const minFaceSize = 60; // Minimum face size in pixels
-                const maxFaceSize = 120; // Maximum face size in pixels
+                const faceSize = Math.min(imgWidth, imgHeight) * 0.15;
+                const minFaceSize = 60;
+                const maxFaceSize = 120;
 
                 const actualFaceSize = Math.max(minFaceSize, Math.min(maxFaceSize, faceSize));
 
-                // Define realistic areas where faces typically appear in photos
                 const faceAreas = [
-                    { x: 0.2, y: 0.15, w: 0.25, h: 0.4 }, // Left side, upper third
-                    { x: 0.4, y: 0.1, w: 0.2, h: 0.35 },  // Center, upper third
-                    { x: 0.55, y: 0.15, w: 0.25, h: 0.4 }, // Right side, upper third
-                    { x: 0.15, y: 0.4, w: 0.3, h: 0.35 }, // Left side, middle
-                    { x: 0.55, y: 0.4, w: 0.3, h: 0.35 }, // Right side, middle
-                    { x: 0.35, y: 0.45, w: 0.3, h: 0.35 } // Center, middle-lower
+                    { x: 0.2, y: 0.15, w: 0.25, h: 0.4 },
+                    { x: 0.4, y: 0.1, w: 0.2, h: 0.35 },
+                    { x: 0.55, y: 0.15, w: 0.25, h: 0.4 },
+                    { x: 0.15, y: 0.4, w: 0.3, h: 0.35 },
+                    { x: 0.55, y: 0.4, w: 0.3, h: 0.35 },
+                    { x: 0.35, y: 0.45, w: 0.6, h: 0.35 }
                 ];
 
                 for (let i = 0; i < faceCount; i++) {
                     const area = faceAreas[i % faceAreas.length];
-
-                    // Add some randomness within the area
-                    const randomX = Math.random() * 0.5; // 50% randomness within area
+                    const randomX = Math.random() * 0.5;
                     const randomY = Math.random() * 0.5;
 
                     const left = (area.x + randomX * area.w) * imgWidth;
                     const top = (area.y + randomY * area.h) * imgHeight;
 
-                    // Ensure the overlay doesn't go outside image bounds
                     const maxLeft = imgWidth - actualFaceSize;
                     const maxTop = imgHeight - actualFaceSize;
 
@@ -679,11 +1069,84 @@
                 return positions;
             }
 
-            copyPath(index) {
-                const image = this.images[index];
-                const path = `"${image.path}"`;
+            addObjectOverlays(imgElement, imageIndex) {
+                const image = this.images[imageIndex];
+                console.log('addObjectOverlays called for image:', imageIndex, 'objects data:', image.objects);
 
-                // Try modern clipboard API first
+                const predictions = parsePsObjectArray(image.objects?.predictions);
+                const facePredictions = parsePsObjectArray(image.people?.predictions);
+
+                console.log('Object predictions found:', predictions);
+
+                if (predictions.length === 0) {
+                    console.log('No object predictions to overlay');
+                    return;
+                }
+
+                const filteredPredictions = predictions.filter(objPred => {
+                    if (objPred.label !== 'person') {
+                        return true;
+                    }
+
+                    const hasOverlappingFace = facePredictions.some(facePred =>
+                        this.boundingBoxesOverlap(objPred, facePred)
+                    );
+
+                    return !hasOverlappingFace;
+                });
+
+                console.log('Filtered object predictions (excluding person objects with faces):', filteredPredictions);
+
+                const container = imgElement.parentElement;
+                const displayWidth = imgElement.clientWidth;
+                const displayHeight = imgElement.clientHeight;
+                const originalWidth = imgElement.naturalWidth;
+                const originalHeight = imgElement.naturalHeight;
+
+                console.log('Display dimensions:', displayWidth, 'x', displayHeight);
+                console.log('Original dimensions:', originalWidth, 'x', originalHeight);
+
+                filteredPredictions.forEach((prediction, index) => {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'object-overlay';
+
+                    const leftRatio = prediction.x_min / originalWidth;
+                    const topRatio = prediction.y_min / originalHeight;
+                    const widthRatio = (prediction.x_max - prediction.x_min) / originalWidth;
+                    const heightRatio = (prediction.y_max - prediction.y_min) / originalHeight;
+
+                    const left = leftRatio * displayWidth;
+                    const top = topRatio * displayHeight;
+                    const width = widthRatio * displayWidth;
+                    const height = heightRatio * displayHeight;
+
+                    overlay.style.left = left + 'px';
+                    overlay.style.top = top + 'px';
+                    overlay.style.width = width + 'px';
+                    overlay.style.height = height + 'px';
+
+                    overlay.setAttribute('data-bounds', JSON.stringify({
+                        x_min: prediction.x_min,
+                        y_min: prediction.y_min,
+                        x_max: prediction.x_max,
+                        y_max: prediction.y_max,
+                        confidence: prediction.confidence,
+                        label: prediction.label
+                    }));
+
+                    const label = document.createElement('div');
+                    label.className = 'object-label';
+                    const confidence = (prediction.confidence * 100).toFixed(1);
+                    label.textContent = `${prediction.label} (${confidence}%)`;
+                    overlay.appendChild(label);
+
+                    container.appendChild(overlay);
+                    console.log(`Added object overlay for ${prediction.label} at (${left.toFixed(1)}, ${top.toFixed(1)}) with size ${width.toFixed(1)}x${height.toFixed(1)}`);
+                });
+            }            copyPath(index) {
+                const image = this.images[index];
+                const path = `"${image.originalPath || image.path}"`;
+
                 if (navigator.clipboard && window.isSecureContext) {
                     navigator.clipboard.writeText(path).then(() => {
                         this.showCopyFeedback(index, true);
@@ -694,29 +1157,21 @@
                 } else {
                     this.fallbackCopy(path, index);
                 }
-            }
-
-            editImage(index) {
-                // Check if editing is allowed
+            }            editImage(index) {
                 if (typeof this.mydata === 'undefined' || !this.mydata.canEdit) {
                     console.warn('Edit action not allowed - canEdit is false or undefined');
                     return;
                 }
 
                 const image = this.images[index];
-
-                // Add edit action to data.actions
                 const editAction = {
                     action: "edit",
-                    path: image.path
+                    path: image.originalPath || image.path
                 };
 
                 this.mydata.actions.push(editAction);
-
-                // Optional: Show feedback to user
                 this.showEditFeedback(index);
             }
-
 
             showEditFeedback(index) {
                 const button = document.querySelector(`#image-${index} .edit-btn`);
@@ -731,35 +1186,125 @@
                     button.style.backgroundColor = '';
                 }, 1500);
             }
-            deleteImage(index) {
 
+            editFace(imageIndex, faceName, faceIndex) {
+                if (typeof this.mydata === 'undefined' || !this.mydata.canEdit) {
+                    return;
+                }
+
+                const image = this.images[imageIndex];
+                const facePredictions = parsePsObjectArray(image.people?.predictions);
+                let boundingBox = null;
+
+                const matchingPrediction = facePredictions.find(pred => {
+                    const predName = pred.userid ? pred.userid.replace(/_\d+$/, '') : '';
+                    return predName === faceName;
+                });
+
+                if (matchingPrediction) {
+                    boundingBox = {
+                        x_min: matchingPrediction.x_min,
+                        y_min: matchingPrediction.y_min,
+                        x_max: matchingPrediction.x_max,
+                        y_max: matchingPrediction.y_max,
+                        width: matchingPrediction.x_max - matchingPrediction.x_min,
+                        height: matchingPrediction.y_max - matchingPrediction.y_min,
+                        confidence: matchingPrediction.confidence
+                    };
+                }
+
+                const editAction = {
+                    action: "edit",
+                    path: image.path,
+                    faceName: faceName,
+                    faceIndex: faceIndex,
+                    boundingBox: boundingBox,
+                    timestamp: new Date().toISOString()
+                };
+
+                this.mydata.actions.push(editAction);
+                console.log('Added face edit action:', editAction);
+                this.showTagClickFeedback(imageIndex, 'face', faceName);
+            }
+
+            editObject(imageIndex, objectName, count) {
+                if (typeof this.mydata === 'undefined' || !this.mydata.canEdit) {
+                    return;
+                }
+
+                const image = this.images[imageIndex];
+                const objectPredictions = parsePsObjectArray(image.objects?.predictions);
+                const matchingObjects = objectPredictions.filter(pred => pred.label === objectName);
+
+                const boundingBoxes = matchingObjects.map(pred => ({
+                    x_min: pred.x_min,
+                    y_min: pred.y_min,
+                    x_max: pred.x_max,
+                    y_max: pred.y_max,
+                    width: pred.x_max - pred.x_min,
+                    height: pred.y_max - pred.y_min,
+                    confidence: pred.confidence
+                }));
+
+                const editAction = {
+                    action: "edit",
+                    path: image.path,
+                    objectName: objectName,
+                    count: count,
+                    boundingBox: boundingBoxes.length > 0 ? boundingBoxes[0] : null,
+                    timestamp: new Date().toISOString()
+                };
+
+                this.mydata.actions.push(editAction);
+                console.log('Added object edit action:', editAction);
+                this.showTagClickFeedback(imageIndex, 'object', objectName);
+            }
+
+            showTagClickFeedback(imageIndex, type, name) {
+                const selector = type === 'face'
+                    ? `#image-${imageIndex} .face-name-tag.clickable`
+                    : `#image-${imageIndex} .object-name-tag.clickable`;
+
+                const tags = document.querySelectorAll(selector);
+
+                tags.forEach(tag => {
+                    if (tag.textContent.includes(name)) {
+                        const originalBg = tag.style.backgroundColor;
+                        const originalText = tag.textContent;
+
+                        tag.style.backgroundColor = '#28a745';
+                        tag.style.color = 'white';
+                        tag.textContent = 'Edited!';
+
+                        setTimeout(() => {
+                            tag.style.backgroundColor = originalBg;
+                            tag.style.color = '';
+                            tag.textContent = originalText;
+                        }, 1500);
+                    }
+                });
+            }            deleteImage(index) {
                 const image = this.images[index];
-
-                // Add delete action to data.actions
                 const deleteAction = {
                     action: "delete",
-                    path: image.path
+                    path: image.originalPath || image.path
                 };
 
                 this.mydata.actions.push(deleteAction);
-
-                // Remove the image tile from the DOM
                 const imageTile = document.getElementById(`image-${index}`);
                 if (imageTile) {
-                    // Add a fade-out animation before removing
                     imageTile.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                     imageTile.style.opacity = '0';
                     imageTile.style.transform = 'scale(0.95)';
 
-                    // Remove the element after animation completes
                     setTimeout(() => {
                         imageTile.remove();
                     }, 300);
                 }
 
-                // Optional: Show feedback to user (only if tile still exists)
                 this.showDeleteFeedback(index);
             }
+
             showDeleteFeedback(index) {
                 const button = document.querySelector(`#image-${index} .delete-btn`);
                 if (!button) return;
@@ -768,9 +1313,6 @@
                 button.textContent = 'Deleting...';
                 button.style.backgroundColor = '#e74c3c';
                 button.disabled = true;
-
-                // Since we're removing the tile, we don't need to reset the button
-                // The timeout is removed as the element will be gone
             }
 
             fallbackCopy(text, index) {
@@ -823,17 +1365,18 @@
                 return div.innerHTML;
             }
 
-            repositionAllFaceOverlays() {
-                // Re-add face overlays for all loaded images after layout changes
+            repositionAllOverlays() {
                 this.images.forEach((image, index) => {
                     const imgElement = document.querySelector(`#image-${index} img`);
                     if (imgElement && imgElement.complete && imgElement.naturalWidth > 0) {
-                        // Remove existing overlays first
-                        const existingOverlays = document.querySelectorAll(`#image-${index} .face-overlay`);
-                        existingOverlays.forEach(overlay => overlay.remove());
+                        const existingFaceOverlays = document.querySelectorAll(`#image-${index} .face-overlay`);
+                        existingFaceOverlays.forEach(overlay => overlay.remove());
 
-                        // Re-add overlays with updated positioning
+                        const existingObjectOverlays = document.querySelectorAll(`#image-${index} .object-overlay`);
+                        existingObjectOverlays.forEach(overlay => overlay.remove());
+
                         this.addFaceOverlays(imgElement, index);
+                        this.addObjectOverlays(imgElement, index);
                     }
                 });
             }
@@ -841,23 +1384,22 @@
 
         let mydata = {
             images: JSON.parse("[]"),
-            title : "Photo Gallery",
+            title: "Photo Gallery",
             description: "Hover over images to see face recognition data",
             actions: [],
             canEdit: false,
             canDelete: false
-        }
+        };
 
-            // If no images are available, show the no images message
-            document.addEventListener('DOMContentLoaded', () => {
-                imageGallery = new ImageGallery(mydata);
-            });
+        document.addEventListener('DOMContentLoaded', () => {
+            imageGallery = new ImageGallery(mydata);
+        });
 
-            window.getActions = function () {
-                let results = mydata.actions
-                mydata.actions = [];
-                return results;
-            }
+        window.getActions = function () {
+            let results = [...mydata.actions];
+            mydata.actions = [];
+            return results;
+        };
         </script>
     </body>
 </html>

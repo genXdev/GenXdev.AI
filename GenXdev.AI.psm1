@@ -1,7 +1,6 @@
 . "$PSScriptRoot\Functions\GenXdev.AI\Approve-NewTextFileContent.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Convert-DotNetTypeToLLMType.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\ConvertTo-LMStudioFunctionDefinition.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI\EnsureDockerDesktop.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\EnsureGithubCLIInstalled.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\EnsurePaintNet.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\EnsureWinMergeInstalled.ps1"
@@ -21,4 +20,4 @@
 . "$PSScriptRoot\Functions\GenXdev.AI\New-LLMAudioChat.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\New-LLMTextChat.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Set-GenXdevAICommandNotFoundAction.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI\Test-ImageFile.ps1"
+. "$PSScriptRoot\Functions\GenXdev.AI\Test-DeepLinkImageFile.ps1"

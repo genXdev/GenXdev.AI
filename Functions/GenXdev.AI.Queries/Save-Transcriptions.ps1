@@ -32,19 +32,21 @@ Save-Transcriptions -DirectoryPath "C:\Videos" -LanguageIn "English"
 .EXAMPLE
 Save-Transcriptions "C:\Media" "Japanese" "English" "qwen"
 #>
+################################################################################
 function Save-Transcriptions {
 
     [CmdletBinding()]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
+
     param(
-        ######################################################################
+        ################################################################################
         [parameter(
             Mandatory = $false,
             Position = 0,
             HelpMessage = "The directory path to search for media files"
         )]
         [string] $DirectoryPath = ".\",
-        ######################################################################
+        ################################################################################
         [Parameter(
             Mandatory = $false,
             Position = 1,
@@ -202,23 +204,25 @@ function Save-Transcriptions {
             "Yoruba",
             "Zulu")]
         [string] $LanguageIn = "",
-        ######################################################################
+        ################################################################################
         [Parameter(
             Mandatory = $false,
             Position = 2,
             HelpMessage = "Sets the language to translate to."
         )]
         [string]$LanguageOut = $null,
-        ######################################################################
+        ################################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The LM Studio model to use for translation."
         )]
         [string] $TranslateUsingLMStudioModel = "qwen"
-        ######################################################################
+        ################################################################################
     )
+
     begin {
 
+        # check if language input parameter is empty or whitespace
         if ([string]::IsNullOrWhiteSpace($LanguageIn)) {
 
             # get default language from system settings
@@ -374,73 +378,104 @@ function Save-Transcriptions {
 
         # store current location to restore at end of processing
         Microsoft.PowerShell.Management\Push-Location
-        Microsoft.PowerShell.Utility\Write-Verbose "Current working directory stored for later restoration"
+
+        Microsoft.PowerShell.Utility\Write-Verbose ("Current working directory " +
+            "stored for later restoration")
     }
 
-
-process {
+    process {
 
         # change to target directory for file processing
-        Microsoft.PowerShell.Management\Set-Location (GenXdev.FileSystem\Expand-Path $DirectoryPath)
-        Microsoft.PowerShell.Utility\Write-Verbose "Changed working directory to: $DirectoryPath"
+        Microsoft.PowerShell.Management\Set-Location `
+            (GenXdev.FileSystem\Expand-Path $DirectoryPath)
+
+        Microsoft.PowerShell.Utility\Write-Verbose ("Changed working directory " +
+            "to: $DirectoryPath")
 
         # recursively process each file in directory and subdirectories
-        Microsoft.PowerShell.Management\Get-ChildItem -File -rec | Microsoft.PowerShell.Core\ForEach-Object {
+        Microsoft.PowerShell.Management\Get-ChildItem -File -rec |
+            Microsoft.PowerShell.Core\ForEach-Object {
 
             # skip files that don't have a supported media extension
             if ($extensions -notcontains $PSItem.Extension.ToLower()) {
-                Microsoft.PowerShell.Utility\Write-Verbose "Skipping file with unsupported extension: $($PSItem.Name)"
+
+                Microsoft.PowerShell.Utility\Write-Verbose ("Skipping file with " +
+                    "unsupported extension: $($PSItem.Name)")
+
                 return
             }
 
             # construct paths for old and new subtitle file naming patterns
             $enPathOld = "$($PSItem.FullName).en.srt"
+
             $nlPathOld = "$($PSItem.FullName).nl.srt"
+
             $nlPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".nl.srt")
+
             $enPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".en.srt")
 
             # determine target language and output path for new subtitle file
-            $lang = [string]::IsNullOrWhiteSpace($LanguageOut) ? $LanguageIn : `
+            $lang = [string]::IsNullOrWhiteSpace($LanguageOut) ? $LanguageIn :
                 $LanguageOut
+
             $langCode = (GenXdev.Helpers\Get-WebLanguageDictionary)[$lang]
+
             if ($null -ne $langCode) {
+
                 $lang = $langCode
             }
+
             $newPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".$lang.srt")
 
             # handle legacy Dutch subtitle file naming convention
             if ([io.file]::Exists($nlPathOld)) {
+
                 if ([io.file]::Exists($nlPath)) {
-                    Microsoft.PowerShell.Management\Remove-Item $nlPathOld -Force
+
+                    $null = Microsoft.PowerShell.Management\Remove-Item $nlPathOld `
+                        -Force
                 }
                 else {
-                    Microsoft.PowerShell.Management\Move-Item $nlPathOld $nlPath -Force
+
+                    $null = Microsoft.PowerShell.Management\Move-Item $nlPathOld `
+                        $nlPath -Force
                 }
             }
 
             # handle legacy English subtitle file naming convention
             if ([io.file]::Exists($enPathOld)) {
+
                 if ([io.file]::Exists($enPath)) {
-                    Microsoft.PowerShell.Management\Remove-Item $enPathOld -Force
+
+                    $null = Microsoft.PowerShell.Management\Remove-Item $enPathOld `
+                        -Force
                 }
                 else {
-                    Microsoft.PowerShell.Management\Move-Item $enPathOld $enPath -Force
+
+                    $null = Microsoft.PowerShell.Management\Move-Item $enPathOld `
+                        $enPath -Force
                 }
             }
 
             # skip if subtitle file already exists for target language
             if ([io.file]::Exists($newPath)) {
-                Microsoft.PowerShell.Utility\Write-Verbose "Subtitle file already exists: $newPath"
+
+                Microsoft.PowerShell.Utility\Write-Verbose ("Subtitle file " +
+                    "already exists: $newPath")
+
                 return
             }
 
             try {
+
                 # reduce CPU priority to minimize system impact during processing
-                [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = `
+                [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass =
                     [System.Diagnostics.ProcessPriorityClass]::Idle
 
                 try {
-                    Microsoft.PowerShell.Utility\Write-Verbose "Generating transcription for: $($PSItem.FullName)"
+
+                    Microsoft.PowerShell.Utility\Write-Verbose ("Generating " +
+                        "transcription for: $($PSItem.FullName)")
 
                     # prepare parameters for transcription generation
                     $params = @{
@@ -453,40 +488,56 @@ process {
 
                     # add source language if specified
                     if (-not [String]::IsNullOrWhiteSpace($LanguageIn)) {
+
                         $params += @{ LanguageIn = $LanguageIn }
                     }
 
                     # add target language if translation requested
                     if (-not [String]::IsNullOrWhiteSpace($LanguageOut)) {
+
                         $params += @{ LanguageOut = $LanguageOut }
                     }
 
                     # generate transcription using whisper model
-                    $transcription = GenXdev.AI\Get-MediaFileAudioTranscription @params
+                    $transcription = GenXdev.AI\Get-MediaFileAudioTranscription `
+                        @params
                 }
                 finally {
+
                     # restore normal CPU priority after processing
-                    [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = `
+                    [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass =
                         [System.Diagnostics.ProcessPriorityClass]::Normal
                 }
             }
             catch {
-                Microsoft.PowerShell.Utility\Write-Verbose "Failed to process file: $($PSItem.FullName)"
-                Microsoft.PowerShell.Utility\Write-Verbose "Error details: $PSItem"
+
+                Microsoft.PowerShell.Utility\Write-Verbose ("Failed to process " +
+                    "file: $($PSItem.FullName)")
+
+                Microsoft.PowerShell.Utility\Write-Verbose ("Error details: " +
+                    "$PSItem")
+
                 return
             }
 
             # save generated transcription to subtitle file
-            $transcription | Microsoft.PowerShell.Utility\Out-File $newPath -Force
-            Microsoft.PowerShell.Utility\Write-Verbose "Transcription saved to: $newPath"
+            $null = $transcription |
+                Microsoft.PowerShell.Utility\Out-File $newPath -Force
+
+            Microsoft.PowerShell.Utility\Write-Verbose ("Transcription saved " +
+                "to: $newPath")
+
             $transcription
         }
     }
 
     end {
+
         # restore original working directory
         Microsoft.PowerShell.Management\Pop-Location
-        Microsoft.PowerShell.Utility\Write-Verbose "Original working directory restored"
+
+        Microsoft.PowerShell.Utility\Write-Verbose ("Original working directory " +
+            "restored")
     }
 }
 ################################################################################
