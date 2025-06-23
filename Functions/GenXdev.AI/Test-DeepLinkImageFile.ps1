@@ -42,7 +42,7 @@ function Test-DeepLinkImageFile {
     process {
 
         # check if the file exists at the specified path
-        if (-not (Microsoft.PowerShell.Utility\Test-Path $Path)) {
+        if (-not (Microsoft.PowerShell.Management\Test-Path $Path)) {
 
             throw "Image file not found: $Path"
         }

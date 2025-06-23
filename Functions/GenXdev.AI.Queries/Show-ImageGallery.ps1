@@ -444,9 +444,6 @@ function Show-ImageGallery {
 
                         try {
 
-                            Microsoft.PowerShell.Utility\write-host (
-                                $action | Microsoft.PowerShell.Utility\ConvertTo-Json)
-
                             # handle different action types
                             switch ($action.action) {
 

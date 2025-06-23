@@ -861,9 +861,8 @@ function Find-Image {
 
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "Show-ImageGallery" `                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-
-            Microsoft.PowerShell.Utility\Write-Host ($params | Microsoft.PowerShell.Utility\ConvertTo-Json -depth 20)
+                -FunctionName "Show-ImageGallery" `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
             # Pass the results to Show-ImageGallery
             GenXdev.AI\Show-ImageGallery @params -InputObject $results

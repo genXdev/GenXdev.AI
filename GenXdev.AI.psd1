@@ -12,7 +12,7 @@
 RootModule = 'GenXdev.AI.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.186.2025'
+ModuleVersion = '1.188.2025'
 
 # Supported PSEditions
 CompatiblePSEditions = 'Core'
@@ -51,7 +51,7 @@ ClrVersion = '9.0.4'
 ProcessorArchitecture = 'Amd64'
 
 # Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @(@{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.186.2025'; })
+RequiredModules = @(@{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.188.2025'; })
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -110,15 +110,15 @@ CmdletsToExport = @()
 VariablesToExport = @()
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = 'Analyze-Image', 'comparefaces', 'corporatize', 'diplomatize', 
-               'dispicetext', 'embed-text', 'emojify', 'enhanceimage', 'equalstrue', 
-               'facerecognition', 'findimages', 'Get-TextEmbedding', 'getfixprompt', 
-               'getlist', 'getstring', 'hint', 'Invoke-LMStudioQuery', 'letsfixthis', 'li', 
-               'llm', 'llmaudiochat', 'llmchat', 'moremovietitles', 'objectdetection', 
-               'qllm', 'qlms', 'Query-Image', 'recordandtranscribe', 'removeimagedata', 
-               'showfoundimages', 'spellcheck', 'transcribe', 'transcribefile', 
-               'translate', 'uncorporatize', 'undiplomatize', 'updateallimages', 
-               'UpdateFaces', 'updateimages'
+AliasesToExport = 'comparefaces', 'corporatize', 'diplomatize', 'dispicetext', 'embed-text', 
+               'emojify', 'enhanceimage', 'equalstrue', 'facerecognition', 'findimages', 
+               'Get-TextEmbedding', 'getfixprompt', 'getlist', 'getstring', 'hint', 
+               'Invoke-LMStudioQuery', 'letsfixthis', 'li', 'llm', 'llmaudiochat', 
+               'llmchat', 'moremovietitles', 'objectdetection', 'qllm', 'qlms', 
+               'recordandtranscribe', 'removeimagedata', 'showfoundimages', 
+               'spellcheck', 'transcribe', 'transcribefile', 'translate', 
+               'uncorporatize', 'undiplomatize', 'updateallimages', 'UpdateFaces', 
+               'updateimages'
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()

@@ -144,7 +144,7 @@ Update-Module
 | [Invoke-ImageFacesUpdate](#Invoke-ImageFacesUpdate) | facerecognition | Updates face recognition metadata for image files in a specified directory. |
 | [Invoke-ImageKeywordUpdate](#Invoke-ImageKeywordUpdate) | updateimages | Updates image metadata with AI-generated descriptions and keywords. |
 | [Invoke-ImageObjectsUpdate](#Invoke-ImageObjectsUpdate) | objectdetection | Updates object detection metadata for image files in a specified directory. |
-| [Invoke-QueryImageContent](#Invoke-QueryImageContent) | query-image, analyze-image | Analyzes image content using AI vision capabilities through the LM-Studio API. |
+| [Invoke-QueryImageContent](#Invoke-QueryImageContent) |  | Analyzes image content using AI vision capabilities through the LM-Studio API. |
 | [Remove-ImageMetaData](#Remove-ImageMetaData) | removeimagedata | Removes image metadata files from image directories. |
 | [Save-Transcriptions](#Save-Transcriptions) |  | Generates subtitle files for audio and video files using OpenAI Whisper. |
 | [Set-ImageDirectories](#Set-ImageDirectories) |  | Sets the directories for image files used in GenXdev.AI operations. |
@@ -7772,6 +7772,12 @@ PARAMETERS
 INPUTS
     
 OUTPUTS
+    System.Object[]
+    
+    System.Collections.Generic.List`1[[System.Object, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]
+    
+    System.String
+    
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -9706,7 +9712,7 @@ PARAMETERS
         
         Required?                    true
         Position?                    1
-        Default value                Describe the content of this image
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
