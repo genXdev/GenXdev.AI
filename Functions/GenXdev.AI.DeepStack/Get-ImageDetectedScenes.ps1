@@ -54,15 +54,19 @@ The path inside the container where faces are stored. This should match the
 DeepStack configuration. Default is "/datastore".
 
 .EXAMPLE
-Get-ImageScene -ImagePath "C:\Users\YourName\landscape.jpg"
+Get-ImageDetectedScenes -ImagePath "C:\Users\YourName\landscape.jpg"
 Classifies the scene in the specified image using default settings.
 
 .EXAMPLE
-Get-ImageScene -ImagePath "C:\photos\vacation.jpg" -UseGPU
+Get-ImageDetectedScenes -ImagePath "C:\photos\vacation.jpg" -ConfidenceThreshold 0.6 -UseGPU
+Classifies the scene using GPU acceleration and only accepts results with confidence >= 60%.
+
+.EXAMPLE
+Get-ImageDetectedScenes -ImagePath "C:\photos\vacation.jpg" -UseGPU
 Classifies the scene using GPU acceleration for faster processing.
 
 .EXAMPLE
-"C:\Users\YourName\beach.jpg" | Get-ImageScene
+"C:\Users\YourName\beach.jpg" | Get-ImageDetectedScenes
 Pipeline support for processing multiple images.
 
 .NOTES
@@ -128,9 +132,12 @@ watering_hole, wave, wet_bar, wheat_field, wind_farm, windmill, yard,
 youth_hostel, zen_garden.
 #>
 ###############################################################################
-function Get-ImageScene {
+function Get-ImageDetectedScenes {
 
-    [CmdletBinding()]    param(
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
+    
+    param(
         #######################################################################
         [Parameter(
             Position = 0,
@@ -138,12 +145,20 @@ function Get-ImageScene {
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true,
             HelpMessage = "The local path to the image file to analyze"
-        )]
-        [ValidateNotNullOrEmpty()]
+        )]        [ValidateNotNullOrEmpty()]
         [string] $ImagePath,
         #######################################################################
         [Parameter(
             Position = 1,
+            Mandatory = $false,
+            HelpMessage = ("Minimum confidence threshold (0.0-1.0). " +
+                          "Default is 0.0")
+        )]
+        [ValidateRange(0.0, 1.0)]
+        [double] $ConfidenceThreshold = 0.0,
+        #######################################################################
+        [Parameter(
+            Position = 2,
             Mandatory = $false,
             HelpMessage = "The name for the Docker container"
         )]
@@ -151,7 +166,7 @@ function Get-ImageScene {
         [string] $ContainerName = "deepstack_face_recognition",
         #######################################################################
         [Parameter(
-            Position = 2,
+            Position = 3,
             Mandatory = $false,
             HelpMessage = ("The name for the Docker volume for persistent " +
                           "storage")
@@ -160,7 +175,7 @@ function Get-ImageScene {
         [string] $VolumeName = "deepstack_face_data",
         #######################################################################
         [Parameter(
-            Position = 3,
+            Position = 4,
             Mandatory = $false,
             HelpMessage = "The port number for the DeepStack service"
         )]
@@ -168,7 +183,7 @@ function Get-ImageScene {
         [int] $ServicePort = 5000,
         #######################################################################
         [Parameter(
-            Position = 4,
+            Position = 5,
             Mandatory = $false,
             HelpMessage = ("Maximum time in seconds to wait for service " +
                           "health check")
@@ -177,7 +192,7 @@ function Get-ImageScene {
         [int] $HealthCheckTimeout = 60,
         #######################################################################
         [Parameter(
-            Position = 5,
+            Position = 6,
             Mandatory = $false,
             HelpMessage = ("Interval in seconds between health check " +
                           "attempts")
@@ -222,14 +237,15 @@ function Get-ImageScene {
         )]
         [switch] $UseGPU
         #######################################################################
-    )begin {
-
-        # use script-scoped variables set by ensuredeepstack, with fallback
+    )begin {        # use script-scoped variables set by ensuredeepstack, with fallback
         # defaults
         if (-not $ApiBaseUrl) {
 
             $NoDockerInitialize = $false
         }
+
+        # set the confidence threshold for filtering scene recognition results
+        $script:ConfidenceThreshold = $ConfidenceThreshold
 
         # ensure that the deepstack scene recognition service is running
         if (-not $NoDockerInitialize) {
@@ -304,10 +320,23 @@ function Get-ImageScene {
                 $SceneData.confidence
             } else {
                 0.0
-            }
-
-            Microsoft.PowerShell.Utility\Write-Verbose `
+            }            Microsoft.PowerShell.Utility\Write-Verbose `
                 "Detected scene: $scene (confidence: $confidence)"
+
+            # check if confidence meets the threshold
+            if ($confidence -lt $script:ConfidenceThreshold) {
+                Microsoft.PowerShell.Utility\Write-Verbose `
+                    "Scene confidence $confidence below threshold $($script:ConfidenceThreshold), marking as unknown"
+
+                return @{
+                    success = $false
+                    scene = "unknown"
+                    label = "unknown"
+                    confidence = $confidence
+                    confidence_percentage = [math]::Round($confidence * 100, 2)
+                    message = "Scene confidence below threshold"
+                }
+            }
 
             return @{
                 success = $true

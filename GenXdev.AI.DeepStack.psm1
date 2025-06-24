@@ -2,7 +2,7 @@
 . "$PSScriptRoot\Functions\GenXdev.AI.DeepStack\EnsureDeepStack.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.DeepStack\Get-ImageDetectedFaces.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.DeepStack\Get-ImageDetectedObjects.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI.DeepStack\Get-ImageScene.ps1"
+. "$PSScriptRoot\Functions\GenXdev.AI.DeepStack\Get-ImageDetectedScenes.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.DeepStack\Get-RegisteredFaces.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.DeepStack\Invoke-ImageEnhancement.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.DeepStack\Register-AllFaces.ps1"

@@ -281,15 +281,45 @@
             font-weight: 500;
             cursor: pointer;
             transition: background-color 0.2s ease;
-        }
-
-        .object-name-tag:hover {
+        }        .object-name-tag:hover {
             background-color: #f39c12;
         }
 
-        .metadata-item.objects {
+        .scene-classification {
+            margin-bottom: 10px;
+        }
+
+        .scene-label {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .scene-name-tag {
+            display: inline-block;
+            background-color: #8e44ad;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin: 2px 2px 2px 0;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .scene-name-tag:hover {
+            background-color: #7d3c98;
+        }.metadata-item.objects {
             background-color: #fff3cd;
             color: #856404;
+        }
+
+        .metadata-item.scene {
+            background-color: #e7f3ff;
+            color: #2c5aa0;
         }
 
         .actions {
@@ -451,7 +481,7 @@
             }
 
             /* Prevent content splitting */
-            .content, .description, .metadata, .keywords, .recognized-faces, .detected-objects {
+            .content, .description, .metadata, .keywords, .recognized-faces, .detected-objects, .scene-classification {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
@@ -474,7 +504,7 @@
             }
 
             /* Style tags for print */
-            .face-name-tag, .object-name-tag {
+            .face-name-tag, .object-name-tag, .scene-name-tag {
                 background-color: #f8f9fa !important;
                 color: #495057 !important;
                 padding: 2px 6px !important;
@@ -792,11 +822,13 @@
                 console.log('Processing image:', image.path);
                 console.log('People data:', image.people);
                 console.log('Faces array:', faces);
-                console.log('Face count:', faceCount);
-
-                const objects = Array.isArray(image.objects?.objects) ? image.objects.objects : [];
+                console.log('Face count:', faceCount);                const objects = Array.isArray(image.objects?.objects) ? image.objects.objects : [];
                 const objectCount = image.objects?.count || 0;
-                const objectCounts = (typeof image.objects?.object_counts === 'string') ? (parsePsObject(image.objects.object_counts) || {}) : (image.objects?.object_counts || {});
+                const objectCounts = (typeof image.objects?.object_counts === 'string') ? (parsePsObject(image.objects.object_counts) || {}) : (image.objects?.object_counts || {});                // Handle scene classification data
+                const scene = image.scenes?.scene || 'unknown';
+                const sceneConfidence = image.scenes?.confidence || 0;
+                const sceneConfidencePercentage = Math.round((sceneConfidence * 100)) || 0;
+                const sceneSuccess = image.scenes?.success || false;
 
                 item.innerHTML = `
                     <div class="image-container">
@@ -810,11 +842,11 @@
                         <div class="description">
                             <div class="short-description">${this.escapeHtml(image.description?.short_description || 'No description')}</div>
                             <div class="long-description">${this.escapeHtml(image.description?.long_description || '')}</div>
-                        </div>
-                        <div class="metadata">
+                        </div>                        <div class="metadata">
                             ${faceCount > 0 ? `<span class="metadata-item people">${faceCount} ${faceCount === 1 ? 'person' : 'people'}</span>` : ''}
                             ${faces.length > 0 ? `<span class="metadata-item faces">${faces.length} ${faces.length === 1 ? 'face' : 'faces'} recognized</span>` : ''}
                             ${objectCount > 0 ? `<span class="metadata-item objects">${objectCount} ${objectCount === 1 ? 'object' : 'objects'} detected</span>` : ''}
+                            ${sceneSuccess && scene !== 'unknown' ? `<span class="metadata-item scene">Scene: ${scene.replace(/_/g, ' ')} (${sceneConfidencePercentage}%)</span>` : ''}
                             <span class="metadata-item">${image.description?.picture_type || 'Photo'}</span>
                             <span class="metadata-item">${image.description?.style_type || 'Unknown style'}</span>
                         </div>
@@ -833,8 +865,7 @@
                                     : ' class="face-name-tag"';
                                 return `<span${clickHandler}>${this.escapeHtml(faceName)}</span>`;
                             }).join('')}
-                        </div>
-                        ` : ''}
+                        </div>                        ` : ''}
                         ${Object.keys(objectCounts).length > 0 ? `
                         <div class="detected-objects">
                             <div class="objects-label">Detected objects:</div>
@@ -844,6 +875,17 @@
                                     : ' class="object-name-tag"';
                                 return `<span${clickHandler}>${this.escapeHtml(objectName)} (${count})</span>`;
                             }).join('')}
+                        </div>
+                        ` : ''}
+                        ${sceneSuccess && scene !== 'unknown' ? `
+                        <div class="scene-classification">
+                            <div class="scene-label">Scene classification:</div>
+                            ${(() => {
+                                const clickHandler = (typeof this.mydata !== 'undefined' && this.mydata.canEdit)
+                                    ? ` onclick="imageGallery.editScene(${index}, '${this.escapeHtml(scene)}', ${sceneConfidencePercentage})" class="scene-name-tag clickable"`
+                                    : ' class="scene-name-tag"';
+                                return `<span${clickHandler}>${this.escapeHtml(scene.replace(/_/g, ' '))} (${sceneConfidencePercentage}%)</span>`;
+                            })()}
                         </div>
                         ` : ''}
                         <div class="actions">

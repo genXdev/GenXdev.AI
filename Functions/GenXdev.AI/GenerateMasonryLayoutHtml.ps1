@@ -69,7 +69,7 @@ function GenerateMasonryLayoutHtml {
             Mandatory = $false,
             HelpMessage = "Description for the gallery"
         )]
-        [string]$Description = "Hover over images to see face recognition data",
+        [string]$Description = "Hover over images to see face recognition, object detection, and scene classification data",
         ###############################################################################
         [Parameter(
             Mandatory = $false,

@@ -1,16 +1,17 @@
 ################################################################################
 <#
 .SYNOPSIS
-Batch updates image keywords, faces, and objects across multiple system
+Batch updates image keywords, faces, objects, and scenes across multiple system
 directories.
 
 .DESCRIPTION
 This function systematically processes images across various system directories
-to update their keywords, face recognition data, and object detection data
-using AI services. It covers media storage, system files, downloads, OneDrive,
-and personal pictures folders. The function uses parallel processing to
-efficiently handle keyword extraction, face recognition, and object detection
-tasks simultaneously across multiple directories.
+to update their keywords, face recognition data, object detection data, and
+scene classification data using AI services. It covers media storage, system
+files, downloads, OneDrive, and personal pictures folders. The function uses
+parallel processing to efficiently handle keyword extraction, face recognition,
+object detection, and scene classification tasks simultaneously across multiple
+directories.
 
 .PARAMETER ImageDirectories
 Array of directory paths to process for image keyword and face recognition
@@ -37,14 +38,18 @@ Custom Docker image name to use for face recognition processing.
 .PARAMETER FacesPath
 The path inside the container where face recognition data is stored.
 
+.PARAMETER ConfidenceThreshold
+Minimum confidence threshold (0.0-1.0) for object detection. Objects with
+confidence below this threshold will be filtered out. Default is 0.5.
+
+.PARAMETER Language
+Specifies the language for generated descriptions and keywords. Defaults to
+English.
+
 .PARAMETER RetryFailed
 Specifies whether to retry previously failed image keyword updates. When
 enabled, the function will attempt to process images that failed in previous
 runs.
-
-.PARAMETER ConfidenceThreshold
-Minimum confidence threshold (0.0-1.0) for object detection. Objects with
-confidence below this threshold will be filtered out. Default is 0.5.
 
 .PARAMETER RedoAll
 Forces reprocessing of all images regardless of previous processing status.
@@ -55,13 +60,34 @@ duplicate container setup.
 
 .PARAMETER Force
 Force rebuild of Docker container and remove existing data for clean start.
+And force restart of LMStudio
 
 .PARAMETER UseGPU
 Use GPU-accelerated version for faster processing (requires NVIDIA GPU).
 
-.PARAMETER Language
-Specifies the language for generated descriptions and keywords. Defaults to
-English.
+.PARAMETER Model
+Name or partial path of the model to initialize.
+
+.PARAMETER ModelLMSGetIdentifier
+The LM-Studio model to use.
+
+.PARAMETER ApiEndpoint
+Api endpoint url, defaults to http://localhost:1234/v1/chat/completions.
+
+.PARAMETER ApiKey
+The API key to use for the request.
+
+.PARAMETER TimeoutSeconds
+Timeout in seconds for the request, defaults to 24 hours.
+
+.PARAMETER MaxToken
+Maximum tokens in response (-1 for default).
+
+.PARAMETER TTLSeconds
+Set a TTL (in seconds) for models loaded via API.
+
+.PARAMETER ShowWindow
+Show Docker + LM Studio window during initialization.
 
 .EXAMPLE
 Update-AllImageMetaData -ImageDirectories @("C:\Pictures", "D:\Photos") `
@@ -305,7 +331,66 @@ function Update-AllImageMetaData {
             "Yiddish",
             "Yoruba",
             "Zulu")]
-        [string] $Language = "English",
+        [string] $Language,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 10,
+            ValueFromPipeline = $true,
+            HelpMessage = "Name or partial path of the model to initialize"
+        )]
+        [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
+        [string]$Model = "MiniCPM",
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 11,
+            HelpMessage = "The LM-Studio model to use"
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string]$ModelLMSGetIdentifier = ("lmstudio-community/MiniCPM-V-2_6-" +
+        "GGUF/MiniCPM-V-2_6-Q4_K_M.gguf"),
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 12,
+            HelpMessage = ("Api endpoint url, defaults to " +
+                "http://localhost:1234/v1/chat/completions")
+        )]
+        [string] $ApiEndpoint = $null,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 13,
+            HelpMessage = "The API key to use for the request"
+        )]
+        [string] $ApiKey = $null,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 14,
+            HelpMessage = "Timeout in seconds for the request, defaults to 24 hours"
+        )]
+        [int] $TimeoutSeconds = (3600 * 24),
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 15,
+            HelpMessage = "Maximum tokens in response (-1 for default)"
+        )]
+        [Alias("MaxTokens")]
+        [ValidateRange(-1, [int]::MaxValue)]
+        [int]$MaxToken = 8192,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 16,
+            HelpMessage = "Set a TTL (in seconds) for models loaded via API"
+        )]
+        [Alias("ttl")]
+        [ValidateRange(-1, [int]::MaxValue)]
+        [int]$TTLSeconds = -1,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -338,8 +423,13 @@ function Update-AllImageMetaData {
             Mandatory = $false,
             HelpMessage = "Use GPU-accelerated version (requires NVIDIA GPU)"
         )]
-        [switch] $UseGPU
+        [switch] $UseGPU,
         #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Show Docker + LM Studio window during initialization"
+        )]
+        [switch]$ShowWindow
     )
 
     begin {
@@ -349,6 +439,87 @@ function Update-AllImageMetaData {
             "Starting systematic image keyword, faces, and objects update " +
             "across directories"
         )
+
+        # resolve default language if not explicitly provided
+        if ([string]::IsNullOrEmpty($Language)) {
+
+            # try to get default language from global variable first
+            if ($Global:DefaultImagesMetaLanguage) {
+
+                $Language = $Global:DefaultImagesMetaLanguage
+            }
+            else {
+
+                # try to get from preferences
+                try {
+
+                    $defaultLanguage = GenXdev.Data\Get-GenXdevPreference `
+                        -Name "DefaultImagesMetaLanguage" `
+                        -DefaultValue "English" `
+                        -ErrorAction SilentlyContinue
+
+                    if (-not [string]::IsNullOrEmpty($defaultLanguage)) {
+
+                        $Language = $defaultLanguage
+                    }
+                    else {
+
+                        $Language = "English"
+                    }
+                }
+                catch {
+
+                    $Language = "English"
+                }
+            }
+        }
+
+        # ensure lm studio is initialized with proper parameters
+        try {
+
+            # copy identical parameter values for invoke-queryimagecontent
+            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName 'Invoke-QueryImageContent' `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue)
+
+            # ensure lm studio service is running
+            $null = GenXdev.AI\EnsureLMStudio @params
+
+            # show window positioning if requested
+            if ($ShowWindow)  {
+
+                # wait for services to stabilize
+                Microsoft.PowerShell.Utility\Start-Sleep 2
+
+                # copy parameters for getting loaded model list
+                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                    -BoundParameters $PSBoundParameters `
+                    -FunctionName 'Get-LMStudioLoadedModelList' `
+                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                        -Scope Local `
+                        -ErrorAction SilentlyContinue)
+
+                # get loaded model list and position windows
+                $windowHelper = GenXdev.AI\Get-LMStudioLoadedModelList @params `
+                    -ShowWindow:$ShowWindow
+
+                # position lm studio window at top right of monitor 0
+                $null = GenXdev.Windows\Set-WindowPosition `
+                    -WindowHelper $windowHelper `
+                    -top `
+                    -right `
+                    -mon 0
+
+                # position current window to left side of monitor 0
+                $null = GenXdev.Windows\Set-WindowPosition -left -mon 0
+            }
+        }
+        catch {
+
+        }
 
         # copy identical parameter values from bound parameters for deepstack setup
         $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -371,68 +542,46 @@ function Update-AllImageMetaData {
 
         # ensure deepstack service is running for face recognition
         $null = GenXdev.AI\EnsureDeepStack @ensureParams
-    }
 
-    process {
+        # position docker windows appropriately
+        try {
 
-        # use provided directories or default system directories
+            # find docker processes with main windows
+            Microsoft.PowerShell.Management\Get-Process *docker* |
+            Microsoft.PowerShell.Core\Where-Object `
+                -Property MainWindowHandle `
+                -ne 0 |
+            Microsoft.PowerShell.Core\ForEach-Object {
+
+                # set window position for docker ui
+                $null = GenXdev.Windows\Set-WindowPosition `
+                    -Process $_ `
+                    -top `
+                    -bottom `
+                    -mon 0
+            }
+
+            # position current window to left side
+            $null = GenXdev.Windows\Set-WindowPosition -left -mon 0
+        }
+        catch {
+
+            # fallback positioning if docker window positioning fails
+            $null = GenXdev.Windows\Set-WindowPosition -left -mon 0
+        }
+    }    process {
+
+        # get configured directories and language using get-imagedirectories
+        $config = GenXdev.AI\Get-ImageDirectories -DefaultValue $ImageDirectories
+
+        # use provided directories or get from configuration
         if ($ImageDirectories) {
 
-            # convert provided directories to simple path array
             $directories = $ImageDirectories
-        }
-        elseif ($Global:ImageDirectories) {
-
-            $json = GenXdev.Data\Get-GenXdevPreference `
-                -Name "ImageDirectories" `
-                -DefaultValue $Global:ImageDirectories `
-                -ErrorAction SilentlyContinue
-
-            if (-not [string]::IsNullOrEmpty($json)) {
-
-                # parse json configuration for image directories
-                $directories = $json |
-                    Microsoft.PowerShell.Utility\ConvertFrom-Json
-            }
-            if ($null -eq $directories -or $directories.Count -eq 0) {
-
-                # use global variable if it exists
-                $directories = $Global:ImageDirectories
-            }
         }
         else {
 
-            $json = GenXdev.Data\Get-GenXdevPreference `
-                -Name "ImageDirectories" `
-                -DefaultValue $Global:ImageDirectories `
-                -ErrorAction SilentlyContinue
-
-            if ([string]::IsNullOrEmpty($json)) {
-
-                # parse json configuration for image directories
-                $directories = $json |
-                    Microsoft.PowerShell.Utility\ConvertFrom-Json
-            }
-            if ($null -eq $directories -or $directories.Count -eq 0) {
-
-                $picturesPath = GenXdev.FileSystem\Expand-Path "~\Pictures"
-
-                try {
-                    # attempt to get known folder path for Pictures
-                    $picturesPath = GenXdev.Windows\Get-KnownFolderPath Pictures
-                }
-                catch {
-                    # fallback to default if known folder retrieval fails
-                    $picturesPath = GenXdev.FileSystem\Expand-Path "~\Pictures"
-                }
-
-                # define default directories for processing
-                $directories = @(
-                    (GenXdev.FileSystem\Expand-Path '~\downloads'),
-                    (GenXdev.FileSystem\Expand-Path '~\\onedrive'),
-                    $picturesPath
-                )
-            }
+            $directories = $config.ImageDirectories
         }
 
         # process each directory in parallel for maximum efficiency
@@ -456,6 +605,7 @@ function Update-AllImageMetaData {
                         else { "" })
                 )
 
+                # initialize job collection for parallel processing
                 $jobs = @()
 
                 # start thread job for keyword extraction processing
@@ -511,6 +661,22 @@ function Update-AllImageMetaData {
                 } -ArgumentList $dir, $isOneDriveFolder, $redoAll,
                     $retryFailed, $confidenceThreshold
 
+                # start thread job for scene classification processing
+                $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
+
+                    param($dir, $isOneDriveFolder, $redoAll, $retryFailed)
+
+                    # run image scenes update with appropriate flags
+                    GenXdev.AI\Invoke-ImageScenesUpdate `
+                        -imageDirectory $dir `
+                        -recurse `
+                        -Verbose `
+                        -NoDockerInitialize `
+                        -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
+                        -retryFailed:$retryFailed
+
+                } -ArgumentList $dir, $isOneDriveFolder, $redoAll, $retryFailed
+
                 # wait for all jobs to finish and collect results
                 $jobs |
                     Microsoft.PowerShell.Core\Wait-Job |
@@ -520,14 +686,14 @@ function Update-AllImageMetaData {
                 $jobs |
                     Microsoft.PowerShell.Core\Remove-Job
 
-            } -ThrottleLimit 5
+            } -ThrottleLimit 10
     }
 
     end {
 
         # log completion of all directory processing
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Completed image keyword, faces, and objects updates across " +
+            "Completed image keyword, faces, objects, and scenes updates across " +
             "all directories"
         )
     }

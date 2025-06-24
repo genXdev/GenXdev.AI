@@ -6,15 +6,16 @@ Scans image files for keywords and descriptions using metadata files.
 .DESCRIPTION
 Searches for image files (jpg, jpeg, png) in the specified directory and its
 subdirectories. For each image, checks associated description.json,
-keywords.json, people.json, and objects.json files for metadata. Can filter images
-based on keyword matches, people recognition, and object detection, then return
-the results as objects. Use -ShowImageGallery to display results in a browser-based
-masonry layout.
+keywords.json, people.json, and objects.json files for metadata. Can filter
+images based on keyword matches, people recognition, and object detection, then
+return the results as objects. Use -ShowImageGallery to display results in a
+browser-based masonry layout.
 
 The function searches through image directories and examines alternate data
 streams containing metadata in JSON format. It can match keywords using wildcard
-patterns, filter for specific people, and search for detected objects. By default,
-returns image data objects. Use -ShowImageGallery to display in a web browser.
+patterns, filter for specific people, and search for detected objects. By
+default, returns image data objects. Use -ShowImageGallery to display in a web
+browser.
 
 .PARAMETER Keywords
 Array of keywords to search for in image metadata. Supports wildcards. If empty,
@@ -29,24 +30,32 @@ to filter images based on face recognition metadata stored in people.json files.
 Array of object names to search for in image metadata. Supports wildcards. Used
 to filter images based on object detection metadata stored in objects.json files.
 
+.PARAMETER Scenes
+Array of scene categories to search for in image metadata. Supports wildcards.
+Used to filter images based on scene classification metadata stored in
+scenes.json files.
+
 .PARAMETER ImageDirectories
 Array of directory paths to search for images. Each directory is searched
 recursively for jpg, jpeg, and png files. Relative paths are converted to
 absolute paths automatically.
 
-.PARAMETER ShowImageGallery
-Switch to display the search results in a browser-based masonry layout gallery.
-When used, the results are shown in an interactive web view. Can be combined with
--PassThru to also return the objects.
+.PARAMETER InputObject
+Accepts search results from a previous -PassThru call to regenerate the view.
 
-.PARAMETER PassThru
-Switch to return image data as objects. When used with -ShowImageGallery, both
-displays the gallery and returns the objects. When used alone with -ShowImageGallery,
-only displays the gallery without returning objects.
+.PARAMETER PictureType
+Array of picture types to filter by (e.g., 'daylight', 'evening', 'indoor',
+'outdoor'). Supports wildcards. Matches against the picture_type property in
+description metadata.
 
-.PARAMETER Interactive
-When specified with -ShowImageGallery, connects to browser and adds additional
-buttons like Edit and Delete.
+.PARAMETER StyleType
+Array of style types to filter by (e.g., 'casual', 'formal'). Supports
+wildcards. Matches against the style_type property in description metadata.
+
+.PARAMETER OverallMood
+Array of overall moods to filter by (e.g., 'calm', 'cheerful', 'sad',
+'energetic'). Supports wildcards. Matches against the overall_mood_of_image
+property in description metadata.
 
 .PARAMETER Title
 The title to display at the top of the image gallery.
@@ -55,15 +64,121 @@ The title to display at the top of the image gallery.
 The description text to display in the image gallery.
 
 .PARAMETER Language
-The language for retrieving descriptions and keywords. Will try to find metadata in
-the specified language first, then fall back to English if not available. This allows
-you to have metadata in multiple languages for the same images.
+The language for retrieving descriptions and keywords. Will try to find metadata
+in the specified language first, then fall back to English if not available.
+This allows you to have metadata in multiple languages for the same images.
+
+.PARAMETER AcceptLang
+Set the browser accept-lang http header.
+
+.PARAMETER Monitor
+The monitor to use, 0 = default, -1 is discard, -2 = Configured secondary
+monitor, defaults to Global:DefaultSecondaryMonitor or 2 if not found.
+
+.PARAMETER Width
+The initial width of the webbrowser window.
+
+.PARAMETER Height
+The initial height of the webbrowser window.
+
+.PARAMETER X
+The initial X position of the webbrowser window.
+
+.PARAMETER Y
+The initial Y position of the webbrowser window.
+
+.PARAMETER HasNudity
+Switch to filter for images that contain nudity. Only returns images where the
+has_nudity property is true in the metadata.
+
+.PARAMETER NoNudity
+Switch to filter for images that do NOT contain nudity. Only returns images
+where the has_nudity property is false in the metadata.
+
+.PARAMETER HasExplicitContent
+Switch to filter for images that contain explicit content. Only returns images
+where the has_explicit_content property is true in the metadata.
+
+.PARAMETER NoExplicitContent
+Switch to filter for images that do NOT contain explicit content. Only returns
+images where the has_explicit_content property is false in the metadata.
+
+.PARAMETER ShowImageGallery
+Switch to display the search results in a browser-based masonry layout gallery.
+When used, the results are shown in an interactive web view. Can be combined
+with -PassThru to also return the objects.
+
+.PARAMETER PassThru
+Switch to return image data as objects. When used with -ShowImageGallery, both
+displays the gallery and returns the objects. When used alone with
+-ShowImageGallery, only displays the gallery without returning objects.
+
+.PARAMETER Interactive
+Connects to browser and adds additional buttons like Edit and Delete.
+
+.PARAMETER Private
+Opens in incognito/private browsing mode.
+
+.PARAMETER Force
+Force enable debugging port, stopping existing browsers if needed.
+
+.PARAMETER Edge
+Opens in Microsoft Edge.
+
+.PARAMETER Chrome
+Opens in Google Chrome.
+
+.PARAMETER Chromium
+Opens in Microsoft Edge or Google Chrome, depending on what the default browser
+is.
+
+.PARAMETER Firefox
+Opens in Firefox.
+
+.PARAMETER All
+Opens in all registered modern browsers.
+
+.PARAMETER FullScreen
+Opens in fullscreen mode.
+
+.PARAMETER Left
+Place browser window on the left side of the screen.
+
+.PARAMETER Right
+Place browser window on the right side of the screen.
+
+.PARAMETER Top
+Place browser window on the top side of the screen.
+
+.PARAMETER Bottom
+Place browser window on the bottom side of the screen.
+
+.PARAMETER Centered
+Place browser window in the center of the screen.
+
+.PARAMETER ApplicationMode
+Hide the browser controls.
+
+.PARAMETER NoBrowserExtensions
+Prevent loading of browser extensions.
+
+.PARAMETER DisablePopupBlocker
+Disable the popup blocker.
+
+.PARAMETER RestoreFocus
+Restore PowerShell window focus.
+
+.PARAMETER NewWindow
+Don't re-use existing browser window, instead, create a new one.
+
+.PARAMETER OnlyReturnHtml
+Only return the generated HTML instead of displaying it in a browser.
 
 .PARAMETER EmbedImages
-Switch to embed images as base64 data URLs instead of file:// URLs. This makes the
-generated HTML file completely self-contained and portable, but results in larger file
-sizes. Useful when the HTML needs to be shared or viewed on different systems where
-the original image files may not be accessible.
+Switch to embed images as base64 data URLs instead of file:// URLs. This makes
+the generated HTML file completely self-contained and portable, but results in
+larger file sizes. Useful when the HTML needs to be shared or viewed on
+different systems where the original image files may not be accessible.
 
 .EXAMPLE
 Find-Image -Keywords "cat","dog" -ImageDirectories "C:\Photos"
@@ -88,6 +203,22 @@ Searches for images with Spanish metadata containing the keywords "playa" (beach
 .EXAMPLE
 Find-Image -Keywords "vacation" -People "John" -Objects "beach*" -ImageDirectories "C:\Photos"
 Searches for vacation photos with John in them that also contain beach-related objects and returns the data objects.
+
+.EXAMPLE
+Find-Image -Scenes "beach","forest","mountain*" -ImageDirectories "C:\Nature" -ShowImageGallery
+Searches for images classified as beach, forest, or mountain scenes and displays them in a gallery.
+
+.EXAMPLE
+Find-Image -NoNudity -NoExplicitContent -ImageDirectories "C:\Family" -ShowImageGallery
+Searches for family-safe images (no nudity or explicit content) and displays them in a gallery.
+
+.EXAMPLE
+Find-Image -PictureType "daylight" -OverallMood "calm" -ImageDirectories "C:\Photos"
+Searches for daylight photos with a calm/peaceful mood and returns the image objects.
+
+.EXAMPLE
+findimages -StyleType "casual" -HasNudity -ImageDirectories "C:\Art"
+Searches for casual style images that contain nudity and returns the data objects.
 #>
 ###############################################################################
 function Find-Image {
@@ -95,7 +226,6 @@ function Find-Image {
     [CmdletBinding()]
     [OutputType([Object[]], [System.Collections.Generic.List[Object]], [string])]
     [Alias("findimages", "li")]
-
     param(
         ###############################################################################
         [Parameter(
@@ -105,7 +235,7 @@ function Find-Image {
         )]
         [string[]] $Keywords = @(),
         ###############################################################################
-	    [Parameter(
+        [Parameter(
             Mandatory = $false,
             Position = 1,
             HelpMessage = "People to look for, wildcards allowed."
@@ -122,6 +252,13 @@ function Find-Image {
         [Parameter(
             Mandatory = $false,
             Position = 3,
+            HelpMessage = "Scene categories to look for, wildcards allowed."
+        )]
+        [string[]] $Scenes = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 4,
             HelpMessage = "The image directory paths to search."
         )]
         [Alias("ImageDirectory")]
@@ -130,41 +267,44 @@ function Find-Image {
         [Parameter(
             Mandatory = $false,
             ValueFromPipeline = $true,
-            HelpMessage = "Accepts search results from a previous -PassThru call to regenerate the view."
+            HelpMessage = ("Accepts search results from a previous -PassThru " +
+                "call to regenerate the view.")
         )]
         [object[]] $InputObject,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Display the search results in a browser-based image gallery."
+            HelpMessage = ("Picture type to filter by (e.g., 'daylight', " +
+                "'evening', 'indoor', etc). Supports wildcards.")
         )]
-        [switch] $ShowImageGallery,
+        [string[]] $PictureType = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Return image data as objects. When used with -ShowImageGallery, " +
-                "both displays the gallery and returns the objects.")
+            HelpMessage = ("Style type to filter by (e.g., 'casual', 'formal', " +
+                "etc). Supports wildcards.")
         )]
-        [switch] $PassThru,
+        [string[]] $StyleType = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Will connect to browser and adds additional buttons like Edit and Delete. " +
-                "Only effective when used with -ShowImageGallery.")
+            HelpMessage = ("Overall mood to filter by (e.g., 'calm', 'cheerful', " +
+                "'sad', etc). Supports wildcards.")
         )]
-        [switch] $Interactive,
+        [string[]] $OverallMood = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Title for the gallery"
         )]
-        [string]$Title = "Photo Gallery",
+        [string] $Title = "Photo Gallery",
         ###############################################################################
-	    [Parameter(
+        [Parameter(
             Mandatory = $false,
             HelpMessage = "Description for the gallery"
         )]
-        [string]$Description = "Hover over images to see face recognition and object detection data",
+        [string] $Description = ("Hover over images to see face recognition " +
+            "and object detection data"),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -316,98 +456,41 @@ function Find-Image {
             "Yiddish",
             "Yoruba",
             "Zulu")]
-        [string] $Language = "English",
+        [string] $Language,
         ###############################################################################
+        [Alias("lang", "locale")]
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Opens in incognito/private browsing mode"
+            HelpMessage = "Set the browser accept-lang http header"
         )]
-        [Alias("incognito", "inprivate")]
-        [switch] $Private,
-
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Force enable debugging port, stopping existing browsers if needed"
-        )]
-        [switch] $Force,
-
-        ###############################################################################
-        [Alias("e")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Opens in Microsoft Edge"
-        )]
-        [switch] $Edge,
-
-        ###############################################################################
-        [Alias("ch")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Opens in Google Chrome"
-        )]
-        [switch] $Chrome,
-
-        ###############################################################################
-        [Alias("c")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Opens in Microsoft Edge or Google Chrome, depending on what the default browser is"
-        )]
-        [switch] $Chromium,
-
-        ###############################################################################
-        [Alias("ff")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Opens in Firefox"
-        )]
-        [switch] $Firefox,
-
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Opens in all registered modern browsers"
-        )]
-        [switch] $All,
-
+        [string] $AcceptLang = $null,
         ###############################################################################
         [Alias("m", "mon")]
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The monitor to use, 0 = default, -1 is discard, -2 = Configured secondary monitor, defaults to `Global:DefaultSecondaryMonitor or 2 if not found"
+            HelpMessage = ("The monitor to use, 0 = default, -1 is discard, " +
+                "-2 = Configured secondary monitor, defaults to " +
+                "`Global:DefaultSecondaryMonitor or 2 if not found")
         )]
         [int] $Monitor = -2,
-
-        ###############################################################################
-        [Alias("fs", "f")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Opens in fullscreen mode"
-        )]
-        [switch] $FullScreen,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The initial width of the webbrowser window"
         )]
         [int] $Width = -1,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The initial height of the webbrowser window"
         )]
         [int] $Height = -1,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The initial X position of the webbrowser window"
         )]
         [int] $X = -999999,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -417,17 +500,118 @@ function Find-Image {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = "Filter images that contain nudity."
+        )]
+        [switch] $HasNudity,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Filter images that do NOT contain nudity."
+        )]
+        [switch] $NoNudity,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Filter images that contain explicit content."
+        )]
+        [switch] $HasExplicitContent,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Filter images that do NOT contain explicit content."
+        )]
+        [switch] $NoExplicitContent,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Display the search results in a browser-based " +
+                "image gallery.")
+        )]
+        [switch] $ShowImageGallery,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Return image data as objects. When used with " +
+                "-ShowImageGallery, both displays the gallery and returns " +
+                "the objects.")
+        )]
+        [switch] $PassThru,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Will connect to browser and adds additional buttons " +
+                "like Edit and Delete. Only effective when used with " +
+                "-ShowImageGallery.")
+        )]
+        [switch] $Interactive,
+        ###############################################################################
+        [Alias("incognito", "inprivate")]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Opens in incognito/private browsing mode"
+        )]
+        [switch] $Private,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Force enable debugging port, stopping existing " +
+                "browsers if needed")
+        )]
+        [switch] $Force,
+        ###############################################################################
+        [Alias("e")]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Opens in Microsoft Edge"
+        )]
+        [switch] $Edge,
+        ###############################################################################
+        [Alias("ch")]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Opens in Google Chrome"
+        )]
+        [switch] $Chrome,
+        ###############################################################################
+        [Alias("c")]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Opens in Microsoft Edge or Google Chrome, depending " +
+                "on what the default browser is")
+        )]
+        [switch] $Chromium,
+        ###############################################################################
+        [Alias("ff")]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Opens in Firefox"
+        )]
+        [switch] $Firefox,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Opens in all registered modern browsers"
+        )]
+        [switch] $All,
+        ###############################################################################
+        [Alias("fs", "f")]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Opens in fullscreen mode"
+        )]
+        [switch] $FullScreen,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = "Place browser window on the left side of the screen"
         )]
         [switch] $Left,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Place browser window on the right side of the screen"
         )]
         [switch] $Right,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -440,7 +624,6 @@ function Find-Image {
             HelpMessage = "Place browser window on the bottom side of the screen"
         )]
         [switch] $Bottom,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -469,13 +652,6 @@ function Find-Image {
         )]
         [switch] $DisablePopupBlocker,
         ###############################################################################
-        [Alias("lang", "locale")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Set the browser accept-lang http header"
-        )]
-        [string] $AcceptLang = $null,
-        ###############################################################################
         [Alias("bg")]
         [Parameter(
             Mandatory = $false,
@@ -486,80 +662,62 @@ function Find-Image {
         [Alias("nw", "new")]
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Don't re-use existing browser window, instead, create a new one"
+            HelpMessage = ("Don't re-use existing browser window, instead, " +
+                "create a new one")
         )]
         [switch] $NewWindow,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Only return the generated HTML instead of displaying it in a browser."
+            HelpMessage = ("Only return the generated HTML instead of " +
+                "displaying it in a browser.")
         )]
         [switch] $OnlyReturnHtml,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Embed images as base64 data URLs instead of file:// URLs for better portability."
+            HelpMessage = ("Embed images as base64 data URLs instead of " +
+                "file:// URLs for better portability.")
         )]
         [switch] $EmbedImages
     )
 
     begin {
 
+        # enable interactive mode when interactive switch is used
+        if ($Interactive) {
+
+            $ShowImageGallery = $true
+        }
 
         # initialize results collection for all found images
-        $results = [System.Collections.Generic.List[Object]] @()        # use provided directories or default system directories
+        $results = [System.Collections.Generic.List[Object]] @()
+
+        # get configured directories and language using Get-ImageDirectories
+        $config = GenXdev.AI\Get-ImageDirectories -DefaultValue $ImageDirectories
+
+        # use provided directories or get from configuration
         if ($ImageDirectories) {
 
-            # convert provided directories to simple path array
             $directories = $ImageDirectories
         }
         else {
-            # Get default image directories from preference store
-            $imageDirectoriesPreference = $null
 
-            try {
-                $json = GenXdev.Data\Get-GenXdevPreference `
-                    -Name "ImageDirectories" `
-                    -DefaultValue $null `
-                    -ErrorAction SilentlyContinue
+            $directories = $config.ImageDirectories
+        }
 
-                if (-not [string]::IsNullOrEmpty($json)) {
-                    $imageDirectoriesPreference = $json | Microsoft.PowerShell.Utility\ConvertFrom-Json
-                }
-            }
-            catch {
-                $imageDirectoriesPreference = $null
-            }
+        # resolve default language if not explicitly provided
+        if ([string]::IsNullOrEmpty($Language)) {
 
-            # Use preference value if available
-            if ($null -ne $imageDirectoriesPreference -and $imageDirectoriesPreference.Count -gt 0) {
-                $directories = $imageDirectoriesPreference
-            }
-            else {
-                # Fallback to default system directories
-                $picturesPath = GenXdev.FileSystem\Expand-Path "~\Pictures"
-
-                try {
-                    # attempt to get known folder path for Pictures
-                    $picturesPath = GenXdev.Windows\Get-KnownFolderPath Pictures
-                }
-                catch {
-                    # fallback to default if known folder retrieval fails
-                    $picturesPath = GenXdev.FileSystem\Expand-Path "~\Pictures"
-                }
-
-                # define default directories for processing
-                $directories = @(
-                    (GenXdev.FileSystem\Expand-Path '~\downloads'),
-                    (GenXdev.FileSystem\Expand-Path '~\\onedrive'),
-                    $picturesPath
-                )
-            }
+            $Language = $config.Language
         }
     }
 
     process {
+
+        # define internal function to process individual image files
         function processImageFile {
+
             param($item)
 
             # get full path of current image file being processed
@@ -571,35 +729,50 @@ function Find-Image {
 
             # initialize metadata containers for this image
             $keywordsFound = @()
+
             $descriptionFound = $null
+
             $metadataFile = $null
 
-            # First try to load description metadata in requested language if not English
-            if ($Language -ne "English" -and [System.IO.File]::Exists("$($image):description.$Language.json")) {
-                Microsoft.PowerShell.Utility\Write-Verbose "Found $Language metadata for $image"
+            # try to load description metadata in requested language if not english
+            if ($Language -ne "English" -and
+                [System.IO.File]::Exists("$($image):description.$Language.json")) {
+
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    "Found $Language metadata for $image")
+
                 $metadataFile = "$($image):description.$Language.json"
             }
-            # Fallback to English if language-specific file doesn't exist
+            # fallback to english if language-specific file doesn't exist
             elseif ([System.IO.File]::Exists("$($image):description.json")) {
-                Microsoft.PowerShell.Utility\Write-Verbose "Found English metadata for $image"
+
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    "Found English metadata for $image")
+
                 $metadataFile = "$($image):description.json"
             }
 
-            # Try to load description metadata if any file was found
+            # try to load description metadata if any file was found
             if ($metadataFile) {
+
                 try {
+
                     # read and parse description json from alternate data stream
-                    $descriptionFound = [System.IO.File]::ReadAllText($metadataFile) |
-                    Microsoft.PowerShell.Utility\ConvertFrom-Json
+                    $descriptionFound = [System.IO.File]::ReadAllText(
+                        $metadataFile) |
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json
 
                     # extract keywords from description if they exist
                     $keywordsFound = ($null -eq $descriptionFound.keywords) ?
-                    @() : $descriptionFound.keywords
+                        @() : $descriptionFound.keywords
                 }
                 catch {
+
                     # reset description if json parsing fails
                     $descriptionFound = $null
-                    Microsoft.PowerShell.Utility\Write-Verbose "Failed to parse metadata from $metadataFile"
+
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Failed to parse metadata from $metadataFile")
                 }
             }
 
@@ -610,17 +783,19 @@ function Find-Image {
             if ([System.IO.File]::Exists("$($image):people.json")) {
 
                 try {
+
                     # read and parse people json from alternate data stream
                     $peopleFound = [System.IO.File]::ReadAllText(
                         "$($image):people.json") |
-                    Microsoft.PowerShell.Utility\ConvertFrom-Json
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json
 
                     # ensure people data has proper structure or reset to default
                     $peopleFound = (($null -eq $peopleFound) -or
                         ($peopleFound.count -eq 0)) ?
-                    @{count = 0; faces = @() } : $peopleFound
+                        @{count = 0; faces = @() } : $peopleFound
                 }
                 catch {
+
                     # reset people data if json parsing fails
                     $peopleFound = @{count = 0; faces = @() }
                 }
@@ -633,14 +808,17 @@ function Find-Image {
             if ([System.IO.File]::Exists("$($image):objects.json")) {
 
                 try {
+
                     # read and parse objects json from alternate data stream
                     $parsedObjects = [System.IO.File]::ReadAllText(
                         "$($image):objects.json") |
-                    Microsoft.PowerShell.Utility\ConvertFrom-Json
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json
 
                     # if parsed data is not null and has predictions
-                    if ($null -ne $parsedObjects -and $null -ne $parsedObjects.predictions) {
-                        # Remap to the structure the script expects
+                    if ($null -ne $parsedObjects -and
+                        $null -ne $parsedObjects.predictions) {
+
+                        # remap to the structure the script expects
                         $objectsFound = @{
                             count = $parsedObjects.predictions.Count
                             objects = $parsedObjects.predictions
@@ -649,19 +827,72 @@ function Find-Image {
                     }
                 }
                 catch {
+
                     # reset objects data if json parsing fails
-                    $objectsFound = @{count = 0; objects = @(); object_counts = @{} }
+                    $objectsFound = @{
+                        count = 0;
+                        objects = @();
+                        object_counts = @{}
+                    }
                 }
             }
 
-            # skip processing if no metadata exists and no search criteria provided
-            if (
-            (($null -eq $Keywords) -or ($Keywords.Length -eq 0)) -and
-            (($null -eq $keywordsFound) -or ($keywordsFound.length -eq 0)) -and
-            ($null -eq $descriptionFound) -and
-            (($null -eq $People) -or ($People.Count -eq 0)) -and
-            (($null -eq $Objects) -or ($Objects.Count -eq 0))
-            ) {
+            # initialize scenes metadata container with default structure
+            $scenesFound = @{
+                success = $false;
+                scene = "unknown";
+                confidence = 0.0
+            }
+
+            # try to load scenes metadata if alternate data stream exists
+            if ([System.IO.File]::Exists("$($image):scenes.json")) {
+
+                try {
+
+                    # read and parse scenes json from alternate data stream
+                    $parsedScenes = [System.IO.File]::ReadAllText(
+                        "$($image):scenes.json") |
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json
+
+                    # if parsed data is not null and has scene data
+                    if ($null -ne $parsedScenes -and
+                        $null -ne $parsedScenes.scene) {
+
+                        $scenesFound = $parsedScenes
+                    }
+                }
+                catch {
+
+                    # reset scenes data if json parsing fails
+                    $scenesFound = @{
+                        success = $false;
+                        scene = "unknown";
+                        confidence = 0.0
+                    }
+                }
+            }
+
+            # determine if image has search criteria or metadata
+            $hasSearchCriteria = (($null -ne $Keywords) -and
+                ($Keywords.Length -gt 0)) -or
+                (($null -ne $People) -and ($People.Count -gt 0)) -or
+                (($null -ne $Objects) -and ($Objects.Count -gt 0)) -or
+                (($null -ne $Scenes) -and ($Scenes.Count -gt 0)) -or
+                $HasNudity -or $NoNudity -or $HasExplicitContent -or
+                $NoExplicitContent -or
+                (($null -ne $PictureType) -and ($PictureType.Count -gt 0)) -or
+                (($null -ne $StyleType) -and ($StyleType.Count -gt 0)) -or
+                (($null -ne $OverallMood) -and ($OverallMood.Count -gt 0))
+
+            $hasAnyMetadata = (($null -ne $keywordsFound) -and
+                ($keywordsFound.length -gt 0)) -or
+                ($null -ne $descriptionFound) -or
+                ($peopleFound.count -gt 0) -or
+                ($objectsFound.count -gt 0) -or
+                ($scenesFound.success -eq $true)
+
+            # only skip if we have no search criteria AND no metadata
+            if (-not $hasSearchCriteria -and -not $hasAnyMetadata) {
                 return
             }
 
@@ -701,6 +932,7 @@ function Find-Image {
                             if ($imageKeyword -like $requiredKeyword) {
 
                                 $found = $true
+
                                 break
                             }
                         }
@@ -725,7 +957,9 @@ function Find-Image {
 
                         # use wildcard matching for flexible people search
                         if ($foundPerson -like $searchedForPerson) {
+
                             $found = $true
+
                             break
                         }
                     }
@@ -749,13 +983,198 @@ function Find-Image {
 
                         # use wildcard matching for flexible objects search
                         if ($foundObject.label -like $searchedForObject) {
+
                             $found = $true
+
                             break
                         }
                     }
 
                     # exit early if any object matches
                     if ($found) { break }
+                }
+            }
+
+            # perform additional scenes filtering if scenes criteria specified
+            if ($found -and ($null -ne $Scenes) -and ($Scenes.Count -gt 0)) {
+
+                # reset found flag to require scene match
+                $found = $false
+
+                # debug output for scene filtering
+                if ($VerbosePreference -eq 'Continue') {
+
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Scene filtering - Searching for: $($Scenes -join ', ')")
+
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Scene filtering - Found scene: $($scenesFound.scene)")
+
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Scene filtering - Scene success: $($scenesFound.success)")
+                }
+
+                # check if the found scene matches any of the search criteria
+                foreach ($searchedForScene in $Scenes) {
+
+                    # use wildcard matching for flexible scene search
+                    if ($scenesFound.scene -like $searchedForScene) {
+
+                        $found = $true
+
+                        if ($VerbosePreference -eq 'Continue') {
+
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                "Scene filtering - Match found: " +
+                                "'$($scenesFound.scene)' matches " +
+                                "'$searchedForScene'")
+                        }
+
+                        break
+                    }
+
+                    # special handling for wildcard scenes with other metadata
+                    if ($searchedForScene -eq "*" -and
+                        $scenesFound.success -eq $false) {
+
+                        # check if we have any other metadata that makes this interesting
+                        $hasOtherMetadata = (($null -ne $keywordsFound) -and
+                            ($keywordsFound.length -gt 0)) -or
+                            ($null -ne $descriptionFound) -or
+                            ($peopleFound.count -gt 0) -or
+                            ($objectsFound.count -gt 0)
+
+                        if ($hasOtherMetadata) {
+
+                            $found = $true
+
+                            if ($VerbosePreference -eq 'Continue') {
+
+                                Microsoft.PowerShell.Utility\Write-Verbose (
+                                    "Scene filtering - Wildcard match: including " +
+                                    "image with other metadata despite missing " +
+                                    "scene data")
+                            }
+
+                            break
+                        }
+                    }
+                }
+
+                if (-not $found -and $VerbosePreference -eq 'Continue') {
+
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Scene filtering - No match found for scene: " +
+                        "$($scenesFound.scene)")
+                }
+            }
+
+            # perform content filtering based on description metadata properties
+            if ($found -and ($HasNudity -or $NoNudity -or $HasExplicitContent -or
+                $NoExplicitContent -or
+                (($null -ne $PictureType) -and ($PictureType.Count -gt 0)) -or
+                (($null -ne $StyleType) -and ($StyleType.Count -gt 0)) -or
+                (($null -ne $OverallMood) -and ($OverallMood.Count -gt 0)))) {
+
+                # check if we have description metadata required for these filters
+                if ($null -eq $descriptionFound) {
+
+                    $found = $false
+                }
+                else {
+
+                    # nudity filtering
+                    if ($HasNudity -and $descriptionFound.has_nudity -ne $true) {
+
+                        $found = $false
+                    }
+
+                    if ($NoNudity -and $descriptionFound.has_nudity -eq $true) {
+
+                        $found = $false
+                    }
+
+                    # explicit content filtering
+                    if ($HasExplicitContent -and
+                        $descriptionFound.has_explicit_content -ne $true) {
+
+                        $found = $false
+                    }
+
+                    if ($NoExplicitContent -and
+                        $descriptionFound.has_explicit_content -eq $true) {
+
+                        $found = $false
+                    }
+
+                    # picture type filtering
+                    if ($found -and ($null -ne $PictureType) -and
+                        ($PictureType.Count -gt 0)) {
+
+                        $pictureTypeFound = $false
+
+                        foreach ($requiredPictureType in $PictureType) {
+
+                            if ($descriptionFound.picture_type -like
+                                $requiredPictureType) {
+
+                                $pictureTypeFound = $true
+
+                                break
+                            }
+                        }
+
+                        if (-not $pictureTypeFound) {
+
+                            $found = $false
+                        }
+                    }
+
+                    # style type filtering
+                    if ($found -and ($null -ne $StyleType) -and
+                        ($StyleType.Count -gt 0)) {
+
+                        $styleTypeFound = $false
+
+                        foreach ($requiredStyleType in $StyleType) {
+
+                            if ($descriptionFound.style_type -like
+                                $requiredStyleType) {
+
+                                $styleTypeFound = $true
+
+                                break
+                            }
+                        }
+
+                        if (-not $styleTypeFound) {
+
+                            $found = $false
+                        }
+                    }
+
+                    # overall mood filtering
+                    if ($found -and ($null -ne $OverallMood) -and
+                        ($OverallMood.Count -gt 0)) {
+
+                        $overallMoodFound = $false
+
+                        foreach ($requiredMood in $OverallMood) {
+
+                            if ($descriptionFound.overall_mood_of_image -like
+                                $requiredMood) {
+
+                                $overallMoodFound = $true
+
+                                break
+                            }
+                        }
+
+                        if (-not $overallMoodFound) {
+
+                            $found = $false
+                        }
+                    }
                 }
             }
 
@@ -773,18 +1192,26 @@ function Find-Image {
                     description = $descriptionFound
                     people      = $peopleFound
                     objects     = $objectsFound
+                    scenes      = $scenesFound
                 }
             }
         }
 
+        # handle input object processing from pipeline
         if ($PSBoundParameters.ContainsKey('InputObject')) {
 
-            $null = $InputObject | Microsoft.PowerShell.Core\ForEach-Object {
+            $null = $InputObject |
+                Microsoft.PowerShell.Core\ForEach-Object {
 
                 # process each input object as an image file
                 $path = $_.Path
-                if ($null -eq $path) { return; }
+
+                if ($null -eq $path) {
+                    return;
+                }
+
                 if ($path.StartsWith("file://")) {
+
                     $path = $path.Substring(7).Replace('/', '\')
                 }
 
@@ -808,6 +1235,7 @@ function Find-Image {
 
                 Microsoft.PowerShell.Utility\Write-Host (
                     "The directory '$path' does not exist.")
+
                 continue
             }
 
@@ -819,7 +1247,8 @@ function Find-Image {
                 -ErrorAction SilentlyContinue |
             Microsoft.PowerShell.Core\ForEach-Object {
 
-                processImageFile $_ | Microsoft.PowerShell.Core\ForEach-Object {
+                processImageFile $_ |
+                    Microsoft.PowerShell.Core\ForEach-Object {
 
                     if (-not $ShowImageGallery) {
 
@@ -836,40 +1265,52 @@ function Find-Image {
 
     end {
 
-        # Check if any results were found
-        if ((-not $results) -or ($null -eq $results) -or ($results.Length -eq 0)) {
-            # Provide appropriate message based on search criteria
+        # check if any results were found
+        if ((-not $results) -or ($null -eq $results) -or
+            ($results.Length -eq 0)) {
+
+            # provide appropriate message based on search criteria
             if (($null -eq $Keywords) -or ($Keywords.Length -eq 0)) {
+
                 Microsoft.PowerShell.Utility\Write-Host "No images found."
             }
             else {
-                Microsoft.PowerShell.Utility\Write-Host "No images found with the specified keywords."
+
+                Microsoft.PowerShell.Utility\Write-Host (
+                    "No images found with the specified keywords.")
             }
+
             return
         }
 
-        # If ShowImageGallery is requested, display the gallery
+        # if ShowImageGallery is requested, display the gallery
         if ($ShowImageGallery) {
 
             if ([String]::IsNullOrWhiteSpace($Title)) {
+
                 $Title = "Image Search Results"
             }
 
             if ([String]::IsNullOrWhiteSpace($Description)) {
+
                 $Description = $MyInvocation.Statement
-            }`
+            }
 
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "Show-ImageGallery" `
-                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue)
 
-            # Pass the results to Show-ImageGallery
-            GenXdev.AI\Show-ImageGallery @params -InputObject $results
+            # pass the results to Show-ImageGallery
+            $null = GenXdev.AI\Show-ImageGallery @params -InputObject $results
         }
+
         if ((-not $ShowImageGallery) -or $PassThru) {
 
             return $results
         }
     }
 }
+################################################################################

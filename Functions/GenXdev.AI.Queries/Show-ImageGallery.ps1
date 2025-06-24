@@ -7,12 +7,12 @@ Displays image search results in a masonry layout web gallery.
 Takes image search results and displays them in a browser-based masonry layout.
 Can operate in interactive mode with edit and delete capabilities, or in simple
 display mode. Accepts image data objects typically from Find-Image and renders
-them with hover tooltips showing metadata like face recognition and object
-detection data.
+them with hover tooltips showing metadata like face recognition, object
+detection, and scene classification data.
 
 .PARAMETER InputObject
 Array of image data objects containing path, keywords, description, people,
-and objects metadata.
+objects, and scenes metadata.
 
 .PARAMETER Interactive
 When specified, connects to browser and adds additional buttons like Edit and
@@ -95,8 +95,8 @@ Set the browser accept-lang http header.
 .PARAMETER RestoreFocus
 Restore PowerShell window focus.
 
-.PARAMETER NewWindow
-Don't re-use existing browser window, instead, create a new one.
+.PARAMETER NoNewWindow
+Re-use existing browser window, instead, create a new one.
 
 .PARAMETER OnlyReturnHtml
 Only return the generated HTML instead of displaying it in a browser.
@@ -310,11 +310,11 @@ function Show-ImageGallery {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Don't re-use existing browser window, instead, " +
+            HelpMessage = ("Re-use existing browser window, instead, " +
                           "create a new one")
         )]
-        [Alias("nw", "new")]
-        [switch] $NewWindow,
+        [Alias("nnw", "keepwindow")]
+        [switch] $NoNewWindow,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -344,9 +344,11 @@ function Show-ImageGallery {
     end {
 
         # verify that we have images to display before proceeding
-        if ((-not $results) -or ($null -eq $results) -or ($results.Length -eq 0)) {
+        if ((-not $results) -or ($null -eq $results) -or
+            ($results.Length -eq 0)) {
 
-            Microsoft.PowerShell.Utility\Write-Host "No images to display in gallery."
+            Microsoft.PowerShell.Utility\Write-Host (
+                "No images to display in gallery.")
             return
         }
 
@@ -357,7 +359,7 @@ function Show-ImageGallery {
         # set file attributes to temporary and hidden for cleanup
         try {
 
-            Microsoft.PowerShell.Management\Set-ItemProperty `
+            $null = Microsoft.PowerShell.Management\Set-ItemProperty `
                 -Path $filePath `
                 -Name Attributes `
                 -Value ([System.IO.FileAttributes]::Temporary -bor `
@@ -379,7 +381,7 @@ function Show-ImageGallery {
         }
 
         # generate masonry layout html and display in browser
-        GenXdev.AI\GenerateMasonryLayoutHtml `
+        $null = GenXdev.AI\GenerateMasonryLayoutHtml `
             -Images $results `
             -FilePath $filePath `
             -CanEdit:$Interactive `
@@ -391,7 +393,9 @@ function Show-ImageGallery {
         # return html content if only html is requested
         if ($OnlyReturnHtml) {
 
-            $html = Microsoft.PowerShell.Management\Get-Content -Path $filePath -Raw
+            $html = Microsoft.PowerShell.Management\Get-Content `
+                -Path $filePath `
+                -Raw
 
             $null = [io.file]::Delete($filePath)
 
@@ -401,29 +405,58 @@ function Show-ImageGallery {
         # handle interactive mode with browser connection
         if ($Interactive) {
 
+            # construct file url for browser navigation
             $filePathUrl = "file:///$($filePath -replace '\\', '/')"
 
             # attempt to select existing webbrowser tab
             try {
 
                 $null = GenXdev.Webbrowser\Select-WebbrowserTab
+
+                if ($null -eq $Global:chromeSession) {
+
+                    throw "No active web browser session found."
+                }
             }
             catch {
 
                 # close browser if selection fails
-                GenXdev.Webbrowser\Close-Webbrowser -force
+                $null = GenXdev.Webbrowser\Close-Webbrowser -force
             }
 
+            # copy parameter values for open-webbrowser function
+            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName "Open-Webbrowser" `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue)
+
+            $params.NewWindow = -not $NoNewWindow
+
             # open generated html file in full screen browser window
-            GenXdev.Webbrowser\Open-Webbrowser `
-                -NewWindow `
-                -Monitor -2 `
+            $null = GenXdev.Webbrowser\Open-Webbrowser `
+                @params `
                 -Url $filePathUrl
 
             # select the specific tab containing our gallery
-            $Name = "*$([IO.Path]::GetFileNameWithoutExtension($filePath))*"
+            $name = "*$([IO.Path]::GetFileNameWithoutExtension($filePath))*"
 
-            $null = GenXdev.Webbrowser\Select-WebbrowserTab -Name $Name
+            $null = GenXdev.Webbrowser\Select-WebbrowserTab -Name $name
+
+            $null = Clear-Host
+            Microsoft.PowerShell.Utility\Write-Host (
+                "===================================================================") `
+                -ForegroundColor Cyan
+            Microsoft.PowerShell.Utility\Write-Host (
+                "  PowerShell is waiting for instructions from the webpage") `
+                -ForegroundColor Yellow
+            Microsoft.PowerShell.Utility\Write-Host (
+                "      (e.g., delete or edit image actions)") `
+                -ForegroundColor Yellow
+            Microsoft.PowerShell.Utility\Write-Host (
+                "===================================================================") `
+                -ForegroundColor Cyan
 
             Microsoft.PowerShell.Utility\Write-Host "Press any key to quit..."
 
@@ -437,7 +470,8 @@ function Show-ImageGallery {
                         "return window.getActions()") -ErrorAction SilentlyContinue)
 
                     Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Found $($actions | Microsoft.PowerShell.Utility\ConvertTo-Json)")
+                        "Found $($actions |
+                            Microsoft.PowerShell.Utility\ConvertTo-Json)")
 
                     # process each action received from the browser
                     foreach ($action in $actions) {
@@ -450,7 +484,8 @@ function Show-ImageGallery {
                                 "edit" {
 
                                     Microsoft.PowerShell.Utility\Write-Host (
-                                        "Editing image metadata for $($action.path)")
+                                        "Editing image metadata for " +
+                                        "$($action.path)")
 
                                     # convert file uri to local path if needed
                                     $imagePath = $action.path
@@ -458,13 +493,15 @@ function Show-ImageGallery {
                                     if ($imagePath -like "file:///*") {
 
                                         # convert file:/// uri to local path
-                                        $imagePath = $imagePath -replace '^file:///', ''
+                                        $imagePath = $imagePath -replace (
+                                            '^file:///', '')
 
                                         $imagePath = $imagePath -replace '/', '\'
 
                                         # handle windows drive letters
                                         if ($imagePath -match '^[A-Za-z]:') {
-                                            # path already has drive letter, no changes needed
+                                            # path already has drive letter,
+                                            # no changes needed
                                         }
                                     }
 
@@ -472,8 +509,9 @@ function Show-ImageGallery {
                                     $null = GenXdev.AI\EnsurePaintNet
 
                                     Microsoft.PowerShell.Utility\Write-Warning (
-                                        ("Paint.NET is not installed or not found in PATH. " +
-                                         "Please install it to use the edit feature."))
+                                        ("Paint.NET is not installed or not " +
+                                         "found in PATH. Please install it to " +
+                                         "use the edit feature."))
 
                                     # handle cropping if bounding box is provided
                                     if ($null -ne $action.boundingBox) {
@@ -483,10 +521,13 @@ function Show-ImageGallery {
 
                                         try {
 
-                                            # use .net to crop the image using the bounding box
-                                            $image = [System.Drawing.Image]::FromFile($imagePath)
+                                            # use .net to crop the image using the
+                                            # bounding box
+                                            $image = [System.Drawing.Image]::FromFile(
+                                                $imagePath)
 
-                                            # validate and clamp bounding box coordinates
+                                            # validate and clamp bounding box
+                                            # coordinates
                                             $box = $action.boundingBox
 
                                             $x_min = [Math]::Max(0, [Math]::Min(
@@ -495,11 +536,13 @@ function Show-ImageGallery {
                                             $y_min = [Math]::Max(0, [Math]::Min(
                                                 $box.y_min, $image.Height - 1))
 
-                                            $x_max = [Math]::Max($x_min + 1, [Math]::Min(
-                                                $box.x_max, $image.Width))
+                                            $x_max = [Math]::Max($x_min + 1,
+                                                [Math]::Min($box.x_max,
+                                                    $image.Width))
 
-                                            $y_max = [Math]::Max($y_min + 1, [Math]::Min(
-                                                $box.y_max, $image.Height))
+                                            $y_max = [Math]::Max($y_min + 1,
+                                                [Math]::Min($box.y_max,
+                                                    $image.Height))
 
                                             # calculate validated width and height
                                             $width = $x_max - $x_min
@@ -507,53 +550,61 @@ function Show-ImageGallery {
 
                                             Microsoft.PowerShell.Utility\Write-Verbose (
                                                 ("Original box: x_min=$($box.x_min), " +
-                                                 "y_min=$($box.y_min), x_max=$($box.x_max), " +
-                                                 "y_max=$($box.y_max), width=$($box.width), " +
+                                                 "y_min=$($box.y_min), " +
+                                                 "x_max=$($box.x_max), " +
+                                                 "y_max=$($box.y_max), " +
+                                                 "width=$($box.width), " +
                                                  "height=$($box.height)"))
 
                                             Microsoft.PowerShell.Utility\Write-Verbose (
-                                                "Image dimensions: $($image.Width) x $($image.Height)")
+                                                ("Image dimensions: " +
+                                                 "$($image.Width) x $($image.Height)"))
 
                                             Microsoft.PowerShell.Utility\Write-Verbose (
-                                                ("Validated box: x_min=$x_min, y_min=$y_min, " +
-                                                 "x_max=$x_max, y_max=$y_max, width=$width, " +
+                                                ("Validated box: x_min=$x_min, " +
+                                                 "y_min=$y_min, x_max=$x_max, " +
+                                                 "y_max=$y_max, width=$width, " +
                                                  "height=$height"))
 
                                             # ensure minimum dimensions
                                             if ($width -le 0 -or $height -le 0) {
 
                                                 Microsoft.PowerShell.Utility\Write-Warning (
-                                                    ("Invalid bounding box dimensions: " +
-                                                     "width=$width, height=$height"))
+                                                    ("Invalid bounding box " +
+                                                     "dimensions: width=$width, " +
+                                                     "height=$height"))
                                                 continue
                                             }
 
                                             # create a rectangle for the bounding box
-                                            $cropRect = Microsoft.PowerShell.Utility\New-Object (
-                                                System.Drawing.Rectangle($x_min, $y_min, $width, $height))
+                                            $cropRect = [System.Drawing.Rectangle]::new(
+                                                $x_min, $y_min, $width, $height)
 
                                             # create a new bitmap for the cropped region
-                                            $croppedBitmap = Microsoft.PowerShell.Utility\New-Object (
-                                                System.Drawing.Bitmap($width, $height))
-
+                                            $croppedBitmap = [System.Drawing.Bitmap]::new(
+                                                $width, $height)
                                             $croppedGraphics = [System.Drawing.Graphics]::FromImage(
                                                 $croppedBitmap)
 
-                                            # draw the cropped portion of the original image
-                                            $destRect = Microsoft.PowerShell.Utility\New-Object (
-                                                System.Drawing.Rectangle(0, 0, $width, $height))
+                                            # draw the cropped portion of the original
+                                            # image
+                                            $destRect = [System.Drawing.Rectangle]::new(
+                                                0, 0, $width, $height)
 
-                                            $croppedGraphics.DrawImage($image, $destRect, $cropRect,
+                                            $null = $croppedGraphics.DrawImage(
+                                                $image, $destRect, $cropRect,
                                                 [System.Drawing.GraphicsUnit]::Pixel)
 
                                             # determine a safe title for the file
                                             $title = "crop"
 
-                                            if (-not [String]::IsNullOrWhiteSpace($action.faceName)) {
+                                            if (-not [String]::IsNullOrWhiteSpace(
+                                                $action.faceName)) {
 
                                                 $title = $action.faceName
                                             }
-                                            elseif (-not [String]::IsNullOrWhiteSpace($action.objectName)) {
+                                            elseif (-not [String]::IsNullOrWhiteSpace(
+                                                $action.objectName)) {
 
                                                 $title = $action.objectName
                                             }
@@ -561,68 +612,89 @@ function Show-ImageGallery {
                                             # sanitize the title for use in filename
                                             $title = $title -replace '[^\w\-_]', '_'
 
-                                            # get a windows temp file path for the cropped image
+                                            # get a windows temp file path for the
+                                            # cropped image
                                             $tempFilePath = GenXdev.FileSystem\Expand-Path (
-                                                ("$env:TEMP\$([DateTime]::Now.Ticks)_$title." +
+                                                ("$env:TEMP\" +
+                                                 "$([DateTime]::Now.Ticks)_$title." +
                                                  "$([IO.Path]::GetExtension($imagePath).TrimStart('.'))"))
 
                                             # save the cropped image
-                                            $croppedBitmap.Save($tempFilePath,
+                                            $null = $croppedBitmap.Save($tempFilePath,
                                                 [System.Drawing.Imaging.ImageFormat]::Png)
 
                                             # clean up graphics object
-                                            $croppedGraphics.Dispose()
+                                            $null = $croppedGraphics.Dispose()
 
-                                            $croppedBitmap.Dispose()
+                                            $null = $croppedBitmap.Dispose()
                                         }
                                         finally {
 
-                                            if ($image) { $image.Dispose() }
+                                            if ($image) {
+                                                $null = $image.Dispose()
+                                            }
                                         }
 
                                         # open the cropped image in paint.net
                                         if ($tempFilePath) {
-                                            paintdotnet.exe $tempFilePath
+                                            [bool] $wasRunning = Microsoft.PowerShell.Management\Get-Process paintdotnet `
+                                                -ErrorAction SilentlyContinue
+                                            $null = paintdotnet.exe $tempFilePath
 
-                                            Microsoft.PowerShell.Utility\Start-Sleep 2
+                                            if (-not $wasRunning) {
+                                                Microsoft.PowerShell.Utility\Start-Sleep 2
 
-                                            $w = GenXdev.Windows\Get-Window -ProcessName paintdotnet `
-                                                -ErrorAction silentlyContinue
-
-                                            if ($w) {
-
-                                                $w.Show()
-
-                                                $w.SetForeground()
-
-                                                $w.Maximize();
-
-                                                GenXdev.Windows\Set-WindowPosition -Fullscreen `
-                                                    -Monitor 0 -WindowHelper $w `
+                                                $w = GenXdev.Windows\Get-Window `
+                                                    -ProcessName paintdotnet `
                                                     -ErrorAction silentlyContinue
+
+                                                if ($w) {
+
+                                                    $null = $w.Show()
+                                                    $w.Restore();
+
+                                                    $null = GenXdev.Windows\Set-WindowPosition `
+                                                        -Fullscreen `
+                                                        -Monitor 0 `
+                                                        -WindowHelper $w `
+                                                        -ErrorAction silentlyContinue
+
+                                                    $null = $w.SetForeground()
+
+                                                    $null = $w.Maximize();
+                                                }
                                             }
                                         }
                                     }
                                     else {
-                                        # open the original image in paint.net if no bounding boxes provided
-                                        paintdotnet.exe $imagePath
+                                        # open the original image in paint.net if no
+                                        # bounding boxes provided
+                                        [bool] $wasRunning = Microsoft.PowerShell.Management\Get-Process paintdotnet `
+                                            -ErrorAction SilentlyContinue
+                                        $null = paintdotnet.exe $imagePath
 
-                                        Microsoft.PowerShell.Utility\Start-Sleep 2
+                                        if (-not $wasRunning) {
+                                            Microsoft.PowerShell.Utility\Start-Sleep 2
 
-                                        $w = GenXdev.Windows\Get-Window -ProcessName paintdotnet `
-                                            -ErrorAction silentlyContinue
-
-                                        if ($w) {
-
-                                            $w.Show()
-
-                                            $w.SetForeground()
-
-                                            $w.Maximize();
-
-                                            GenXdev.Windows\Set-WindowPosition -Fullscreen `
-                                                -Monitor 0 -WindowHelper $w `
+                                            $w = GenXdev.Windows\Get-Window `
+                                                -ProcessName paintdotnet `
                                                 -ErrorAction silentlyContinue
+
+                                            if ($w) {
+
+                                                $null = $w.Show()
+                                                $w.Restore();
+
+                                                $null = GenXdev.Windows\Set-WindowPosition `
+                                                    -Fullscreen `
+                                                    -Monitor 0 `
+                                                    -WindowHelper $w `
+                                                    -ErrorAction silentlyContinue
+
+                                                $null = $w.SetForeground()
+
+                                                $null = $w.Maximize();
+                                            }
                                         }
                                     }
                                 }
@@ -638,18 +710,20 @@ function Show-ImageGallery {
                                     if ($imagePath -like "file:///*") {
 
                                         # convert file:/// uri to local path
-                                        $imagePath = $imagePath -replace '^file:///', ''
+                                        $imagePath = $imagePath -replace (
+                                            '^file:///', '')
 
                                         $imagePath = $imagePath -replace '/', '\'
 
                                         # handle windows drive letters
                                         if ($imagePath -match '^[A-Za-z]:') {
-                                            # path already has drive letter, no changes needed
+                                            # path already has drive letter,
+                                            # no changes needed
                                         }
                                     }
 
                                     # handle delete action by moving to recycle bin
-                                    GenXdev.FileSystem\Move-ToRecycleBin `
+                                    $null = GenXdev.FileSystem\Move-ToRecycleBin `
                                         -Path $imagePath
                                 }
                             }
@@ -678,11 +752,12 @@ function Show-ImageGallery {
         $parameters = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "Open-Webbrowser" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local `
                 -ErrorAction SilentlyContinue)
 
         # open generated html file in browser window
-        GenXdev.Webbrowser\Open-Webbrowser `
+        $null = GenXdev.Webbrowser\Open-Webbrowser `
             @parameters -Url $filePath
     }
 }

@@ -11,9 +11,9 @@ or remove all metadata files if no specific switch is provided. Language-specifi
 metadata files can be removed by specifying the Language parameter, and all
 language variants can be removed using the AllLanguages switch.
 
-.PARAMETER ImageDirectory
-Specifies the directory containing images to process. Defaults to current
-directory if not specified.
+.PARAMETER ImageDirectories
+Array of directory paths to process for image metadata removal. If not specified,
+uses default system directories including Downloads, OneDrive, and Pictures folders.
 
 .PARAMETER Recurse
 When specified, searches for images in the specified directory and all
@@ -38,24 +38,24 @@ When specified, removes metadata files for all supported languages by iterating
 through all languages from Get-WebLanguageDictionary.
 
 .EXAMPLE
-Remove-ImageMetaData -ImageDirectory "C:\Photos" -Recurse
+Remove-ImageMetaData -ImageDirectories @("C:\Photos", "D:\MyImages") -Recurse
 
-Removes all metadata files for images in C:\Photos and all subdirectories.
+Removes all metadata files for images in multiple directories and all subdirectories.
 
 .EXAMPLE
 Remove-ImageMetaData -Recurse -OnlyKeywords
 
-Removes only description.json files from current directory and subdirectories.
+Removes only description.json files from default system directories and subdirectories.
 
 .EXAMPLE
-Remove-ImageMetaData -OnlyPeople -ImageDirectory ".\MyPhotos"
+Remove-ImageMetaData -OnlyPeople -ImageDirectories @(".\MyPhotos")
 
 Removes only people.json files from the MyPhotos directory.
 
 .EXAMPLE
 Remove-ImageMetaData -Language "Spanish" -OnlyKeywords -Recurse
 
-Removes both English and Spanish description files recursively.
+Removes both English and Spanish description files recursively from default directories.
 
 .EXAMPLE
 removeimagedata -AllLanguages -OnlyKeywords
@@ -63,8 +63,8 @@ removeimagedata -AllLanguages -OnlyKeywords
 Uses alias to remove keyword files for all supported languages.
 
 .NOTES
-If none of the -OnlyKeywords, -OnlyPeople, or -OnlyObjects switches are
-specified, all three types of metadata files will be removed.
+If none of the -OnlyKeywords, -OnlyPeople, -OnlyObjects, or -OnlyScenes switches are
+specified, all four types of metadata files will be removed.
 When Language is specified, both the default English and language-specific
 files are removed.
 When AllLanguages is specified, metadata files for all supported languages
@@ -75,14 +75,14 @@ function Remove-ImageMetaData {
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     [Alias("removeimagedata")]
 
-    param(
-        #######################################################################
+    param(        #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 0,
-            HelpMessage = "The image directory path."
+            HelpMessage = "Array of directory paths to process for image metadata removal. If not specified, uses default system directories."
         )]
-        [string[]] $ImageDirectory,
+        [Alias("ImageDirectory")]
+        [string[]] $ImageDirectories,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -114,6 +114,13 @@ function Remove-ImageMetaData {
         #######################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = ("Only remove scenes.json files " +
+                          "(scene classification data).")
+        )]
+        [switch] $OnlyScenes,
+        #######################################################################        [Parameter(
+        [Parameter(
+                Mandatory = $false,
             HelpMessage = ("The language for removing language-specific " +
                           "metadata files.")
         )]
@@ -263,7 +270,7 @@ function Remove-ImageMetaData {
             "Yiddish",
             "Yoruba",
             "Zulu")]
-        [string] $Language = "English",
+        [string] $Language,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -272,24 +279,37 @@ function Remove-ImageMetaData {
         )]
         [switch] $AllLanguages
         #######################################################################
-    )    begin {
+    )
 
-        # check if no directory is specified
-        if (($null -eq $ImageDirectory) -or ($ImageDirectory.Count -eq 0)) {
+    begin {
 
-            # use the current directory as default
-            $ImageDirectory = @(Microsoft.PowerShell.Management\Get-Location)
+        # get configured directories and language using Get-ImageDirectories
+        $config = GenXdev.AI\Get-ImageDirectories -DefaultValue $ImageDirectories
+
+        # use provided directories or get from configuration
+        if ($ImageDirectories) {
+
+            $directories = $ImageDirectories
+        }
+        else {
+
+            $directories = $config.ImageDirectories
+        }
+
+        # resolve default language if not explicitly provided
+        if ([string]::IsNullOrEmpty($Language)) {
+
+            $Language = $config.Language
         }
 
         # output verbose information about directories to process
         Microsoft.PowerShell.Utility\Write-Verbose `
-            ("Processing directories: {0}" -f ($ImageDirectory -join ', '))
+            ("Processing directories: {0} with language: {1}" -f ($directories -join ', '), $Language)
     }
 
     process {
-
         # iterate through each specified directory path
-        foreach ($path in $ImageDirectory) {
+        foreach ($path in $directories) {
 
             # convert relative path to absolute path for consistency
             $path = GenXdev.FileSystem\Expand-Path $path
@@ -364,13 +384,20 @@ function Remove-ImageMetaData {
 
                             $filesToRemove += "$($image):people.json"
                         }
-                    }
-                    elseif ($OnlyObjects) {
+                    }                    elseif ($OnlyObjects) {
 
                         # objects data is not language-specific, so only add once
                         if ("$($image):objects.json" -notin $filesToRemove) {
 
                             $filesToRemove += "$($image):objects.json"
+                        }
+                    }
+                    elseif ($OnlyScenes) {
+
+                        # scenes data is not language-specific, so only add once
+                        if ("$($image):scenes.json" -notin $filesToRemove) {
+
+                            $filesToRemove += "$($image):scenes.json"
                         }
                     }
                     else {
@@ -399,6 +426,11 @@ function Remove-ImageMetaData {
                         if ("$($image):objects.json" -notin $filesToRemove) {
 
                             $filesToRemove += "$($image):objects.json"
+                        }
+
+                        if ("$($image):scenes.json" -notin $filesToRemove) {
+
+                            $filesToRemove += "$($image):scenes.json"
                         }
                     }
                 }

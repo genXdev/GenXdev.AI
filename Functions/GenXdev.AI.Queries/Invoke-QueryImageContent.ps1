@@ -19,17 +19,14 @@ paths. The file must exist and be accessible.
 
 .PARAMETER Model
 The LM-Studio model to use for the analysis.
-Defaults to "qwen2.5-14b-instruct".
+Defaults to "MiniCPM".
 
 .PARAMETER ModelLMSGetIdentifier
 Identifier used for getting a specific model from LM Studio.
-Defaults to "qwen2.5-14b-instruct".
+Defaults to "lmstudio-community/MiniCPM-V-2_6-GGUF/MiniCPM-V-2_6-Q4_K_M.gguf".
 
 .PARAMETER Instructions
 System instructions for the model to follow during the analysis.
-
-.PARAMETER Attachments
-An array of file paths to attach to the request.
 
 .PARAMETER ResponseFormat
 A JSON schema that specifies the requested output format for the response.
@@ -59,7 +56,7 @@ Sets the detail level for image analysis.
 Valid values are "low", "medium", or "high".
 
 .PARAMETER ApiEndpoint
-The API endpoint URL. Defaults to '''http://localhost:1234/v1/chat/completions'''.
+The API endpoint URL. Defaults to "http://localhost:1234/v1/chat/completions".
 
 .PARAMETER ApiKey
 The API key to use for the request.
@@ -83,13 +80,17 @@ Invoke-QueryImageContent `
     -Temperature 0.01 `
     -MaxToken 100
 
+Analyzes an image with specific temperature and token limits.
+
 .EXAMPLE
-Query-Image "Describe this image" "C:\Images\photo.jpg"
+Invoke-QueryImageContent "Describe this image" "C:\Images\photo.jpg"
+
+Simple image analysis using positional parameters.
 #>
 function Invoke-QueryImageContent {
 
     [CmdletBinding()]
-    [Alias()]
+    [Alias("Query-Image")]
 
     param (
         ########################################################################
@@ -99,7 +100,7 @@ function Invoke-QueryImageContent {
             HelpMessage = "The query string for analyzing the image"
         )]
         [ValidateNotNullOrEmpty()]
-        [string]$Query,
+        [string] $Query,
         ########################################################################
         [Parameter(
             Mandatory = $true,
@@ -107,7 +108,14 @@ function Invoke-QueryImageContent {
             HelpMessage = "Path to the image file for analysis"
         )]
         [ValidateNotNullOrEmpty()]
-        [string]$ImagePath,
+        [string] $ImagePath,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 2,
+            HelpMessage = "System instructions for the model"
+        )]
+        [string] $Instructions,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -118,16 +126,11 @@ function Invoke-QueryImageContent {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Identifier used for getting specific model from LM Studio"
+            HelpMessage = ("Identifier used for getting specific model from " +
+                          "LM Studio")
         )]
-        [string] $ModelLMSGetIdentifier = "lmstudio-community/MiniCPM-V-2_6-GGUF/MiniCPM-V-2_6-Q4_K_M.gguf",
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            Position = 2,
-            HelpMessage = "System instructions for the model"
-        )]
-        [string] $Instructions,
+        [string] $ModelLMSGetIdentifier = ("lmstudio-community/MiniCPM-V-2_6-" +
+                                          "GGUF/MiniCPM-V-2_6-Q4_K_M.gguf"),
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -149,24 +152,24 @@ function Invoke-QueryImageContent {
         [Alias("MaxTokens")]
         [int] $MaxToken = -1,
         ########################################################################
-        [Alias("ttl")]
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests"
+            HelpMessage = ("Set a TTL (in seconds) for models loaded via " +
+                          "API requests")
         )]
+        [Alias("ttl")]
         [int] $TTLSeconds = -1,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = (
-                "How much to offload to the GPU. If 'off', GPU offloading is " +
-                "disabled. If 'max', all layers are offloaded to GPU. If a " +
-                "number between 0 and 1, that fraction of layers will be " +
-                "offloaded to the GPU. -1 = LM Studio will decide how much " +
-                "to offload to the GPU. -2 = Auto"
-            )
+            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
+                          "offloading is disabled. If 'max', all layers are " +
+                          "offloaded to GPU. If a number between 0 and 1, " +
+                          "that fraction of layers will be offloaded to the " +
+                          "GPU. -1 = LM Studio will decide how much to " +
+                          "offload to the GPU. -2 = Auto")
         )]
-        [int]$Gpu = -1,
+        [int] $Gpu = -1,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -177,7 +180,8 @@ function Invoke-QueryImageContent {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Api endpoint url, defaults to http://localhost:1234/v1/chat/completions"
+            HelpMessage = ("Api endpoint url, defaults to " +
+                          "http://localhost:1234/v1/chat/completions")
         )]
         [string] $ApiEndpoint = $null,
         ########################################################################
@@ -189,7 +193,8 @@ function Invoke-QueryImageContent {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Timeout in seconds for the request, defaults to 24 hours"
+            HelpMessage = ("Timeout in seconds for the request, defaults to " +
+                          "24 hours")
         )]
         [int] $TimeoutSeconds = (3600 * 24),
         ########################################################################
@@ -203,7 +208,7 @@ function Invoke-QueryImageContent {
             Mandatory = $false,
             HelpMessage = "Force stop LM Studio before initialization"
         )]
-        [switch]$Force,
+        [switch] $Force,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -218,10 +223,12 @@ function Invoke-QueryImageContent {
         Microsoft.PowerShell.Utility\Write-Verbose `
             "Starting image analysis with query: $Query"
 
-        # convert any relative or partial path to a full, absolute path for reliability
+        # convert any relative or partial path to a full, absolute path for
+        # reliability
         $imagePath = GenXdev.FileSystem\Expand-Path $ImagePath
 
-        # ensure the specified image file exists before proceeding with the analysis
+        # ensure the specified image file exists before proceeding with the
+        # analysis
         if (-not (Microsoft.PowerShell.Management\Test-Path $imagePath)) {
 
             # if the file doesn't exist, throw a terminating error
@@ -232,17 +239,22 @@ function Invoke-QueryImageContent {
     process {
 
         # log the start of the actual image processing step
-        Microsoft.PowerShell.Utility\Write-Verbose "Processing image: $imagePath"
+        Microsoft.PowerShell.Utility\Write-Verbose ("Processing image: " +
+                                                   "$imagePath")
 
         # construct a hashtable of parameters to be passed to the next function
         $parameters = GenXdev.Helpers\Copy-IdenticalParamValues `
            -BoundParameters $PSBoundParameters `
            -FunctionName "Invoke-LLMQuery" `
-           -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope "Local" -ErrorAction SilentlyContinue)
+           -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                            -Scope "Local" `
+                            -ErrorAction SilentlyContinue)
 
+        # add the image path to the attachments array for the llm query
         $parameters.Attachments = @($imagePath)
 
-        # invoke the ai model with the constructed parameters and image analysis configuration
+        # invoke the ai model with the constructed parameters and image analysis
+        # configuration
         GenXdev.AI\Invoke-LLMQuery @parameters
     }
 

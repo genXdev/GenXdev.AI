@@ -1,5 +1,4 @@
 ################################################################################
-
 <#
 .SYNOPSIS
 Updates image metadata with AI-generated descriptions and keywords.

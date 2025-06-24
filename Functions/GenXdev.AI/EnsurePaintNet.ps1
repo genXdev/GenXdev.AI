@@ -24,6 +24,11 @@ function EnsurePaintNet {
     param()
 
     begin {
+       # ensure graphics assembly is loaded for image processing
+       if (-not [System.Drawing.Rectangle]) {
+
+            Microsoft.PowerShell.Utility\Add-Type -AssemblyName System.Drawing
+        }
 
         ########################################################################
         <#

@@ -7,7 +7,6 @@
 . "$PSScriptRoot\Functions\GenXdev.AI\GenerateMasonryLayoutHtml.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Get-CpuCore.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Get-HasCapableGpu.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI\Get-ImageDetectedFaces.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Get-NumberOfCpuCores.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Get-TextTranslation.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Get-VectorSimilarity.ps1"

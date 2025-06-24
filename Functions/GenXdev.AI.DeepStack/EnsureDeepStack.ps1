@@ -65,7 +65,6 @@ DeepStack Face Recognition API Endpoints:
 
 For more information, see: https://docs.deepstack.cc/face-recognition/
 #>
-
 function EnsureDeepStack {
 
     [CmdletBinding()]
@@ -84,7 +83,8 @@ function EnsureDeepStack {
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = "The name for the Docker volume for persistent storage"
+            HelpMessage = ("The name for the Docker volume for persistent " +
+                          "storage")
         )]
         [ValidateNotNullOrEmpty()]
         [string] $VolumeName = "deepstack_face_data",
@@ -109,7 +109,8 @@ function EnsureDeepStack {
         [Parameter(
             Position = 4,
             Mandatory = $false,
-            HelpMessage = "Interval in seconds between health check attempts"
+            HelpMessage = ("Interval in seconds between health check " +
+                          "attempts")
         )]
         [ValidateRange(1, 10)]
         [int] $HealthCheckInterval = 3,
@@ -150,15 +151,26 @@ function EnsureDeepStack {
 
     begin {
 
+        # ensure graphics assembly is loaded for image processing
+        if (-not [System.Drawing.Rectangle]) {
+
+            Microsoft.PowerShell.Utility\Add-Type -AssemblyName System.Drawing
+        }
+
         # set script-scoped variables from parameters for container management
         $script:containerName = $ContainerName
 
         # determine appropriate docker image based on gpu usage preference
         $script:imageName = if ($ImageName) {
+
             $ImageName
+
         } elseif ($UseGPU) {
+
             "deepquestai/deepstack:gpu"
+
         } else {
+
             "deepquestai/deepstack:latest"
         }
 
@@ -183,7 +195,7 @@ function EnsureDeepStack {
         $script:originalLocation = `
             (Microsoft.PowerShell.Management\Get-Location).Path
 
-        ###################################################################
+    ###################################################################
         <#
         .SYNOPSIS
         Tests if Docker is available and responsive.
@@ -199,9 +211,27 @@ function EnsureDeepStack {
                 # attempt to get docker version to verify docker is running
                 $null = docker version --format "{{.Server.Version}}" 2>$null
 
-                return $LASTEXITCODE -eq 0
-            }
-            catch {
+                # check if command succeeded
+                if ($LASTEXITCODE -eq 0) {
+
+                    # docker is responding, check if there are any login issues
+                    $dockerInfo = docker info 2>&1
+
+                    if ($dockerInfo -match "not logged in" -or
+                        $dockerInfo -match "Please log in") {
+
+                        Microsoft.PowerShell.Utility\Write-Warning `
+                            ("Docker engine is running but user is not " +
+                             "logged in. Some operations may require " +
+                             "authentication via Docker Desktop.")
+                    }
+
+                    return $true
+                }
+
+                return $false
+
+            } catch {
 
                 return $false
             }
@@ -222,11 +252,12 @@ function EnsureDeepStack {
             try {
 
                 # query docker for existing images matching the specified name
-                $images = docker images $ImageName --format "{{.Repository}}" 2>$null
+                $images = docker images $ImageName --format "{{.Repository}}" `
+                    2>$null
 
                 return -not [string]::IsNullOrWhiteSpace($images)
-            }
-            catch {
+
+            } catch {
 
                 return $false
             }
@@ -252,8 +283,8 @@ function EnsureDeepStack {
                     --format "{{.ID}}" 2>$null
 
                 return -not [string]::IsNullOrWhiteSpace($containers)
-            }
-            catch {
+
+            } catch {
 
                 return $false
             }
@@ -279,8 +310,8 @@ function EnsureDeepStack {
                     --format "{{.ID}}" 2>$null
 
                 return -not [string]::IsNullOrWhiteSpace($containers)
-            }
-            catch {
+
+            } catch {
 
                 return $false
             }
@@ -319,8 +350,8 @@ function EnsureDeepStack {
                         $null = docker rm $ContainerName 2>$null
                     }
                 }
-            }
-            catch {
+
+            } catch {
 
                 # warn about container removal failures
                 Microsoft.PowerShell.Utility\Write-Warning `
@@ -344,7 +375,8 @@ function EnsureDeepStack {
 
             try {
 
-                if ($PSCmdlet.ShouldProcess($VolumeName, "Remove Docker volume")) {
+                if ($PSCmdlet.ShouldProcess($VolumeName,
+                    "Remove Docker volume")) {
 
                     # output verbose information about volume removal
                     Microsoft.PowerShell.Utility\Write-Verbose `
@@ -353,8 +385,8 @@ function EnsureDeepStack {
                     # remove the docker volume and discard output
                     $null = docker volume rm $VolumeName 2>$null
                 }
-            }
-            catch {
+
+            } catch {
 
                 # warn about volume removal failures
                 Microsoft.PowerShell.Utility\Write-Warning `
@@ -386,8 +418,8 @@ function EnsureDeepStack {
                     "DeepStack service health check passed"
 
                 return $true
-            }
-            catch {
+
+            } catch {
 
                 # log failed health check with error details for debugging
                 Microsoft.PowerShell.Utility\Write-Verbose `
@@ -436,7 +468,8 @@ function EnsureDeepStack {
 
                 # output verbose information about retry attempt
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "Service not ready yet, attempt $retryCount/$maxRetries..."
+                    ("Service not ready yet, attempt " +
+                     "$retryCount/$maxRetries...")
 
                 # wait between health check attempts
                 Microsoft.PowerShell.Utility\Start-Sleep `
@@ -468,11 +501,46 @@ function EnsureDeepStack {
                 Microsoft.PowerShell.Utility\Write-Verbose `
                     "Pulling DeepStack image: $script:imageName"
 
+                Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Cyan `
+                    "Pulling DeepStack image: $script:imageName"
+
                 # pull the specified docker image
                 $pullResult = docker pull $script:imageName 2>&1
 
                 # check if docker pull command failed
                 if ($LASTEXITCODE -ne 0) {
+
+                    # check if the error is related to authentication
+                    if ($pullResult -match "authentication required" -or
+                        $pullResult -match "unauthorized" -or
+                        $pullResult -match "not logged in") {
+
+                        Microsoft.PowerShell.Utility\Write-Warning `
+                            ("Docker pull failed due to authentication. " +
+                             "Please log in to Docker Desktop first. " +
+                             "Error: $pullResult")
+
+                        # try to open docker desktop for user to log in
+                        try {
+
+                            $dockerDesktopPath = `
+                                Microsoft.PowerShell.Core\Get-Command `
+                                "Docker Desktop.exe" -ErrorAction SilentlyContinue
+
+                            if ($dockerDesktopPath) {
+
+                                Microsoft.PowerShell.Utility\Write-Host `
+                                    ("Opening Docker Desktop for " +
+                                     "authentication...") -ForegroundColor Yellow
+
+                                Microsoft.PowerShell.Management\Start-Process `
+                                    $dockerDesktopPath.Source -WindowStyle Normal
+                            }
+
+                        } catch {
+                            # ignore errors opening docker desktop
+                        }
+                    }
 
                     throw "Failed to pull DeepStack image: $pullResult"
                 }
@@ -481,9 +549,12 @@ function EnsureDeepStack {
                 Microsoft.PowerShell.Utility\Write-Verbose `
                     "✅ DeepStack image pulled successfully"
 
+                Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Cyan `
+                    "✅ DeepStack image pulled successfully"
+
                 return $true
-            }
-            catch {
+
+            } catch {
 
                 # log error details for image pull failure
                 Microsoft.PowerShell.Utility\Write-Error `
@@ -513,6 +584,9 @@ function EnsureDeepStack {
                 Microsoft.PowerShell.Utility\Write-Verbose `
                     "Creating DeepStack container..."
 
+                Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Cyan `
+                    "Creating DeepStack container: $script:containerName"
+
                 # check if docker volume already exists
                 $volumeExists = docker volume ls `
                     --filter "name=^${script:volumeName}$" `
@@ -521,14 +595,17 @@ function EnsureDeepStack {
                 # create docker volume if it doesn't exist
                 if ([string]::IsNullOrWhiteSpace($volumeExists)) {
 
-                    # Use ShouldProcess to confirm volume creation
-                    if ($PSCmdlet.ShouldProcess("$script:volumeName", "Create Docker volume")) {
+                    # use shouldprocess to confirm volume creation
+                    if ($PSCmdlet.ShouldProcess("$script:volumeName",
+                        "Create Docker volume")) {
+
                         # output verbose information about volume creation
                         Microsoft.PowerShell.Utility\Write-Verbose `
                             "Creating Docker volume: $script:volumeName"
 
                         # create the docker volume for persistent storage
-                        $volumeResult = docker volume create $script:volumeName 2>&1
+                        $volumeResult = docker volume create $script:volumeName `
+                            2>&1
 
                         # check if volume creation failed
                         if ($LASTEXITCODE -ne 0) {
@@ -564,8 +641,10 @@ function EnsureDeepStack {
                 Microsoft.PowerShell.Utility\Write-Verbose `
                     "Docker command: docker $($dockerArgs -join ' ')"
 
-                # Use ShouldProcess to confirm container creation
-                if ($PSCmdlet.ShouldProcess("$script:containerName", "Create DeepStack container")) {
+                # use shouldprocess to confirm container creation
+                if ($PSCmdlet.ShouldProcess("$script:containerName",
+                    "Create DeepStack container")) {
+
                     # execute docker run command to create container
                     $result = & docker @dockerArgs 2>&1
 
@@ -584,8 +663,8 @@ function EnsureDeepStack {
                     "✅ DeepStack container created successfully"
 
                 return $true
-            }
-            catch {
+
+            } catch {
 
                 # log error details for container creation failure
                 Microsoft.PowerShell.Utility\Write-Error `
@@ -634,8 +713,8 @@ function EnsureDeepStack {
 
                     throw "Failed to obtain DeepStack Docker image"
                 }
-            }
-            else {
+
+            } else {
 
                 # log that image is already available
                 Microsoft.PowerShell.Utility\Write-Verbose `
@@ -659,8 +738,8 @@ function EnsureDeepStack {
                         # log successful health check
                         Microsoft.PowerShell.Utility\Write-Verbose `
                             "✅ DeepStack container is healthy and responding"
-                    }
-                    else {
+
+                    } else {
 
                         # restart unhealthy running container
                         Microsoft.PowerShell.Utility\Write-Verbose `
@@ -684,8 +763,8 @@ function EnsureDeepStack {
                                  "after restart")
                         }
                     }
-                }
-                else {
+
+                } else {
 
                     # start existing stopped container
                     Microsoft.PowerShell.Utility\Write-Verbose `
@@ -704,17 +783,18 @@ function EnsureDeepStack {
                     if ($serviceReady) {
 
                         Microsoft.PowerShell.Utility\Write-Verbose `
-                            "✅ DeepStack service is ready after container start"
-                    }
-                    else {
+                            ("✅ DeepStack service is ready after " +
+                             "container start")
+
+                    } else {
 
                         Microsoft.PowerShell.Utility\Write-Warning `
                             ("DeepStack service may not be fully ready " +
                              "after start")
                     }
                 }
-            }
-            else {
+
+            } else {
 
                 # create and start new container when none exists
                 Microsoft.PowerShell.Utility\Write-Verbose `
@@ -737,8 +817,8 @@ function EnsureDeepStack {
 
                     Microsoft.PowerShell.Utility\Write-Verbose `
                         "✅ DeepStack service is ready at $script:apiBaseUrl"
-                }
-                else {
+
+                } else {
 
                     Microsoft.PowerShell.Utility\Write-Warning `
                         ("DeepStack service may not be fully ready " +
@@ -760,8 +840,8 @@ function EnsureDeepStack {
                      "operational at $script:apiBaseUrl")
 
                 return $true
-            }
-            else {
+
+            } else {
 
                 # warn about potential service issues
                 Microsoft.PowerShell.Utility\Write-Warning `
@@ -769,8 +849,8 @@ function EnsureDeepStack {
 
                 return $false
             }
-        }
-        catch {
+
+        } catch {
 
             # log error details for any failures
             Microsoft.PowerShell.Utility\Write-Error `
