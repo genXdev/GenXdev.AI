@@ -146,17 +146,21 @@ function GenerateMasonryLayoutHtml {
                 return $null
             }
         }
-    }    process {
+    }
+
+    process
+    {
         # Read the HTML template
         Microsoft.PowerShell.Utility\Write-Verbose "Reading HTML template from: $templatePath"
-        $html = Microsoft.PowerShell.Management\Get-Content -Path $templatePath -Raw -Encoding UTF8        # Convert image paths for browser compatibility
+        $html = Microsoft.PowerShell.Management\Get-Content -Path $templatePath -Raw -Encoding UTF8
+        # Convert image paths for browser compatibility
         if ($EmbedImages) {
             Microsoft.PowerShell.Utility\Write-Verbose "Converting image paths to base64 data URLs"
         } else {
             Microsoft.PowerShell.Utility\Write-Verbose "Converting image paths to file:// URLs"
         }
 
-        $processedImages = @()
+        [System.Collections.Generic.List[object]] $processedImages = @()
         foreach ($image in $Images) {
             $imageCopy = $image.PSObject.Copy()
             if ($imageCopy.path) {
@@ -179,13 +183,16 @@ function GenerateMasonryLayoutHtml {
                     $imageCopy.path = $fileUrl
                 }
             }
-            $processedImages += $imageCopy
+            $processedImages.Add($imageCopy)
         }
 
         # Convert images array to JSON with proper escaping
         Microsoft.PowerShell.Utility\Write-Verbose "Converting $($processedImages.Count) images to JSON"
-        $imagesJson = $processedImages | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 -WarningAction SilentlyContinue
-
+        $imagesJson = @($processedImages) | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 -WarningAction SilentlyContinue
+        if ([string]::IsNullOrWhiteSpace($imagesJson) -or $imagesJson.Substring(0, 1) -ne '[') {
+            # If the JSON does not start with an array, wrap it in an array
+            $imagesJson = "[$imagesJson]"
+        }
         # Escape the JSON for JavaScript string literal
         $escapedJson = $imagesJson | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress
 

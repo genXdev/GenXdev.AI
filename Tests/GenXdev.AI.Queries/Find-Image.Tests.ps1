@@ -27,5 +27,23 @@ The following PSScriptAnalyzer rules are being violated:
 $message
 "@;
     }
+
+    ################################################################################
+
+    Pester\It "Should work the same as Find-IndexedImage" -Skip:(-not ($Global:AllowLongRunningTests -eq $true)) {
+
+        $tmpPath = [IO.Path]::GetTempPath()
+        $testImagePath = GenXdev.FileSystem\Expand-Path ([IO.Path]::Combine($tmpPath, "test-image.png")) -CreateDirectory -DeleteExistingFile
+        $sourceImage = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\programmer.jpg"
+
+        Copy-Item $sourceImage $testImagePath -Force
+
+        $null = GenXdev.AI\Remove-ImageMetaData -ImageDirectories $tmpPath -AllLanguages
+
+        $resultsFindImage = GenXdev.AI.Queries\Find-Image -ImageDirectories $tmpPath | ConvertTo-HashTable | ConvertTo-Json -depth 20 | ConvertFrom-Json
+        $resultsFindIndexedImage = GenXdev.AI.Queries\Find-IndexedImage -ImageDirectories $tmpPath | ConvertTo-HashTable | ConvertTo-Json -depth 20 | ConvertFrom-Json
+
+        $resultsFindImage | Pester\Should -BeLikeExactly @resultsFindIndexedImage
+    }
 }
 ################################################################################

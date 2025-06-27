@@ -241,21 +241,22 @@
         }
 
         .face-name-tag {
-            display: inline-block;
             background-color: #27ae60;
             color: white;
+            border: none;
             padding: 6px 12px;
             border-radius: 4px;
             font-size: 11px;
-            margin: 2px 2px 2px 0;
-            border: none;
+            margin: 2px 4px 2px 0;
             font-weight: 500;
             cursor: pointer;
             transition: background-color 0.2s ease;
+            display: inline-block;
         }
 
-        .face-name-tag:hover {
+        .face-name-tag:hover, .face-name-tag:focus {
             background-color: #219a52;
+            outline: none;
         }
 
         .detected-objects {
@@ -559,6 +560,14 @@
         </div>
         <script>
         let imageGallery;
+        let mydata = {
+            images: JSON.parse("[]"),
+            title: "Photo Gallery",
+            description: "Hover over images to see face recognition data",
+            actions: [],
+            canEdit: false,
+            canDelete: false
+        };
 
         function parsePsObject(str) {
             if (!str || typeof str !== 'string' || !str.startsWith('@{')) return null;
@@ -600,51 +609,22 @@
             await new Promise(resolve => setTimeout(resolve, 1000));
             const images = [];
             const startIndex = (page - 1) * pageSize;
-            for (let i = 0; i < pageSize; i++) {
-                const index = startIndex + i;
-                images.push({
-                    path: `https://picsum.photos/seed/${index}/400/300`,
-                    description: {
-                        short_description: `Image ${index + 1}`,
-                        long_description: `Description for image ${index + 1}`,
-                        picture_type: 'Photo',
-                        style_type: 'Portrait'
-                    },
-                    keywords: ['photo', 'sample', `tag${index}`],
-                    people: {
-                        count: 2,
-                        faces: ['Person A', 'Person B'],
-                        predictions: [
-                            '@{label=person; x_min=50; y_min=50; x_max=150; y_max=150; confidence=0.95; userid=Person_A_1}',
-                            '@{label=person; x_min=200; y_min=50; x_max=300; y_max=150; confidence=0.92; userid=Person_B_1}'
-                        ]
-                    },
-                    objects: {
-                        count: 1,
-                        objects: ['Car'],
-                        object_counts: '@{Car=1}',
-                        predictions: ['@{label=Car; x_min=100; y_min=200; x_max=300; y_max=250; confidence=0.89}']
-                    }
-                });
+            for (let i = Math.min(mydata.images, startIndex); i < Math.min(mydata.images.length, startIndex + pageSize); i++) {
+
+                images.push(mydata.images[i]);
+
             }
             return images;
-        }        // Mock API to fetch all images for print
+        }
+        // Mock API to fetch all images for print
         async function fetchAllImages(maxImages = 50) {
-            const pageSize = 20;  // Increased from 10 to 20 for consistency
-            const totalPages = Math.ceil(maxImages / pageSize);
-            let allImages = [];
-            for (let page = 1; page <= totalPages; page++) {
-                const images = await fetchImages(page, pageSize);
-                allImages = [...allImages, ...images];
-                if (images.length < pageSize || allImages.length >= maxImages) {
-                    break;
-                }
-            }
-            return allImages.slice(0, maxImages);
+
+            return mydata.images.slice(0, maxImages);
         }
 
         class ImageGallery {
-            constructor(mydata) {                this.mydata = mydata;
+            constructor(mydata) {
+
                 this.images = [];
                 this.galleryElement = document.getElementById('gallery');
                 this.sentinel = document.getElementById('sentinel');
@@ -654,10 +634,12 @@
                 this.hasMore = true;
                 this.isPrinting = false;
                 this.init();
-            }            async init() {
-                if (typeof this.mydata !== 'undefined' && this.mydata.images && this.mydata.images.length > 0) {
+            }
+
+            async init() {
+                if (typeof mydata !== 'undefined' && mydata.images && mydata.images.length > 0) {
                     // Use provided image data
-                    this.images = this.mydata.images;
+                    this.images = mydata.images;
                     this.hasMore = false; // Disable infinite scroll for provided data
                     this.renderGallery();
                 } else {
@@ -665,13 +647,13 @@
                     await this.loadImages();
                 }
 
-                if (typeof this.mydata !== 'undefined') {
-                    if (this.mydata.title) {
-                        document.getElementById('gallery-title').textContent = this.mydata.title;
-                        document.title = this.mydata.title;
+                if (typeof mydata !== 'undefined') {
+                    if (mydata.title) {
+                        document.getElementById('gallery-title').textContent = mydata.title;
+                        document.title = mydata.title;
                     }
-                    if (this.mydata.description) {
-                        document.getElementById('gallery-description').textContent = this.mydata.description;
+                    if (mydata.description) {
+                        document.getElementById('gallery-description').textContent = mydata.description;
                     }
                 }
 
@@ -688,7 +670,9 @@
                 window.addEventListener('afterprint', () => this.handleAfterPrint());
 
                 this.setupIntersectionObserver();
-            }setupIntersectionObserver() {
+            }
+
+            setupIntersectionObserver() {
                 this.observer = new IntersectionObserver(
                     entries => {
                         if (entries[0].isIntersecting && !this.isLoading && this.hasMore && !this.isPrinting) {
@@ -860,17 +844,17 @@
                         <div class="recognized-faces">
                             <div class="faces-label">Recognized faces:</div>
                             ${faces.map((faceName, faceIndex) => {
-                                const clickHandler = (typeof this.mydata !== 'undefined' && this.mydata.canEdit)
-                                    ? ` onclick="imageGallery.editFace(${index}, '${this.escapeHtml(faceName)}', ${faceIndex})" class="face-name-tag clickable"`
+                                const clickHandler = (typeof mydata !== 'undefined' && mydata.canEdit)
+                                    ? ` onclick=\"imageGallery.editFace(${index}, '${this.escapeHtml(faceName)}', ${faceIndex})\" class=\"face-name-tag clickable\"`
                                     : ' class="face-name-tag"';
-                                return `<span${clickHandler}>${this.escapeHtml(faceName)}</span>`;
+                                return `<button type="button"${clickHandler}>${this.escapeHtml(faceName)}</button>`;
                             }).join('')}
                         </div>                        ` : ''}
                         ${Object.keys(objectCounts).length > 0 ? `
                         <div class="detected-objects">
                             <div class="objects-label">Detected objects:</div>
                             ${Object.entries(objectCounts).map(([objectName, count]) => {
-                                const clickHandler = (typeof this.mydata !== 'undefined' && this.mydata.canEdit)
+                                const clickHandler = (typeof mydata !== 'undefined' && mydata.canEdit)
                                     ? ` onclick="imageGallery.editObject(${index}, '${this.escapeHtml(objectName)}', ${count})" class="object-name-tag clickable"`
                                     : ' class="object-name-tag"';
                                 return `<span${clickHandler}>${this.escapeHtml(objectName)} (${count})</span>`;
@@ -881,7 +865,7 @@
                         <div class="scene-classification">
                             <div class="scene-label">Scene classification:</div>
                             ${(() => {
-                                const clickHandler = (typeof this.mydata !== 'undefined' && this.mydata.canEdit)
+                                const clickHandler = (typeof mydata !== 'undefined' && mydata.canEdit)
                                     ? ` onclick="imageGallery.editScene(${index}, '${this.escapeHtml(scene)}', ${sceneConfidencePercentage})" class="scene-name-tag clickable"`
                                     : ' class="scene-name-tag"';
                                 return `<span${clickHandler}>${this.escapeHtml(scene.replace(/_/g, ' '))} (${sceneConfidencePercentage}%)</span>`;
@@ -891,8 +875,8 @@
                         <div class="actions">
                             <button class="copy-path-btn" onclick="imageGallery.copyPath(${index})">Copy Path</button>
                             <a href="${this.escapeHtml(image.path)}" target="_blank" class="view-original">View Original</a>
-                            ${(typeof this.mydata !== 'undefined' && this.mydata.canEdit) ? `<button class="edit-btn" onclick="imageGallery.editImage(${index})">Edit</button>` : ''}
-                            ${(typeof this.mydata !== 'undefined' && this.mydata.canDelete) ? `<button class="delete-btn" onclick="imageGallery.deleteImage(${index})">Delete</button>` : ''}
+                            ${(typeof mydata !== 'undefined' && mydata.canEdit) ? `<button class="edit-btn" onclick="imageGallery.editImage(${index})">Edit</button>` : ''}
+                            ${(typeof mydata !== 'undefined' && mydata.canDelete) ? `<button class="delete-btn" onclick="imageGallery.deleteImage(${index})">Delete</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -1200,7 +1184,7 @@
                     this.fallbackCopy(path, index);
                 }
             }            editImage(index) {
-                if (typeof this.mydata === 'undefined' || !this.mydata.canEdit) {
+                if (typeof mydata === 'undefined' || !mydata.canEdit) {
                     console.warn('Edit action not allowed - canEdit is false or undefined');
                     return;
                 }
@@ -1211,7 +1195,7 @@
                     path: image.originalPath || image.path
                 };
 
-                this.mydata.actions.push(editAction);
+                mydata.actions.push(editAction);
                 this.showEditFeedback(index);
             }
 
@@ -1230,7 +1214,7 @@
             }
 
             editFace(imageIndex, faceName, faceIndex) {
-                if (typeof this.mydata === 'undefined' || !this.mydata.canEdit) {
+                if (typeof mydata === 'undefined' || !mydata.canEdit) {
                     return;
                 }
 
@@ -1264,13 +1248,13 @@
                     timestamp: new Date().toISOString()
                 };
 
-                this.mydata.actions.push(editAction);
+                mydata.actions.push(editAction);
                 console.log('Added face edit action:', editAction);
                 this.showTagClickFeedback(imageIndex, 'face', faceName);
             }
 
             editObject(imageIndex, objectName, count) {
-                if (typeof this.mydata === 'undefined' || !this.mydata.canEdit) {
+                if (typeof mydata === 'undefined' || !mydata.canEdit) {
                     return;
                 }
 
@@ -1297,7 +1281,7 @@
                     timestamp: new Date().toISOString()
                 };
 
-                this.mydata.actions.push(editAction);
+                mydata.actions.push(editAction);
                 console.log('Added object edit action:', editAction);
                 this.showTagClickFeedback(imageIndex, 'object', objectName);
             }
@@ -1332,7 +1316,7 @@
                     path: image.originalPath || image.path
                 };
 
-                this.mydata.actions.push(deleteAction);
+                mydata.actions.push(deleteAction);
                 const imageTile = document.getElementById(`image-${index}`);
                 if (imageTile) {
                     imageTile.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
@@ -1423,15 +1407,6 @@
                 });
             }
         }
-
-        let mydata = {
-            images: JSON.parse("[]"),
-            title: "Photo Gallery",
-            description: "Hover over images to see face recognition data",
-            actions: [],
-            canEdit: false,
-            canDelete: false
-        };
 
         document.addEventListener('DOMContentLoaded', () => {
             imageGallery = new ImageGallery(mydata);

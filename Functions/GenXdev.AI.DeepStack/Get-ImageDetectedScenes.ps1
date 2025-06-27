@@ -136,7 +136,7 @@ function Get-ImageDetectedScenes {
 
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
-    
+
     param(
         #######################################################################
         [Parameter(

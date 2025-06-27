@@ -13,25 +13,38 @@
 ### FEATURES
 * ✅ Local Large Language Model (LLM) Integration
      * Perform AI operations through OpenAI-compatible chat completion endpoints with `Invoke-LLMQuery` -> `llm`, `qllm`, `qlms`
-     * Seamless 'LM Studio' integration with automatic installation and model management
+     * Seamless `LM Studio` integration with automatic installation and model management
      * Expose PowerShell cmdlets as tool functions to LLM models with user-controlled execution
      * Interactive text chat sessions with `New-LLMTextChat` -> `llmchat`
      * AI-powered command suggestions with `Invoke-AIPowershellCommand` -> `hint`
      * Secure execution model with mandatory user confirmation for system-modifying operations
 
 * ✅ Audio and Speech Processing
-     * Transcribe audio/video files using Whisper AI model with `Get-MediaFileAudioTranscription` -> `transcribefile`
+     * Transcribe audio/video files using `Whisper AI` model with `Get-MediaFileAudioTranscription` -> `transcribefile`
      * Interactive audio chat sessions with `New-LLMAudioChat` -> `llmaudiochat`
      * Real-time audio transcription with `Start-AudioTranscription` -> `transcribe`
      * Generate subtitle files for media content using `Save-Transcriptions`
      * Record and process spoken audio with default input devices
 
-* ✅ Image Analysis and Management
-     * Generate and store AI-powered image descriptions and keywords
-     * Search images by content and metadata with `Find-Image` -> `findimages`
-     * Analyze image content using AI vision with `Invoke-QueryImageContent` -> `query-image`
-     * Update image metadata automatically with `Invoke-ImageKeywordUpdate` -> `updateimages`
-     * Generate responsive image galleries with `GenerateMasonryLayoutHtml`
+* ✅ Advanced Image Intelligence and Database System
+     * Uses Docker-integrated DeepStack services for face recognition, object detection, and scene analysis and `LM Studio` and model `MiniCPM` to update image metadata, all locally
+     * Use Set-ImagesDirectory for adding your image collections
+     * Manually Schedule-Tasks for `Update-AllImageMetaData` and `Export-ImageDatabase` to
+     update all AI generated metadata for quick access later
+     * Comprehensive AI-powered image analysis with face recognition, object detection, and scene classification
+     * High-performance SQLite database indexing with `Export-ImageDatabase` -> `indexcachedimages` for instant searches
+     * Lightning-fast indexed image search with `Find-IndexedImage` -> `findindexedimages`, `lii` using optimized database queries
+     * Image search functions `li`, `lii` have the -ShowImageGallery and -Interactive switches that allow you
+       to show your collection in a masonry layout inside your webbrowser.
+       The -Interactive switch parameter provides Edit and Delete buttons.
+     * Update-AllMetaData uses alternative ntfs streams inside the imagefile itself
+     these are preserved during file operations using `Windows Explorer` or
+     robocopy ->  Start-RoboCopy, `xc`
+     * Traditional file-based image search with `Find-Image` -> `findimages`, `li`
+     * Multi-language support for image descriptions and keywords with automatic AI generation
+     * Interactive image galleries with masonry layouts, metadata tooltips, and responsive design using `Show-ImageGallery` -> showfoundimages
+     * `Find-Image` AND `Find-IndexedImage`functions always use OR when combining search criteria,
+        for AND use use the same function again with a pipe | for additional filtering
 
 * ✅ Text Processing and Enhancement
      * Add contextual emoticons with `Add-EmoticonsToText` -> `emojify`
@@ -136,8 +149,12 @@ Update-Module
 | [ConvertFrom-DiplomaticSpeak](#ConvertFrom-DiplomaticSpeak) | undiplomatize |  |
 | [ConvertTo-CorporateSpeak](#ConvertTo-CorporateSpeak) | corporatize | Converts direct or blunt text into polite, professional corporate speak using AI. |
 | [ConvertTo-DiplomaticSpeak](#ConvertTo-DiplomaticSpeak) | diplomatize |  |
+| [Export-ImageDatabase](#Export-ImageDatabase) | indexcachedimages, inititalize-imagedatabase, recreate-imageindex | Initializes and populates the SQLite database by discovering images directly. |
 | [Find-Image](#Find-Image) | findimages, li | Scans image files for keywords and descriptions using metadata files. |
+| [Find-IndexedImage](#Find-IndexedImage) | findindexedimages, lii | Searches for images using an optimized SQLite database with fast indexed lookups. |
 | [Get-Fallacy](#Get-Fallacy) | dispicetext | Analyzes text to identify logical fallacies using AI-powered detection. |
+| [Get-ImageDatabasePath](#Get-ImageDatabasePath) |  | Returns the path to the image database, initializing or rebuilding it if needed. |
+| [Get-ImageDatabaseStats](#Get-ImageDatabaseStats) | getimagedbstats, gids | Retrieves comprehensive statistics and information about the image database. |
 | [Get-ImageDirectories](#Get-ImageDirectories) | getimgdirs |  |
 | [Get-MediaFileAudioTranscription](#Get-MediaFileAudioTranscription) | transcribefile | Transcribes an audio or video file to text.. |
 | [Get-ScriptExecutionErrorFixPrompt](#Get-ScriptExecutionErrorFixPrompt) | getfixprompt | Captures error messages from various streams and uses LLM to suggest fixes. |
@@ -7499,36 +7516,684 @@ REMARKS
 <br/><hr/><hr/><br/>
  
 NAME
-    Find-Image
+    Export-ImageDatabase
     
 SYNOPSIS
-    Scans image files for keywords and descriptions using metadata files.
+    Initializes and populates the SQLite database by discovering images directly.
     
     
 SYNTAX
-    Find-Image [[-Keywords] <String[]>] [[-People] <String[]>] [[-Objects] <String[]>] [[-Scenes] <String[]>] [[-ImageDirectories] <String[]>] [-InputObject <Object[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-Title <String>] [-Description <String>] [-Language <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowImageGallery] [-PassThru] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [<CommonParameters>]
+    Export-ImageDatabase [[-InputObject] <Object[]>] [-DatabaseFilePath <String>] [-ImageDirectories <String[]>] [-EmbedImages] [<CommonParameters>]
     
     
 DESCRIPTION
-    Searches for image files (jpg, jpeg, png) in the specified directory and its
-    subdirectories. For each image, checks associated description.json,
-    keywords.json, people.json, and objects.json files for metadata. Can filter
-    images based on keyword matches, people recognition, and object detection, then
-    return the results as objects. Use -ShowImageGallery to display results in a
-    browser-based masonry layout.
-    
-    The function searches through image directories and examines alternate data
-    streams containing metadata in JSON format. It can match keywords using wildcard
-    patterns, filter for specific people, and search for detected objects. By
-    default, returns image data objects. Use -ShowImageGallery to display in a web
-    browser.
+    Creates a SQLite database with optimized schema for fast image searching based on
+    metadata including keywords, people, objects, scenes, and descriptions. The function
+    always deletes any existing database file and creates a fresh one, discovers images
+    using Find-Image from specified directories or configured image directories, and
+    populates the database directly without requiring a metadata JSON file. Finally,
+    it creates indexes for optimal performance.
     
 
 PARAMETERS
-    -Keywords <String[]>
-        Array of keywords to search for in image metadata. Supports wildcards. If empty,
-        returns all images with any metadata. Keywords are matched against both the
-        description content and keywords arrays in metadata files.
+    -InputObject <Object[]>
+        Accepts search results from a Find-Image call to regenerate the view.
+        
+        Required?                    false
+        Position?                    1
+        Default value                
+        Accept pipeline input?       true (ByValue)
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DatabaseFilePath <String>
+        Path to the SQLite database file. If not specified, uses the default location
+        under Storage\allimages.meta.db.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDirectories <String[]>
+        Array of directory paths to search for images. If not specified, uses the
+        configured image directories from Get-ImageDirectories.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EmbedImages [<SwitchParameter>]
+        Embed images directly into the database.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Export-ImageDatabase -DatabaseFilePath "C:\Custom\Path\images.db" -ImageDirectories @("C:\Photos", "D:\Images") -EmbedImages
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > indexcachedimages
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Find-Image
+    
+SYNTAX
+    Find-Image [[-Any] <string[]>] [-DescriptionSearch <string[]>] [-Keywords <string[]>] [-People <string[]>] [-Objects <string[]>] [-Scenes <string[]>] [-ImageDirectories <string[]>] [-InputObject <Object[]>] [-PictureType <string[]>] [-StyleType <string[]>] [-OverallMood <string[]>] [-Title <string>] [-Description <string>] [-Language {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [-AcceptLang <string>] [-Monitor <int>] [-Width <int>] [-Height <int>] [-X <int>] [-Y <int>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowImageGallery] [-PassThru] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [-PathLike <string[]>] [<CommonParameters>]
+    
+    
+PARAMETERS
+    -AcceptLang <string>
+        Set the browser accept-lang http header
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      lang, locale
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -All
+        Opens in all registered modern browsers
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Any <string[]>
+        Will match any of all the possible meta data types.
+        
+        Required?                    false
+        Position?                    0
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -ApplicationMode
+        Hide the browser controls
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      a, app, appmode
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Bottom
+        Place browser window on the bottom side of the screen
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Centered
+        Place browser window in the center of the screen
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Chrome
+        Opens in Google Chrome
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      ch
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Chromium
+        Opens in Microsoft Edge or Google Chrome, depending on what the default browser is
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      c
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Description <string>
+        Description for the gallery
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -DescriptionSearch <string[]>
+        The description text to look for, wildcards allowed.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -DisablePopupBlocker
+        Disable the popup blocker
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      allowpopups
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Edge
+        Opens in Microsoft Edge
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      e
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -EmbedImages
+        Embed images as base64 data URLs instead of file:// URLs for better portability.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Firefox
+        Opens in Firefox
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      ff
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Force
+        Force enable debugging port, stopping existing browsers if needed
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -FullScreen
+        Opens in fullscreen mode
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      fs, f
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -HasExplicitContent
+        Filter images that contain explicit content.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -HasNudity
+        Filter images that contain nudity.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Height <int>
+        The initial height of the webbrowser window
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -ImageDirectories <string[]>
+        The image directory paths to search.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      ImageDirectory
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -InputObject <Object[]>
+        Accepts search results from a previous -PassThru call to regenerate the view.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       true (ByValue)
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Interactive
+        Will connect to browser and adds additional buttons like Edit and Delete. Only effective when used with -ShowImageGallery.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      i, editimages
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Keywords <string[]>
+        The keywords to look for, wildcards allowed.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Language <string>
+        The language for retrieving descriptions and keywords.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Left
+        Place browser window on the left side of the screen
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Monitor <int>
+        The monitor to use, 0 = default, -1 is discard, -2 = Configured secondary monitor, defaults to Global:DefaultSecondaryMonitor or 2 if not found
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      m, mon
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NewWindow
+        Don't re-use existing browser window, instead, create a new one
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      nw, new
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoBrowserExtensions
+        Prevent loading of browser extensions
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      de, ne, NoExtensions
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoExplicitContent
+        Filter images that do NOT contain explicit content.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoNudity
+        Filter images that do NOT contain nudity.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Objects <string[]>
+        Objects to look for, wildcards allowed.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -OnlyReturnHtml
+        Only return the generated HTML instead of displaying it in a browser.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -OverallMood <string[]>
+        Overall mood to filter by (e.g., 'calm', 'cheerful', 'sad', etc). Supports wildcards.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -PassThru
+        Return image data as objects. When used with -ShowImageGallery, both displays the gallery and returns the objects.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -PathLike <string[]>
+        Array of path-like patterns to filter image files (wildcards allowed).
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -People <string[]>
+        People to look for, wildcards allowed.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -PictureType <string[]>
+        Picture type to filter by (e.g., 'daylight', 'evening', 'indoor', etc). Supports wildcards.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Private
+        Opens in incognito/private browsing mode
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      incognito, inprivate
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -RestoreFocus
+        Restore PowerShell window focus
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      bg
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Right
+        Place browser window on the right side of the screen
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Scenes <string[]>
+        Scene categories to look for, wildcards allowed.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -ShowImageGallery
+        Display the search results in a browser-based image gallery.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      show, s
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -StyleType <string[]>
+        Style type to filter by (e.g., 'casual', 'formal', etc). Supports wildcards.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Title <string>
+        Title for the gallery
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Top
+        Place browser window on the top side of the screen
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Width <int>
+        The initial width of the webbrowser window
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -X <int>
+        The initial X position of the webbrowser window
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Y <int>
+        The initial Y position of the webbrowser window
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+    
+INPUTS
+    System.Object[]
+    
+    
+OUTPUTS
+    System.Object[]
+    System.Collections.Generic.List`1[[System.Object, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]
+    System.String
+    
+    
+ALIASES
+    findimages
+    li
+    
+
+REMARKS
+    None 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Find-IndexedImage
+    
+SYNOPSIS
+    Searches for images using an optimized SQLite database with fast indexed lookups.
+    
+    
+SYNTAX
+    Find-IndexedImage [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-DatabaseFilePath <String>] [-ShowImageGallery] [-PassThru] [-Title <String>] [-Description <String>] [-Language <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ForceIndexRebuild] [-PathLike <String[]>] [-InputObject <Object[]>] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    Performs high-performance image searches using a pre-built SQLite database with
+    optimized indexes. This function provides the same search capabilities as
+    Find-Image but with significantly faster performance by eliminating file system
+    scans and using database indexes for all search criteria.
+    
+
+PARAMETERS
+    -Any <String[]>
         
         Required?                    false
         Position?                    1
@@ -7537,23 +8202,44 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -People <String[]>
-        Array of people names to search for in image metadata. Supports wildcards. Used
-        to filter images based on face recognition metadata stored in people.json files.
+    -DescriptionSearch <String[]>
+        The description text to look for, wildcards allowed
         
         Required?                    false
-        Position?                    2
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Keywords <String[]>
+        Array of keywords to search for in image metadata. Supports wildcards. Keywords
+        are matched against both the description content and the keywords table.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -People <String[]>
+        Array of people names to search for in image metadata. Supports wildcards. Uses
+        the optimized ImagePeople lookup table for fast searches.
+        
+        Required?                    false
+        Position?                    named
         Default value                @()
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -Objects <String[]>
-        Array of object names to search for in image metadata. Supports wildcards. Used
-        to filter images based on object detection metadata stored in objects.json files.
+        Array of object names to search for in image metadata. Supports wildcards. Uses
+        the ImageObjects lookup table with indexed searches.
         
         Required?                    false
-        Position?                    3
+        Position?                    named
         Default value                @()
         Accept pipeline input?       false
         Aliases                      
@@ -7561,42 +8247,18 @@ PARAMETERS
         
     -Scenes <String[]>
         Array of scene categories to search for in image metadata. Supports wildcards.
-        Used to filter images based on scene classification metadata stored in
-        scenes.json files.
+        Uses the ImageScenes lookup table for efficient scene-based filtering.
         
         Required?                    false
-        Position?                    4
+        Position?                    named
         Default value                @()
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -ImageDirectories <String[]>
-        Array of directory paths to search for images. Each directory is searched
-        recursively for jpg, jpeg, and png files. Relative paths are converted to
-        absolute paths automatically.
-        
-        Required?                    false
-        Position?                    5
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -InputObject <Object[]>
-        Accepts search results from a previous -PassThru call to regenerate the view.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       true (ByValue)
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -PictureType <String[]>
         Array of picture types to filter by (e.g., 'daylight', 'evening', 'indoor',
-        'outdoor'). Supports wildcards. Matches against the picture_type property in
-        description metadata.
+        'outdoor'). Supports wildcards. Uses indexed column searches.
         
         Required?                    false
         Position?                    named
@@ -7607,7 +8269,7 @@ PARAMETERS
         
     -StyleType <String[]>
         Array of style types to filter by (e.g., 'casual', 'formal'). Supports
-        wildcards. Matches against the style_type property in description metadata.
+        wildcards. Uses indexed column searches.
         
         Required?                    false
         Position?                    named
@@ -7618,12 +8280,82 @@ PARAMETERS
         
     -OverallMood <String[]>
         Array of overall moods to filter by (e.g., 'calm', 'cheerful', 'sad',
-        'energetic'). Supports wildcards. Matches against the overall_mood_of_image
-        property in description metadata.
+        'energetic'). Supports wildcards. Uses indexed column searches.
         
         Required?                    false
         Position?                    named
         Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HasNudity [<SwitchParameter>]
+        Switch to filter for images that contain nudity. Uses indexed boolean column.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoNudity [<SwitchParameter>]
+        Switch to filter for images that do NOT contain nudity. Uses indexed boolean column.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HasExplicitContent [<SwitchParameter>]
+        Switch to filter for images that contain explicit content. Uses indexed boolean column.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoExplicitContent [<SwitchParameter>]
+        Switch to filter for images that do NOT contain explicit content. Uses indexed boolean column.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DatabaseFilePath <String>
+        Optional path to the SQLite database file. If not specified, uses the default
+        location under Storage\allimages.meta.db.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowImageGallery [<SwitchParameter>]
+        Switch to display the search results in a browser-based masonry layout gallery.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
+        Switch to return image data as objects.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -7633,7 +8365,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                Photo Gallery
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -7643,15 +8375,13 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                Hover over images to see face recognition and object detection data
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -Language <String>
-        The language for retrieving descriptions and keywords. Will try to find metadata
-        in the specified language first, then fall back to English if not available.
-        This allows you to have metadata in multiple languages for the same images.
+        The language for retrieving descriptions and keywords.
         
         Required?                    false
         Position?                    named
@@ -7671,120 +8401,51 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Monitor <Int32>
-        The monitor to use, 0 = default, -1 is discard, -2 = Configured secondary
-        monitor, defaults to Global:DefaultSecondaryMonitor or 2 if not found.
+        The monitor to use for displaying the gallery.
         
         Required?                    false
         Position?                    named
-        Default value                -2
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -Width <Int32>
-        The initial width of the webbrowser window.
+        The initial width of the web browser window.
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -Height <Int32>
-        The initial height of the webbrowser window.
+        The initial height of the web browser window.
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -X <Int32>
-        The initial X position of the webbrowser window.
+        The initial X position of the web browser window.
         
         Required?                    false
         Position?                    named
-        Default value                -999999
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -Y <Int32>
-        The initial Y position of the webbrowser window.
+        The initial Y position of the web browser window.
         
         Required?                    false
         Position?                    named
-        Default value                -999999
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HasNudity [<SwitchParameter>]
-        Switch to filter for images that contain nudity. Only returns images where the
-        has_nudity property is true in the metadata.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoNudity [<SwitchParameter>]
-        Switch to filter for images that do NOT contain nudity. Only returns images
-        where the has_nudity property is false in the metadata.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HasExplicitContent [<SwitchParameter>]
-        Switch to filter for images that contain explicit content. Only returns images
-        where the has_explicit_content property is true in the metadata.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoExplicitContent [<SwitchParameter>]
-        Switch to filter for images that do NOT contain explicit content. Only returns
-        images where the has_explicit_content property is false in the metadata.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ShowImageGallery [<SwitchParameter>]
-        Switch to display the search results in a browser-based masonry layout gallery.
-        When used, the results are shown in an interactive web view. Can be combined
-        with -PassThru to also return the objects.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -PassThru [<SwitchParameter>]
-        Switch to return image data as objects. When used with -ShowImageGallery, both
-        displays the gallery and returns the objects. When used alone with
-        -ShowImageGallery, only displays the gallery without returning objects.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -7840,8 +8501,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Chromium [<SwitchParameter>]
-        Opens in Microsoft Edge or Google Chrome, depending on what the default browser
-        is.
+        Opens in Microsoft Edge or Google Chrome.
         
         Required?                    false
         Position?                    named
@@ -7991,15 +8651,42 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -EmbedImages [<SwitchParameter>]
-        Switch to embed images as base64 data URLs instead of file:// URLs. This makes
-        the generated HTML file completely self-contained and portable, but results in
-        larger file sizes. Useful when the HTML needs to be shared or viewed on
-        different systems where the original image files may not be accessible.
+        Switch to embed images as base64 data URLs instead of file:// URLs.
         
         Required?                    false
         Position?                    named
         Default value                False
         Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ForceIndexRebuild [<SwitchParameter>]
+        Force rebuild of the image index database.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PathLike <String[]>
+        Array of directory path-like search strings to filter images by path (SQL LIKE
+        patterns, e.g. '%\2024\%').
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -InputObject <Object[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       true (ByValue)
         Aliases                      
         Accept wildcard characters?  false
         
@@ -8021,8 +8708,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Find-Image -Keywords "cat","dog" -ImageDirectories "C:\Photos"
-    Searches for images containing 'cat' or 'dog' keywords and returns the image objects.
+    PS > Find-IndexedImage -Keywords "cat","dog" -ShowImageGallery -NoNudity
     
     
     
@@ -8031,88 +8717,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > findimages cat,dog "C:\Photos"
-    Same as above using the alias and positional parameters.
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 3 --------------------------
-    
-    PS > Find-Image -People "John","Jane" -ImageDirectories "C:\Family" -ShowImageGallery
-    Searches for photos containing John or Jane and displays them in a web gallery.
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 4 --------------------------
-    
-    PS > Find-Image -Objects "car","bicycle" -ImageDirectories "C:\Photos" -ShowImageGallery -PassThru
-    Searches for images containing detected cars or bicycles, displays them in a gallery, and also returns the objects.
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 5 --------------------------
-    
-    PS > findimages -Language "Spanish" -Keywords "playa","sol" -ImageDirectories "C:\Vacations" -ShowImageGallery
-    Searches for images with Spanish metadata containing the keywords "playa" (beach) or "sol" (sun) and displays in gallery.
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 6 --------------------------
-    
-    PS > Find-Image -Keywords "vacation" -People "John" -Objects "beach*" -ImageDirectories "C:\Photos"
-    Searches for vacation photos with John in them that also contain beach-related objects and returns the data objects.
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 7 --------------------------
-    
-    PS > Find-Image -Scenes "beach","forest","mountain*" -ImageDirectories "C:\Nature" -ShowImageGallery
-    Searches for images classified as beach, forest, or mountain scenes and displays them in a gallery.
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 8 --------------------------
-    
-    PS > Find-Image -NoNudity -NoExplicitContent -ImageDirectories "C:\Family" -ShowImageGallery
-    Searches for family-safe images (no nudity or explicit content) and displays them in a gallery.
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 9 --------------------------
-    
-    PS > Find-Image -PictureType "daylight" -OverallMood "calm" -ImageDirectories "C:\Photos"
-    Searches for daylight photos with a calm/peaceful mood and returns the image objects.
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 10 --------------------------
-    
-    PS > findimages -StyleType "casual" -HasNudity -ImageDirectories "C:\Art"
-    Searches for casual style images that contain nudity and returns the data objects.
+    PS > lii "cat","dog" -ShowImageGallery -NoNudity
     
     
     
@@ -8422,6 +9027,198 @@ OUTPUTS
     PS > "This product is the best because everyone uses it" | Get-Fallacy -Temperature 0.1
     
     Uses pipeline input to analyze text with low temperature for focused analysis.
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Get-ImageDatabasePath
+    
+SYNTAX
+    Get-ImageDatabasePath [[-DatabaseFilePath] <string>] [-ImageDirectories <string[]>] [-PathLike <string[]>] [-Language <string>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [<CommonParameters>]
+    
+    
+PARAMETERS
+    -DatabaseFilePath <string>
+        The path to the image database file. If not specified, a default path is used.
+        
+        Required?                    false
+        Position?                    0
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -EmbedImages
+        Embed images as base64.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -ForceIndexRebuild
+        Force rebuild of the image index database.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -ImageDirectories <string[]>
+        Array of directory paths to search for images
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Language <string>
+        Language for descriptions and keywords.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NeverRebuild
+        Switch to skip database initialization and rebuilding.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoFallback
+        Switch to disable fallback behavior.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -PathLike <string[]>
+        Array of directory path-like search strings to filter images by path (SQL LIKE patterns, e.g. '%\\2024\\%')
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+    
+INPUTS
+    None
+    
+    
+OUTPUTS
+    System.String
+    
+    
+ALIASES
+    None
+    
+
+REMARKS
+    None 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Get-ImageDatabaseStats
+    
+SYNOPSIS
+    Retrieves comprehensive statistics and information about the image database.
+    
+    
+SYNTAX
+    Get-ImageDatabaseStats [[-DatabaseFilePath] <String>] [-ShowDetails] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    Provides detailed statistics about the SQLite image database including record
+    counts, index usage, most common keywords, people, objects, and scenes. Useful
+    for understanding database health and content distribution.
+    
+
+PARAMETERS
+    -DatabaseFilePath <String>
+        Optional path to the SQLite database file. If not specified, uses the default
+        location under Storage\allimages.meta.db.
+        
+        Required?                    false
+        Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowDetails [<SwitchParameter>]
+        Shows detailed statistics including top keywords, people, objects, and scenes.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Get-ImageDatabaseStat
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Get-ImageDatabaseStat -ShowDetails
+    
+    
     
     
     
@@ -12165,17 +12962,22 @@ SYNOPSIS
     
     
 SYNTAX
-    Update-AllImageMetaData [[-ImageDirectories] <String[]>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [[-ConfidenceThreshold] <Double>] [[-Language] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-ApiEndpoint] <String>] [[-ApiKey] <String>] [[-TimeoutSeconds] <Int32>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-RetryFailed] [-RedoAll] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Update-AllImageMetaData [[-ImageDirectories] <String[]>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [[-ConfidenceThreshold] <Double>] [[-Language] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-ApiEndpoint] <String>] [[-ApiKey] <String>] [[-TimeoutSeconds] <Int32>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-RetryFailed] [-RedoAll] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
     This function systematically processes images across various system directories
     to update their keywords, face recognition data, object detection data, and
     scene classification data using AI services. It covers media storage, system
-    files, downloads, OneDrive, and personal pictures folders. The function uses
-    parallel processing to efficiently handle keyword extraction, face recognition,
-    object detection, and scene classification tasks simultaneously across multiple
-    directories.
+    files, downloads, OneDrive, and personal pictures folders.
+    
+    The function automatically detects output redirection and adjusts its behavior:
+    - When run standalone: Uses parallel processing across directories for maximum performance
+    - When output is piped: Processes files individually and outputs structured objects
+      compatible with Export-ImageDatabase
+    
+    This allows for both high-performance batch processing and structured data output
+    for pipeline operations like: Update-AllImageMetaData | Export-ImageDatabase
     
 
 PARAMETERS
@@ -12408,6 +13210,15 @@ PARAMETERS
         
     -ShowWindow [<SwitchParameter>]
         Show Docker + LM Studio window during initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
         
         Required?                    false
         Position?                    named

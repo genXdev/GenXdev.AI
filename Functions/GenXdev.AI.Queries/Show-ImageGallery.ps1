@@ -121,6 +121,8 @@ Opens the gallery in private browsing mode in fullscreen.
 function Show-ImageGallery {
 
     [CmdletBinding()]
+    # PSScriptAnalyzer rule exception: allow use of $Global:chromeSession for browser session detection
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
     [Alias("showfoundimages")]
 
     param(
@@ -138,6 +140,7 @@ function Show-ImageGallery {
             HelpMessage = ("Will connect to browser and adds additional buttons " +
                           "like Edit and Delete")
         )]
+        [Alias("i", "editimages")]
         [switch] $Interactive,
         ###############################################################################
         [Parameter(

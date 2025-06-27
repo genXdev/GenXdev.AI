@@ -8,10 +8,15 @@ directories.
 This function systematically processes images across various system directories
 to update their keywords, face recognition data, object detection data, and
 scene classification data using AI services. It covers media storage, system
-files, downloads, OneDrive, and personal pictures folders. The function uses
-parallel processing to efficiently handle keyword extraction, face recognition,
-object detection, and scene classification tasks simultaneously across multiple
-directories.
+files, downloads, OneDrive, and personal pictures folders.
+
+The function automatically detects output redirection and adjusts its behavior:
+- When run standalone: Uses parallel processing across directories for maximum performance
+- When output is piped: Processes files individually and outputs structured objects
+  compatible with Export-ImageDatabase
+
+This allows for both high-performance batch processing and structured data output
+for pipeline operations like: Update-AllImageMetaData | Export-ImageDatabase
 
 .PARAMETER ImageDirectories
 Array of directory paths to process for image keyword and face recognition
@@ -429,7 +434,14 @@ function Update-AllImageMetaData {
             Mandatory = $false,
             HelpMessage = "Show Docker + LM Studio window during initialization"
         )]
-        [switch]$ShowWindow
+        [switch]$ShowWindow,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "PassThru to return structured objects instead of outputting to console"
+        )]
+        [switch] $PassThru
+        ################################################################################
     )
 
     begin {
@@ -506,12 +518,15 @@ function Update-AllImageMetaData {
                 $windowHelper = GenXdev.AI\Get-LMStudioLoadedModelList @params `
                     -ShowWindow:$ShowWindow
 
-                # position lm studio window at top right of monitor 0
-                $null = GenXdev.Windows\Set-WindowPosition `
-                    -WindowHelper $windowHelper `
-                    -top `
-                    -right `
-                    -mon 0
+                if ($null -ne $windowHelper) {
+
+                    # position lm studio window at top right of monitor 0
+                    $null = GenXdev.Windows\Set-WindowPosition `
+                        -WindowHelper $windowHelper `
+                        -top `
+                        -right `
+                        -mon 0
+                }
 
                 # position current window to left side of monitor 0
                 $null = GenXdev.Windows\Set-WindowPosition -left -mon 0
@@ -569,7 +584,9 @@ function Update-AllImageMetaData {
             # fallback positioning if docker window positioning fails
             $null = GenXdev.Windows\Set-WindowPosition -left -mon 0
         }
-    }    process {
+    }
+
+    process {
 
         # get configured directories and language using get-imagedirectories
         $config = GenXdev.AI\Get-ImageDirectories -DefaultValue $ImageDirectories
@@ -584,109 +601,258 @@ function Update-AllImageMetaData {
             $directories = $config.ImageDirectories
         }
 
-        # process each directory in parallel for maximum efficiency
-        $directories |
-            Microsoft.PowerShell.Core\ForEach-Object -Parallel {
+        # detect if output is being redirected/piped by checking MyInvocation
 
-                $dir = $_
-                $redoAll = $using:RedoAll
-                $retryFailed = $using:RetryFailed
-                $language = $using:Language
-                $confidenceThreshold = $using:ConfidenceThreshold
+        # we want structured output if we're NOT the last command in the pipeline
+        $isOutputRedirected = $PassThru -or $MyInvocation.PipelinePosition -lt $MyInvocation.PipelineLength
 
-                # check if this is a onedrive folder for special handling
-                $isOneDriveFolder = $dir -like '*\OneDrive\*' -or
-                    $dir -like '*/OneDrive/*'
+        if ($isOutputRedirected) {
+            # output is redirected - process files individually and output structured objects
+            Microsoft.PowerShell.Utility\Write-Verbose "Output redirection detected - processing files individually for structured output"
 
-                # log which directory is being processed
-                Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Processing $dir (keywords, faces & objects)" +
-                    $(if ($isOneDriveFolder) { " [OneDrive - only new]" }
-                        else { "" })
-                )
+            # process each directory in parallel and stream results immediately
+            $directories |
+                Microsoft.PowerShell.Core\ForEach-Object -Parallel {
 
-                # initialize job collection for parallel processing
-                $jobs = @()
+                    $dir = $_
+                    $redoAll = $using:RedoAll
+                    $retryFailed = $using:RetryFailed
+                    $language = $using:Language
+                    $confidenceThreshold = $using:ConfidenceThreshold
+                    $myBoundParameters = $using:PSBoundParameters
 
-                # start thread job for keyword extraction processing
-                $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
+                    Microsoft.PowerShell.Utility\Write-Verbose "Processing directory: $dir"
 
-                    param($dir, $isOneDriveFolder, $redoAll, $retryFailed,
-                        $language)
+                    # get image files for this directory and process them one by one
+                    Microsoft.PowerShell.Management\Get-ChildItem -Path $dir -Recurse -File |
+                        Microsoft.PowerShell.Core\Where-Object {
 
-                    # run image keyword update with appropriate flags
-                    GenXdev.AI\Invoke-ImageKeywordUpdate `
-                        -imageDirectory $dir `
-                        -recurse `
-                        -Verbose `
-                        -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
-                        -retryFailed:$retryFailed `
-                        -Language $language
+                        $_.Extension -match '\.(jpg|jpeg|png)$'
 
-                } -ArgumentList $dir, $isOneDriveFolder, $redoAll,
-                    $retryFailed, $language
+                    } | Microsoft.PowerShell.Core\ForEach-Object {
 
-                # start thread job for face recognition processing
-                $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
+                        $imageFile = $PSItem
 
-                    param($dir, $isOneDriveFolder, $redoAll, $retryFailed)
+                        Microsoft.PowerShell.Utility\Write-Verbose "Processing: $($imageFile.FullName)"
 
-                    # run image faces update with appropriate flags
-                    GenXdev.AI\Invoke-ImageFacesUpdate `
-                        -imageDirectory $dir `
-                        -recurse `
-                        -Verbose `
-                        -NoDockerInitialize `
-                        -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
-                        -retryFailed:$retryFailed
+                        try {
+                            # initialize result object with the expected structure
+                            $result = [PSCustomObject]@{
+                                path = $imageFile.FullName
+                                keywords = @()
+                                description = $null
+                                people = $null
+                                objects = $null
+                                scenes = $null
+                            }
 
-                } -ArgumentList $dir, $isOneDriveFolder, $redoAll, $retryFailed
+                            # check if this is a onedrive folder for special handling
+                            $isOneDriveFolder = $imageFile.FullName -like '*\OneDrive\*' -or
+                                $imageFile.FullName -like '*/OneDrive/*'
 
-                # start thread job for object detection processing
-                $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
+                            # determine processing flags
+                            $shouldProcessFile = if ($isOneDriveFolder) {
+                                $true  # always process new for OneDrive
+                            } else {
+                                $redoAll -or $retryFailed
+                            }
 
-                    param($dir, $isOneDriveFolder, $redoAll, $retryFailed,
-                        $confidenceThreshold)
+                            # process keywords/description
+                            $keywordParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                                -BoundParameters $myBoundParameters `
+                                -FunctionName "Invoke-ImageKeywordUpdate" `
+                                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
-                    # run image objects update with appropriate flags
-                    GenXdev.AI\Invoke-ImageObjectsUpdate `
-                        -imageDirectory $dir `
-                        -recurse `
-                        -Verbose `
-                        -NoDockerInitialize `
-                        -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
-                        -retryFailed:$retryFailed `
-                        -ConfidenceThreshold $confidenceThreshold
+                            $keywordParams.ImagePath = $imageFile.FullName
+                            $keywordParams.Verbose = $false
+                            $keywordParams.onlyNew = (-not $shouldProcessFile)
+                            $keywordParams.retryFailed = $retryFailed
+                            $keywordParams.Language = $language
+                            $keywordParams.PassThru = $true
 
-                } -ArgumentList $dir, $isOneDriveFolder, $redoAll,
-                    $retryFailed, $confidenceThreshold
+                            $keywordResult = GenXdev.AI\Invoke-ImageKeywordUpdate @keywordParams
 
-                # start thread job for scene classification processing
-                $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
+                            if ($keywordResult) {
+                                $result.keywords = $keywordResult.keywords
+                                $result.description = $keywordResult.description
+                            }
 
-                    param($dir, $isOneDriveFolder, $redoAll, $retryFailed)
+                            # process face recognition
+                            $faceParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                                -BoundParameters $myBoundParameters `
+                                -FunctionName "Invoke-ImageFacesUpdate" `
+                                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
-                    # run image scenes update with appropriate flags
-                    GenXdev.AI\Invoke-ImageScenesUpdate `
-                        -imageDirectory $dir `
-                        -recurse `
-                        -Verbose `
-                        -NoDockerInitialize `
-                        -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
-                        -retryFailed:$retryFailed
+                            $faceParams.ImagePath = $imageFile.FullName
+                            $faceParams.Verbose = $false
+                            $faceParams.NoDockerInitialize = $true
+                            $faceParams.onlyNew = (-not $shouldProcessFile)
+                            $faceParams.retryFailed = $retryFailed
+                            $faceParams.PassThru = $true
 
-                } -ArgumentList $dir, $isOneDriveFolder, $redoAll, $retryFailed
+                            $faceResult = GenXdev.AI\Invoke-ImageFacesUpdate @faceParams
 
-                # wait for all jobs to finish and collect results
-                $jobs |
-                    Microsoft.PowerShell.Core\Wait-Job |
-                    Microsoft.PowerShell.Core\Receive-Job
+                            if ($faceResult) {
+                                $result.people = $faceResult
+                            }
 
-                # clean up completed jobs
-                $jobs |
-                    Microsoft.PowerShell.Core\Remove-Job
+                            # process object detection
+                            $objectParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                                -BoundParameters $myBoundParameters `
+                                -FunctionName "Invoke-ImageObjectsUpdate" `
+                                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
-            } -ThrottleLimit 10
+                            $objectParams.ImagePath = $imageFile.FullName
+                            $objectParams.Verbose = $false
+                            $objectParams.NoDockerInitialize = $true
+                            $objectParams.onlyNew = (-not $shouldProcessFile)
+                            $objectParams.retryFailed = $retryFailed
+                            $objectParams.ConfidenceThreshold = $confidenceThreshold
+                            $objectParams.PassThru = $true
+
+                            $objectResult = GenXdev.AI\Invoke-ImageObjectsUpdate @objectParams
+
+                            if ($objectResult) {
+                                $result.objects = $objectResult
+                            }
+
+                            # process scene classification
+                            $sceneParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                                -BoundParameters $myBoundParameters `
+                                -FunctionName "Invoke-ImageScenesUpdate" `
+                                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+
+                            $sceneParams.ImagePath = $imageFile.FullName
+                            $sceneParams.Verbose = $false
+                            $sceneParams.NoDockerInitialize = $true
+                            $sceneParams.onlyNew = (-not $shouldProcessFile)
+                            $sceneParams.retryFailed = $retryFailed
+                            $sceneParams.PassThru = $true
+
+                            $sceneResult = GenXdev.AI\Invoke-ImageScenesUpdate @sceneParams
+
+                            if ($sceneResult) {
+
+                                $result.scenes = $sceneResult
+                            }
+
+                            # immediately output the structured result for streaming
+                            Microsoft.PowerShell.Utility\Write-Output $result
+                        }
+                        catch {
+                            Microsoft.PowerShell.Utility\Write-Warning "Failed to process $($imageFile.FullName): $($_.Exception.Message)"
+                        }
+                    }
+                } -ThrottleLimit 20
+        }
+        else {
+            # no output redirection - use parallel processing for performance
+            Microsoft.PowerShell.Utility\Write-Verbose "No output redirection detected - using parallel directory processing"
+
+            # process each directory in parallel for maximum efficiency
+            $directories |
+                Microsoft.PowerShell.Core\ForEach-Object -Parallel {
+
+                    $dir = $_
+                    $redoAll = $using:RedoAll
+                    $retryFailed = $using:RetryFailed
+                    $language = $using:Language
+                    $confidenceThreshold = $using:ConfidenceThreshold
+
+                    # check if this is a onedrive folder for special handling
+                    $isOneDriveFolder = $dir -like '*\OneDrive\*' -or
+                        $dir -like '*/OneDrive/*'
+
+                    # log which directory is being processed
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Processing $dir (keywords, faces & objects)" +
+                        $(if ($isOneDriveFolder) { " [OneDrive - only new]" }
+                            else { "" })
+                    )
+
+                    # initialize job collection for parallel processing
+                    $jobs = @()
+
+                    # start thread job for keyword extraction processing
+                    $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
+
+                        param($dir, $isOneDriveFolder, $redoAll, $retryFailed,
+                            $language)
+
+                        # run image keyword update with appropriate flags
+                        GenXdev.AI\Invoke-ImageKeywordUpdate `
+                            -imageDirectory $dir `
+                            -recurse `
+                            -Verbose `
+                            -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
+                            -retryFailed:$retryFailed `
+                            -Language $language
+
+                    } -ArgumentList $dir, $isOneDriveFolder, $redoAll,
+                        $retryFailed, $language
+
+                    # start thread job for face recognition processing
+                    $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
+
+                        param($dir, $isOneDriveFolder, $redoAll, $retryFailed)
+
+                        # run image faces update with appropriate flags
+                        GenXdev.AI\Invoke-ImageFacesUpdate `
+                            -imageDirectory $dir `
+                            -recurse `
+                            -Verbose `
+                            -NoDockerInitialize `
+                            -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
+                            -retryFailed:$retryFailed
+
+                    } -ArgumentList $dir, $isOneDriveFolder, $redoAll, $retryFailed
+
+                    # start thread job for object detection processing
+                    $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
+
+                        param($dir, $isOneDriveFolder, $redoAll, $retryFailed,
+                            $confidenceThreshold)
+
+                        # run image objects update with appropriate flags
+                        GenXdev.AI\Invoke-ImageObjectsUpdate `
+                            -imageDirectory $dir `
+                            -recurse `
+                            -Verbose `
+                            -NoDockerInitialize `
+                            -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
+                            -retryFailed:$retryFailed `
+                            -ConfidenceThreshold $confidenceThreshold
+
+                    } -ArgumentList $dir, $isOneDriveFolder, $redoAll,
+                        $retryFailed, $confidenceThreshold
+
+                    # start thread job for scene classification processing
+                    $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
+
+                        param($dir, $isOneDriveFolder, $redoAll, $retryFailed)
+
+                        # run image scenes update with appropriate flags
+                        GenXdev.AI\Invoke-ImageScenesUpdate `
+                            -imageDirectory $dir `
+                            -recurse `
+                            -Verbose `
+                            -NoDockerInitialize `
+                            -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
+                            -retryFailed:$retryFailed
+
+                    } -ArgumentList $dir, $isOneDriveFolder, $redoAll, $retryFailed
+
+                    # wait for all jobs to finish and collect results
+                    $jobs |
+                        Microsoft.PowerShell.Core\Wait-Job |
+                        Microsoft.PowerShell.Core\Receive-Job
+
+                    # clean up completed jobs
+                    $jobs |
+                        Microsoft.PowerShell.Core\Remove-Job
+
+                } -ThrottleLimit 10
+        }
     }
 
     end {

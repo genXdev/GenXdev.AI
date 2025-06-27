@@ -397,10 +397,11 @@ function Register-AllFaces {
 
                     # override ImagePath parameter with array of paths
                     $registerParams.ImagePath = $ImagePaths
+                    $registerParams.Identifier = $Identifier
 
                     # register the face using the deepstack service
                     $null = GenXdev.AI\Register-Face @registerParams `
-                        -NoDockerInitialize
+                        -NoDockerInitialize -ErrorAction Stop
 
                     # add delay between successful registrations to prevent service overload
                     Microsoft.PowerShell.Utility\Start-Sleep -Milliseconds 500

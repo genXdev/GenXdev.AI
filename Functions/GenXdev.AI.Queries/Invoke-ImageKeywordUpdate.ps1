@@ -305,7 +305,8 @@ process {
 
                 # create empty metadata file if needed
                 if (-not $fileExists) {
-                    "{}" > $metadataFile
+
+                    [IO.File]::WriteAllText($metadataFile, "{}")
                 }
 
                 # Define response format schema

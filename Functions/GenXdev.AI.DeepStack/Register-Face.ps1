@@ -354,21 +354,6 @@ function Register-Face {
             Microsoft.PowerShell.Utility\Write-Error `
                 "Failed to register face for $Identifier`: $_"
 
-            # attempt cleanup on any failure
-            try {
-
-                # try to remove partial registration data
-                $null = GenXdev.AI\Unregister-Face `
-                    -Identifier $Identifier `
-                    -NoDockerInitialize `
-                    -ErrorAction SilentlyContinue
-            }
-            catch {
-
-                # warn if cleanup also failed
-                Microsoft.PowerShell.Utility\Write-Warning `
-                    "Failed to cleanup partial registration for $Identifier"
-            }
          }
     }
 

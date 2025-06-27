@@ -34,6 +34,7 @@ Uses alias to get the current image directory configuration.
 function Get-ImageDirectories {
 
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
     [Alias("getimgdirs")]
 

@@ -220,49 +220,59 @@ Searches for daylight photos with a calm/peaceful mood and returns the image obj
 findimages -StyleType "casual" -HasNudity -ImageDirectories "C:\Art"
 Searches for casual style images that contain nudity and returns the data objects.
 #>
+
 ###############################################################################
 function Find-Image {
 
     [CmdletBinding()]
     [OutputType([Object[]], [System.Collections.Generic.List[Object]], [string])]
     [Alias("findimages", "li")]
+
     param(
         ###############################################################################
         [Parameter(
-            Mandatory = $false,
             Position = 0,
+            Mandatory = $false,
+            HelpMessage = "Will match any of all the possible meta data types."
+        )]
+        [string[]] $Any = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The description text to look for, wildcards allowed."
+        )]
+        [string[]] $DescriptionSearch = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = "The keywords to look for, wildcards allowed."
         )]
         [string[]] $Keywords = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 1,
             HelpMessage = "People to look for, wildcards allowed."
         )]
         [string[]] $People = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 2,
             HelpMessage = "Objects to look for, wildcards allowed."
         )]
         [string[]] $Objects = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 3,
             HelpMessage = "Scene categories to look for, wildcards allowed."
         )]
         [string[]] $Scenes = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 4,
             HelpMessage = "The image directory paths to search."
         )]
         [Alias("ImageDirectory")]
-        [string[]] $ImageDirectories,
+        [string[]] $ImageDirectories = @(".\"),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -527,6 +537,7 @@ function Find-Image {
             HelpMessage = ("Display the search results in a browser-based " +
                 "image gallery.")
         )]
+        [Alias("show", "s")]
         [switch] $ShowImageGallery,
         ###############################################################################
         [Parameter(
@@ -543,6 +554,7 @@ function Find-Image {
                 "like Edit and Delete. Only effective when used with " +
                 "-ShowImageGallery.")
         )]
+        [Alias("i", "editimages")]
         [switch] $Interactive,
         ###############################################################################
         [Alias("incognito", "inprivate")]
@@ -679,9 +691,14 @@ function Find-Image {
             HelpMessage = ("Embed images as base64 data URLs instead of " +
                 "file:// URLs for better portability.")
         )]
-        [switch] $EmbedImages
+        [switch] $EmbedImages,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Array of path-like patterns to filter image files (wildcards allowed)."
+        )]
+        [string[]] $PathLike = @()
     )
-
     begin {
 
         # enable interactive mode when interactive switch is used
@@ -694,7 +711,8 @@ function Find-Image {
         $results = [System.Collections.Generic.List[Object]] @()
 
         # get configured directories and language using Get-ImageDirectories
-        $config = GenXdev.AI\Get-ImageDirectories -DefaultValue $ImageDirectories
+        $config = GenXdev.AI\Get-ImageDirectories `
+            -DefaultValue $ImageDirectories
 
         # use provided directories or get from configuration
         if ($ImageDirectories) {
@@ -710,6 +728,48 @@ function Find-Image {
         if ([string]::IsNullOrEmpty($Language)) {
 
             $Language = $config.Language
+        }
+
+        if ($null -ne $Any -and
+            $Any.Length -gt 0) {
+
+            $Any = @($Any | ForEach-Object {
+
+                $entry = $_.Trim()
+
+                if ($entry.IndexOfAny([char[]]@('*', '?')) -lt 0) {
+
+                    "*$entry*"
+                }
+                else {
+                    $_
+                }
+            })
+
+            # if Any parameter is used, treat it as a set of keywords
+            $DescriptionSearch = $null -ne $DescriptionSearch ? ($DescriptionSearch + $Any) :
+                $Any
+
+            $Keywords = $null -ne $Keywords ? ($Keywords + $Any) :
+                $Any
+
+            $People = $null -ne $People ? ($People + $Any) :
+                $Any
+
+            $Objects = $null -ne $Objects ? ($Objects + $Any) :
+                $Any
+
+            $Scenes = $null -ne $Scenes ? ($Scenes + $Any) :
+                $Any
+
+            $PictureType = $null -ne $PictureType ? ($PictureType + $Any) :
+                $Any
+
+            $StyleType = $null -ne $StyleType ? ($StyleType + $Any) :
+                $Any
+
+            $OverallMood = $null -ne $OverallMood ? ($OverallMood + $Any) :
+                $Any
         }
     }
 
@@ -736,7 +796,8 @@ function Find-Image {
 
             # try to load description metadata in requested language if not english
             if ($Language -ne "English" -and
-                [System.IO.File]::Exists("$($image):description.$Language.json")) {
+                [System.IO.File]::Exists(
+                    "$($image):description.$Language.json")) {
 
                 Microsoft.PowerShell.Utility\Write-Verbose (
                     "Found $Language metadata for $image")
@@ -802,7 +863,11 @@ function Find-Image {
             }
 
             # initialize objects metadata container with default structure
-            $objectsFound = @{count = 0; objects = @(); object_counts = @{} }
+            $objectsFound = @{
+                count = 0;
+                objects = @();
+                object_counts = @{}
+            }
 
             # try to load objects metadata if alternate data stream exists
             if ([System.IO.File]::Exists("$($image):objects.json")) {
@@ -884,67 +949,144 @@ function Find-Image {
                 (($null -ne $StyleType) -and ($StyleType.Count -gt 0)) -or
                 (($null -ne $OverallMood) -and ($OverallMood.Count -gt 0))
 
-            $hasAnyMetadata = (($null -ne $keywordsFound) -and
-                ($keywordsFound.length -gt 0)) -or
-                ($null -ne $descriptionFound) -or
-                ($peopleFound.count -gt 0) -or
-                ($objectsFound.count -gt 0) -or
-                ($scenesFound.success -eq $true)
+            # assume match if no keyword search criteria specified
+            $found = (-not $hasSearchCriteria) -or
+                     ($HasNudity -and ($null -ne $descriptionFound) -and ($descriptionFound.has_nudity -eq $true)) -or
+                     ($NoNudity -and ($null -ne $descriptionFound)  -and ($descriptionFound.has_nudity -ne $true)) -or
+                     ($HasExplicitContent -and ($null -ne $descriptionFound) -and ($descriptionFound.has_explicit_content -eq $true)) -or
+                     ($NoExplicitContent -and ($null -ne $descriptionFound) -and ($null -ne$descriptionFound.has_explicit_content -ne $true));
 
-            # only skip if we have no search criteria AND no metadata
-            if (-not $hasSearchCriteria -and -not $hasAnyMetadata) {
-                return
+            # check each required keyword against available metadata
+            if ((-not $found) -and
+                ($null -ne $descriptionFound) -and
+                ($null -ne $descriptionFound.description) -and
+                ($null -ne $DescriptionSearch) -and
+                ($DescriptionSearch.Count -gt 0)
+                ) {
+
+                # reset found flag to require keyword match
+                $found = $false
+
+                # check each required keyword against description content
+                foreach ($requiredDescriptionPhrase in $DescriptionSearch) {
+
+                    # use wildcard matching for flexible description search
+                    if ($descriptionFound.description.long_description -like $requiredDescriptionPhrase) {
+
+                        $found = $true
+
+                        break
+                    }
+                    if ($descriptionFound.description.short_description -like $requiredDescriptionPhrase) {
+
+                        $found = $true
+
+                        break
+                    }
+                }
             }
 
-            # assume match if no keyword search criteria specified
-            $found = (($null -eq $Keywords) -or ($Keywords.Length -eq 0))
-
             # perform keyword matching if keywords were specified for search
-            if (-not $found) {
+            if ((-not $found) -and
+                ($null -ne $descriptionFound) -and
+                    ($null -ne $descriptionFound.description) -and
+                    ($null -ne $DescriptionSearch) -and
+                    ($DescriptionSearch.Count -gt 0)
+            ) {
 
-                # convert description to json string for wildcard matching
-                $descriptionFound = ($null -ne $descriptionFound) ?
-                $descriptionFound : "" |
-                Microsoft.PowerShell.Utility\ConvertTo-Json `
-                    -Compress `
-                    -Depth 10 `
-                    -WarningAction SilentlyContinue
+                    # check each required keyword against description content
+                    foreach ($requiredDescriptionPhrase in $DescriptionSearch) {
 
-                # check each required keyword against available metadata
-                foreach ($requiredKeyword in $Keywords) {
+                        # use wildcard matching for flexible description search
+                        if ($descriptionFound.description.long_description -like $requiredDescriptionPhrase) {
 
-                    # first check if keyword matches in description content
-                    $found = "$descriptionFound" -like $requiredKeyword
+                            $found = $true
 
-                    # if not found in description, check individual keywords array
-                    if (-not $found) {
-
-                        # skip keyword array check if no keywords exist
-                        if (($null -eq $keywordsFound) -or
-                            ($keywordsFound.Length -eq 0)) {
-                            continue
+                            break
                         }
+                        if ($descriptionFound.description.short_description -like $requiredDescriptionPhrase) {
 
-                        # check each image keyword against required keyword pattern
-                        foreach ($imageKeyword in $keywordsFound) {
+                            $found = $true
 
-                            # use wildcard matching for flexible keyword search
-                            if ($imageKeyword -like $requiredKeyword) {
+                            break
+                        }
+                    }
+            }
 
-                                $found = $true
+            # picture type filtering
+            if ((-not $found) -and ($null -ne $PictureType) -and
+                ($PictureType.Count -gt 0)) {
 
-                                break
-                            }
+                foreach ($requiredPictureType in $PictureType) {
+
+                    if ($descriptionFound.picture_type -like
+                        $requiredPictureType) {
+
+                        $found = $true
+
+                        break
+                    }
+                }
+            }
+
+            # style type filtering
+            if ((-not $found) -and ($null -ne $StyleType) -and
+                ($StyleType.Count -gt 0)) {
+
+                foreach ($requiredStyleType in $StyleType) {
+
+                    if ($descriptionFound.style_type -like
+                        $requiredStyleType) {
+
+                        $found = $true
+                        break
+                    }
+                }
+            }
+
+            # overall mood filtering
+            if ((-not $found) -and ($null -ne $OverallMood) -and
+                ($OverallMood.Count -gt 0)) {
+
+                foreach ($requiredMood in $OverallMood) {
+
+                    if ($descriptionFound.overall_mood_of_image -like
+                        $requiredMood) {
+
+                        $found = $true
+                        break
+                    }
+                }
+            }
+
+            # perform additional keywords filtering if keywords criteria specified
+            if ((-not $found) -and ($null -ne $Keywords) -and ($Keywords.Length -gt 0)) {
+
+                # reset found flag to require keywords match
+                $found = $false
+
+                # check each found person against search criteria
+                foreach ($foundKeyword in $keywordsFound) {
+
+                    # check each searched keywords against found keyword
+                    foreach ($searchedForKeyword in $Keywords) {
+
+                        # use wildcard matching for flexible people search
+                        if ($foundKeyword -like $searchedForKeyword) {
+
+                            $found = $true
+
+                            break
                         }
                     }
 
-                    # exit early if any required keyword matches
+                    # exit early if any person matches
                     if ($found) { break }
                 }
             }
 
             # perform additional people filtering if people criteria specified
-            if ($found -and ($null -ne $People) -and ($People.Length -gt 0)) {
+            if ((-not $found) -and ($null -ne $People) -and ($People.Length -gt 0)) {
 
                 # reset found flag to require people match
                 $found = $false
@@ -970,7 +1112,7 @@ function Find-Image {
             }
 
             # perform additional objects filtering if objects criteria specified
-            if ($found -and ($null -ne $Objects) -and ($Objects.Length -gt 0)) {
+            if ((-not $found) -and ($null -ne $Objects) -and ($Objects.Length -gt 0)) {
 
                 # reset found flag to require objects match
                 $found = $false
@@ -996,7 +1138,7 @@ function Find-Image {
             }
 
             # perform additional scenes filtering if scenes criteria specified
-            if ($found -and ($null -ne $Scenes) -and ($Scenes.Count -gt 0)) {
+            if ((-not $found) -and ($null -ne $Scenes) -and ($Scenes.Count -gt 0)) {
 
                 # reset found flag to require scene match
                 $found = $false
@@ -1005,13 +1147,15 @@ function Find-Image {
                 if ($VerbosePreference -eq 'Continue') {
 
                     Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Scene filtering - Searching for: $($Scenes -join ', ')")
+                        "Scene filtering - Searching for: " +
+                        "$($Scenes -join ', ')")
 
                     Microsoft.PowerShell.Utility\Write-Verbose (
                         "Scene filtering - Found scene: $($scenesFound.scene)")
 
                     Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Scene filtering - Scene success: $($scenesFound.success)")
+                        "Scene filtering - Scene success: " +
+                        "$($scenesFound.success)")
                 }
 
                 # check if the found scene matches any of the search criteria
@@ -1032,33 +1176,6 @@ function Find-Image {
 
                         break
                     }
-
-                    # special handling for wildcard scenes with other metadata
-                    if ($searchedForScene -eq "*" -and
-                        $scenesFound.success -eq $false) {
-
-                        # check if we have any other metadata that makes this interesting
-                        $hasOtherMetadata = (($null -ne $keywordsFound) -and
-                            ($keywordsFound.length -gt 0)) -or
-                            ($null -ne $descriptionFound) -or
-                            ($peopleFound.count -gt 0) -or
-                            ($objectsFound.count -gt 0)
-
-                        if ($hasOtherMetadata) {
-
-                            $found = $true
-
-                            if ($VerbosePreference -eq 'Continue') {
-
-                                Microsoft.PowerShell.Utility\Write-Verbose (
-                                    "Scene filtering - Wildcard match: including " +
-                                    "image with other metadata despite missing " +
-                                    "scene data")
-                            }
-
-                            break
-                        }
-                    }
                 }
 
                 if (-not $found -and $VerbosePreference -eq 'Continue') {
@@ -1069,114 +1186,6 @@ function Find-Image {
                 }
             }
 
-            # perform content filtering based on description metadata properties
-            if ($found -and ($HasNudity -or $NoNudity -or $HasExplicitContent -or
-                $NoExplicitContent -or
-                (($null -ne $PictureType) -and ($PictureType.Count -gt 0)) -or
-                (($null -ne $StyleType) -and ($StyleType.Count -gt 0)) -or
-                (($null -ne $OverallMood) -and ($OverallMood.Count -gt 0)))) {
-
-                # check if we have description metadata required for these filters
-                if ($null -eq $descriptionFound) {
-
-                    $found = $false
-                }
-                else {
-
-                    # nudity filtering
-                    if ($HasNudity -and $descriptionFound.has_nudity -ne $true) {
-
-                        $found = $false
-                    }
-
-                    if ($NoNudity -and $descriptionFound.has_nudity -eq $true) {
-
-                        $found = $false
-                    }
-
-                    # explicit content filtering
-                    if ($HasExplicitContent -and
-                        $descriptionFound.has_explicit_content -ne $true) {
-
-                        $found = $false
-                    }
-
-                    if ($NoExplicitContent -and
-                        $descriptionFound.has_explicit_content -eq $true) {
-
-                        $found = $false
-                    }
-
-                    # picture type filtering
-                    if ($found -and ($null -ne $PictureType) -and
-                        ($PictureType.Count -gt 0)) {
-
-                        $pictureTypeFound = $false
-
-                        foreach ($requiredPictureType in $PictureType) {
-
-                            if ($descriptionFound.picture_type -like
-                                $requiredPictureType) {
-
-                                $pictureTypeFound = $true
-
-                                break
-                            }
-                        }
-
-                        if (-not $pictureTypeFound) {
-
-                            $found = $false
-                        }
-                    }
-
-                    # style type filtering
-                    if ($found -and ($null -ne $StyleType) -and
-                        ($StyleType.Count -gt 0)) {
-
-                        $styleTypeFound = $false
-
-                        foreach ($requiredStyleType in $StyleType) {
-
-                            if ($descriptionFound.style_type -like
-                                $requiredStyleType) {
-
-                                $styleTypeFound = $true
-
-                                break
-                            }
-                        }
-
-                        if (-not $styleTypeFound) {
-
-                            $found = $false
-                        }
-                    }
-
-                    # overall mood filtering
-                    if ($found -and ($null -ne $OverallMood) -and
-                        ($OverallMood.Count -gt 0)) {
-
-                        $overallMoodFound = $false
-
-                        foreach ($requiredMood in $OverallMood) {
-
-                            if ($descriptionFound.overall_mood_of_image -like
-                                $requiredMood) {
-
-                                $overallMoodFound = $true
-
-                                break
-                            }
-                        }
-
-                        if (-not $overallMoodFound) {
-
-                            $found = $false
-                        }
-                    }
-                }
-            }
 
             # return image data if all criteria matched
             if ($found) {
@@ -1197,7 +1206,7 @@ function Find-Image {
             }
         }
 
-        # handle input object processing from pipeline
+        # handle input object processing from 4
         if ($PSBoundParameters.ContainsKey('InputObject')) {
 
             $null = $InputObject |
@@ -1207,12 +1216,52 @@ function Find-Image {
                 $path = $_.Path
 
                 if ($null -eq $path) {
+
                     return;
                 }
 
                 if ($path.StartsWith("file://")) {
 
                     $path = $path.Substring(7).Replace('/', '\')
+                }
+
+                # convert relative path to absolute path for consistency
+                $path = GenXdev.FileSystem\Expand-Path $path
+
+                if ([IO.File]::Exists($path) -eq $false) {
+
+                    Microsoft.PowerShell.Utility\Write-Host (
+                        "The file '$path' does not exist.")
+
+                    return;
+                }
+
+                # filter on PathLike
+                if ($null -ne $PathLike -and
+                    $PathLike.Count -gt 0) {
+
+                    $found = $false
+
+                    foreach ($pattern in $PathLike) {
+
+                        $patternDir = GenXdev.FileSystem\Expand-Path $pattern
+
+                        if ($patternDir.IndexOfAny("?" + "*") -eq -1) {
+
+                            $patternDir = "*$patternDir*"
+                        }
+
+                        if ($path -like $patternDir) {
+
+                            $found = $true
+
+                            break
+                        }
+                    }
+
+                    if (-not $found) {
+                        return;
+                    }
                 }
 
                 processImageFile $path
@@ -1247,6 +1296,33 @@ function Find-Image {
                 -ErrorAction SilentlyContinue |
             Microsoft.PowerShell.Core\ForEach-Object {
 
+                if ($null -ne $PathLike -and (
+                    $PathLike.Count -gt 0)) {
+
+                    # filter on PathLike patterns
+                    $found = $false
+
+                    foreach ($pattern in $PathLike) {
+
+                        $patternDir = GenXdev.FileSystem\Expand-Path $pattern
+
+                        if ($patternDir.IndexOfAny("?" + "*") -eq -1) {
+
+                            $patternDir = "*$patternDir*"
+                        }
+
+                        if ($PSItem.FullName -like $patternDir) {
+
+                            $found = $true
+
+                            break
+                        }
+                    }
+
+                    if (-not $found) {
+                        return;
+                    }
+                }
                 processImageFile $_ |
                     Microsoft.PowerShell.Core\ForEach-Object {
 

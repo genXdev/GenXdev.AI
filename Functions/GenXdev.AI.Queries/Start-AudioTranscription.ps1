@@ -443,7 +443,7 @@ process {
 
         if ([string]::IsNullOrWhiteSpace($ModelFilePath) -or (-not ([IO.Directory]::Exists($ModelFilePath)))) {
 
-            $ModelFilePath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\..\..\GenXdev.Local\" `
+            $ModelFilePath = GenXdev.FileSystem\Expand-Path "$($Env:LOCALAPPDATA)\GenXdev.PowerShell\" `
                 -CreateDirectory
         }
 
