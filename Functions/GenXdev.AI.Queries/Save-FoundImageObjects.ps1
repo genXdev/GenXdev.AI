@@ -1,18 +1,18 @@
 ################################################################################
 <#
 .SYNOPSIS
-Saves cropped face images from indexed image search results.
+Saves cropped Object images from indexed image search results.
 
 .DESCRIPTION
-This function takes image search results and extracts/saves individual face regions as separate image files.
-It can search for faces using various criteria and save them to a specified output directory.
+This function takes image search results and extracts/saves individual Object regions as separate image files.
+It can search for Objects using various criteria and save them to a specified output directory.
 #>
-function Save-FoundImageFaces {
+function Save-FoundImageObjects {
 
     [CmdletBinding()]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
     [OutputType([Object[]], [System.Collections.Generic.List[Object]], [string])]
-    [Alias("saveimagefaces")]
+    [Alias("saveimageObjects")]
 
     param(
         ###############################################################################
@@ -465,7 +465,7 @@ function Save-FoundImageFaces {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Directory to save cropped face images."
+            HelpMessage = "Directory to save cropped Object images."
         )]
         [string] $OutputDirectory = ".\",
         ###############################################################################
@@ -545,26 +545,24 @@ function Save-FoundImageFaces {
                 $image = $_
                 if ($null -eq $image -or -not $image.path) { return }
 
-                # Handle face/people recognition data
-                $people = $null
-                if ($image.people -and $image.people.predictions) {
-                    $people = $image.people.predictions
-                } elseif ($image.faces -and $image.faces.predictions) {
-                    $people = $image.faces.predictions
+                # Handle object detection data
+                $objects = $null
+                if ($image.objects -and $image.objects.objects) {
+                    $objects = $image.objects.objects
                 }
-                $savedFaceRects = @()
-                if ($people) {
+                $savedObjectRects = @()
+                if ($objects) {
                     $imgPath = $image.path
                     try {
                         $imgObj = [System.Drawing.Image]::FromFile($imgPath)
                         try {
                             $imgBase = [System.IO.Path]::GetFileNameWithoutExtension($imgPath)
-                            $faceIdx = 0
-                            foreach ($face in $people) {
-                                $x_min = [Math]::Max(0, [Math]::Min($face.x_min, $imgObj.Width - 1))
-                                $y_min = [Math]::Max(0, [Math]::Min($face.y_min, $imgObj.Height - 1))
-                                $x_max = [Math]::Max($x_min + 1, [Math]::Min($face.x_max, $imgObj.Width))
-                                $y_max = [Math]::Max($y_min + 1, [Math]::Min($face.y_max, $imgObj.Height))
+                            $objectIdx = 0
+                            foreach ($obj in $objects) {
+                                $x_min = [Math]::Max(0, [Math]::Min($obj.x_min, $imgObj.Width - 1))
+                                $y_min = [Math]::Max(0, [Math]::Min($obj.y_min, $imgObj.Height - 1))
+                                $x_max = [Math]::Max($x_min + 1, [Math]::Min($obj.x_max, $imgObj.Width))
+                                $y_max = [Math]::Max($y_min + 1, [Math]::Min($obj.y_max, $imgObj.Height))
                                 $width = $x_max - $x_min
                                 $height = $y_max - $y_min
                                 if ($width -le 0 -or $height -le 0) { continue }
@@ -574,50 +572,48 @@ function Save-FoundImageFaces {
                                 $destRect = [System.Drawing.Rectangle]::new(0, 0, $width, $height)
                                 $null = $croppedGraphics.DrawImage($imgObj, $destRect, $cropRect, [System.Drawing.GraphicsUnit]::Pixel)
                                 $croppedGraphics.Dispose()
-                                $faceLabel = if ($face.userid) { $face.userid } else { "face$faceIdx" }
-                                $faceLabel = $faceLabel -replace '[^\w\-_]', '_'
-                                $outFile = Microsoft.PowerShell.Management\Join-Path $OutputDirectory ("${imgBase}_${faceLabel}_${faceIdx}.png")
+                                $objectLabel = if ($obj.label) { $obj.label } else { "object$objectIdx" }
+                                $objectLabel = $objectLabel -replace '[^\w\-_]', '_'
+                                $outFile = Microsoft.PowerShell.Management\Join-Path $OutputDirectory ("${imgBase}_${objectLabel}_${objectIdx}.png")
                                 $croppedBitmap.Save($outFile, [System.Drawing.Imaging.ImageFormat]::Png)
                                 $croppedBitmap.Dispose()
-                                $savedFaceRects += @{x_min=$x_min;y_min=$y_min;x_max=$x_max;y_max=$y_max}
-                                $faceIdx++
+                                $savedObjectRects += @{x_min=$x_min;y_min=$y_min;x_max=$x_max;y_max=$y_max}
+                                $objectIdx++
                             }
                             # Save unknown persons if requested
-                            if ($SaveUnknownPersons -and $image.objects -and $image.objects.objects) {
-                                $objIdx = 0
-                                foreach ($obj in $image.objects.objects) {
-                                    if ($obj.label -eq 'person') {
-                                        try {
-                                            $x_min = [Math]::Max(0, [Math]::Min($obj.x_min, $imgObj.Width - 1))
-                                            $y_min = [Math]::Max(0, [Math]::Min($obj.y_min, $imgObj.Height - 1))
-                                            $x_max = [Math]::Max($x_min + 1, [Math]::Min($obj.x_max, $imgObj.Width))
-                                            $y_max = [Math]::Max($y_min + 1, [Math]::Min($obj.y_max, $imgObj.Height))
-                                            $width = $x_max - $x_min
-                                            $height = $y_max - $y_min
-                                            if ($width -le 0 -or $height -le 0) { continue }
-                                            # Check if this object overlaps with any known face
-                                            $overlap = $false
-                                            foreach ($rect in $savedFaceRects) {
-                                                if ((($x_min -le $rect.x_max) -and ($x_max -ge $rect.x_min)) -and (($y_min -le $rect.y_max) -and ($y_max -ge $rect.y_min))) {
-                                                    $overlap = $true
-                                                    break
-                                                }
+                            if ($SaveUnknownPersons -and $image.people -and $image.people.predictions) {
+                                $personIdx = 0
+                                foreach ($person in $image.people.predictions) {
+                                    try {
+                                        $x_min = [Math]::Max(0, [Math]::Min($person.x_min, $imgObj.Width - 1))
+                                        $y_min = [Math]::Max(0, [Math]::Min($person.y_min, $imgObj.Height - 1))
+                                        $x_max = [Math]::Max($x_min + 1, [Math]::Min($person.x_max, $imgObj.Width))
+                                        $y_max = [Math]::Max($y_min + 1, [Math]::Min($person.y_max, $imgObj.Height))
+                                        $width = $x_max - $x_min
+                                        $height = $y_max - $y_min
+                                        if ($width -le 0 -or $height -le 0) { continue }
+                                        # Check if this person overlaps with any saved object
+                                        $overlap = $false
+                                        foreach ($rect in $savedObjectRects) {
+                                            if ((($x_min -le $rect.x_max) -and ($x_max -ge $rect.x_min)) -and (($y_min -le $rect.y_max) -and ($y_max -ge $rect.y_min))) {
+                                                $overlap = $true
+                                                break
                                             }
-                                            if ($overlap) { continue }
-                                            $cropRect = [System.Drawing.Rectangle]::new($x_min, $y_min, $width, $height)
-                                            $croppedBitmap = [System.Drawing.Bitmap]::new($width, $height)
-                                            $croppedGraphics = [System.Drawing.Graphics]::FromImage($croppedBitmap)
-                                            $destRect = [System.Drawing.Rectangle]::new(0, 0, $width, $height)
-                                            $null = $croppedGraphics.DrawImage($imgObj, $destRect, $cropRect, [System.Drawing.GraphicsUnit]::Pixel)
-                                            $croppedGraphics.Dispose()
-                                            $outFile = Microsoft.PowerShell.Management\Join-Path $OutputDirectory ("${imgBase}_unknownperson_${objIdx}.png")
-                                            $croppedBitmap.Save($outFile, [System.Drawing.Imaging.ImageFormat]::Png)
-                                            $croppedBitmap.Dispose()
-                                            $objIdx++
                                         }
-                                        catch {
-                                            Microsoft.PowerShell.Utility\Write-Warning "Failed to crop/save unknown person for $($imgPath): $_"
-                                        }
+                                        if ($overlap) { continue }
+                                        $cropRect = [System.Drawing.Rectangle]::new($x_min, $y_min, $width, $height)
+                                        $croppedBitmap = [System.Drawing.Bitmap]::new($width, $height)
+                                        $croppedGraphics = [System.Drawing.Graphics]::FromImage($croppedBitmap)
+                                        $destRect = [System.Drawing.Rectangle]::new(0, 0, $width, $height)
+                                        $null = $croppedGraphics.DrawImage($imgObj, $destRect, $cropRect, [System.Drawing.GraphicsUnit]::Pixel)
+                                        $croppedGraphics.Dispose()
+                                        $outFile = Microsoft.PowerShell.Management\Join-Path $OutputDirectory ("${imgBase}_unknownperson_${personIdx}.png")
+                                        $croppedBitmap.Save($outFile, [System.Drawing.Imaging.ImageFormat]::Png)
+                                        $croppedBitmap.Dispose()
+                                        $personIdx++
+                                    }
+                                    catch {
+                                        Microsoft.PowerShell.Utility\Write-Warning "Failed to crop/save unknown person for $($imgPath): $_"
                                     }
                                 }
                             }
@@ -627,7 +623,7 @@ function Save-FoundImageFaces {
                         }
                     }
                     catch {
-                        Microsoft.PowerShell.Utility\Write-Warning "Failed to crop/save faces for $($imgPath): $_"
+                        Microsoft.PowerShell.Utility\Write-Warning "Failed to crop/save objects for $($imgPath): $_"
                     }
                 }
                 $info.resultCount++

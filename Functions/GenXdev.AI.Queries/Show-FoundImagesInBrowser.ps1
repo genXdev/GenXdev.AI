@@ -403,6 +403,9 @@ function Show-FoundImagesInBrowser {
                 -Scope Local `
                 -ErrorAction SilentlyContinue)
 
+        $params.CanEdit = $Interactive
+        $params.CanDelete = $Interactive
+
         $null = GenXdev.AI\GenerateMasonryLayoutHtml @params `
                     -Images $results `
 

@@ -452,22 +452,24 @@ function Update-AllImageMetaData {
 
         $FacesDirectory = GenXdev.AI\Get-AIKnownFacesRootpath -FacesDirectory $FacesDirectory
         $filecount = (
-            @(GenXdev.FileSystem\Find-Item -SearchMask @("$FacesDirectory\*\") -Pattern "*.jpg" -file -PassThru) +
-            @(GenXdev.FileSystem\Find-Item -SearchMask @("$FacesDirectory\*\") -Pattern "*.jpeg" -file -PassThru) +
-            @(GenXdev.FileSystem\Find-Item -SearchMask @("$FacesDirectory\*\") -Pattern "*.png" -file -PassThru) +
-            @(GenXdev.FileSystem\Find-Item -SearchMask @("$FacesDirectory\*\") -Pattern "*.gif" -file -PassThru)
+            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\" -PassThru) +
+            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\*.jpeg" -PassThru) +
+            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\*.png" -PassThru) +
+            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\*.gif" -PassThru)
         ).Count
 
-        $dirCount = (@(GenXdev.FileSystem\Find-Item "$FacesDirectory\*" -Directory |
-             Microsoft.PowerShell.Core\Where-Object {
-                (
-                    @(GenXdev.FileSystem\Find-Item -SearchMask @("$_\") -Pattern "*.jpg" -file -PassThru) +
-                    @(GenXdev.FileSystem\Find-Item -SearchMask @("$_\") -Pattern "*.jpeg" -file -PassThru) +
-                    @(GenXdev.FileSystem\Find-Item -SearchMask @("$_\") -Pattern "*.png" -file -PassThru) +
-                    @(GenXdev.FileSystem\Find-Item -SearchMask @("$_\") -Pattern "*.gif" -file -PassThru)
-                ).Count -gt 0
-            }
-        ).Count)
+        $dirCount = (
+            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*" -Directory -PassThru |
+                Microsoft.PowerShell.Core\Where-Object {
+                    (
+                        @(GenXdev.FileSystem\Find-Item "$_\*.jpg" -PassThru) +
+                        @(GenXdev.FileSystem\Find-Item "$_\*.jpeg" -PassThru) +
+                        @(GenXdev.FileSystem\Find-Item "$_\*.png" -PassThru) +
+                        @(GenXdev.FileSystem\Find-Item "$_\*.gif" -PassThru)
+                    ).Count -gt 0
+                }
+            ).Count
+        )
 
         $count = 0
         try
@@ -523,7 +525,7 @@ function Update-AllImageMetaData {
             # copy identical parameter values for invoke-queryimagecontent
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName 'GenXdev.AI\Invoke-QueryImageContent' `
+                -FunctionName 'GenXdev.AI\EnsureLMStudio' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue)

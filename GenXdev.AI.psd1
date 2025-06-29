@@ -12,7 +12,7 @@
 RootModule = 'GenXdev.AI.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.192.2025'
+ModuleVersion = '1.194.2025'
 
 # Supported PSEditions
 CompatiblePSEditions = 'Core'
@@ -51,7 +51,7 @@ ClrVersion = '9.0.4'
 ProcessorArchitecture = 'Amd64'
 
 # Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @(@{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.192.2025'; })
+RequiredModules = @(@{ModuleName = 'GenXdev.Queries'; ModuleVersion = '1.194.2025'; })
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -72,7 +72,7 @@ NestedModules = @('GenXdev.AI.Data.psm1',
                'GenXdev.AI.Queries.psm1')
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = 'Add-AIImageCollectionDirectory', 'Add-EmoticonsToText', 
+FunctionsToExport = 'Add-EmoticonsToText', 'Add-ImageDirectories', 
                'Approve-NewTextFileContent', 'Compare-ImageFaces', 
                'Convert-DotNetTypeToLLMType', 'ConvertFrom-CorporateSpeak', 
                'ConvertFrom-DiplomaticSpeak', 'ConvertTo-CorporateSpeak', 
@@ -99,15 +99,16 @@ FunctionsToExport = 'Add-AIImageCollectionDirectory', 'Add-EmoticonsToText',
                'Invoke-LLMStringListEvaluation', 'Invoke-LLMTextTransformation', 
                'Invoke-QueryImageContent', 'Invoke-WinMerge', 'New-LLMAudioChat', 
                'New-LLMTextChat', 'Register-AllFaces', 'Register-Face', 
-               'Remove-AIImageCollectionDirectory', 'Remove-ImageMetaData', 
-               'Save-FoundImageFace', 'Save-Transcriptions', 
-               'Set-AICommandSuggestion', 'Set-AIImageCollection', 
-               'Set-AIKnownFacesRootpath', 'Set-AIMetaLanguage', 
-               'Set-GenXdevAICommandNotFoundAction', 'Show-FoundImagesInBrowser', 
-               'Show-GenXdevScriptErrorFixInIde', 'Start-AudioTranscription', 
-               'Start-LMStudioApplication', 'Test-DeepLinkImageFile', 
-               'Test-LMStudioInstallation', 'Test-LMStudioProcess', 
-               'Unregister-AllFaces', 'Unregister-Face', 'Update-AllImageMetaData'
+               'Remove-ImageDirectories', 'Remove-ImageMetaData', 
+               'Save-FoundImageFaces', 'Save-FoundImageObjects', 
+               'Save-Transcriptions', 'Set-AICommandSuggestion', 
+               'Set-AIImageCollection', 'Set-AIKnownFacesRootpath', 
+               'Set-AIMetaLanguage', 'Set-GenXdevAICommandNotFoundAction', 
+               'Show-FoundImagesInBrowser', 'Show-GenXdevScriptErrorFixInIde', 
+               'Start-AudioTranscription', 'Start-LMStudioApplication', 
+               'Test-DeepLinkImageFile', 'Test-LMStudioInstallation', 
+               'Test-LMStudioProcess', 'Unregister-AllFaces', 'Unregister-Face', 
+               'Update-AllImageMetaData'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
@@ -124,10 +125,10 @@ AliasesToExport = 'addimgdir', 'comparefaces', 'corporatize', 'diplomatize', 'di
                'Invoke-LMStudioQuery', 'letsfixthis', 'li', 'lii', 'llm', 'llmaudiochat', 
                'llmchat', 'moremovietitles', 'objectdetection', 'qllm', 'qlms', 
                'Query-Image', 'recordandtranscribe', 'Recreate-ImageIndex', 
-               'removeimagedata', 'removeimgdir', 'savefaces', 'scenerecognition', 
-               'showfoundimages', 'spellcheck', 'transcribe', 'transcribefile', 
-               'translate', 'uncorporatize', 'undiplomatize', 'updateallimages', 
-               'UpdateFaces', 'updateimages'
+               'removeimagedata', 'removeimgdir', 'saveimagefaces', 'saveimageObjects', 
+               'scenerecognition', 'showfoundimages', 'spellcheck', 'transcribe', 
+               'transcribefile', 'translate', 'uncorporatize', 'undiplomatize', 
+               'updateallimages', 'UpdateFaces', 'updateimages'
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -140,8 +141,8 @@ FileList = 'GenXdev.AI.Data.psm1', 'GenXdev.AI.DeepStack.psm1',
                'GenXdev.AI.LMStudio.psm1', 'GenXdev.AI.psd1', 'GenXdev.AI.psm1', 
                'GenXdev.AI.Queries.psm1', 'LICENSE', 'license.txt', 'powershell.jpg', 
                'programmer.jpg', 'README.md', 
-               'Tests\GenXdev.AI.Queries\Add-AIImageCollectionDirectory.Tests.ps1', 
                'Tests\GenXdev.AI.Queries\Add-EmoticonsToText.Tests.ps1', 
+               'Tests\GenXdev.AI.Queries\Add-ImageDirectories.Tests.ps1', 
                'Tests\GenXdev.AI.Queries\ConvertFrom-CorporateSpeak.Tests.ps1', 
                'Tests\GenXdev.AI.Queries\ConvertFrom-DiplomaticSpeak.Tests.ps1', 
                'Tests\GenXdev.AI.Queries\ConvertTo-CorporateSpeak.Tests.ps1', 
@@ -164,9 +165,10 @@ FileList = 'GenXdev.AI.Data.psm1', 'GenXdev.AI.DeepStack.psm1',
                'Tests\GenXdev.AI.Queries\Invoke-ImageObjectsUpdate.Tests.ps1', 
                'Tests\GenXdev.AI.Queries\Invoke-ImageScenesUpdate.Tests.ps1', 
                'Tests\GenXdev.AI.Queries\Invoke-QueryImageContent.Tests.ps1', 
-               'Tests\GenXdev.AI.Queries\Remove-AIImageCollectionDirectory.Tests.ps1', 
+               'Tests\GenXdev.AI.Queries\Remove-ImageDirectories.Tests.ps1', 
                'Tests\GenXdev.AI.Queries\Remove-ImageMetaData.Tests.ps1', 
                'Tests\GenXdev.AI.Queries\Save-FoundImageFaces.Tests.ps1', 
+               'Tests\GenXdev.AI.Queries\Save-FoundImageObjects.Tests.ps1', 
                'Tests\GenXdev.AI.Queries\Save-Transcriptions.Tests.ps1', 
                'Tests\GenXdev.AI.Queries\Set-AIImageCollection.Tests.ps1', 
                'Tests\GenXdev.AI.Queries\Set-AIKnownFacesRootpath.Tests.ps1', 
@@ -219,8 +221,8 @@ FileList = 'GenXdev.AI.Data.psm1', 'GenXdev.AI.DeepStack.psm1',
                'Tests\GenXdev.AI\New-LLMTextChat.Tests.ps1', 
                'Tests\GenXdev.AI\Set-GenXdevAICommandNotFoundAction.Tests.ps1', 
                'Tests\GenXdev.AI\Test-DeepLinkImageFile.Tests.ps1', 
-               'Functions\GenXdev.AI.Queries\Add-AIImageCollectionDirectory.ps1', 
                'Functions\GenXdev.AI.Queries\Add-EmoticonsToText.ps1', 
+               'Functions\GenXdev.AI.Queries\Add-ImageDirectories.ps1', 
                'Functions\GenXdev.AI.Queries\ConvertFrom-CorporateSpeak.ps1', 
                'Functions\GenXdev.AI.Queries\ConvertFrom-DiplomaticSpeak.ps1', 
                'Functions\GenXdev.AI.Queries\ConvertTo-CorporateSpeak.ps1', 
@@ -243,9 +245,10 @@ FileList = 'GenXdev.AI.Data.psm1', 'GenXdev.AI.DeepStack.psm1',
                'Functions\GenXdev.AI.Queries\Invoke-ImageObjectsUpdate.ps1', 
                'Functions\GenXdev.AI.Queries\Invoke-ImageScenesUpdate.ps1', 
                'Functions\GenXdev.AI.Queries\Invoke-QueryImageContent.ps1', 
-               'Functions\GenXdev.AI.Queries\Remove-AIImageCollectionDirectory.ps1', 
+               'Functions\GenXdev.AI.Queries\Remove-ImageDirectories.ps1', 
                'Functions\GenXdev.AI.Queries\Remove-ImageMetaData.ps1', 
                'Functions\GenXdev.AI.Queries\Save-FoundImageFaces.ps1', 
+               'Functions\GenXdev.AI.Queries\Save-FoundImageObjects.ps1', 
                'Functions\GenXdev.AI.Queries\Save-Transcriptions.ps1', 
                'Functions\GenXdev.AI.Queries\Set-AIImageCollection.ps1', 
                'Functions\GenXdev.AI.Queries\Set-AIKnownFacesRootpath.ps1', 

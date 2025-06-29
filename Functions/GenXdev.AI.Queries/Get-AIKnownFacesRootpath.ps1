@@ -41,7 +41,7 @@ function Get-AIKnownFacesRootpath {
             $resolvedFacesDirectory = @(GenXdev.AI\Get-AIImageCollection)[0]
 
             if (-not $resolvedFacesDirectory) {
-                $FacesDirectory = GenXdev.FileSystem\Expand-Path `
+                $resolvedFacesDirectory = GenXdev.FileSystem\Expand-Path `
                     -Path "~\Pictures\Faces" `
                     -CreateDirectory
             }
@@ -51,7 +51,7 @@ function Get-AIKnownFacesRootpath {
     end
     {
         Microsoft.PowerShell.Utility\Write-Verbose `
-            "Using provided faces directory: $FacesDirectory"
+            "Using provided faces directory: $resolvedFacesDirectory"
 
         Microsoft.PowerShell.Utility\Write-Output $resolvedFacesDirectory
     }

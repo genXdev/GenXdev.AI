@@ -10,7 +10,7 @@ classifications, confidence scores, and labels. The function supports batch
 processing with configurable confidence thresholds and can optionally skip
 existing metadata files or retry previously failed classifications.
 
-.PARAMETER AIImageCollectionDirectory
+.PARAMETER ImageDirectories
 The directory path containing images to process. Can be relative or absolute
 path. Default is the current directory.
 
@@ -63,7 +63,7 @@ Custom Docker image name to use instead of the default DeepStack image.
 Allows using alternative scene classification models or configurations.
 
 .EXAMPLE
-Invoke-ImageScenesUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse
+Invoke-ImageScenesUpdate -ImageDirectories "C:\Photos" -Recurse
 
 Processes all images in C:\Photos and subdirectories for scene classification.
 
@@ -73,12 +73,12 @@ scenerecognition "C:\Photos" -RetryFailed -OnlyNew
 Uses alias to retry failed classifications and only process new images.
 
 .EXAMPLE
-Invoke-ImageScenesUpdate -AIImageCollectionDirectory ".\MyImages" -Force -UseGPU
+Invoke-ImageScenesUpdate -ImageDirectories ".\MyImages" -Force -UseGPU
 
 Forces container rebuild and uses GPU acceleration for faster processing.
 
 .EXAMPLE
-Invoke-ImageScenesUpdate -AIImageCollectionDirectory "C:\Photos" -ConfidenceThreshold 0.6 -Recurse
+Invoke-ImageScenesUpdate -ImageDirectories "C:\Photos" -ConfidenceThreshold 0.6 -Recurse
 
 Processes all images recursively and only stores scene classifications with confidence >= 60%.
 
@@ -100,7 +100,7 @@ function Invoke-ImageScenesUpdate {
         [Parameter(
             HelpMessage = "The directory path containing images to process"
         )]
-        [string] $AIImageCollectionDirectory = ".\",
+        [string] $ImageDirectories = ".\",
         #######################################################################
         [Parameter(
             HelpMessage = "Custom Docker image name to use instead of default"
@@ -194,7 +194,7 @@ function Invoke-ImageScenesUpdate {
     begin {
 
         # resolve the absolute path for the image directory
-        $path = GenXdev.FileSystem\Expand-Path $AIImageCollectionDirectory
+        $path = GenXdev.FileSystem\Expand-Path $ImageDirectories
 
         # check if the specified directory exists
         if (-not (Microsoft.PowerShell.Management\Test-Path $path -PathType Container)) {

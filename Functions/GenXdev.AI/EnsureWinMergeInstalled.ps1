@@ -88,8 +88,10 @@ function EnsureWinMergeInstalled {
                     "$currentPath;$winMergePath",
                     'User')
 
-                # update current session's path
-                $env:PATH = [Environment]::GetEnvironmentVariable('PATH', 'User')
+                # update current session's path only if not already present
+                if ($env:PATH -notlike "*$winMergePath*") {
+                    $env:PATH = "$env:PATH;$winMergePath"
+                }
             }
 
             # check if winmerge is now accessible
@@ -121,8 +123,10 @@ function EnsureWinMergeInstalled {
                     "$currentPath;$winMergePath",
                     'User')
 
-                # update current session's path
-                $env:PATH = [Environment]::GetEnvironmentVariable('PATH', 'User')
+                # update current session's path only if not already present
+                if ($env:PATH -notlike "*$winMergePath*") {
+                    $env:PATH = "$env:PATH;$winMergePath"
+                }
             }
             # verify successful installation
             if (-not (Microsoft.PowerShell.Core\Get-Command 'WinMergeU.exe' -ErrorAction SilentlyContinue)) {

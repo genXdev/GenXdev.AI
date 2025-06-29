@@ -144,8 +144,8 @@ Update-Module
 ### GenXdev.AI.Queries</hr>
 | Command&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | aliases&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Description |
 | --- | --- | --- |
-| [Add-AIImageCollectionDirectory](#Add-AIImageCollectionDirectory) | addimgdir | Adds directories to the configured image directories for GenXdev.AI operations. |
 | [Add-EmoticonsToText](#Add-EmoticonsToText) | emojify | Enhances text by adding contextually appropriate emoticons using AI. |
+| [Add-ImageDirectories](#Add-ImageDirectories) | addimgdir | Adds directories to the configured image directories for GenXdev.AI operations. |
 | [ConvertFrom-CorporateSpeak](#ConvertFrom-CorporateSpeak) | uncorporatize | Converts polite, professional corporate speak into direct, clear language using AI. |
 | [ConvertFrom-DiplomaticSpeak](#ConvertFrom-DiplomaticSpeak) | undiplomatize |  |
 | [ConvertTo-CorporateSpeak](#ConvertTo-CorporateSpeak) | corporatize | Converts direct or blunt text into polite, professional corporate speak using AI. |
@@ -168,9 +168,10 @@ Update-Module
 | [Invoke-ImageObjectsUpdate](#Invoke-ImageObjectsUpdate) | objectdetection | Updates object detection metadata for image files in a specified directory. |
 | [Invoke-ImageScenesUpdate](#Invoke-ImageScenesUpdate) | scenerecognition | Updates scene classification metadata for image files in a specified directory. |
 | [Invoke-QueryImageContent](#Invoke-QueryImageContent) | query-image | Analyzes image content using AI vision capabilities through the LM-Studio API. |
-| [Remove-AIImageCollectionDirectory](#Remove-AIImageCollectionDirectory) | removeimgdir | Removes directories from the configured image directories for GenXdev.AI operations. |
+| [Remove-ImageDirectories](#Remove-ImageDirectories) | removeimgdir | Removes directories from the configured image directories for GenXdev.AI operations. |
 | [Remove-ImageMetaData](#Remove-ImageMetaData) | removeimagedata | Removes image metadata files from image directories. |
-| [Save-FoundImageFaces](#Save-FoundImageFaces) | savefaces | Saves cropped face images from indexed image search results. |
+| [Save-FoundImageFaces](#Save-FoundImageFaces) | saveimagefaces | Saves cropped face images from indexed image search results. |
+| [Save-FoundImageObjects](#Save-FoundImageObjects) | saveimageobjects | Saves cropped Object images from indexed image search results. |
 | [Save-Transcriptions](#Save-Transcriptions) |  | Generates subtitle files for audio and video files using OpenAI Whisper. |
 | [Set-AIImageCollection](#Set-AIImageCollection) |  | Sets the directories and default language for image files used in GenXdev.AI operations. |
 | [Set-AIKnownFacesRootpath](#Set-AIKnownFacesRootpath) |  | Sets the directory for face image files used in GenXdev.AI operations. |
@@ -6402,92 +6403,6 @@ RELATED LINKS
 &nbsp;<hr/>
 ###	GenXdev.AI.Queries<hr/> 
 NAME
-    Add-AIImageCollectionDirectory
-    
-SYNOPSIS
-    Adds directories to the configured image directories for GenXdev.AI operations.
-    
-    
-SYNTAX
-    Add-AIImageCollectionDirectory [-ImageDirectories] <String[]> [-WhatIf] [-Confirm] [<CommonParameters>]
-    
-    
-DESCRIPTION
-    This function adds one or more directory paths to the existing image directories
-    configuration used by the GenXdev.AI module. It updates both the global variable
-    and the module's preference storage to persist the configuration across sessions.
-    Duplicate directories are automatically filtered out to prevent configuration
-    redundancy. Paths are expanded to handle relative paths and environment
-    variables automatically.
-    
-
-PARAMETERS
-    -ImageDirectories <String[]>
-        An array of directory paths to add to the existing image directories
-        configuration. Paths can be relative or absolute and will be expanded
-        automatically. Duplicates are filtered out using case-insensitive comparison.
-        
-        Required?                    true
-        Position?                    1
-        Default value                
-        Accept pipeline input?       true (ByValue)
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -WhatIf [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Confirm [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    <CommonParameters>
-        This cmdlet supports the common parameters: Verbose, Debug,
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
-    
-INPUTS
-    
-OUTPUTS
-    
-    -------------------------- EXAMPLE 1 --------------------------
-    
-    PS > Add-AIImageCollectionDirectory -ImageDirectories @("C:\NewPhotos", "D:\MoreImages")
-    
-    Adds the specified directories to the existing image directories configuration
-    using full parameter names.
-    
-    
-    
-    
-    -------------------------- EXAMPLE 2 --------------------------
-    
-    PS > addimgdir @("C:\Temp\Photos", "E:\Backup\Images")
-    
-    Uses alias to add multiple directories to the configuration with positional
-    parameters.
-    
-    
-    
-    
-    
-RELATED LINKS 
-
-<br/><hr/><hr/><br/>
- 
-NAME
     Add-EmoticonsToText
     
 SYNOPSIS
@@ -6659,6 +6574,92 @@ OUTPUTS
     PS > "Time to celebrate!" | emojify
     
     
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Add-ImageDirectories
+    
+SYNOPSIS
+    Adds directories to the configured image directories for GenXdev.AI operations.
+    
+    
+SYNTAX
+    Add-ImageDirectories [-ImageDirectories] <String[]> [-WhatIf] [-Confirm] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function adds one or more directory paths to the existing image directories
+    configuration used by the GenXdev.AI module. It updates both the global variable
+    and the module's preference storage to persist the configuration across sessions.
+    Duplicate directories are automatically filtered out to prevent configuration
+    redundancy. Paths are expanded to handle relative paths and environment
+    variables automatically.
+    
+
+PARAMETERS
+    -ImageDirectories <String[]>
+        An array of directory paths to add to the existing image directories
+        configuration. Paths can be relative or absolute and will be expanded
+        automatically. Duplicates are filtered out using case-insensitive comparison.
+        
+        Required?                    true
+        Position?                    1
+        Default value                
+        Accept pipeline input?       true (ByValue)
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WhatIf [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Confirm [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Add-ImageDirectories -ImageDirectories @("C:\NewPhotos", "D:\MoreImages")
+    
+    Adds the specified directories to the existing image directories configuration
+    using full parameter names.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > addimgdir @("C:\Temp\Photos", "E:\Backup\Images")
+    
+    Uses alias to add multiple directories to the configuration with positional
+    parameters.
     
     
     
@@ -10509,7 +10510,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageFacesUpdate [[-AIImageCollectionDirectory] <String>] [[-ImageName] <String>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Invoke-ImageFacesUpdate [[-ImageDirectories] <String>] [[-ImageName] <String>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -10520,7 +10521,7 @@ DESCRIPTION
     
 
 PARAMETERS
-    -AIImageCollectionDirectory <String>
+    -ImageDirectories <String>
         The directory path containing images to process. Can be relative or absolute.
         Default is the current directory.
         
@@ -10666,7 +10667,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Invoke-ImageFacesUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse
+    PS > Invoke-ImageFacesUpdate -ImageDirectories "C:\Photos" -Recurse
     
     
     
@@ -10695,7 +10696,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageKeywordUpdate [[-AIImageCollectionDirectory] <String>] [[-Recurse]] [[-OnlyNew]] [[-RetryFailed]] [[-Language] <String>] [<CommonParameters>]
+    Invoke-ImageKeywordUpdate [[-ImageDirectories] <String>] [[-Recurse]] [[-OnlyNew]] [[-RetryFailed]] [[-Language] <String>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -10706,7 +10707,7 @@ DESCRIPTION
     
 
 PARAMETERS
-    -AIImageCollectionDirectory <String>
+    -ImageDirectories <String>
         Specifies the directory containing images to process. Defaults to current
         directory if not specified.
         
@@ -10772,7 +10773,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Invoke-ImageKeywordUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse -OnlyNew
+    PS > Invoke-ImageKeywordUpdate -ImageDirectories "C:\Photos" -Recurse -OnlyNew
     
     
     
@@ -10801,7 +10802,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageObjectsUpdate [[-AIImageCollectionDirectory] <String>] [[-ConfidenceThreshold] <Double>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [<CommonParameters>]
+    Invoke-ImageObjectsUpdate [[-ImageDirectories] <String>] [[-ConfidenceThreshold] <Double>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -10813,7 +10814,7 @@ DESCRIPTION
     
 
 PARAMETERS
-    -AIImageCollectionDirectory <String>
+    -ImageDirectories <String>
         The directory path containing images to process. Can be relative or absolute
         path. Default is the current directory.
         
@@ -10979,7 +10980,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Invoke-ImageObjectsUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse
+    PS > Invoke-ImageObjectsUpdate -ImageDirectories "C:\Photos" -Recurse
     
     This example processes all images in C:\Photos and all subdirectories using
     default settings with 0.5 confidence threshold.
@@ -10999,7 +11000,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 3 --------------------------
     
-    PS > Invoke-ImageObjectsUpdate -AIImageCollectionDirectory "C:\Photos" -UseGPU `
+    PS > Invoke-ImageObjectsUpdate -ImageDirectories "C:\Photos" -UseGPU `
         -ConfidenceThreshold 0.7
     
     This example uses GPU acceleration with higher confidence threshold of 0.7
@@ -11021,7 +11022,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageScenesUpdate [[-AIImageCollectionDirectory] <String>] [[-ImageName] <String>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ConfidenceThreshold] <Double>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Invoke-ImageScenesUpdate [[-ImageDirectories] <String>] [[-ImageName] <String>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ConfidenceThreshold] <Double>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -11033,7 +11034,7 @@ DESCRIPTION
     
 
 PARAMETERS
-    -AIImageCollectionDirectory <String>
+    -ImageDirectories <String>
         The directory path containing images to process. Can be relative or absolute
         path. Default is the current directory.
         
@@ -11206,7 +11207,7 @@ NOTES
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Invoke-ImageScenesUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse
+    PS > Invoke-ImageScenesUpdate -ImageDirectories "C:\Photos" -Recurse
     
     Processes all images in C:\Photos and subdirectories for scene classification.
     
@@ -11224,7 +11225,7 @@ NOTES
     
     -------------------------- EXAMPLE 3 --------------------------
     
-    PS > Invoke-ImageScenesUpdate -AIImageCollectionDirectory ".\MyImages" -Force -UseGPU
+    PS > Invoke-ImageScenesUpdate -ImageDirectories ".\MyImages" -Force -UseGPU
     
     Forces container rebuild and uses GPU acceleration for faster processing.
     
@@ -11233,7 +11234,7 @@ NOTES
     
     -------------------------- EXAMPLE 4 --------------------------
     
-    PS > Invoke-ImageScenesUpdate -AIImageCollectionDirectory "C:\Photos" -ConfidenceThreshold 0.6 -Recurse
+    PS > Invoke-ImageScenesUpdate -ImageDirectories "C:\Photos" -ConfidenceThreshold 0.6 -Recurse
     
     Processes all images recursively and only stores scene classifications with confidence >= 60%.
     
@@ -11485,14 +11486,14 @@ RELATED LINKS
 <br/><hr/><hr/><br/>
  
 NAME
-    Remove-AIImageCollectionDirectory
+    Remove-ImageDirectories
     
 SYNOPSIS
     Removes directories from the configured image directories for GenXdev.AI operations.
     
     
 SYNTAX
-    Remove-AIImageCollectionDirectory [-ImageDirectories] <String[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Remove-ImageDirectories [-ImageDirectories] <String[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -11554,7 +11555,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Remove-AIImageCollectionDirectory -ImageDirectories @("C:\OldPhotos", "D:\TempImages")
+    PS > Remove-ImageDirectories -ImageDirectories @("C:\OldPhotos", "D:\TempImages")
     
     Removes the specified directories from the image directories configuration.
     
@@ -11563,7 +11564,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > Remove-AIImageCollectionDirectory "C:\Temp\*"
+    PS > Remove-ImageDirectories "C:\Temp\*"
     
     Removes all directories that match the wildcard pattern.
     
@@ -11777,6 +11778,997 @@ RELATED LINKS
 
 <br/><hr/><hr/><br/>
  
+NAME
+    Save-FoundImageFaces
+    
+SYNOPSIS
+    Saves cropped face images from indexed image search results.
+    
+    
+SYNTAX
+    Save-FoundImageFaces [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-DatabaseFilePath <String>] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-Language <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ForceIndexRebuild] [-PathLike <String[]>] [-InputObject <Object[]>] [-OutputDirectory <String>] [-SaveUnknownPersons] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function takes image search results and extracts/saves individual face regions as separate image files.
+    It can search for faces using various criteria and save them to a specified output directory.
+    
+
+PARAMETERS
+    -Any <String[]>
+        
+        Required?                    false
+        Position?                    1
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DescriptionSearch <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Keywords <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -People <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Objects <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Scenes <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PictureType <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -StyleType <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OverallMood <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HasNudity [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoNudity [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HasExplicitContent [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoExplicitContent [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DatabaseFilePath <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowInBrowser [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Title <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Description <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AcceptLang <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -X <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Y <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Interactive [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Private [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Edge [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chrome [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chromium [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Firefox [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -All [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Top [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApplicationMode [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBrowserExtensions [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DisablePopupBlocker [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NewWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyReturnHtml [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EmbedImages [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ForceIndexRebuild [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PathLike <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -InputObject <Object[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       true (ByValue)
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputDirectory <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                .\
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SaveUnknownPersons [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    System.Object[]
+    
+    System.Collections.Generic.List`1[[System.Object, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]
+    
+    System.String
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Save-FoundImageObjects
+    
+SYNOPSIS
+    Saves cropped Object images from indexed image search results.
+    
+    
+SYNTAX
+    Save-FoundImageObjects [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-DatabaseFilePath <String>] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-Language <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ForceIndexRebuild] [-PathLike <String[]>] [-InputObject <Object[]>] [-OutputDirectory <String>] [-SaveUnknownPersons] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function takes image search results and extracts/saves individual Object regions as separate image files.
+    It can search for Objects using various criteria and save them to a specified output directory.
+    
+
+PARAMETERS
+    -Any <String[]>
+        
+        Required?                    false
+        Position?                    1
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DescriptionSearch <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Keywords <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -People <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Objects <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Scenes <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PictureType <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -StyleType <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OverallMood <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HasNudity [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoNudity [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HasExplicitContent [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoExplicitContent [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DatabaseFilePath <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowInBrowser [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Title <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Description <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AcceptLang <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -X <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Y <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Interactive [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Private [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Edge [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chrome [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chromium [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Firefox [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -All [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Top [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApplicationMode [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBrowserExtensions [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DisablePopupBlocker [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NewWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyReturnHtml [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EmbedImages [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ForceIndexRebuild [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PathLike <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -InputObject <Object[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       true (ByValue)
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputDirectory <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                .\
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SaveUnknownPersons [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    System.Object[]
+    
+    System.Collections.Generic.List`1[[System.Object, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]
+    
+    System.String
+    
+    
+    
+RELATED LINKS 
 
 <br/><hr/><hr/><br/>
  

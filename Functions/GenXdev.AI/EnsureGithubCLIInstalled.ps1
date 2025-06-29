@@ -109,7 +109,10 @@ process {
                             'PATH',
                             "$currentPath;$githubCliPath",
                             'User')
-                        $env:PATH = [Environment]::GetEnvironmentVariable('PATH', 'User')
+                        # Update current session PATH only if not already present
+                        if ($env:PATH -notlike "*$githubCliPath*") {
+                            $env:PATH = "$env:PATH;$githubCliPath"
+                        }
                     }
                     catch [System.Security.SecurityException] {
                         throw "Access denied while updating PATH environment variable: $_"

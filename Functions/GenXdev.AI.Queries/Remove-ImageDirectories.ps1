@@ -17,12 +17,12 @@ image directories configuration.
 Forces removal without confirmation prompts.
 
 .EXAMPLE
-Remove-AIImageCollectionDirectory -ImageDirectories @("C:\OldPhotos", "D:\TempImages")
+Remove-ImageDirectories -ImageDirectories @("C:\OldPhotos", "D:\TempImages")
 
 Removes the specified directories from the image directories configuration.
 
 .EXAMPLE
-Remove-AIImageCollectionDirectory "C:\Temp\*"
+Remove-ImageDirectories "C:\Temp\*"
 
 Removes all directories that match the wildcard pattern.
 
@@ -31,7 +31,7 @@ removeimgdir @("C:\OldPhotos") -Force
 
 Uses alias to forcibly remove a directory from the configuration without confirmation.
 #>
-function Remove-AIImageCollectionDirectory {
+function Remove-ImageDirectories {
 
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]

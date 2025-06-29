@@ -17,7 +17,7 @@ configuration. Paths can be relative or absolute and will be expanded
 automatically. Duplicates are filtered out using case-insensitive comparison.
 
 .EXAMPLE
-Add-AIImageCollectionDirectory -ImageDirectories @("C:\NewPhotos", "D:\MoreImages")
+Add-ImageDirectories -ImageDirectories @("C:\NewPhotos", "D:\MoreImages")
 
 Adds the specified directories to the existing image directories configuration
 using full parameter names.
@@ -28,7 +28,7 @@ addimgdir @("C:\Temp\Photos", "E:\Backup\Images")
 Uses alias to add multiple directories to the configuration with positional
 parameters.
 #>
-function Add-AIImageCollectionDirectory {
+function Add-ImageDirectories {
 
 
 

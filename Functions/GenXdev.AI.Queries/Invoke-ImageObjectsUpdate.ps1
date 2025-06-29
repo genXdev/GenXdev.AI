@@ -10,7 +10,7 @@ objects, their positions, confidence scores, and labels. The function supports
 batch processing with configurable confidence thresholds and can optionally
 skip existing metadata files or retry previously failed detections.
 
-.PARAMETER AIImageCollectionDirectory
+.PARAMETER ImageDirectories
 The directory path containing images to process. Can be relative or absolute
 path. Default is the current directory.
 
@@ -67,7 +67,7 @@ Custom Docker image name to use instead of the default DeepStack image.
 Allows using alternative object detection models or configurations.
 
 .EXAMPLE
-Invoke-ImageObjectsUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse
+Invoke-ImageObjectsUpdate -ImageDirectories "C:\Photos" -Recurse
 
 This example processes all images in C:\Photos and all subdirectories using
 default settings with 0.5 confidence threshold.
@@ -79,7 +79,7 @@ This example processes only new images and retries previously failed ones
 in the C:\Photos directory using positional parameter syntax.
 
 .EXAMPLE
-Invoke-ImageObjectsUpdate -AIImageCollectionDirectory "C:\Photos" -UseGPU `
+Invoke-ImageObjectsUpdate -ImageDirectories "C:\Photos" -UseGPU `
     -ConfidenceThreshold 0.7
 
 This example uses GPU acceleration with higher confidence threshold of 0.7
@@ -97,7 +97,7 @@ function Invoke-ImageObjectsUpdate {
             Mandatory = $false,
             HelpMessage = "The directory path containing images to process"
         )]
-        [string] $AIImageCollectionDirectory = ".\",
+        [string] $ImageDirectories = ".\",
         #######################################################################
         [Parameter(
             Position = 1,
@@ -190,7 +190,7 @@ function Invoke-ImageObjectsUpdate {
     begin {
 
         # convert the possibly relative path to an absolute path for reliable access
-        $path = GenXdev.FileSystem\Expand-Path $AIImageCollectionDirectory
+        $path = GenXdev.FileSystem\Expand-Path $ImageDirectories
 
         # ensure the target directory exists before proceeding with any operations
         if (-not [System.IO.Directory]::Exists($path)) {

@@ -1,10 +1,10 @@
 ################################################################################
-Pester\Describe "Remove-AIImageCollectionDirectory" {
+Pester\Describe "Remove-ImageDirectories" {
 
     Pester\It "should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Remove-AIImageCollectionDirectory.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Remove-ImageDirectories.ps1"
 
         # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `

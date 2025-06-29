@@ -123,9 +123,10 @@ function Get-ImageDatabaseStats {
 
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                -BoundParameters $PSBoundParameters `
+               -FunctionName "GenXdev.AI\Get-ImageDatabasePath" `
                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
-            $DatabaseFilePath = GenXdev.FileSystem\Get-ImageDatabasePath @params -NoFallback -NeverRebuild
+            $DatabaseFilePath = GenXdev.AI\Get-ImageDatabasePath @params -NoFallback -NeverRebuild
         }
         else {
             $DatabaseFilePath = GenXdev.FileSystem\Expand-Path $DatabaseFilePath

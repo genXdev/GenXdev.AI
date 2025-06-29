@@ -20,7 +20,6 @@ function EnsurePaintNet {
     [CmdletBinding()]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
     param()
 
     begin {
@@ -83,12 +82,18 @@ function EnsurePaintNet {
         try {
             # First, ensure current session PATH is up to date with both Machine and User PATH
             $paintNetPath = "C:\Program Files\paint.net"
-            $machinePath = [Environment]::GetEnvironmentVariable('PATH', 'Machine')
+
+            # Only add Paint.NET path to user PATH if it's not already present
             $userPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
-            $userPath = "$userPath;$paintNetPath"
-            $completePath = "$machinePath;$userPath"
-            $env:PATH = $completePath
-            [System.Environment]::SetEnvironmentVariable('PATH', $userPath, 'User')
+            if ($userPath -notlike "*$paintNetPath*") {
+                $userPath = "$userPath;$paintNetPath"
+                [System.Environment]::SetEnvironmentVariable('PATH', $userPath, 'User')
+            }
+
+            # Only update session PATH if Paint.NET path is not already in current session
+            if ($env:PATH -notlike "*$paintNetPath*") {
+                $env:PATH = "$env:PATH;$paintNetPath"
+            }
 
             # Check if Paint.NET is already accessible
             Microsoft.PowerShell.Utility\Write-Verbose "Paint.NET not found in PATH, checking installation..."
@@ -116,9 +121,11 @@ function EnsurePaintNet {
                         [Environment]::SetEnvironmentVariable(
                             'PATH',
                             "$userPath;$paintNetPath",
-                            'User')                            # Update current session PATH
-                        $machinePath = [Environment]::GetEnvironmentVariable('PATH', 'Machine')
-                        $Global:env:PATH = "$machinePath;$userPath;$paintNetPath"
+                            'User')
+                        # Update current session PATH only if not already present
+                        if ($env:PATH -notlike "*$paintNetPath*") {
+                            $env:PATH = "$env:PATH;$paintNetPath"
+                        }
                     }
                     catch [System.Security.SecurityException] {
                         throw "Access denied while updating PATH environment variable: $_"

@@ -9,7 +9,7 @@ faces using AI recognition technology. It creates or updates metadata files
 containing face information for each image. The metadata is stored in a
 separate file with the same name as the image but with a ':people.json' suffix.
 
-.PARAMETER AIImageCollectionDirectory
+.PARAMETER ImageDirectories
 The directory path containing images to process. Can be relative or absolute.
 Default is the current directory.
 
@@ -53,7 +53,7 @@ Interval in seconds between health check attempts. Default is 3.
 Custom Docker image name to use instead of the default DeepStack image.
 
 .EXAMPLE
-Invoke-ImageFacesUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse
+Invoke-ImageFacesUpdate -ImageDirectories "C:\Photos" -Recurse
 
 .EXAMPLE
 facerecognition "C:\Photos" -RetryFailed -OnlyNew
@@ -71,7 +71,7 @@ function Invoke-ImageFacesUpdate {
             Mandatory = $false,
             HelpMessage = "The directory path containing images to process"
         )]
-        [string] $AIImageCollectionDirectory = ".\",
+        [string] $ImageDirectories = ".\",
         #######################################################################
         [Parameter(
             Position = 1,
@@ -169,7 +169,7 @@ function Invoke-ImageFacesUpdate {
     begin {
 
         # convert the possibly relative path to an absolute path for reliable access
-        $path = GenXdev.FileSystem\Expand-Path $AIImageCollectionDirectory
+        $path = GenXdev.FileSystem\Expand-Path $ImageDirectories
 
         # ensure the target directory exists before proceeding with any operations
         if (-not [System.IO.Directory]::Exists($path)) {

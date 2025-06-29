@@ -185,9 +185,8 @@ function Register-AllFaces {
        $FacesDirectory = GenXdev.AI\Get-AIKnownFacesRootpath `
             -FacesDirectory $FacesDirectory
 
-        Microsoft.PowerShell.Utility\Write-Verbose `
+       Microsoft.PowerShell.Utility\Write-Verbose `
                 "Using provided faces directory: $FacesDirectory"
-
 
         # initialize script-level tracking variables for registration results
         $script:RegistrationErrors = @()
