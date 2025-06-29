@@ -14,35 +14,35 @@ function Get-AIKnownFacesRootpath {
     begin
     {
         # get configured faces directory from preference store
-        $configuredFacesDirectory = $null
+        $resolvedFacesDirectory = $null
 
         if (-not ([string]::IsNullOrWhiteSpace($FacesDirectory))) {
 
-            $resolvedFacesDirectory = GenXdev.FileSystem\Expand-Path $FacesDirectory -CreateDirectory
+            $resolvedFacesDirectory = GenXdev.FileSystem\Expand-Path "$FacesDirectory\" -CreateDirectory
             return;
         }
 
         try {
 
-            $configuredFacesDirectory = GenXdev.Data\Get-GenXdevPreference `
+            $resolvedFacesDirectory = GenXdev.Data\Get-GenXdevPreference `
                 -Name "FacesDirectory" `
                 -DefaultValue $null `
                 -ErrorAction SilentlyContinue
         }
         catch {
 
-            $configuredFacesDirectory = $null
+            $resolvedFacesDirectory = $null
         }
 
         # use configured directory or fallback to default
-        if ([string]::IsNullOrEmpty($configuredFacesDirectory)) {
+        if ([string]::IsNullOrWhiteSpace($resolvedFacesDirectory)) {
 
             # fallback to default directory
             $resolvedFacesDirectory = @(GenXdev.AI\Get-AIImageCollection)[0]
 
             if (-not $resolvedFacesDirectory) {
                 $resolvedFacesDirectory = GenXdev.FileSystem\Expand-Path `
-                    -Path "~\Pictures\Faces" `
+                    -Path "~\Pictures\Faces\" `
                     -CreateDirectory
             }
         }
@@ -53,6 +53,6 @@ function Get-AIKnownFacesRootpath {
         Microsoft.PowerShell.Utility\Write-Verbose `
             "Using provided faces directory: $resolvedFacesDirectory"
 
-        Microsoft.PowerShell.Utility\Write-Output $resolvedFacesDirectory
+        Microsoft.PowerShell.Utility\Write-Output (GenXdev.FileSystem\Expand-Path "$resolvedFacesDirectory\")
     }
 }

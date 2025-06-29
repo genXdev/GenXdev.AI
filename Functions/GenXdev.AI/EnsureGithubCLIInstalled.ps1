@@ -103,20 +103,16 @@ process {
                 $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
 
                 if ($currentPath -notlike "*$githubCliPath*") {
-                    try {
-                        Microsoft.PowerShell.Utility\Write-Verbose "Adding GitHub CLI to PATH..."
-                        [Environment]::SetEnvironmentVariable(
-                            'PATH',
-                            "$currentPath;$githubCliPath",
-                            'User')
-                        # Update current session PATH only if not already present
-                        if ($env:PATH -notlike "*$githubCliPath*") {
-                            $env:PATH = "$env:PATH;$githubCliPath"
-                        }
-                    }
-                    catch [System.Security.SecurityException] {
-                        throw "Access denied while updating PATH environment variable: $_"
-                    }
+                    Microsoft.PowerShell.Utility\Write-Verbose "Adding GitHub CLI to PATH..."
+                    [Environment]::SetEnvironmentVariable(
+                        'PATH',
+                        "$currentPath;$githubCliPath",
+                        'User')
+                }
+
+                # Update current session PATH only if not already present
+                if ($env:PATH -notlike "*$githubCliPath*") {
+                    $env:PATH = "$env:PATH;$githubCliPath"
                 }
 
                 if (@(Microsoft.PowerShell.Core\Get-Command 'gh.exe' -ErrorAction SilentlyContinue).Length -eq 0) {

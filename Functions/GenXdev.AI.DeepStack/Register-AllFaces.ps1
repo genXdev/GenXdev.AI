@@ -176,8 +176,15 @@ function Register-AllFaces {
             Mandatory = $false,
             HelpMessage = "Use GPU-accelerated version (requires NVIDIA GPU)"
         )]
-        [switch] $UseGPU
-        #######################################################################
+        [switch] $UseGPU,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Show Docker Desktop window during initialization"
+        )]
+        [switch]$ShowWindow
+        ###################################################################
+
     )
 
     begin {
@@ -661,7 +668,9 @@ function Register-AllFaces {
             # output error for any unexpected failures in main process
             Microsoft.PowerShell.Utility\Write-Error "Failed to update faces: $_"
         }
-    }    end {
+    }
+
+    end {
 
         # output verbose information about process completion
         Microsoft.PowerShell.Utility\Write-Verbose `

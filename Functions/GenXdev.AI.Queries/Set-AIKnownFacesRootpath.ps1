@@ -38,6 +38,8 @@ function Set-AIKnownFacesRootpath {
 
     begin {
 
+        $FacesDirectory = GenXdev.FileSystem\Expand-Path "$FacesDirectory\" `
+                    -CreateDirectory
         # display verbose information about the faces directory being configured
         Microsoft.PowerShell.Utility\Write-Verbose (
             "Setting faces directory for GenXdev.AI module: " +

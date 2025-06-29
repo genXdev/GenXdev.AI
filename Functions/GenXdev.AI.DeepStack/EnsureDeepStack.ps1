@@ -132,7 +132,13 @@ function EnsureDeepStack {
             HelpMessage = ("Use GPU-accelerated version (requires NVIDIA " +
                           "GPU)")
         )]
-        [switch] $UseGPU
+        [switch] $UseGPU,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Show Docker Desktop window during initialization"
+        )]
+        [switch]$ShowWindow
         ###################################################################
     )
 
@@ -573,7 +579,7 @@ function EnsureDeepStack {
 
                 # check if docker volume already exists
                 $volumeExists = docker volume ls `
-                    --filter "name=^${script:volumeName}$" `
+                    --filter "name=^$($script:volumeName)$" `
                     --format "{{.Name}}" 2>$null
 
                 # create docker volume if it doesn't exist
@@ -668,7 +674,7 @@ function EnsureDeepStack {
             Microsoft.PowerShell.Utility\Write-Verbose `
                 "Ensuring Docker Desktop is available..."
 
-            GenXdev.Windows\EnsureDockerDesktop
+            GenXdev.Windows\EnsureDockerDesktop -ShowWindow:$ShowWindow
 
             # verify docker is responding to commands
             if (-not (Test-DockerAvailability)) {

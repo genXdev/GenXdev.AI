@@ -61,7 +61,6 @@ function Get-AIImageCollection {
 
             # use provided directories if available
             $result = $ImageDirectories
-            Microsoft.PowerShell.Utility\Write-Output $result
             return;
         }
 
@@ -132,7 +131,7 @@ function Get-AIImageCollection {
         $result |  Microsoft.PowerShell.Core\ForEach-Object {
 
             Microsoft.PowerShell.Utility\Write-Output (GenXdev.FileSystem\Expand-Path $_)
-        }
+        } | Select-Object -Unique
     }
 }
 ################################################################################

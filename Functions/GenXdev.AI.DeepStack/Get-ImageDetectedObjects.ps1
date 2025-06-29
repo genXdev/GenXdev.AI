@@ -193,9 +193,15 @@ function Get-ImageDetectedObjects {
                 "GPU)")
         )]
         [switch]
-        $UseGPU
-        #######################################################################
-    )
+        $UseGPU,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Show Docker Desktop window during initialization"
+        )]
+        [switch]$ShowWindow
+        ###################################################################
+      )
 
     begin {
 

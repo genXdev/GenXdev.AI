@@ -141,8 +141,14 @@ function Unregister-AllFaces {
             HelpMessage = "Custom Docker image name to use"
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ImageName
-        ###########################################################################
+        [string] $ImageName,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Show Docker Desktop window during initialization"
+        )]
+        [switch]$ShowWindow
+        ###################################################################
     )
     begin {
 

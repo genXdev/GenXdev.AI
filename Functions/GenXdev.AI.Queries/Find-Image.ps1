@@ -1127,7 +1127,7 @@ function Find-Image {
         # handle input object processing from 4
         if ($PSBoundParameters.ContainsKey('InputObject')) {
 
-            $null = $InputObject |
+            $InputObject |
                 Microsoft.PowerShell.Core\ForEach-Object {
 
                 # process each input object as an image file
@@ -1182,11 +1182,24 @@ function Find-Image {
                     }
                 }
 
-                processImageFile $path
+                processImageFile $path |
+                    Microsoft.PowerShell.Core\ForEach-Object {
+
+                    if (-not $ShowInBrowser) {
+
+                        Microsoft.PowerShell.Utility\Write-Output $_
+                    }
+                    else {
+
+                        $null = $results.Add($_)
+                    }
+                }
             }
 
             return;
         }
+
+        $directories = $directories | Select-Object -Unique
 
         # iterate through each specified image directory
         foreach ($imageDirectory in $directories) {
@@ -1241,6 +1254,7 @@ function Find-Image {
                         return;
                     }
                 }
+
                 processImageFile $_ |
                     Microsoft.PowerShell.Core\ForEach-Object {
 
@@ -1259,26 +1273,17 @@ function Find-Image {
 
     end {
 
-        # check if any results were found
-        if ((-not $results) -or ($null -eq $results) -or
-            ($results.Length -eq 0)) {
-
-            # provide appropriate message based on search criteria
-            if (($null -eq $Keywords) -or ($Keywords.Length -eq 0)) {
-
-                Microsoft.PowerShell.Utility\Write-Host "No images found."
-            }
-            else {
-
-                Microsoft.PowerShell.Utility\Write-Host (
-                    "No images found with the specified keywords.")
-            }
-
-            return
-        }
-
         # if ShowInBrowser is requested, display the gallery
         if ($ShowInBrowser) {
+
+            # check if any results were found
+            if ((-not $results) -or ($null -eq $results) -or
+                ($results.Length -eq 0)) {
+
+                    Microsoft.PowerShell.Utility\Write-Host ("No images found")
+
+                return
+            }
 
             if ([String]::IsNullOrWhiteSpace($Title)) {
 
@@ -1299,11 +1304,14 @@ function Find-Image {
 
             # pass the results to Show-FoundImagesInBrowser
             $null = GenXdev.AI\Show-FoundImagesInBrowser @params -InputObject $results
-        }
 
-        if ((-not $ShowInBrowser) -or $PassThru) {
+            if ($PassThru) {
 
-            return $results
+                $results | ForEach-Object {
+
+                    Write-Output $_
+                }
+            }
         }
     }
 }

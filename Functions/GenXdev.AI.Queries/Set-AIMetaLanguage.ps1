@@ -206,10 +206,10 @@ function Set-AIMetaLanguage {
         if ($PSCmdlet.ShouldProcess(
             "GenXdev.AI Module Configuration",
             ("Set meta language to: $Language" +
-                (if ($null -ne $ImageDirectories) {
+                (($null -ne $ImageDirectories) ? (
                     " and set image directories to: [" +
                     ($ImageDirectories -join ', ') + "]"
-                } else { "" })
+                ) :  "" )
             )
         )) {
 

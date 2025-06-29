@@ -85,7 +85,7 @@ $script:LMStudioExposedCmdlets = $null
 function New-LLMTextChat {
 
     [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = "Default")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "New-LLMTextChat")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
     [Alias("llmchat")]
 
     param(

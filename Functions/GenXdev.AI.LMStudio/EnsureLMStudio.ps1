@@ -128,6 +128,20 @@ function EnsureLMStudio {
     }
 
     end {
+        if ($ShowWindow) {
+
+            try {
+                $a = (GenXDev.Windows\Get-Window -ProcessName "LM Studio") ;
+                if ($null -eq $a) { return }
+                $a.Show()
+                $a.Restore()
+                GenXDev.Windows\Set-WindowPosition -WindowHelper $a -Monitor 0 -Right
+                GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
+            }
+            catch {
+
+            }
+        }
     }
 }
 ################################################################################

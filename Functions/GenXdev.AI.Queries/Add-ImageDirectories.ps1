@@ -30,10 +30,10 @@ parameters.
 #>
 function Add-ImageDirectories {
 
-
-
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
+
     [Alias("addimgdir")]
 
     param(

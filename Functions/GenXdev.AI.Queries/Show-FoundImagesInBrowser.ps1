@@ -347,20 +347,22 @@ function Show-FoundImagesInBrowser {
     begin {
 
         # initialize collection to accumulate all input objects
-        $results = @()
+        [System.Collections.Generic.List[Object]] $results = @()
     }
 
     process {
+        $InputObject | ForEach-Object {
 
-        # collect all input objects from pipeline
-        $results += $InputObject
+            # add unique input objects to the results collection
+            $null = $results.Add($_)
+        }
     }
 
     end {
 
         # verify that we have images to display before proceeding
         if ((-not $results) -or ($null -eq $results) -or
-            ($results.Length -eq 0)) {
+            ($results.Count -eq 0)) {
 
             Microsoft.PowerShell.Utility\Write-Host (
                 "No images to display in gallery.")
@@ -669,18 +671,9 @@ function Show-FoundImagesInBrowser {
 
                                                 if ($w) {
 
-                                                    $null = $w.Show()
-                                                    $w.Restore();
-
-                                                    $null = GenXdev.Windows\Set-WindowPosition `
-                                                        -Fullscreen `
-                                                        -Monitor 0 `
-                                                        -WindowHelper $w `
-                                                        -ErrorAction silentlyContinue
-
-                                                    $null = $w.SetForeground()
-
-                                                    $null = $w.Maximize();
+                                                    $w.Show();
+                                                    $w.SetForeground();
+                                                    $w.maximize();
                                                 }
                                             }
                                         }
@@ -701,18 +694,9 @@ function Show-FoundImagesInBrowser {
 
                                             if ($w) {
 
-                                                $null = $w.Show()
-                                                $w.Restore();
-
-                                                $null = GenXdev.Windows\Set-WindowPosition `
-                                                    -Fullscreen `
-                                                    -Monitor 0 `
-                                                    -WindowHelper $w `
-                                                    -ErrorAction silentlyContinue
-
-                                                $null = $w.SetForeground()
-
-                                                $null = $w.Maximize();
+                                                $w.Show();
+                                                $w.SetForeground();
+                                                $w.maximize();
                                             }
                                         }
                                     }

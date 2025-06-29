@@ -450,6 +450,28 @@ function Update-AllImageMetaData {
 
     begin {
 
+        $params = Genxdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName 'GenXdev.AI\EnsureDeepStack' `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
+
+        $null = GenXdev.AI\EnsureDeepStack @params -ShowWindow
+
+        try {
+            $a = (GenXDev.Windows\Get-Window -ProcessName "Docker Desktop") ;
+            if ($null -eq $a) { return }
+            $a.Show()
+            $a.Restore()
+            GenXDev.Windows\Set-WindowPosition -WindowHelper $a -Monitor 0 -Right -Bottom
+            GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
+        }
+        catch {
+
+        }
+
+
         $FacesDirectory = GenXdev.AI\Get-AIKnownFacesRootpath -FacesDirectory $FacesDirectory
         $filecount = (
             @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\" -PassThru) +
@@ -492,7 +514,13 @@ function Update-AllImageMetaData {
             try
             {
                 # count total number of directories to process
-                $null = GenXdev.AI\UnRegister-AllFaces -Confirm:$false
+                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                    -BoundParameters $PSBoundParameters `
+                    -FunctionName 'GenXdev.AI\UnRegister-AllFaces' `
+                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                        -Scope Local `
+                        -ErrorAction SilentlyContinue)
+                $null = GenXdev.AI\UnRegister-AllFaces @params -Confirm:$false
             }
             catch {
 
@@ -500,7 +528,13 @@ function Update-AllImageMetaData {
             try
             {
                 # count total number of directories to process
-                $null = GenXdev.AI\Register-AllFaces -FacesDirectory $FacesDirectory
+                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                    -BoundParameters $PSBoundParameters `
+                    -FunctionName 'GenXdev.AI\Register-AllFaces' `
+                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                        -Scope Local `
+                        -ErrorAction SilentlyContinue)
+                $null = GenXdev.AI\Register-AllFaces @params -Confirm:$false
             }
             catch {
 
@@ -532,38 +566,20 @@ function Update-AllImageMetaData {
 
             # ensure lm studio service is running
             $null = GenXdev.AI\EnsureLMStudio @params
-
-            # show window positioning if requested
-            if ($ShowWindow)  {
-
-                # wait for services to stabilize
-                Microsoft.PowerShell.Utility\Start-Sleep 2
-
-                # copy parameters for getting loaded model list
-                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
-                    -BoundParameters $PSBoundParameters `
-                    -FunctionName 'GenXdev.AI\Get-LMStudioLoadedModelList' `
-                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                        -Scope Local `
-                        -ErrorAction SilentlyContinue)
-
-                # get loaded model list and position windows
-                $windowHelper = GenXdev.AI\Get-LMStudioLoadedModelList @params `
-                    -ShowWindow:$ShowWindow
-
-                if ($null -ne $windowHelper) {
-
-                    # position lm studio window at top right of monitor 0
-                    $null = GenXdev.Windows\Set-WindowPosition `
-                        -WindowHelper $windowHelper `
-                        -top `
-                        -right `
-                        -mon 0
-                }
-
-                # position current window to left side of monitor 0
-                $null = GenXdev.Windows\Set-WindowPosition -left -mon 0
+            try {
+                $a = (GenXDev.Windows\Get-Window -ProcessName "LM Studio") ;
+                if ($null -eq $a) { return }
+                $a.Show()
+                $a.Restore()
+                GenXDev.Windows\Set-WindowPosition -WindowHelper $a -Monitor 0 -Right -Top
+                GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
             }
+            catch {
+
+            }
+
+            # wait for services to stabilize
+            Microsoft.PowerShell.Utility\Start-Sleep 2
         }
         catch {
 
@@ -804,7 +820,7 @@ function Update-AllImageMetaData {
 
                         # run image keyword update with appropriate flags
                         GenXdev.AI\Invoke-ImageKeywordUpdate `
-                            -imageDirectory $dir `
+                            -ImageDirectories $dir `
                             -recurse `
                             -Verbose `
                             -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
@@ -821,7 +837,7 @@ function Update-AllImageMetaData {
 
                         # run image faces update with appropriate flags
                         GenXdev.AI\Invoke-ImageFacesUpdate `
-                            -imageDirectory $dir `
+                            -ImageDirectories $dir `
                             -recurse `
                             -Verbose `
                             -NoDockerInitialize `
@@ -838,7 +854,7 @@ function Update-AllImageMetaData {
 
                         # run image objects update with appropriate flags
                         GenXdev.AI\Invoke-ImageObjectsUpdate `
-                            -imageDirectory $dir `
+                            -ImageDirectories $dir `
                             -recurse `
                             -Verbose `
                             -NoDockerInitialize `
@@ -856,7 +872,7 @@ function Update-AllImageMetaData {
 
                         # run image scenes update with appropriate flags
                         GenXdev.AI\Invoke-ImageScenesUpdate `
-                            -imageDirectory $dir `
+                            -ImageDirectories $dir `
                             -recurse `
                             -Verbose `
                             -NoDockerInitialize `

@@ -143,9 +143,17 @@ function Register-Face {
             HelpMessage = ("Use GPU-accelerated version (requires " +
                           "NVIDIA GPU)")
         )]
-        [switch] $UseGPU
+        [switch] $UseGPU,
         ###################################################################
-    )    begin {
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Show Docker Desktop window during initialization"
+        )]
+        [switch]$ShowWindow
+        ###################################################################
+    )
+
+    begin {
 
         # use script-scoped variables set by ensuredeepstack with fallback defaults
         if (-not $ApiBaseUrl) {

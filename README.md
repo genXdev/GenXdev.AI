@@ -45,7 +45,7 @@
      * Interactive image galleries with masonry layouts, metadata tooltips, and responsive design using `Show-FoundImagesInBrowser` -> showfoundimages
      * `Find-Image` AND `Find-IndexedImage`functions always use OR when combining search criteria,
         for AND use use the same function again with a pipe | for additional filtering
-     * [SEE GETTING STARTED](https://raw.githubusercontent.com/genXdev/GenXdev.AI/functions/GenXdev.DeepStack/README.md)
+     * [SEE GETTING STARTED](https://github.com/genXdev/GenXdev.AI/tree/main/Functions/GenXdev.AI.DeepStack#readme)
 
 * ✅ Text Processing and Enhancement
      * Add contextual emoticons with `Add-EmoticonsToText` -> `emojify`
@@ -3414,7 +3414,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Compare-ImageFaces [-ImagePath1] <String> [-ImagePath2] <String> [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Compare-ImageFaces [-ImagePath1] <String> [-ImagePath2] <String> [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -3547,6 +3547,15 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -3600,7 +3609,7 @@ SYNOPSIS
     
     
 SYNTAX
-    EnsureDeepStack [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-Force] [-UseGPU] [<CommonParameters>]
+    EnsureDeepStack [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-Force] [-UseGPU] [-ShowWindow] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -3700,6 +3709,15 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -3759,7 +3777,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ImageDetectedFaces [-ImagePath] <String> [-ConfidenceThreshold <Double>] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Get-ImageDetectedFaces [-ImagePath] <String> [-ConfidenceThreshold <Double>] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -3892,6 +3910,15 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -3958,7 +3985,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ImageDetectedObjects [-ImagePath] <String> [-ConfidenceThreshold <Double>] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Get-ImageDetectedObjects [-ImagePath] <String> [-ConfidenceThreshold <Double>] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -4091,6 +4118,15 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -4152,7 +4188,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ImageDetectedScenes [-ImagePath] <String> [[-ConfidenceThreshold] <Double>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [-ImageName <String>] [-Force] [-UseGPU] [<CommonParameters>]
+    Get-ImageDetectedScenes [-ImagePath] <String> [[-ConfidenceThreshold] <Double>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [-ImageName <String>] [-Force] [-UseGPU] [-ShowWindow] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -4263,6 +4299,15 @@ PARAMETERS
     -UseGPU [<SwitchParameter>]
         Use GPU-accelerated version when this switch is used. This requires an
         NVIDIA GPU with proper Docker GPU support configured.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -4398,7 +4443,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-RegisteredFaces [-NoDockerInitialize] [-Force] [-UseGPU] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [<CommonParameters>]
+    Get-RegisteredFaces [-NoDockerInitialize] [-Force] [-UseGPU] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-ShowWindow] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -4510,6 +4555,15 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -4575,7 +4629,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageEnhancement [-ImagePath] <String> [[-OutputPath] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [<CommonParameters>]
+    Invoke-ImageEnhancement [-ImagePath] <String> [[-OutputPath] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-ShowWindow] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -4708,6 +4762,15 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -4772,7 +4835,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Register-AllFaces [[-FacesDirectory] <String>] [[-MaxRetries] <Int32>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-NoDockerInitialize] [-Force] [-RenameFailed] [-ForceRebuild] [-UseGPU] [<CommonParameters>]
+    Register-AllFaces [[-FacesDirectory] <String>] [[-MaxRetries] <Int32>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-NoDockerInitialize] [-Force] [-RenameFailed] [-ForceRebuild] [-UseGPU] [-ShowWindow] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -4924,6 +4987,15 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -4977,7 +5049,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Register-Face [-Identifier] <String> [-ImagePath] <String[]> [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Register-Face [-Identifier] <String> [-ImagePath] <String[]> [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -5101,6 +5173,15 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -5151,7 +5232,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Unregister-AllFaces [-Force] [-NoDockerInitialize] [-ForceRebuild] [-UseGPU] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Unregister-AllFaces [-Force] [-NoDockerInitialize] [-ForceRebuild] [-UseGPU] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-ShowWindow] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -5267,6 +5348,15 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -WhatIf [<SwitchParameter>]
         
         Required?                    false
@@ -5335,7 +5425,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Unregister-Face [-Identifier] <String> [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Unregister-Face [-Identifier] <String> [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -5437,6 +5527,15 @@ PARAMETERS
         
     -UseGPU [<SwitchParameter>]
         Use GPU-accelerated version (requires NVIDIA GPU).
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -11022,7 +11121,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageScenesUpdate [[-ImageDirectories] <String>] [[-ImageName] <String>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ConfidenceThreshold] <Double>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Invoke-ImageScenesUpdate [[-ImageDirectories] <String>] [[-ImageName] <String>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ConfidenceThreshold] <Double>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -11178,6 +11277,15 @@ PARAMETERS
     -UseGPU [<SwitchParameter>]
         Use GPU-accelerated version when this switch is used. Requires an NVIDIA GPU
         with appropriate drivers and CUDA support.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
