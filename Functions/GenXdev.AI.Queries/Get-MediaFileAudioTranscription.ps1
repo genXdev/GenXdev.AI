@@ -279,7 +279,7 @@ function Get-MediaFileAudioTranscription {
             "Yiddish",
             "Yoruba",
             "Zulu")]
-        [string] $LanguageIn = "English",
+        [string] $LanguageIn,
         ################################################################################
         [Parameter(
             Mandatory = $false,
@@ -551,11 +551,16 @@ function Get-MediaFileAudioTranscription {
 
     begin {
 
-        if ([string]::IsNullOrWhiteSpace($LanguageIn)) {
-
-            # get default language from system settings
-            $LanguageIn = GenXdev.Helpers\Get-DefaultWebLanguage
-        }
+        $LanguageIn = GenXdev.AI\Get-AIMetaLanguage -Language (
+            [String]::IsNullOrWhiteSpace($LanguageIn) ?
+            (GenXdev.Helpers\Get-DefaultWebLanguage) :
+            $LanguageIn
+        )
+        $LanguageOut = GenXdev.AI\Get-AIMetaLanguage -Language (
+            [String]::IsNullOrWhiteSpace($LanguageOut) ?
+            (GenXdev.Helpers\Get-DefaultWebLanguage) :
+            $LanguageOut
+        )
 
         if ($PSBoundParameters.ContainsKey("MaxDurationOfSilence") -and (-not ($MaxDurationOfSilence -is [System.TimeSpan]))) {
 

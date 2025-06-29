@@ -40,9 +40,6 @@ Interval in seconds between health check attempts during service startup.
 .PARAMETER ImageName
 Custom Docker image name to use for face recognition processing.
 
-.PARAMETER FacesPath
-The path inside the container where face recognition data is stored.
-
 .PARAMETER ConfidenceThreshold
 Minimum confidence threshold (0.0-1.0) for object detection. Objects with
 confidence below this threshold will be filtered out. Default is 0.5.
@@ -119,6 +116,7 @@ function Update-AllImageMetaData {
             HelpMessage = "Array of directory paths to process for image updates"
         )]
         [ValidateNotNullOrEmpty()]
+        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
         [string[]] $ImageDirectories,
         #######################################################################
         [Parameter(
@@ -168,14 +166,6 @@ function Update-AllImageMetaData {
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImageName,
-        #######################################################################
-        [Parameter(
-            Mandatory = $false,
-            Position = 7,
-            HelpMessage = "The path inside the container where faces are stored"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore",
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -397,6 +387,14 @@ function Update-AllImageMetaData {
         [ValidateRange(-1, [int]::MaxValue)]
         [int]$TTLSeconds = -1,
         #######################################################################
+        [parameter(
+            Mandatory = $false,
+            HelpMessage = ("The directory containing face images organized by " +
+                        "person folders. If not specified, uses the " +
+                        "configured faces directory preference.")
+        )]
+        [string] $FacesDirectory,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Will retry previously failed image keyword updates"
@@ -440,11 +438,72 @@ function Update-AllImageMetaData {
             Mandatory = $false,
             HelpMessage = "PassThru to return structured objects instead of outputting to console"
         )]
-        [switch] $PassThru
+        [switch] $PassThru,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Detects changes in the faces directory and re-registers faces if needed"
+        )]
+        [switch] $AutoUpdateFaces
         ################################################################################
     )
 
     begin {
+
+        $FacesDirectory = GenXdev.AI\Get-AIKnownFacesRootpath -FacesDirectory $FacesDirectory
+        $filecount = (
+            @(GenXdev.FileSystem\Find-Item -SearchMask @("$FacesDirectory\*\") -Pattern "*.jpg" -file -PassThru) +
+            @(GenXdev.FileSystem\Find-Item -SearchMask @("$FacesDirectory\*\") -Pattern "*.jpeg" -file -PassThru) +
+            @(GenXdev.FileSystem\Find-Item -SearchMask @("$FacesDirectory\*\") -Pattern "*.png" -file -PassThru) +
+            @(GenXdev.FileSystem\Find-Item -SearchMask @("$FacesDirectory\*\") -Pattern "*.gif" -file -PassThru)
+        ).Count
+
+        $dirCount = (@(GenXdev.FileSystem\Find-Item "$FacesDirectory\*" -Directory |
+             Microsoft.PowerShell.Core\Where-Object {
+                (
+                    @(GenXdev.FileSystem\Find-Item -SearchMask @("$_\") -Pattern "*.jpg" -file -PassThru) +
+                    @(GenXdev.FileSystem\Find-Item -SearchMask @("$_\") -Pattern "*.jpeg" -file -PassThru) +
+                    @(GenXdev.FileSystem\Find-Item -SearchMask @("$_\") -Pattern "*.png" -file -PassThru) +
+                    @(GenXdev.FileSystem\Find-Item -SearchMask @("$_\") -Pattern "*.gif" -file -PassThru)
+                ).Count -gt 0
+            }
+        ).Count)
+
+        $count = 0
+        try
+        {
+            # count total number of directories to process
+            $count = @(GenXdev.AI\Get-RegisteredFaces).Count
+        }
+        catch {
+            # if counting fails, default to 0
+            $count = 0
+        }
+
+        $ForceFaceRegistrations = $ForceFaceRegistrations -or (
+            $AutoUpdateFaces -and
+            ($count -ne $dirCount)
+        )
+
+        if ((($count -eq 0) -or $ForceFaceRegistrations) -and ($filecount -gt 0)) {
+
+            try
+            {
+                # count total number of directories to process
+                $null = GenXdev.AI\UnRegister-AllFaces -Confirm:$false
+            }
+            catch {
+
+            }
+            try
+            {
+                # count total number of directories to process
+                $null = GenXdev.AI\Register-AllFaces -FacesDirectory $FacesDirectory
+            }
+            catch {
+
+            }
+        }
 
         # log start of processing
         Microsoft.PowerShell.Utility\Write-Verbose (
@@ -452,39 +511,11 @@ function Update-AllImageMetaData {
             "across directories"
         )
 
-        # resolve default language if not explicitly provided
-        if ([string]::IsNullOrEmpty($Language)) {
-
-            # try to get default language from global variable first
-            if ($Global:DefaultImagesMetaLanguage) {
-
-                $Language = $Global:DefaultImagesMetaLanguage
-            }
-            else {
-
-                # try to get from preferences
-                try {
-
-                    $defaultLanguage = GenXdev.Data\Get-GenXdevPreference `
-                        -Name "DefaultImagesMetaLanguage" `
-                        -DefaultValue "English" `
-                        -ErrorAction SilentlyContinue
-
-                    if (-not [string]::IsNullOrEmpty($defaultLanguage)) {
-
-                        $Language = $defaultLanguage
-                    }
-                    else {
-
-                        $Language = "English"
-                    }
-                }
-                catch {
-
-                    $Language = "English"
-                }
-            }
-        }
+        $Language = GenXdev.AI\Get-AIMetaLanguage -Language (
+            [String]::IsNullOrWhiteSpace($Language) ?
+            (GenXdev.Helpers\Get-DefaultWebLanguage) :
+            $Language
+        )
 
         # ensure lm studio is initialized with proper parameters
         try {
@@ -492,7 +523,7 @@ function Update-AllImageMetaData {
             # copy identical parameter values for invoke-queryimagecontent
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName 'Invoke-QueryImageContent' `
+                -FunctionName 'GenXdev.AI\Invoke-QueryImageContent' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue)
@@ -509,7 +540,7 @@ function Update-AllImageMetaData {
                 # copy parameters for getting loaded model list
                 $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
-                    -FunctionName 'Get-LMStudioLoadedModelList' `
+                    -FunctionName 'GenXdev.AI\Get-LMStudioLoadedModelList' `
                     -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                         -Scope Local `
                         -ErrorAction SilentlyContinue)
@@ -539,7 +570,7 @@ function Update-AllImageMetaData {
         # copy identical parameter values from bound parameters for deepstack setup
         $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName 'EnsureDeepStack' `
+            -FunctionName 'GenXdev.AI\EnsureDeepStack' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local `
                 -ErrorAction SilentlyContinue)
@@ -589,17 +620,7 @@ function Update-AllImageMetaData {
     process {
 
         # get configured directories and language using get-imagedirectories
-        $config = GenXdev.AI\Get-ImageDirectories -DefaultValue $ImageDirectories
-
-        # use provided directories or get from configuration
-        if ($ImageDirectories) {
-
-            $directories = $ImageDirectories
-        }
-        else {
-
-            $directories = $config.ImageDirectories
-        }
+        $directories = GenXdev.AI\Get-AIImageCollection -ImageDirectories $ImageDirectories
 
         # detect if output is being redirected/piped by checking MyInvocation
 
@@ -660,7 +681,7 @@ function Update-AllImageMetaData {
                             # process keywords/description
                             $keywordParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                                 -BoundParameters $myBoundParameters `
-                                -FunctionName "Invoke-ImageKeywordUpdate" `
+                                -FunctionName "GenXdev.AI\Invoke-ImageKeywordUpdate" `
                                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
                             $keywordParams.ImagePath = $imageFile.FullName
@@ -680,7 +701,7 @@ function Update-AllImageMetaData {
                             # process face recognition
                             $faceParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                                 -BoundParameters $myBoundParameters `
-                                -FunctionName "Invoke-ImageFacesUpdate" `
+                                -FunctionName "GenXdev.AI\Invoke-ImageFacesUpdate" `
                                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
                             $faceParams.ImagePath = $imageFile.FullName
@@ -699,7 +720,7 @@ function Update-AllImageMetaData {
                             # process object detection
                             $objectParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                                 -BoundParameters $myBoundParameters `
-                                -FunctionName "Invoke-ImageObjectsUpdate" `
+                                -FunctionName "GenXdev.AI\Invoke-ImageObjectsUpdate" `
                                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
                             $objectParams.ImagePath = $imageFile.FullName
@@ -719,7 +740,7 @@ function Update-AllImageMetaData {
                             # process scene classification
                             $sceneParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                                 -BoundParameters $myBoundParameters `
-                                -FunctionName "Invoke-ImageScenesUpdate" `
+                                -FunctionName "GenXdev.AI\Invoke-ImageScenesUpdate" `
                                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
                             $sceneParams.ImagePath = $imageFile.FullName

@@ -47,10 +47,6 @@ seconds. Defaults to 3 seconds if not specified.
 Custom Docker image name to use instead of the default DeepStack image. This
 allows using custom or modified DeepStack images.
 
-.PARAMETER FacesPath
-The path inside the container where faces are stored. Defaults to "/datastore"
-if not specified.
-
 .EXAMPLE
 Get-RegisteredFaces
 
@@ -142,16 +138,9 @@ function Get-RegisteredFaces {
             HelpMessage = "Custom Docker image name to use"
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ImageName,
-        ###########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The path inside the container where faces are stored"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore"
-        ###########################################################################
-    )    begin {
+        [string] $ImageName
+    )
+    begin {
 
         # check if api base url is available from script scope
         if (-not $ApiBaseUrl) {
@@ -165,7 +154,7 @@ function Get-RegisteredFaces {
             # copy matching parameters for the ensure deepstack function
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName 'EnsureDeepStack' `
+                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue)

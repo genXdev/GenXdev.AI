@@ -324,7 +324,7 @@ function Start-AudioTranscription {
             "Yiddish",
             "Yoruba",
             "Zulu")]
-        [string] $Language = "",
+        [string] $Language,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Number of CPU threads to use, defaults to 0 (auto)")]
         [int] $CpuThreads = 0,
@@ -404,12 +404,11 @@ function Start-AudioTranscription {
 
     begin {
 
-        if ([string]::IsNullOrWhiteSpace($Language)) {
-
-            # get default language from system settings
-            $Language = GenXdev.Helpers\Get-DefaultWebLanguage
-            Microsoft.PowerShell.Utility\Write-Verbose "Using system default language: $Language"
-        }
+        $Language = GenXdev.AI\Get-AIMetaLanguage -Language (
+            [String]::IsNullOrWhiteSpace($Language) ?
+            (GenXdev.Helpers\Get-DefaultWebLanguage) :
+            $Language
+        )
 
         Microsoft.PowerShell.Utility\Write-Verbose "Initializing audio transcription with selected options"
 

@@ -75,13 +75,15 @@ function Remove-ImageMetaData {
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     [Alias("removeimagedata")]
 
-    param(        #######################################################################
+    param(
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 0,
             HelpMessage = "Array of directory paths to process for image metadata removal. If not specified, uses default system directories."
         )]
-        [Alias("ImageDirectory")]
+        [ValidateNotNullOrEmpty()]
+        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
         [string[]] $ImageDirectories,
         #######################################################################
         [Parameter(
@@ -283,24 +285,13 @@ function Remove-ImageMetaData {
 
     begin {
 
-        # get configured directories and language using Get-ImageDirectories
-        $config = GenXdev.AI\Get-ImageDirectories -DefaultValue $ImageDirectories
+        $directories = GenXdev.AI\Get-AIImageCollection
 
-        # use provided directories or get from configuration
-        if ($ImageDirectories) {
-
-            $directories = $ImageDirectories
-        }
-        else {
-
-            $directories = $config.ImageDirectories
-        }
-
-        # resolve default language if not explicitly provided
-        if ([string]::IsNullOrEmpty($Language)) {
-
-            $Language = $config.Language
-        }
+        $Language = GenXdev.AI\Get-AIMetaLanguage -Language (
+            [String]::IsNullOrWhiteSpace($Language) ?
+            (GenXdev.Helpers\Get-DefaultWebLanguage) :
+            $Language
+        )
 
         # output verbose information about directories to process
         Microsoft.PowerShell.Utility\Write-Verbose `

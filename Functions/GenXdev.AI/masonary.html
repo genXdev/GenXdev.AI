@@ -71,11 +71,27 @@
             break-inside: avoid;
             margin-bottom: 20px;
             background: white;
-            border-radius: 8px;
+            border-radius: 18px;
             border: 1px solid black;
             overflow: hidden;
             transition: border-color 0.2s ease, background-color 0.2s ease;
             position: relative;
+        }
+
+        .gallery-item.show-only-pictures .content,
+        .gallery-item.show-only-pictures .description,
+        .gallery-item.show-only-pictures .metadata,
+        .gallery-item.show-only-pictures .keywords,
+        .gallery-item.show-only-pictures .recognized-faces,
+        .gallery-item.show-only-pictures .detected-objects,
+        .gallery-item.show-only-pictures .scene-classification,
+        .gallery-item.show-only-pictures .actions {
+            display: none !important;
+        }
+
+        .gallery-item.show-only-pictures img {
+            border-radius: 18px;
+            border-bottom: none;
         }
 
         .gallery-item:hover {
@@ -515,7 +531,7 @@
                 font-weight: normal !important;
                 cursor: auto !important;
                 -webkit-print-color-adjust: exact;
-                color-adjust: exact;
+                print-color-adjust: exact;
             }
 
             /* Optimize text */
@@ -562,6 +578,7 @@
         let imageGallery;
         let mydata = {
             images: JSON.parse("[]"),
+            showOnlyPictures: false,
             title: "Photo Gallery",
             description: "Hover over images to see face recognition data",
             actions: [],
@@ -786,7 +803,7 @@
 
             createGalleryItem(image, index) {
                 const item = document.createElement('div');
-                item.className = 'gallery-item';
+                item.className = 'gallery-item' + (mydata.showOnlyPictures ? ' show-only-pictures' : '');
                 item.id = `image-${index}`;
 
                 let keywords = [];
@@ -1409,6 +1426,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            if (mydata && mydata.showOnlyPictures) {
+                document.body.classList.add('show-only-pictures');
+            }
             imageGallery = new ImageGallery(mydata);
         });
 

@@ -245,7 +245,7 @@ function Invoke-QueryImageContent {
         # construct a hashtable of parameters to be passed to the next function
         $parameters = GenXdev.Helpers\Copy-IdenticalParamValues `
            -BoundParameters $PSBoundParameters `
-           -FunctionName "Invoke-LLMQuery" `
+           -FunctionName "GenXdev.AI\Invoke-LLMQuery" `
            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                             -Scope "Local" `
                             -ErrorAction SilentlyContinue)

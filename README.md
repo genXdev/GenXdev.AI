@@ -34,7 +34,7 @@
      * Comprehensive AI-powered image analysis with face recognition, object detection, and scene classification
      * High-performance SQLite database indexing with `Export-ImageDatabase` -> `indexcachedimages` for instant searches
      * Lightning-fast indexed image search with `Find-IndexedImage` -> `findindexedimages`, `lii` using optimized database queries
-     * Image search functions `li`, `lii` have the -ShowImageGallery and -Interactive switches that allow you
+     * Image search functions `li`, `lii` have the -ShowInBrowser and -Interactive switches that allow you
        to show your collection in a masonry layout inside your webbrowser.
        The -Interactive switch parameter provides Edit and Delete buttons.
      * Update-AllMetaData uses alternative ntfs streams inside the imagefile itself
@@ -42,9 +42,10 @@
      robocopy ->  Start-RoboCopy, `xc`
      * Traditional file-based image search with `Find-Image` -> `findimages`, `li`
      * Multi-language support for image descriptions and keywords with automatic AI generation
-     * Interactive image galleries with masonry layouts, metadata tooltips, and responsive design using `Show-ImageGallery` -> showfoundimages
+     * Interactive image galleries with masonry layouts, metadata tooltips, and responsive design using `Show-FoundImagesInBrowser` -> showfoundimages
      * `Find-Image` AND `Find-IndexedImage`functions always use OR when combining search criteria,
         for AND use use the same function again with a pipe | for additional filtering
+     * [SEE GETTING STARTED](https://raw.githubusercontent.com/genXdev/GenXdev.AI/functions/GenXdev.DeepStack/README.md)
 
 * ✅ Text Processing and Enhancement
      * Add contextual emoticons with `Add-EmoticonsToText` -> `emojify`
@@ -84,7 +85,7 @@ Update-Module
 | [EnsureGithubCLIInstalled](#EnsureGithubCLIInstalled) |  | Ensures GitHub CLI is properly installed and configured on the system. |
 | [EnsurePaintNet](#EnsurePaintNet) |  | Ensures Paint.NET is properly installed and accessible on the system. |
 | [EnsureWinMergeInstalled](#EnsureWinMergeInstalled) |  | Ensures WinMerge is installed and available for file comparison operations. |
-| [GenerateMasonryLayoutHtml](#GenerateMasonryLayoutHtml) |  | Generates a responsive masonry layout HTML gallery from image data. |
+| [GenerateMasonryLayoutHtml](#GenerateMasonryLayoutHtml) | nometadata, onlypictures | Generates a responsive masonry layout HTML gallery from image data. |
 | [Get-CpuCore](#Get-CpuCore) |  | Calculates and returns the total number of logical CPU cores in the system. |
 | [Get-HasCapableGpu](#Get-HasCapableGpu) |  | Determines if a CUDA-capable GPU with sufficient memory is present. |
 | [Get-NumberOfCpuCores](#Get-NumberOfCpuCores) |  | Calculates and returns the total number of logical CPU cores in the system. |
@@ -143,8 +144,8 @@ Update-Module
 ### GenXdev.AI.Queries</hr>
 | Command&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | aliases&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Description |
 | --- | --- | --- |
+| [Add-AIImageCollectionDirectory](#Add-AIImageCollectionDirectory) | addimgdir | Adds directories to the configured image directories for GenXdev.AI operations. |
 | [Add-EmoticonsToText](#Add-EmoticonsToText) | emojify | Enhances text by adding contextually appropriate emoticons using AI. |
-| [Add-ImageDirectory](#Add-ImageDirectory) | addimgdir | Adds directories to the configured image directories for GenXdev.AI operations. |
 | [ConvertFrom-CorporateSpeak](#ConvertFrom-CorporateSpeak) | uncorporatize | Converts polite, professional corporate speak into direct, clear language using AI. |
 | [ConvertFrom-DiplomaticSpeak](#ConvertFrom-DiplomaticSpeak) | undiplomatize |  |
 | [ConvertTo-CorporateSpeak](#ConvertTo-CorporateSpeak) | corporatize | Converts direct or blunt text into polite, professional corporate speak using AI. |
@@ -152,10 +153,12 @@ Update-Module
 | [Export-ImageDatabase](#Export-ImageDatabase) | indexcachedimages, inititalize-imagedatabase, recreate-imageindex | Initializes and populates the SQLite database by discovering images directly. |
 | [Find-Image](#Find-Image) | findimages, li | Scans image files for keywords and descriptions using metadata files. |
 | [Find-IndexedImage](#Find-IndexedImage) | findindexedimages, lii | Searches for images using an optimized SQLite database with fast indexed lookups. |
+| [Get-AIImageCollection](#Get-AIImageCollection) | getimgdirs |  |
+| [Get-AIKnownFacesRootpath](#Get-AIKnownFacesRootpath) |  |  |
+| [Get-AIMetaLanguage](#Get-AIMetaLanguage) | getimgmetalang |  |
 | [Get-Fallacy](#Get-Fallacy) | dispicetext | Analyzes text to identify logical fallacies using AI-powered detection. |
 | [Get-ImageDatabasePath](#Get-ImageDatabasePath) |  | Returns the path to the image database, initializing or rebuilding it if needed. |
 | [Get-ImageDatabaseStats](#Get-ImageDatabaseStats) | getimagedbstats, gids | Retrieves comprehensive statistics and information about the image database. |
-| [Get-ImageDirectories](#Get-ImageDirectories) | getimgdirs |  |
 | [Get-MediaFileAudioTranscription](#Get-MediaFileAudioTranscription) | transcribefile | Transcribes an audio or video file to text.. |
 | [Get-ScriptExecutionErrorFixPrompt](#Get-ScriptExecutionErrorFixPrompt) | getfixprompt | Captures error messages from various streams and uses LLM to suggest fixes. |
 | [Get-SimularMovieTitles](#Get-SimularMovieTitles) | moremovietitles | Finds similar movie titles based on common properties. |
@@ -165,13 +168,15 @@ Update-Module
 | [Invoke-ImageObjectsUpdate](#Invoke-ImageObjectsUpdate) | objectdetection | Updates object detection metadata for image files in a specified directory. |
 | [Invoke-ImageScenesUpdate](#Invoke-ImageScenesUpdate) | scenerecognition | Updates scene classification metadata for image files in a specified directory. |
 | [Invoke-QueryImageContent](#Invoke-QueryImageContent) | query-image | Analyzes image content using AI vision capabilities through the LM-Studio API. |
-| [Remove-ImageDirectory](#Remove-ImageDirectory) | removeimgdir | Removes directories from the configured image directories for GenXdev.AI operations. |
+| [Remove-AIImageCollectionDirectory](#Remove-AIImageCollectionDirectory) | removeimgdir | Removes directories from the configured image directories for GenXdev.AI operations. |
 | [Remove-ImageMetaData](#Remove-ImageMetaData) | removeimagedata | Removes image metadata files from image directories. |
+| [Save-FoundImageFaces](#Save-FoundImageFaces) | savefaces | Saves cropped face images from indexed image search results. |
 | [Save-Transcriptions](#Save-Transcriptions) |  | Generates subtitle files for audio and video files using OpenAI Whisper. |
-| [Set-FacesDirectory](#Set-FacesDirectory) |  | Sets the directory for face image files used in GenXdev.AI operations. |
-| [Set-ImageDirectories](#Set-ImageDirectories) |  |  |
+| [Set-AIImageCollection](#Set-AIImageCollection) |  | Sets the directories and default language for image files used in GenXdev.AI operations. |
+| [Set-AIKnownFacesRootpath](#Set-AIKnownFacesRootpath) |  | Sets the directory for face image files used in GenXdev.AI operations. |
+| [Set-AIMetaLanguage](#Set-AIMetaLanguage) |  | Sets the default language and optionally the image directories for GenXdev.AI image metadata operations. |
+| [Show-FoundImagesInBrowser](#Show-FoundImagesInBrowser) | showfoundimages | Displays image search results in a masonry layout web gallery. |
 | [Show-GenXdevScriptErrorFixInIde](#Show-GenXdevScriptErrorFixInIde) | letsfixthis | Parses error messages and fixes them using Github Copilot in VSCode. |
-| [Show-ImageGallery](#Show-ImageGallery) | showfoundimages | Displays image search results in a masonry layout web gallery. |
 | [Start-AudioTranscription](#Start-AudioTranscription) | transcribe, recordandtranscribe |  |
 | [Update-AllImageMetaData](#Update-AllImageMetaData) | updateallimages |  |
 
@@ -505,7 +510,7 @@ SYNOPSIS
     
     
 SYNTAX
-    GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [-Title <String>] [-Description <String>] [-CanEdit] [-CanDelete] [-EmbedImages] [<CommonParameters>]
+    GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [-Title <String>] [-Description <String>] [-CanEdit] [-CanDelete] [-EmbedImages] [-ShowOnlyPictures] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -578,6 +583,15 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -EmbedImages [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowOnlyPictures [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -3399,7 +3413,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Compare-ImageFaces [-ImagePath1] <String> [-ImagePath2] <String> [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Compare-ImageFaces [-ImagePath1] <String> [-ImagePath2] <String> [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -3499,17 +3513,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -FacesPath <String>
-        The path inside the container where faces are stored. This should match the
-        DeepStack configuration. Default is "/datastore".
-        
-        Required?                    false
-        Position?                    9
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -NoDockerInitialize [<SwitchParameter>]
         Skip Docker initialization when this switch is used. This is typically used
         when already called by parent function to avoid duplicate initialization.
@@ -3596,7 +3599,7 @@ SYNOPSIS
     
     
 SYNTAX
-    EnsureDeepStack [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [-Force] [-UseGPU] [<CommonParameters>]
+    EnsureDeepStack [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -3673,16 +3676,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -FacesPath <String>
-        The path inside the container where faces are stored. Default: "/datastore"
-        
-        Required?                    false
-        Position?                    7
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Force [<SwitchParameter>]
         If specified, forces rebuilding of Docker container and removes existing data.
         This will remove existing containers and volumes, pull latest DeepStack image,
@@ -3735,8 +3728,7 @@ NOTES
                     -VolumeName "deepstack_face_data" `
                     -ServicePort 5000 `
                     -HealthCheckTimeout 60 `
-                    -HealthCheckInterval 3 `
-                    -FacesPath "/datastore"
+                    -HealthCheckInterval 3
     
     
     
@@ -3766,7 +3758,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ImageDetectedFaces [-ImagePath] <String> [-ConfidenceThreshold <Double>] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-FacesPath <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Get-ImageDetectedFaces [-ImagePath] <String> [-ConfidenceThreshold <Double>] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -3866,17 +3858,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -FacesPath <String>
-        The path inside the container where faces are stored. This should match the
-        DeepStack configuration. Default is "/datastore".
-        
-        Required?                    false
-        Position?                    named
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -NoDockerInitialize [<SwitchParameter>]
         Skip Docker initialization when this switch is used. This is typically used
         when already called by parent function to avoid duplicate initialization.
@@ -3935,8 +3916,7 @@ NOTES
                            -VolumeName "deepstack_face_data" `
                            -ServicePort 5000 `
                            -HealthCheckTimeout 60 `
-                           -HealthCheckInterval 3 `
-                           -FacesPath "/datastore"
+                           -HealthCheckInterval 3
     Recognizes faces in the specified image using full parameter names.
     
     
@@ -3977,7 +3957,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ImageDetectedObjects [-ImagePath] <String> [-ConfidenceThreshold <Double>] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-FacesPath <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Get-ImageDetectedObjects [-ImagePath] <String> [-ConfidenceThreshold <Double>] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -4077,17 +4057,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -FacesPath <String>
-        The path inside the container where faces are stored. This should match the
-        DeepStack configuration. Default is "/datastore".
-        
-        Required?                    false
-        Position?                    named
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -NoDockerInitialize [<SwitchParameter>]
         Skip Docker initialization when this switch is used. This is typically used
         when already called by parent function to avoid duplicate initialization.
@@ -4182,7 +4151,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ImageDetectedScenes [-ImagePath] <String> [[-ConfidenceThreshold] <Double>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [-ImageName <String>] [-FacesPath <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Get-ImageDetectedScenes [-ImagePath] <String> [[-ConfidenceThreshold] <Double>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [-ImageName <String>] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -4275,28 +4244,6 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -FacesPath <String>
-        The path inside the container where faces are stored. This should match the
-        DeepStack configuration. Default is "/datastore".
-        
-        Required?                    false
-        Position?                    named
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoDockerInitialize [<SwitchParameter>]
-        Skip Docker initialization when this switch is used. This is typically used
-        when already called by parent function to avoid duplicate initialization.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -4450,7 +4397,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-RegisteredFaces [-NoDockerInitialize] [-Force] [-UseGPU] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [<CommonParameters>]
+    Get-RegisteredFaces [-NoDockerInitialize] [-Force] [-UseGPU] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -4562,17 +4509,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -FacesPath <String>
-        The path inside the container where faces are stored. Defaults to "/datastore"
-        if not specified.
-        
-        Required?                    false
-        Position?                    7
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -4638,7 +4574,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageEnhancement [-ImagePath] <String> [[-OutputPath] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-FacesPath <String>] [<CommonParameters>]
+    Invoke-ImageEnhancement [-ImagePath] <String> [[-OutputPath] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -4771,17 +4707,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -FacesPath <String>
-        The path inside the container where faces are stored. This should match the
-        DeepStack configuration. Default is "/datastore".
-        
-        Required?                    false
-        Position?                    named
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -4846,7 +4771,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Register-AllFaces [[-FacesDirectory] <String>] [[-MaxRetries] <Int32>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [-NoDockerInitialize] [-Force] [-RenameFailed] [-ForceRebuild] [-UseGPU] [<CommonParameters>]
+    Register-AllFaces [[-FacesDirectory] <String>] [[-MaxRetries] <Int32>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-NoDockerInitialize] [-Force] [-RenameFailed] [-ForceRebuild] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -4865,7 +4790,7 @@ DESCRIPTION
 PARAMETERS
     -FacesDirectory <String>
         The directory containing face images organized by person folders.
-        If not specified, uses the configured faces directory from Set-FacesDirectory.
+        If not specified, uses the configured faces directory from Set-AIKnownFacesRootpath.
         If no configuration exists, defaults to "b:\media\faces\"
         
         Required?                    false
@@ -4946,16 +4871,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -FacesPath <String>
-        The path inside the container where faces are stored.
-        
-        Required?                    false
-        Position?                    9
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -NoDockerInitialize [<SwitchParameter>]
         Skip Docker Desktop initialization (used when already called by parent
         function).
@@ -5022,8 +4937,7 @@ OUTPUTS
     
     PS > Register-AllFaces -FacesDirectory "b:\media\faces\" -MaxRetries 3 `
         -ContainerName "deepstack_face_recognition" -VolumeName "deepstack_face_data" `
-        -ServicePort 5000 -HealthCheckTimeout 60 -HealthCheckInterval 3 `
-        -FacesPath "/datastore"
+        -ServicePort 5000 -HealthCheckTimeout 60 -HealthCheckInterval 3
     
     
     
@@ -5033,7 +4947,7 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > Register-AllFaces
-    Uses the configured faces directory from Set-FacesDirectory or defaults to "b:\media\faces\"
+    Uses the configured faces directory from Set-AIKnownFacesRootpath or defaults to "b:\media\faces\"
     
     
     
@@ -5062,7 +4976,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Register-Face [-Identifier] <String> [-ImagePath] <String[]> [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-FacesPath <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Register-Face [-Identifier] <String> [-ImagePath] <String[]> [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -5156,16 +5070,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -FacesPath <String>
-        The path inside the container where faces are stored.
-        
-        Required?                    false
-        Position?                    named
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -NoDockerInitialize [<SwitchParameter>]
         Skip Docker initialization (used when already called by parent function).
         
@@ -5246,7 +5150,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Unregister-AllFaces [-Force] [-NoDockerInitialize] [-ForceRebuild] [-UseGPU] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Unregister-AllFaces [-Force] [-NoDockerInitialize] [-ForceRebuild] [-UseGPU] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -5362,16 +5266,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -FacesPath <String>
-        The path inside the container where face data files are stored.
-        
-        Required?                    false
-        Position?                    7
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -WhatIf [<SwitchParameter>]
         
         Required?                    false
@@ -5440,7 +5334,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Unregister-Face [-Identifier] <String> [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Unregister-Face [-Identifier] <String> [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -5516,16 +5410,6 @@ PARAMETERS
         Required?                    false
         Position?                    7
         Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -FacesPath <String>
-        The path inside the container where faces are stored.
-        
-        Required?                    false
-        Position?                    8
-        Default value                /datastore
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -6518,6 +6402,92 @@ RELATED LINKS
 &nbsp;<hr/>
 ###	GenXdev.AI.Queries<hr/> 
 NAME
+    Add-AIImageCollectionDirectory
+    
+SYNOPSIS
+    Adds directories to the configured image directories for GenXdev.AI operations.
+    
+    
+SYNTAX
+    Add-AIImageCollectionDirectory [-ImageDirectories] <String[]> [-WhatIf] [-Confirm] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function adds one or more directory paths to the existing image directories
+    configuration used by the GenXdev.AI module. It updates both the global variable
+    and the module's preference storage to persist the configuration across sessions.
+    Duplicate directories are automatically filtered out to prevent configuration
+    redundancy. Paths are expanded to handle relative paths and environment
+    variables automatically.
+    
+
+PARAMETERS
+    -ImageDirectories <String[]>
+        An array of directory paths to add to the existing image directories
+        configuration. Paths can be relative or absolute and will be expanded
+        automatically. Duplicates are filtered out using case-insensitive comparison.
+        
+        Required?                    true
+        Position?                    1
+        Default value                
+        Accept pipeline input?       true (ByValue)
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WhatIf [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Confirm [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Add-AIImageCollectionDirectory -ImageDirectories @("C:\NewPhotos", "D:\MoreImages")
+    
+    Adds the specified directories to the existing image directories configuration
+    using full parameter names.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > addimgdir @("C:\Temp\Photos", "E:\Backup\Images")
+    
+    Uses alias to add multiple directories to the configuration with positional
+    parameters.
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
     Add-EmoticonsToText
     
 SYNOPSIS
@@ -6689,92 +6659,6 @@ OUTPUTS
     PS > "Time to celebrate!" | emojify
     
     
-    
-    
-    
-    
-    
-RELATED LINKS 
-
-<br/><hr/><hr/><br/>
- 
-NAME
-    Add-ImageDirectory
-    
-SYNOPSIS
-    Adds directories to the configured image directories for GenXdev.AI operations.
-    
-    
-SYNTAX
-    Add-ImageDirectory [-ImageDirectories] <String[]> [-WhatIf] [-Confirm] [<CommonParameters>]
-    
-    
-DESCRIPTION
-    This function adds one or more directory paths to the existing image directories
-    configuration used by the GenXdev.AI module. It updates both the global variable
-    and the module's preference storage to persist the configuration across sessions.
-    Duplicate directories are automatically filtered out to prevent configuration
-    redundancy. Paths are expanded to handle relative paths and environment
-    variables automatically.
-    
-
-PARAMETERS
-    -ImageDirectories <String[]>
-        An array of directory paths to add to the existing image directories
-        configuration. Paths can be relative or absolute and will be expanded
-        automatically. Duplicates are filtered out using case-insensitive comparison.
-        
-        Required?                    true
-        Position?                    1
-        Default value                
-        Accept pipeline input?       true (ByValue)
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -WhatIf [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Confirm [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    <CommonParameters>
-        This cmdlet supports the common parameters: Verbose, Debug,
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
-    
-INPUTS
-    
-OUTPUTS
-    
-    -------------------------- EXAMPLE 1 --------------------------
-    
-    PS > Add-ImageDirectory -ImageDirectories @("C:\NewPhotos", "D:\MoreImages")
-    
-    Adds the specified directories to the existing image directories configuration
-    using full parameter names.
-    
-    
-    
-    
-    -------------------------- EXAMPLE 2 --------------------------
-    
-    PS > addimgdir @("C:\Temp\Photos", "E:\Backup\Images")
-    
-    Uses alias to add multiple directories to the configuration with positional
-    parameters.
     
     
     
@@ -7523,7 +7407,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Export-ImageDatabase [[-InputObject] <Object[]>] [-DatabaseFilePath <String>] [-ImageDirectories <String[]>] [-EmbedImages] [<CommonParameters>]
+    Export-ImageDatabase [[-InputObject] <Object[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -7551,7 +7435,7 @@ PARAMETERS
         under Storage\allimages.meta.db.
         
         Required?                    false
-        Position?                    named
+        Position?                    1
         Default value                
         Accept pipeline input?       false
         Aliases                      
@@ -7559,7 +7443,34 @@ PARAMETERS
         
     -ImageDirectories <String[]>
         Array of directory paths to search for images. If not specified, uses the
-        configured image directories from Get-ImageDirectories.
+        configured image directories from Get-AIImageCollection.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PathLike <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesDirectory <String>
         
         Required?                    false
         Position?                    named
@@ -7570,6 +7481,33 @@ PARAMETERS
         
     -EmbedImages [<SwitchParameter>]
         Embed images directly into the database.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ForceIndexRebuild [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoFallback [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NeverRebuild [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -7615,7 +7553,7 @@ NAME
     Find-Image
     
 SYNTAX
-    Find-Image [[-Any] <string[]>] [-DescriptionSearch <string[]>] [-Keywords <string[]>] [-People <string[]>] [-Objects <string[]>] [-Scenes <string[]>] [-ImageDirectories <string[]>] [-InputObject <Object[]>] [-PictureType <string[]>] [-StyleType <string[]>] [-OverallMood <string[]>] [-Title <string>] [-Description <string>] [-Language {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [-AcceptLang <string>] [-Monitor <int>] [-Width <int>] [-Height <int>] [-X <int>] [-Y <int>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowImageGallery] [-PassThru] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [-PathLike <string[]>] [<CommonParameters>]
+    Find-Image [[-DatabaseFilePath] <string>] [-ImageDirectories <string[]>] [-PathLike <string[]>] [-Language {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bork, bork, bork! | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | Elmer Fudd | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Hacker | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Klingon | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Pirate | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [-FacesDirectory <string>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-DescriptionSearch <string[]>] [-Keywords <string[]>] [-People <string[]>] [-Objects <string[]>] [-Scenes <string[]>] [-InputObject <Object[]>] [-PictureType <string[]>] [-StyleType <string[]>] [-OverallMood <string[]>] [-Title <string>] [-Description <string>] [-AcceptLang <string>] [-Monitor <int>] [-Width <int>] [-Height <int>] [-X <int>] [-Y <int>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-ShowOnlyPictures] [<CommonParameters>]
     
     
 PARAMETERS
@@ -7707,6 +7645,17 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -DatabaseFilePath <string>
+        The path to the image database file. If not specified, a default path is used.
+        
+        Required?                    false
+        Position?                    0
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -Description <string>
         Description for the gallery
         
@@ -7752,7 +7701,18 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -EmbedImages
-        Embed images as base64 data URLs instead of file:// URLs for better portability.
+        Embed images as base64.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -FacesDirectory <string>
+        The directory containing face images organized by person folders. If not specified, uses the configured faces directory preference.
         
         Required?                    false
         Position?                    Named
@@ -7775,6 +7735,17 @@ PARAMETERS
         
     -Force
         Force enable debugging port, stopping existing browsers if needed
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -ForceIndexRebuild
+        Force rebuild of the image index database.
         
         Required?                    false
         Position?                    Named
@@ -7829,13 +7800,13 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ImageDirectories <string[]>
-        The image directory paths to search.
+        Array of directory paths to search for images
         
         Required?                    false
         Position?                    Named
         Accept pipeline input?       false
         Parameter set name           (All)
-        Aliases                      ImageDirectory
+        Aliases                      imagespath, directories, imgdirs, imagedirectory
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -7851,7 +7822,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Interactive
-        Will connect to browser and adds additional buttons like Edit and Delete. Only effective when used with -ShowImageGallery.
+        Will connect to browser and adds additional buttons like Edit and Delete. Only effective when used with -ShowInBrowser.
         
         Required?                    false
         Position?                    Named
@@ -7873,7 +7844,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Language <string>
-        The language for retrieving descriptions and keywords.
+        Language for descriptions and keywords.
         
         Required?                    false
         Position?                    Named
@@ -7905,6 +7876,17 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -NeverRebuild
+        Switch to skip database initialization and rebuilding.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -NewWindow
         Don't re-use existing browser window, instead, create a new one
         
@@ -7929,6 +7911,17 @@ PARAMETERS
         
     -NoExplicitContent
         Filter images that do NOT contain explicit content.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoFallback
+        Switch to disable fallback behavior.
         
         Required?                    false
         Position?                    Named
@@ -7983,7 +7976,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -PassThru
-        Return image data as objects. When used with -ShowImageGallery, both displays the gallery and returns the objects.
+        Return image data as objects. When used with -ShowInBrowser, both displays the gallery and returns the objects.
         
         Required?                    false
         Position?                    Named
@@ -7994,7 +7987,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -PathLike <string[]>
-        Array of path-like patterns to filter image files (wildcards allowed).
+        Array of directory path-like search strings to filter images by path (SQL LIKE patterns, e.g. '%\\2024\\%')
         
         Required?                    false
         Position?                    Named
@@ -8070,7 +8063,7 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
-    -ShowImageGallery
+    -ShowInBrowser
         Display the search results in a browser-based image gallery.
         
         Required?                    false
@@ -8078,6 +8071,17 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      show, s
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -ShowOnlyPictures
+        Show only pictures in a rounded rectangle, no text below.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      NoMetadata, OnlyPictures
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -8182,7 +8186,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Find-IndexedImage [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-DatabaseFilePath <String>] [-ShowImageGallery] [-PassThru] [-Title <String>] [-Description <String>] [-Language <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ForceIndexRebuild] [-PathLike <String[]>] [-InputObject <Object[]>] [<CommonParameters>]
+    Find-IndexedImage [[-Any] <String[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-InputObject <Object[]>] [-ShowOnlyPictures] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -8198,6 +8202,94 @@ PARAMETERS
         Required?                    false
         Position?                    1
         Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DatabaseFilePath <String>
+        Optional path to the SQLite database file. If not specified, uses the default
+        location under Storage\allimages.meta.db.
+        
+        Required?                    false
+        Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDirectories <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PathLike <String[]>
+        Array of directory path-like search strings to filter images by path (SQL LIKE
+        patterns, e.g. '%\2024\%').
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        The language for retrieving descriptions and keywords.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesDirectory <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EmbedImages [<SwitchParameter>]
+        Switch to embed images as base64 data URLs instead of file:// URLs.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ForceIndexRebuild [<SwitchParameter>]
+        Force rebuild of the image index database.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoFallback [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NeverRebuild [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -8329,18 +8421,7 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -DatabaseFilePath <String>
-        Optional path to the SQLite database file. If not specified, uses the default
-        location under Storage\allimages.meta.db.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ShowImageGallery [<SwitchParameter>]
+    -ShowInBrowser [<SwitchParameter>]
         Switch to display the search results in a browser-based masonry layout gallery.
         
         Required?                    false
@@ -8376,16 +8457,6 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Language <String>
-        The language for retrieving descriptions and keywords.
-        
-        Required?                    false
-        Position?                    named
-        Default value                English
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -8650,43 +8721,21 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -EmbedImages [<SwitchParameter>]
-        Switch to embed images as base64 data URLs instead of file:// URLs.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ForceIndexRebuild [<SwitchParameter>]
-        Force rebuild of the image index database.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -PathLike <String[]>
-        Array of directory path-like search strings to filter images by path (SQL LIKE
-        patterns, e.g. '%\2024\%').
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -InputObject <Object[]>
         
         Required?                    false
         Position?                    named
         Default value                
         Accept pipeline input?       true (ByValue)
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowOnlyPictures [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
@@ -8708,7 +8757,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Find-IndexedImage -Keywords "cat","dog" -ShowImageGallery -NoNudity
+    PS > Find-IndexedImage -Keywords "cat","dog" -ShowInBrowser -NoNudity
     
     
     
@@ -8717,7 +8766,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > lii "cat","dog" -ShowImageGallery -NoNudity
+    PS > lii "cat","dog" -ShowInBrowser -NoNudity
     
     
     
@@ -8726,6 +8775,162 @@ OUTPUTS
     
     
 RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Get-AIImageCollection
+    
+SYNOPSIS
+    Gets the configured directories and default language for image files used in
+    GenXdev.AI operations.
+    
+    
+SYNTAX
+    Get-AIImageCollection [[-ImageDirectories] <String[]>] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function retrieves the global image directories and default language used
+    by the GenXdev.AI module for various image processing and AI operations. It
+    returns the configuration from both global variables and the module's
+    preference storage, with fallback to system defaults.
+    
+
+PARAMETERS
+    -ImageDirectories <String[]>
+        
+        Required?                    false
+        Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Get-AIImageCollection
+    
+    Returns the configured image directories and default language, or system
+    defaults if none are configured.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > $config = Get-AIImageCollection -DefaultValue @("C:\MyImages")
+    
+    Returns configured directories or the specified default if none are configured.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > getimgdirs
+    
+    Uses alias to get the current image directory configuration.
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Get-AIKnownFacesRootpath
+    
+SYNTAX
+    Get-AIKnownFacesRootpath [[-FacesDirectory] <string>] [<CommonParameters>]
+    
+    
+PARAMETERS
+    -FacesDirectory <string>
+        Directory path for face image files
+        
+        Required?                    false
+        Position?                    0
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+    
+INPUTS
+    None
+    
+    
+OUTPUTS
+    System.Object
+    
+ALIASES
+    None
+    
+
+REMARKS
+    None 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Get-AIMetaLanguage
+    
+SYNTAX
+    Get-AIMetaLanguage [[-Language] {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [<CommonParameters>]
+    
+    
+PARAMETERS
+    -Language <string>
+        The default language for image metadata operations
+        
+        Required?                    false
+        Position?                    0
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+    
+INPUTS
+    None
+    
+    
+OUTPUTS
+    System.Object
+    
+ALIASES
+    getimgmetalang
+    
+
+REMARKS
+    None 
 
 <br/><hr/><hr/><br/>
  
@@ -9040,7 +9245,7 @@ NAME
     Get-ImageDatabasePath
     
 SYNTAX
-    Get-ImageDatabasePath [[-DatabaseFilePath] <string>] [-ImageDirectories <string[]>] [-PathLike <string[]>] [-Language <string>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [<CommonParameters>]
+    Get-ImageDatabasePath [[-DatabaseFilePath] <string>] [-ImageDirectories <string[]>] [-PathLike <string[]>] [-Language {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bork, bork, bork! | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | Elmer Fudd | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Hacker | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Klingon | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Pirate | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [-FacesDirectory <string>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [<CommonParameters>]
     
     
 PARAMETERS
@@ -9057,6 +9262,17 @@ PARAMETERS
         
     -EmbedImages
         Embed images as base64.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -FacesDirectory <string>
+        The directory containing face images organized by person folders. If not specified, uses the configured faces directory preference.
         
         Required?                    false
         Position?                    Named
@@ -9084,7 +9300,7 @@ PARAMETERS
         Position?                    Named
         Accept pipeline input?       false
         Parameter set name           (All)
-        Aliases                      None
+        Aliases                      imagespath, directories, imgdirs, imagedirectory
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -9164,7 +9380,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ImageDatabaseStats [[-DatabaseFilePath] <String>] [-ShowDetails] [<CommonParameters>]
+    Get-ImageDatabaseStats [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-ShowDetails] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -9181,6 +9397,60 @@ PARAMETERS
         Required?                    false
         Position?                    1
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDirectories <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PathLike <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesDirectory <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EmbedImages [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ForceIndexRebuild [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9219,81 +9489,6 @@ OUTPUTS
     PS > Get-ImageDatabaseStat -ShowDetails
     
     
-    
-    
-    
-    
-    
-RELATED LINKS 
-
-<br/><hr/><hr/><br/>
- 
-NAME
-    Get-ImageDirectories
-    
-SYNOPSIS
-    Gets the configured directories and default language for image files used in
-    GenXdev.AI operations.
-    
-    
-SYNTAX
-    Get-ImageDirectories [[-DefaultValue] <String[]>] [<CommonParameters>]
-    
-    
-DESCRIPTION
-    This function retrieves the global image directories and default language used
-    by the GenXdev.AI module for various image processing and AI operations. It
-    returns the configuration from both global variables and the module's
-    preference storage, with fallback to system defaults.
-    
-
-PARAMETERS
-    -DefaultValue <String[]>
-        Optional default value to return if no image directories are configured. If
-        not specified, returns the system default directories (Downloads, OneDrive,
-        Pictures).
-        
-        Required?                    false
-        Position?                    1
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    <CommonParameters>
-        This cmdlet supports the common parameters: Verbose, Debug,
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
-    
-INPUTS
-    
-OUTPUTS
-    
-    -------------------------- EXAMPLE 1 --------------------------
-    
-    PS > Get-ImageDirectories
-    
-    Returns the configured image directories and default language, or system
-    defaults if none are configured.
-    
-    
-    
-    
-    -------------------------- EXAMPLE 2 --------------------------
-    
-    PS > $config = Get-ImageDirectories -DefaultValue @("C:\MyImages")
-    
-    Returns configured directories or the specified default if none are configured.
-    
-    
-    
-    
-    -------------------------- EXAMPLE 3 --------------------------
-    
-    PS > getimgdirs
-    
-    Uses alias to get the current image directory configuration.
     
     
     
@@ -10314,7 +10509,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageFacesUpdate [[-ImageDirectory] <String>] [[-ImageName] <String>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-FacesPath] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Invoke-ImageFacesUpdate [[-AIImageCollectionDirectory] <String>] [[-ImageName] <String>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -10325,7 +10520,7 @@ DESCRIPTION
     
 
 PARAMETERS
-    -ImageDirectory <String>
+    -AIImageCollectionDirectory <String>
         The directory path containing images to process. Can be relative or absolute.
         Default is the current directory.
         
@@ -10363,16 +10558,6 @@ PARAMETERS
         Required?                    false
         Position?                    4
         Default value                deepstack_face_data
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -FacesPath <String>
-        The path inside the container where faces are stored. Default is "/datastore".
-        
-        Required?                    false
-        Position?                    5
-        Default value                /datastore
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -10481,7 +10666,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Invoke-ImageFacesUpdate -ImageDirectory "C:\Photos" -Recurse
+    PS > Invoke-ImageFacesUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse
     
     
     
@@ -10510,7 +10695,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageKeywordUpdate [[-ImageDirectory] <String>] [[-Recurse]] [[-OnlyNew]] [[-RetryFailed]] [[-Language] <String>] [<CommonParameters>]
+    Invoke-ImageKeywordUpdate [[-AIImageCollectionDirectory] <String>] [[-Recurse]] [[-OnlyNew]] [[-RetryFailed]] [[-Language] <String>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -10521,7 +10706,7 @@ DESCRIPTION
     
 
 PARAMETERS
-    -ImageDirectory <String>
+    -AIImageCollectionDirectory <String>
         Specifies the directory containing images to process. Defaults to current
         directory if not specified.
         
@@ -10587,7 +10772,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Invoke-ImageKeywordUpdate -ImageDirectory "C:\Photos" -Recurse -OnlyNew
+    PS > Invoke-ImageKeywordUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse -OnlyNew
     
     
     
@@ -10616,7 +10801,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageObjectsUpdate [[-ImageDirectory] <String>] [[-ConfidenceThreshold] <Double>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-FacesPath <String>] [<CommonParameters>]
+    Invoke-ImageObjectsUpdate [[-AIImageCollectionDirectory] <String>] [[-ConfidenceThreshold] <Double>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -10628,7 +10813,7 @@ DESCRIPTION
     
 
 PARAMETERS
-    -ImageDirectory <String>
+    -AIImageCollectionDirectory <String>
         The directory path containing images to process. Can be relative or absolute
         path. Default is the current directory.
         
@@ -10782,17 +10967,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -FacesPath <String>
-        The path inside the container where faces and detection data are stored.
-        Default is "/datastore" which matches DeepStack's expected structure.
-        
-        Required?                    false
-        Position?                    named
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -10805,7 +10979,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Invoke-ImageObjectsUpdate -ImageDirectory "C:\Photos" -Recurse
+    PS > Invoke-ImageObjectsUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse
     
     This example processes all images in C:\Photos and all subdirectories using
     default settings with 0.5 confidence threshold.
@@ -10825,7 +10999,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 3 --------------------------
     
-    PS > Invoke-ImageObjectsUpdate -ImageDirectory "C:\Photos" -UseGPU `
+    PS > Invoke-ImageObjectsUpdate -AIImageCollectionDirectory "C:\Photos" -UseGPU `
         -ConfidenceThreshold 0.7
     
     This example uses GPU acceleration with higher confidence threshold of 0.7
@@ -10847,7 +11021,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageScenesUpdate [[-ImageDirectory] <String>] [[-ImageName] <String>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-FacesPath] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ConfidenceThreshold] <Double>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Invoke-ImageScenesUpdate [[-AIImageCollectionDirectory] <String>] [[-ImageName] <String>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ConfidenceThreshold] <Double>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -10859,7 +11033,7 @@ DESCRIPTION
     
 
 PARAMETERS
-    -ImageDirectory <String>
+    -AIImageCollectionDirectory <String>
         The directory path containing images to process. Can be relative or absolute
         path. Default is the current directory.
         
@@ -10903,23 +11077,12 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -FacesPath <String>
-        The path inside the container where face data is stored. This should match
-        the DeepStack configuration. Default is "/datastore".
-        
-        Required?                    false
-        Position?                    5
-        Default value                /datastore
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -ServicePort <Int32>
         The port number for the DeepStack service to listen on. Must be between
         1 and 65535. Default is 5000.
         
         Required?                    false
-        Position?                    6
+        Position?                    5
         Default value                5000
         Accept pipeline input?       false
         Aliases                      
@@ -10930,7 +11093,7 @@ PARAMETERS
         Must be between 10 and 300 seconds. Default is 60.
         
         Required?                    false
-        Position?                    7
+        Position?                    6
         Default value                60
         Accept pipeline input?       false
         Aliases                      
@@ -10941,7 +11104,7 @@ PARAMETERS
         startup. Must be between 1 and 10 seconds. Default is 3.
         
         Required?                    false
-        Position?                    8
+        Position?                    7
         Default value                3
         Accept pipeline input?       false
         Aliases                      
@@ -10950,7 +11113,7 @@ PARAMETERS
     -ConfidenceThreshold <Double>
         
         Required?                    false
-        Position?                    9
+        Position?                    8
         Default value                0
         Accept pipeline input?       false
         Aliases                      
@@ -11043,7 +11206,7 @@ NOTES
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Invoke-ImageScenesUpdate -ImageDirectory "C:\Photos" -Recurse
+    PS > Invoke-ImageScenesUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse
     
     Processes all images in C:\Photos and subdirectories for scene classification.
     
@@ -11061,7 +11224,7 @@ NOTES
     
     -------------------------- EXAMPLE 3 --------------------------
     
-    PS > Invoke-ImageScenesUpdate -ImageDirectory ".\MyImages" -Force -UseGPU
+    PS > Invoke-ImageScenesUpdate -AIImageCollectionDirectory ".\MyImages" -Force -UseGPU
     
     Forces container rebuild and uses GPU acceleration for faster processing.
     
@@ -11070,7 +11233,7 @@ NOTES
     
     -------------------------- EXAMPLE 4 --------------------------
     
-    PS > Invoke-ImageScenesUpdate -ImageDirectory "C:\Photos" -ConfidenceThreshold 0.6 -Recurse
+    PS > Invoke-ImageScenesUpdate -AIImageCollectionDirectory "C:\Photos" -ConfidenceThreshold 0.6 -Recurse
     
     Processes all images recursively and only stores scene classifications with confidence >= 60%.
     
@@ -11322,14 +11485,14 @@ RELATED LINKS
 <br/><hr/><hr/><br/>
  
 NAME
-    Remove-ImageDirectory
+    Remove-AIImageCollectionDirectory
     
 SYNOPSIS
     Removes directories from the configured image directories for GenXdev.AI operations.
     
     
 SYNTAX
-    Remove-ImageDirectory [-ImageDirectories] <String[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Remove-AIImageCollectionDirectory [-ImageDirectories] <String[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -11349,7 +11512,7 @@ PARAMETERS
         Default value                
         Accept pipeline input?       true (ByValue)
         Aliases                      
-        Accept wildcard characters?  true
+        Accept wildcard characters?  false
         
     -Force [<SwitchParameter>]
         Forces removal without confirmation prompts.
@@ -11391,7 +11554,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Remove-ImageDirectory -ImageDirectories @("C:\OldPhotos", "D:\TempImages")
+    PS > Remove-AIImageCollectionDirectory -ImageDirectories @("C:\OldPhotos", "D:\TempImages")
     
     Removes the specified directories from the image directories configuration.
     
@@ -11400,7 +11563,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > Remove-ImageDirectory "C:\Temp\*"
+    PS > Remove-AIImageCollectionDirectory "C:\Temp\*"
     
     Removes all directories that match the wildcard pattern.
     
@@ -11614,6 +11777,9 @@ RELATED LINKS
 
 <br/><hr/><hr/><br/>
  
+
+<br/><hr/><hr/><br/>
+ 
 NAME
     Save-Transcriptions
     
@@ -11712,14 +11878,101 @@ RELATED LINKS
 <br/><hr/><hr/><br/>
  
 NAME
-    Set-FacesDirectory
+    Set-AIImageCollection
+    
+SYNOPSIS
+    Sets the directories and default language for image files used in GenXdev.AI operations.
+    
+    
+SYNTAX
+    Set-AIImageCollection [-ImageDirectories] <String[]> [[-Language] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function configures the global image directories and default language used by the GenXdev.AI module for various image processing and AI operations. It updates both the global variables and the module's preference storage to persist the configuration across sessions.
+    
+
+PARAMETERS
+    -ImageDirectories <String[]>
+        An array of directory paths where image files are located. These directories will be used by GenXdev.AI functions for image discovery and processing operations.
+        
+        Required?                    true
+        Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        The default language to use for image metadata operations. This will be used by Remove-ImageMetaData, Update-AllImageMetaData, and Find-Image functions when no language is explicitly specified.
+        
+        Required?                    false
+        Position?                    2
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WhatIf [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Confirm [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Set-AIImageCollection -ImageDirectories @("C:\Images", "D:\Photos") -Language "Spanish"
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Set-AIImageCollection @("C:\Pictures", "E:\Graphics\Stock") "French"
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Set-AIKnownFacesRootpath
     
 SYNOPSIS
     Sets the directory for face image files used in GenXdev.AI operations.
     
     
 SYNTAX
-    Set-FacesDirectory [-FacesDirectory] <String> [-WhatIf] [-Confirm] [<CommonParameters>]
+    Set-AIKnownFacesRootpath [-FacesDirectory] <String> [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -11772,7 +12025,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Set-FacesDirectory -FacesDirectory "C:\Faces"
+    PS > Set-AIKnownFacesRootpath -FacesDirectory "C:\Faces"
     
     
     
@@ -11781,7 +12034,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > Set-FacesDirectory "C:\FacePictures"
+    PS > Set-AIKnownFacesRootpath "C:\FacePictures"
     
     
     
@@ -11794,29 +12047,23 @@ RELATED LINKS
 <br/><hr/><hr/><br/>
  
 NAME
-    Set-ImageDirectories
+    Set-AIMetaLanguage
     
 SYNOPSIS
-    Sets the directories and default language for image files used in GenXdev.AI
-    operations.
+    Sets the default language and optionally the image directories for GenXdev.AI image metadata operations.
     
     
 SYNTAX
-    Set-ImageDirectories [-ImageDirectories] <String[]> [[-Language] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Set-AIMetaLanguage [-Language] <String> [[-ImageDirectories] <String[]>] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function configures the global image directories and default language
-    used by the GenXdev.AI module for various image processing and AI operations.
-    It updates both the global variables and the module's preference storage to
-    persist the configuration across sessions.
+    This function configures the global default language for image metadata operations in the GenXdev.AI module. Optionally, it can also set the global image directories. Both settings are persisted in the module's preference storage for use across sessions.
     
 
 PARAMETERS
-    -ImageDirectories <String[]>
-        An array of directory paths where image files are located. These directories
-        will be used by GenXdev.AI functions for image discovery and processing
-        operations.
+    -Language <String>
+        The default language to use for image metadata operations. This will be used by Remove-ImageMetaData, Update-AllImageMetaData, and Find-Image functions when no language is explicitly specified.
         
         Required?                    true
         Position?                    1
@@ -11825,14 +12072,12 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Language <String>
-        The default language to use for image metadata operations. This will be used
-        by Remove-ImageMetaData, Update-AllImageMetaData, and Find-Image functions
-        when no language is explicitly specified.
+    -ImageDirectories <String[]>
+        An optional array of directory paths where image files are located. These directories will be used by GenXdev.AI functions for image discovery and processing operations if provided.
         
         Required?                    false
         Position?                    2
-        Default value                English
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -11867,7 +12112,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Set-ImageDirectories -ImageDirectories @("C:\Images", "D:\Photos") -Language "Spanish"
+    PS > Set-AIMetaLanguage -Language "Spanish" -ImageDirectories @("C:\Images", "D:\Photos")
     
     
     
@@ -11876,16 +12121,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > Set-ImageDirectories @("C:\Pictures", "E:\Graphics\Stock") "French"
-    
-    
-    
-    
-    
-    
-    -------------------------- EXAMPLE 3 --------------------------
-    
-    PS > Set-ImageDirectories @("C:\Pictures")
+    PS > Set-AIMetaLanguage "French"
     
     
     
@@ -11898,260 +12134,14 @@ RELATED LINKS
 <br/><hr/><hr/><br/>
  
 NAME
-    Show-GenXdevScriptErrorFixInIde
-    
-SYNOPSIS
-    Parses error messages and fixes them using Github Copilot in VSCode.
-    
-    
-SYNTAX
-    Show-GenXdevScriptErrorFixInIde [-Script] <ScriptBlock> [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>]
-    
-    
-DESCRIPTION
-    This function analyzes error messages from any input source, identifies
-    files that need attention, and opens them in Visual Studio Code with appropriate
-    Github Copilot prompts to assist in fixing the issues.
-    
-
-PARAMETERS
-    -Script <ScriptBlock>
-        
-        Required?                    true
-        Position?                    1
-        Default value                
-        Accept pipeline input?       true (ByValue)
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Model <String>
-        The LM-Studio model to use for error analysis. Defaults to "qwen2.5-14b-instruct".
-        
-        Required?                    false
-        Position?                    2
-        Default value                qwen2.5-14b-instruct
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        Identifier used for getting specific model from LM Studio.
-        
-        Required?                    false
-        Position?                    3
-        Default value                qwen2.5-14b-instruct
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Temperature <Double>
-        Temperature setting for response randomness (0.0-1.0).
-        
-        Required?                    false
-        Position?                    named
-        Default value                0.2
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxToken <Int32>
-        Maximum tokens allowed in response (-1 for default).
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ShowWindow [<SwitchParameter>]
-        If specified, shows the LM Studio window during processing.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        Set a TTL (in seconds) for models loaded via API requests.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Gpu <Int32>
-        GPU offloading configuration:
-        - "off": GPU offloading disabled
-        - "max": All layers offloaded to GPU
-        - 0-1: Fraction of layers offloaded
-        - -1: LM Studio decides offloading
-        - -2: Auto configure
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Force [<SwitchParameter>]
-        Force stop LM Studio before initialization.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -DontAddThoughtsToHistory [<SwitchParameter>]
-        Skip including model's thoughts in output.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ContinueLast [<SwitchParameter>]
-        Continue from last conversation.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Functions <Hashtable[]>
-        Array of function definitions.
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ExposedCmdLets <ExposedCmdletDefinition[]>
-        Array of PowerShell command definitions to use as tools.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoConfirmationToolFunctionNames <String[]>
-        Array of command names that don't require confirmation.
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Speak [<SwitchParameter>]
-        Enable text-to-speech for AI responses.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -SpeakThoughts [<SwitchParameter>]
-        Enable text-to-speech for AI thought responses.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoSessionCaching [<SwitchParameter>]
-        Don't store session in session cache.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ApiEndpoint <String>
-        Api endpoint url, defaults to http://localhost:1234/v1/chat/completions.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ApiKey <String>
-        The API key for authentication.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    <CommonParameters>
-        This cmdlet supports the common parameters: Verbose, Debug,
-        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
-        OutBuffer, PipelineVariable, and OutVariable. For more information, see
-        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
-    
-INPUTS
-    
-OUTPUTS
-    
-    -------------------------- EXAMPLE 1 --------------------------
-    
-    PS > Show-GenXdevScriptErrorFixInIde -Model "qwen2.5-14b-instruct" -Script {
-    
-    Run-ErrorousScript
-    }
-    
-    
-    
-    
-    -------------------------- EXAMPLE 2 --------------------------
-    
-    PS > $errorOutput | letsfixthis
-    
-    
-    
-    
-    
-    
-    
-RELATED LINKS 
-
-<br/><hr/><hr/><br/>
- 
-NAME
-    Show-ImageGallery
+    Show-FoundImagesInBrowser
     
 SYNOPSIS
     Displays image search results in a masonry layout web gallery.
     
     
 SYNTAX
-    Show-ImageGallery [-InputObject] <Object[]> [-Interactive] [-Title <String>] [-Description <String>] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-Monitor <Int32>] [-FullScreen] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-AcceptLang <String>] [-RestoreFocus] [-NoNewWindow] [-OnlyReturnHtml] [-EmbedImages] [<CommonParameters>]
+    Show-FoundImagesInBrowser [-InputObject] <Object[]> [-Interactive] [-Title <String>] [-Description <String>] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-Monitor <Int32>] [-FullScreen] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-AcceptLang <String>] [-RestoreFocus] [-NoNewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ShowOnlyPictures] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -12468,6 +12458,16 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ShowOnlyPictures [<SwitchParameter>]
+        Show only pictures in a rounded rectangle, no text below.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -12480,7 +12480,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > $images | Show-ImageGallery
+    PS > $images | Show-FoundImagesInBrowser
     Displays the image results in a simple web gallery.
     
     
@@ -12490,7 +12490,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > $images | Show-ImageGallery -Interactive -Title "My Photos"
+    PS > $images | Show-FoundImagesInBrowser -Interactive -Title "My Photos"
     Displays images in interactive mode with edit/delete buttons.
     
     
@@ -12502,6 +12502,252 @@ OUTPUTS
     
     PS > showfoundimages $images -Private -FullScreen
     Opens the gallery in private browsing mode in fullscreen.
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Show-GenXdevScriptErrorFixInIde
+    
+SYNOPSIS
+    Parses error messages and fixes them using Github Copilot in VSCode.
+    
+    
+SYNTAX
+    Show-GenXdevScriptErrorFixInIde [-Script] <ScriptBlock> [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function analyzes error messages from any input source, identifies
+    files that need attention, and opens them in Visual Studio Code with appropriate
+    Github Copilot prompts to assist in fixing the issues.
+    
+
+PARAMETERS
+    -Script <ScriptBlock>
+        
+        Required?                    true
+        Position?                    1
+        Default value                
+        Accept pipeline input?       true (ByValue)
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The LM-Studio model to use for error analysis. Defaults to "qwen2.5-14b-instruct".
+        
+        Required?                    false
+        Position?                    2
+        Default value                qwen2.5-14b-instruct
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  true
+        
+    -ModelLMSGetIdentifier <String>
+        Identifier used for getting specific model from LM Studio.
+        
+        Required?                    false
+        Position?                    3
+        Default value                qwen2.5-14b-instruct
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Temperature <Double>
+        Temperature setting for response randomness (0.0-1.0).
+        
+        Required?                    false
+        Position?                    named
+        Default value                0.2
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        Maximum tokens allowed in response (-1 for default).
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
+        If specified, shows the LM Studio window during processing.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        Set a TTL (in seconds) for models loaded via API requests.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        GPU offloading configuration:
+        - "off": GPU offloading disabled
+        - "max": All layers offloaded to GPU
+        - 0-1: Fraction of layers offloaded
+        - -1: LM Studio decides offloading
+        - -2: Auto configure
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Force stop LM Studio before initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        Skip including model's thoughts in output.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        Continue from last conversation.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <Hashtable[]>
+        Array of function definitions.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        Array of PowerShell command definitions to use as tools.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        Array of command names that don't require confirmation.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Speak [<SwitchParameter>]
+        Enable text-to-speech for AI responses.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SpeakThoughts [<SwitchParameter>]
+        Enable text-to-speech for AI thought responses.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSessionCaching [<SwitchParameter>]
+        Don't store session in session cache.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        Api endpoint url, defaults to http://localhost:1234/v1/chat/completions.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key for authentication.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Show-GenXdevScriptErrorFixInIde -Model "qwen2.5-14b-instruct" -Script {
+    
+    Run-ErrorousScript
+    }
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > $errorOutput | letsfixthis
     
     
     
@@ -12962,7 +13208,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Update-AllImageMetaData [[-ImageDirectories] <String[]>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-FacesPath] <String>] [[-ConfidenceThreshold] <Double>] [[-Language] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-ApiEndpoint] <String>] [[-ApiKey] <String>] [[-TimeoutSeconds] <Int32>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-RetryFailed] [-RedoAll] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [-PassThru] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Update-AllImageMetaData [[-ImageDirectories] <String[]>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-ConfidenceThreshold] <Double>] [[-Language] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-ApiEndpoint] <String>] [[-ApiKey] <String>] [[-TimeoutSeconds] <Int32>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-FacesDirectory <String>] [-RetryFailed] [-RedoAll] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [-PassThru] [-AutoUpdateFaces] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -13048,16 +13294,6 @@ PARAMETERS
         Required?                    false
         Position?                    7
         Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -FacesPath <String>
-        The path inside the container where face recognition data is stored.
-        
-        Required?                    false
-        Position?                    8
-        Default value                /datastore
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13154,6 +13390,15 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -FacesDirectory <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -RetryFailed [<SwitchParameter>]
         Specifies whether to retry previously failed image keyword updates. When
         enabled, the function will attempt to process images that failed in previous
@@ -13219,6 +13464,15 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -PassThru [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AutoUpdateFaces [<SwitchParameter>]
         
         Required?                    false
         Position?                    named

@@ -87,8 +87,14 @@ function GenerateMasonryLayoutHtml {
             Mandatory = $false,
             HelpMessage = "Embed images as base64 data URLs instead of file:// URLs for better portability"
         )]
-        [Switch]$EmbedImages = $false
+        [Switch]$EmbedImages = $false,
         ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Show only pictures in a rounded rectangle, no text below."
+        )]
+        [Alias("NoMetadata", "OnlyPictures")]
+        [switch] $ShowOnlyPictures
     )
 
     begin {
@@ -218,6 +224,10 @@ function GenerateMasonryLayoutHtml {
         if ($CanDelete)  {
             $html = "$html".Replace("canDelete: false", "canDelete: true")
             Microsoft.PowerShell.Utility\Write-Verbose "Updated canDelete to: $CanDelete"
+        }
+        if ($ShowOnlyPictures) {
+            $html = "$html".Replace("showOnlyPictures: false,", "showOnlyPictures: true,")
+            Microsoft.PowerShell.Utility\Write-Verbose "Updated showOnlyPictures to: $ShowOnlyPictures"
         }
     }
 

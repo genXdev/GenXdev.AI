@@ -15,12 +15,12 @@ will be used by GenXdev.AI functions for face discovery and processing
 operations.
 
 .EXAMPLE
-Set-FacesDirectory -FacesDirectory "C:\Faces"
+Set-AIKnownFacesRootpath -FacesDirectory "C:\Faces"
 
 .EXAMPLE
-Set-FacesDirectory "C:\FacePictures"
+Set-AIKnownFacesRootpath "C:\FacePictures"
 #>
-function Set-FacesDirectory {
+function Set-AIKnownFacesRootpath {
 
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]

@@ -58,6 +58,8 @@ function Get-ImageDatabasePath {
             Mandatory = $false,
             HelpMessage = "Array of directory paths to search for images"
         )]
+        [ValidateNotNullOrEmpty()]
+        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
         [string[]] $ImageDirectories,
         ###############################################################################
         [Parameter(
@@ -73,8 +75,46 @@ function Get-ImageDatabasePath {
             Mandatory = $false,
             HelpMessage = "Language for descriptions and keywords."
         )]
+        [ValidateSet(
+            "Afrikaans", "Akan", "Albanian", "Amharic", "Arabic", "Armenian",
+            "Azerbaijani", "Basque", "Belarusian", "Bemba", "Bengali", "Bihari",
+            "Bork, bork, bork!", "Bosnian", "Breton", "Bulgarian", "Cambodian",
+            "Catalan", "Cherokee", "Chichewa", "Chinese (Simplified)",
+            "Chinese (Traditional)", "Corsican", "Croatian", "Czech", "Danish",
+            "Dutch", "Elmer Fudd", "English", "Esperanto", "Estonian", "Ewe",
+            "Faroese", "Filipino", "Finnish", "French", "Frisian", "Ga",
+            "Galician", "Georgian", "German", "Greek", "Guarani", "Gujarati",
+            "Hacker", "Haitian Creole", "Hausa", "Hawaiian", "Hebrew", "Hindi",
+            "Hungarian", "Icelandic", "Igbo", "Indonesian", "Interlingua",
+            "Irish", "Italian", "Japanese", "Javanese", "Kannada", "Kazakh",
+            "Kinyarwanda", "Kirundi", "Klingon", "Kongo", "Korean",
+            "Krio (Sierra Leone)", "Kurdish", "Kurdish (Soranî)", "Kyrgyz",
+            "Laothian", "Latin", "Latvian", "Lingala", "Lithuanian", "Lozi",
+            "Luganda", "Luo", "Macedonian", "Malagasy", "Malay", "Malayalam",
+            "Maltese", "Maori", "Marathi", "Mauritian Creole", "Moldavian",
+            "Mongolian", "Montenegrin", "Nepali", "Nigerian Pidgin",
+            "Northern Sotho", "Norwegian", "Norwegian (Nynorsk)", "Occitan",
+            "Oriya", "Oromo", "Pashto", "Persian", "Pirate", "Polish",
+            "Portuguese (Brazil)", "Portuguese (Portugal)", "Punjabi", "Quechua",
+            "Romanian", "Romansh", "Runyakitara", "Russian", "Scots Gaelic",
+            "Serbian", "Serbo-Croatian", "Sesotho", "Setswana",
+            "Seychellois Creole", "Shona", "Sindhi", "Sinhalese", "Slovak",
+            "Slovenian", "Somali", "Spanish", "Spanish (Latin American)",
+            "Sundanese", "Swahili", "Swedish", "Tajik", "Tamil", "Tatar",
+            "Telugu", "Thai", "Tigrinya", "Tonga", "Tshiluba", "Tumbuka",
+            "Turkish", "Turkmen", "Twi", "Uighur", "Ukrainian", "Urdu", "Uzbek",
+            "Vietnamese", "Welsh", "Wolof", "Xhosa", "Yiddish", "Yoruba", "Zulu"
+        )]
         [string] $Language,
-        ###############################################################################
+        #######################################################################
+        [parameter(
+            Mandatory = $false,
+            HelpMessage = ("The directory containing face images organized by " +
+                        "person folders. If not specified, uses the " +
+                        "configured faces directory preference.")
+        )]
+        [string] $FacesDirectory,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Embed images as base64."
@@ -105,6 +145,12 @@ function Get-ImageDatabasePath {
 
         # define required schema version constant
         $SCHEMA_VERSION = "1.0.0.3"
+
+        $Language = GenXdev.AI\Get-AIMetaLanguage -Language (
+            [String]::IsNullOrWhiteSpace($Language) ?
+            (GenXdev.Helpers\Get-DefaultWebLanguage) :
+            $Language
+        )
     }
 
     process {
@@ -183,7 +229,7 @@ function Get-ImageDatabasePath {
                 # copy parameter values for Export-ImageDatabase
                 $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "Export-ImageDatabase" `
+                -FunctionName "GenXdev.AI\Export-ImageDatabase" `
                 -DefaultValues (
                     Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
                 )

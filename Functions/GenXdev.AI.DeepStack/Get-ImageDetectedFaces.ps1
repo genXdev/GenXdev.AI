@@ -55,10 +55,6 @@ seconds. Default is 3.
 Custom Docker image name to use instead of the default DeepStack image. This
 allows using custom or updated DeepStack images.
 
-.PARAMETER FacesPath
-The path inside the container where faces are stored. This should match the
-DeepStack configuration. Default is "/datastore".
-
 .EXAMPLE
 Get-ImageDetectedFaces -ImagePath "C:\Users\YourName\test.jpg" `
                        -ConfidenceThreshold 0.5 `
@@ -66,8 +62,7 @@ Get-ImageDetectedFaces -ImagePath "C:\Users\YourName\test.jpg" `
                        -VolumeName "deepstack_face_data" `
                        -ServicePort 5000 `
                        -HealthCheckTimeout 60 `
-                       -HealthCheckInterval 3 `
-                       -FacesPath "/datastore"
+                       -HealthCheckInterval 3
 Recognizes faces in the specified image using full parameter names.
 
 .EXAMPLE
@@ -156,14 +151,6 @@ function Get-ImageDetectedFaces {
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The path inside the container where faces are " +
-                          "stored")
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore",
-        ###########################################################################
-        [Parameter(
-            Mandatory = $false,
             HelpMessage = ("Skip Docker initialization (used when already " +
                           "called by parent function)")
         )]
@@ -206,7 +193,7 @@ function Get-ImageDetectedFaces {
             # copy parameter values for the EnsureDeepStack function call
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
               -BoundParameters $PSBoundParameters `
-              -FunctionName 'EnsureDeepStack' `
+              -FunctionName 'GenXdev.AI\EnsureDeepStack' `
               -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                              -Scope Local `
                              -ErrorAction SilentlyContinue)

@@ -1,10 +1,10 @@
 ################################################################################
-Pester\Describe "Set-FacesDirectory" {
+Pester\Describe "Add-AIImageCollectionDirectory" {
 
     Pester\It "should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Set-FacesDirectory.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Add-AIImageCollectionDirectory.ps1"
 
         # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `

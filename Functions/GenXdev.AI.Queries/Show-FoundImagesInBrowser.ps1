@@ -105,12 +105,15 @@ Only return the generated HTML instead of displaying it in a browser.
 Embed images as base64 data URLs instead of file:// URLs for better
 portability.
 
+.PARAMETER ShowOnlyPictures
+Show only pictures in a rounded rectangle, no text below.
+
 .EXAMPLE
-$images | Show-ImageGallery
+$images | Show-FoundImagesInBrowser
 Displays the image results in a simple web gallery.
 
 .EXAMPLE
-$images | Show-ImageGallery -Interactive -Title "My Photos"
+$images | Show-FoundImagesInBrowser -Interactive -Title "My Photos"
 Displays images in interactive mode with edit/delete buttons.
 
 .EXAMPLE
@@ -118,7 +121,7 @@ showfoundimages $images -Private -FullScreen
 Opens the gallery in private browsing mode in fullscreen.
 #>
 ################################################################################
-function Show-ImageGallery {
+function Show-FoundImagesInBrowser {
 
     [CmdletBinding()]
     # PSScriptAnalyzer rule exception: allow use of $Global:chromeSession for browser session detection
@@ -331,8 +334,17 @@ function Show-ImageGallery {
             HelpMessage = ("Embed images as base64 data URLs instead of " +
                           "file:// URLs for better portability.")
         )]
-        [switch] $EmbedImages
-    )    begin {
+        [switch] $EmbedImages,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Show only pictures in a rounded rectangle, no text below."
+        )]
+        [Alias("NoMetadata", "OnlyPictures")]
+        [switch] $ShowOnlyPictures
+    )
+
+    begin {
 
         # initialize collection to accumulate all input objects
         $results = @()
@@ -384,14 +396,15 @@ function Show-ImageGallery {
         }
 
         # generate masonry layout html and display in browser
-        $null = GenXdev.AI\GenerateMasonryLayoutHtml `
-            -Images $results `
-            -FilePath $filePath `
-            -CanEdit:$Interactive `
-            -CanDelete:$Interactive `
-            -Title $Title `
-            -Description $Description `
-            -EmbedImages:$EmbedImages
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\GenerateMasonryLayoutHtml" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
+
+        $null = GenXdev.AI\GenerateMasonryLayoutHtml @params `
+                    -Images $results `
 
         # return html content if only html is requested
         if ($OnlyReturnHtml) {
@@ -430,7 +443,7 @@ function Show-ImageGallery {
             # copy parameter values for open-webbrowser function
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "Open-Webbrowser" `
+                -FunctionName "GenXdev.Webbrowser\Open-Webbrowser" `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue)
@@ -754,7 +767,7 @@ function Show-ImageGallery {
         # copy identical parameter values for open-webbrowser
         $parameters = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "Open-Webbrowser" `
+            -FunctionName "GenXdev.Webbrowser\Open-Webbrowser" `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local `
                 -ErrorAction SilentlyContinue)

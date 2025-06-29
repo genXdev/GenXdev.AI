@@ -36,9 +36,6 @@ Interval in seconds between health check attempts.
 .PARAMETER ImageName
 Custom Docker image name to use.
 
-.PARAMETER FacesPath
-The path inside the container where faces are stored.
-
 .PARAMETER NoDockerInitialize
 Skip Docker initialization (used when already called by parent function).
 
@@ -128,14 +125,6 @@ function Register-Face {
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The path inside the container where faces " +
-                          "are stored")
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore",
-        ###################################################################
-        [Parameter(
-            Mandatory = $false,
             HelpMessage = ("Skip Docker initialization (used when already " +
                           "called by parent function)")
         )]
@@ -170,7 +159,7 @@ function Register-Face {
             # copy parameters that match ensuredeepstack function
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName 'EnsureDeepStack' `
+                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue)

@@ -9,7 +9,7 @@ descriptions, keywords, and other metadata. It creates a companion JSON file for
 each image containing this information. The function can process new images only
 or update existing metadata, and supports recursive directory scanning.
 
-.PARAMETER ImageDirectory
+.PARAMETER AIImageCollectionDirectory
 Specifies the directory containing images to process. Defaults to current
 directory if not specified.
 
@@ -29,7 +29,7 @@ failed.
 Specifies the language for generated descriptions and keywords. Defaults to English.
 
 .EXAMPLE
-Invoke-ImageKeywordUpdate -ImageDirectory "C:\Photos" -Recurse -OnlyNew
+Invoke-ImageKeywordUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse -OnlyNew
 
 .EXAMPLE
 updateimages -Recurse -RetryFailed -Language "Spanish"
@@ -46,7 +46,7 @@ function Invoke-ImageKeywordUpdate {
             Position = 0,
             HelpMessage = "The image directory path."
         )]
-        [string] $ImageDirectory = ".\",
+        [string] $AIImageCollectionDirectory = ".\",
 
         ###############################################################################
         [Parameter(
@@ -224,13 +224,19 @@ function Invoke-ImageKeywordUpdate {
             "Yiddish",
             "Yoruba",
             "Zulu")]
-        [string] $Language = "English"
+        [string] $Language
     )
 
     begin {
 
+        $Language = GenXdev.AI\Get-AIMetaLanguage -Language (
+            [String]::IsNullOrWhiteSpace($Language) ?
+            (GenXdev.Helpers\Get-DefaultWebLanguage) :
+            $Language
+        )
+
         # convert relative path to absolute path
-        $path = GenXdev.FileSystem\Expand-Path $ImageDirectory
+        $path = GenXdev.FileSystem\Expand-Path $AIImageCollectionDirectory
 
         # verify directory exists before proceeding
         if (-not [System.IO.Directory]::Exists($path)) {

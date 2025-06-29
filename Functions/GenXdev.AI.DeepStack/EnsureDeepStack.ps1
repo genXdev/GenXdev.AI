@@ -33,9 +33,6 @@ Custom Docker image name to use. If not specified, uses
 deepquestai/deepstack:latest or deepquestai/deepstack:gpu based on UseGPU
 parameter.
 
-.PARAMETER FacesPath
-The path inside the container where faces are stored. Default: "/datastore"
-
 .PARAMETER Force
 If specified, forces rebuilding of Docker container and removes existing data.
 This will remove existing containers and volumes, pull latest DeepStack image,
@@ -50,8 +47,7 @@ EnsureDeepStack -ContainerName "deepstack_face_recognition" `
                 -VolumeName "deepstack_face_data" `
                 -ServicePort 5000 `
                 -HealthCheckTimeout 60 `
-                -HealthCheckInterval 3 `
-                -FacesPath "/datastore"
+                -HealthCheckInterval 3
 
 .EXAMPLE
 EnsureDeepStack -Force -UseGPU
@@ -124,15 +120,6 @@ function EnsureDeepStack {
         [string] $ImageName,
         ###################################################################
         [Parameter(
-            Position = 6,
-            Mandatory = $false,
-            HelpMessage = ("The path inside the container where faces are " +
-                          "stored")
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore",
-        ###################################################################
-        [Parameter(
             Mandatory = $false,
             HelpMessage = ("Force rebuild of Docker container and remove " +
                           "existing data")
@@ -187,9 +174,6 @@ function EnsureDeepStack {
         $script:healthCheckTimeout = $HealthCheckTimeout
 
         $script:healthCheckInterval = $HealthCheckInterval
-
-        # set script-scoped variable for persistent storage path
-        $script:facesPath = $FacesPath
 
         # store original location for cleanup at the end of the function
         $script:originalLocation = `

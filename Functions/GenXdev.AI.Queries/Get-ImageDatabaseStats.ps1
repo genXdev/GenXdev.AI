@@ -28,11 +28,86 @@ function Get-ImageDatabaseStats {
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseSingularNouns', '')]
     [Alias("getimagedbstats", "gids")]
     param(
-        ########################################################################
+        ###############################################################################
         [Parameter(
-            HelpMessage = "Path to the SQLite database file"
+            Position = 0,
+            Mandatory = $false,
+            HelpMessage = "The path to the image database file. If not specified, a default path is used."
         )]
-        [string]$DatabaseFilePath,
+        [string] $DatabaseFilePath,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Array of directory paths to search for images"
+        )]
+        [ValidateNotNullOrEmpty()]
+        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
+        [string[]] $ImageDirectories,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = (
+                "Array of directory path-like search strings to filter images by " +
+                "path (SQL LIKE patterns, e.g. '%\\2024\\%')"
+            )
+        )]
+        [string[]] $PathLike = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Language for descriptions and keywords."
+        )]
+        [ValidateSet(
+            "Afrikaans", "Akan", "Albanian", "Amharic", "Arabic", "Armenian",
+            "Azerbaijani", "Basque", "Belarusian", "Bemba", "Bengali", "Bihari",
+            "Bork, bork, bork!", "Bosnian", "Breton", "Bulgarian", "Cambodian",
+            "Catalan", "Cherokee", "Chichewa", "Chinese (Simplified)",
+            "Chinese (Traditional)", "Corsican", "Croatian", "Czech", "Danish",
+            "Dutch", "Elmer Fudd", "English", "Esperanto", "Estonian", "Ewe",
+            "Faroese", "Filipino", "Finnish", "French", "Frisian", "Ga",
+            "Galician", "Georgian", "German", "Greek", "Guarani", "Gujarati",
+            "Hacker", "Haitian Creole", "Hausa", "Hawaiian", "Hebrew", "Hindi",
+            "Hungarian", "Icelandic", "Igbo", "Indonesian", "Interlingua",
+            "Irish", "Italian", "Japanese", "Javanese", "Kannada", "Kazakh",
+            "Kinyarwanda", "Kirundi", "Klingon", "Kongo", "Korean",
+            "Krio (Sierra Leone)", "Kurdish", "Kurdish (Soranî)", "Kyrgyz",
+            "Laothian", "Latin", "Latvian", "Lingala", "Lithuanian", "Lozi",
+            "Luganda", "Luo", "Macedonian", "Malagasy", "Malay", "Malayalam",
+            "Maltese", "Maori", "Marathi", "Mauritian Creole", "Moldavian",
+            "Mongolian", "Montenegrin", "Nepali", "Nigerian Pidgin",
+            "Northern Sotho", "Norwegian", "Norwegian (Nynorsk)", "Occitan",
+            "Oriya", "Oromo", "Pashto", "Persian", "Pirate", "Polish",
+            "Portuguese (Brazil)", "Portuguese (Portugal)", "Punjabi", "Quechua",
+            "Romanian", "Romansh", "Runyakitara", "Russian", "Scots Gaelic",
+            "Serbian", "Serbo-Croatian", "Sesotho", "Setswana",
+            "Seychellois Creole", "Shona", "Sindhi", "Sinhalese", "Slovak",
+            "Slovenian", "Somali", "Spanish", "Spanish (Latin American)",
+            "Sundanese", "Swahili", "Swedish", "Tajik", "Tamil", "Tatar",
+            "Telugu", "Thai", "Tigrinya", "Tonga", "Tshiluba", "Tumbuka",
+            "Turkish", "Turkmen", "Twi", "Uighur", "Ukrainian", "Urdu", "Uzbek",
+            "Vietnamese", "Welsh", "Wolof", "Xhosa", "Yiddish", "Yoruba", "Zulu"
+        )]
+        [string] $Language,
+        #######################################################################
+        [parameter(
+            Mandatory = $false,
+            HelpMessage = ("The directory containing face images organized by " +
+                        "person folders. If not specified, uses the " +
+                        "configured faces directory preference.")
+        )]
+        [string] $FacesDirectory,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Embed images as base64."
+        )]
+        [switch] $EmbedImages,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Force rebuild of the image index database."
+        )]
+        [switch] $ForceIndexRebuild,
         ########################################################################
         [Parameter(
             HelpMessage = "Show detailed statistics including top items"
@@ -46,7 +121,11 @@ function Get-ImageDatabaseStats {
         # determine database file path if not provided
         if ([String]::IsNullOrWhiteSpace($DatabaseFilePath)) {
 
-            $DatabaseFilePath = GenXdev.FileSystem\Expand-Path "$($ENV:LOCALAPPDATA)\GenXdev.PowerShell\allimages.meta.db"
+            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+               -BoundParameters $PSBoundParameters `
+               -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+
+            $DatabaseFilePath = GenXdev.FileSystem\Get-ImageDatabasePath @params -NoFallback -NeverRebuild
         }
         else {
             $DatabaseFilePath = GenXdev.FileSystem\Expand-Path $DatabaseFilePath

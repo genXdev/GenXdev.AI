@@ -54,10 +54,6 @@ seconds. Default is 3.
 Custom Docker image name to use instead of the default DeepStack image. This
 allows using custom or updated DeepStack images.
 
-.PARAMETER FacesPath
-The path inside the container where faces are stored. This should match the
-DeepStack configuration. Default is "/datastore".
-
 .EXAMPLE
 Invoke-ImageEnhancement -ImagePath "C:\Users\YourName\small_photo.jpg" `
                         -OutputPath "C:\Users\YourName\enhanced_photo.jpg"
@@ -95,6 +91,7 @@ function Invoke-ImageEnhancement {
             HelpMessage = "The local path to the image file to enhance"
         )]
         [ValidateNotNullOrEmpty()]
+        [Alias("path", "FullName", "ImageFile", "ImageFilePath")]
         [string] $ImagePath,
         #######################################################################
         [Parameter(
@@ -103,6 +100,8 @@ function Invoke-ImageEnhancement {
             HelpMessage = ("Optional path where the enhanced image should be " +
                           "saved")
         )]
+        [ValidateNotNullOrEmpty()]
+        [Alias("outfile", "OutputFile", "EnhancedImagePath")]
         [string] $OutputPath,
         #######################################################################
         [Parameter(
@@ -170,15 +169,7 @@ function Invoke-ImageEnhancement {
             HelpMessage = "Custom Docker image name to use"
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ImageName,
-        #######################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("The path inside the container where faces are " +
-                          "stored")
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore"
+        [string] $ImageName
         #######################################################################
     )
 
@@ -201,7 +192,7 @@ function Invoke-ImageEnhancement {
             # copy parameter values for the EnsureDeepStack function call
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName 'EnsureDeepStack' `
+                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue)

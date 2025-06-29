@@ -9,7 +9,7 @@ faces using AI recognition technology. It creates or updates metadata files
 containing face information for each image. The metadata is stored in a
 separate file with the same name as the image but with a ':people.json' suffix.
 
-.PARAMETER ImageDirectory
+.PARAMETER AIImageCollectionDirectory
 The directory path containing images to process. Can be relative or absolute.
 Default is the current directory.
 
@@ -52,11 +52,8 @@ Interval in seconds between health check attempts. Default is 3.
 .PARAMETER ImageName
 Custom Docker image name to use instead of the default DeepStack image.
 
-.PARAMETER FacesPath
-The path inside the container where faces are stored. Default is "/datastore".
-
 .EXAMPLE
-Invoke-ImageFacesUpdate -ImageDirectory "C:\Photos" -Recurse
+Invoke-ImageFacesUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse
 
 .EXAMPLE
 facerecognition "C:\Photos" -RetryFailed -OnlyNew
@@ -74,7 +71,7 @@ function Invoke-ImageFacesUpdate {
             Mandatory = $false,
             HelpMessage = "The directory path containing images to process"
         )]
-        [string] $ImageDirectory = ".\",
+        [string] $AIImageCollectionDirectory = ".\",
         #######################################################################
         [Parameter(
             Position = 1,
@@ -99,14 +96,6 @@ function Invoke-ImageFacesUpdate {
         )]
         [ValidateNotNullOrEmpty()]
         [string] $VolumeName = "deepstack_face_data",
-        #######################################################################
-        [Parameter(
-            Position = 4,
-            Mandatory = $false,
-            HelpMessage = "The path inside the container where faces are stored"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore",
         #######################################################################
         [Parameter(
             Position = 5,
@@ -180,7 +169,7 @@ function Invoke-ImageFacesUpdate {
     begin {
 
         # convert the possibly relative path to an absolute path for reliable access
-        $path = GenXdev.FileSystem\Expand-Path $ImageDirectory
+        $path = GenXdev.FileSystem\Expand-Path $AIImageCollectionDirectory
 
         # ensure the target directory exists before proceeding with any operations
         if (-not [System.IO.Directory]::Exists($path)) {

@@ -10,7 +10,7 @@ objects, their positions, confidence scores, and labels. The function supports
 batch processing with configurable confidence thresholds and can optionally
 skip existing metadata files or retry previously failed detections.
 
-.PARAMETER ImageDirectory
+.PARAMETER AIImageCollectionDirectory
 The directory path containing images to process. Can be relative or absolute
 path. Default is the current directory.
 
@@ -66,12 +66,8 @@ startup. Must be between 1 and 10 seconds. Default is 3.
 Custom Docker image name to use instead of the default DeepStack image.
 Allows using alternative object detection models or configurations.
 
-.PARAMETER FacesPath
-The path inside the container where faces and detection data are stored.
-Default is "/datastore" which matches DeepStack's expected structure.
-
 .EXAMPLE
-Invoke-ImageObjectsUpdate -ImageDirectory "C:\Photos" -Recurse
+Invoke-ImageObjectsUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse
 
 This example processes all images in C:\Photos and all subdirectories using
 default settings with 0.5 confidence threshold.
@@ -83,7 +79,7 @@ This example processes only new images and retries previously failed ones
 in the C:\Photos directory using positional parameter syntax.
 
 .EXAMPLE
-Invoke-ImageObjectsUpdate -ImageDirectory "C:\Photos" -UseGPU `
+Invoke-ImageObjectsUpdate -AIImageCollectionDirectory "C:\Photos" -UseGPU `
     -ConfidenceThreshold 0.7
 
 This example uses GPU acceleration with higher confidence threshold of 0.7
@@ -101,7 +97,7 @@ function Invoke-ImageObjectsUpdate {
             Mandatory = $false,
             HelpMessage = "The directory path containing images to process"
         )]
-        [string] $ImageDirectory = ".\",
+        [string] $AIImageCollectionDirectory = ".\",
         #######################################################################
         [Parameter(
             Position = 1,
@@ -188,20 +184,13 @@ function Invoke-ImageObjectsUpdate {
             HelpMessage = "Custom Docker image name to use for detection"
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ImageName,
-        #######################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Container path where faces are stored"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore"
+        [string] $ImageName
         #######################################################################
     )
     begin {
 
         # convert the possibly relative path to an absolute path for reliable access
-        $path = GenXdev.FileSystem\Expand-Path $ImageDirectory
+        $path = GenXdev.FileSystem\Expand-Path $AIImageCollectionDirectory
 
         # ensure the target directory exists before proceeding with any operations
         if (-not [System.IO.Directory]::Exists($path)) {

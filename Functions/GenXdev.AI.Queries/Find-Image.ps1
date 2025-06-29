@@ -8,13 +8,13 @@ Searches for image files (jpg, jpeg, png) in the specified directory and its
 subdirectories. For each image, checks associated description.json,
 keywords.json, people.json, and objects.json files for metadata. Can filter
 images based on keyword matches, people recognition, and object detection, then
-return the results as objects. Use -ShowImageGallery to display results in a
+return the results as objects. Use -ShowInBrowser to display results in a
 browser-based masonry layout.
 
 The function searches through image directories and examines alternate data
 streams containing metadata in JSON format. It can match keywords using wildcard
 patterns, filter for specific people, and search for detected objects. By
-default, returns image data objects. Use -ShowImageGallery to display in a web
+default, returns image data objects. Use -ShowInBrowser to display in a web
 browser.
 
 .PARAMETER Keywords
@@ -103,15 +103,15 @@ where the has_explicit_content property is true in the metadata.
 Switch to filter for images that do NOT contain explicit content. Only returns
 images where the has_explicit_content property is false in the metadata.
 
-.PARAMETER ShowImageGallery
+.PARAMETER ShowInBrowser
 Switch to display the search results in a browser-based masonry layout gallery.
 When used, the results are shown in an interactive web view. Can be combined
 with -PassThru to also return the objects.
 
 .PARAMETER PassThru
-Switch to return image data as objects. When used with -ShowImageGallery, both
+Switch to return image data as objects. When used with -ShowInBrowser, both
 displays the gallery and returns the objects. When used alone with
--ShowImageGallery, only displays the gallery without returning objects.
+-ShowInBrowser, only displays the gallery without returning objects.
 
 .PARAMETER Interactive
 Connects to browser and adds additional buttons like Edit and Delete.
@@ -189,15 +189,15 @@ findimages cat,dog "C:\Photos"
 Same as above using the alias and positional parameters.
 
 .EXAMPLE
-Find-Image -People "John","Jane" -ImageDirectories "C:\Family" -ShowImageGallery
+Find-Image -People "John","Jane" -ImageDirectories "C:\Family" -ShowInBrowser
 Searches for photos containing John or Jane and displays them in a web gallery.
 
 .EXAMPLE
-Find-Image -Objects "car","bicycle" -ImageDirectories "C:\Photos" -ShowImageGallery -PassThru
+Find-Image -Objects "car","bicycle" -ImageDirectories "C:\Photos" -ShowInBrowser -PassThru
 Searches for images containing detected cars or bicycles, displays them in a gallery, and also returns the objects.
 
 .EXAMPLE
-findimages -Language "Spanish" -Keywords "playa","sol" -ImageDirectories "C:\Vacations" -ShowImageGallery
+findimages -Language "Spanish" -Keywords "playa","sol" -ImageDirectories "C:\Vacations" -ShowInBrowser
 Searches for images with Spanish metadata containing the keywords "playa" (beach) or "sol" (sun) and displays in gallery.
 
 .EXAMPLE
@@ -205,11 +205,11 @@ Find-Image -Keywords "vacation" -People "John" -Objects "beach*" -ImageDirectori
 Searches for vacation photos with John in them that also contain beach-related objects and returns the data objects.
 
 .EXAMPLE
-Find-Image -Scenes "beach","forest","mountain*" -ImageDirectories "C:\Nature" -ShowImageGallery
+Find-Image -Scenes "beach","forest","mountain*" -ImageDirectories "C:\Nature" -ShowInBrowser
 Searches for images classified as beach, forest, or mountain scenes and displays them in a gallery.
 
 .EXAMPLE
-Find-Image -NoNudity -NoExplicitContent -ImageDirectories "C:\Family" -ShowImageGallery
+Find-Image -NoNudity -NoExplicitContent -ImageDirectories "C:\Family" -ShowInBrowser
 Searches for family-safe images (no nudity or explicit content) and displays them in a gallery.
 
 .EXAMPLE
@@ -220,6 +220,8 @@ Searches for daylight photos with a calm/peaceful mood and returns the image obj
 findimages -StyleType "casual" -HasNudity -ImageDirectories "C:\Art"
 Searches for casual style images that contain nudity and returns the data objects.
 #>
+
+
 
 ###############################################################################
 function Find-Image {
@@ -236,6 +238,98 @@ function Find-Image {
             HelpMessage = "Will match any of all the possible meta data types."
         )]
         [string[]] $Any = @(),
+        ###############################################################################
+        [Parameter(
+            Position = 0,
+            Mandatory = $false,
+            HelpMessage = "The path to the image database file. If not specified, a default path is used."
+        )]
+        [string] $DatabaseFilePath,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Array of directory paths to search for images"
+        )]
+        [ValidateNotNullOrEmpty()]
+        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
+        [string[]] $ImageDirectories = @(".\"),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = (
+                "Array of directory path-like search strings to filter images by " +
+                "path (SQL LIKE patterns, e.g. '%\\2024\\%')"
+            )
+        )]
+        [string[]] $PathLike = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Language for descriptions and keywords."
+        )]
+        [ValidateSet(
+            "Afrikaans", "Akan", "Albanian", "Amharic", "Arabic", "Armenian",
+            "Azerbaijani", "Basque", "Belarusian", "Bemba", "Bengali", "Bihari",
+            "Bork, bork, bork!", "Bosnian", "Breton", "Bulgarian", "Cambodian",
+            "Catalan", "Cherokee", "Chichewa", "Chinese (Simplified)",
+            "Chinese (Traditional)", "Corsican", "Croatian", "Czech", "Danish",
+            "Dutch", "Elmer Fudd", "English", "Esperanto", "Estonian", "Ewe",
+            "Faroese", "Filipino", "Finnish", "French", "Frisian", "Ga",
+            "Galician", "Georgian", "German", "Greek", "Guarani", "Gujarati",
+            "Hacker", "Haitian Creole", "Hausa", "Hawaiian", "Hebrew", "Hindi",
+            "Hungarian", "Icelandic", "Igbo", "Indonesian", "Interlingua",
+            "Irish", "Italian", "Japanese", "Javanese", "Kannada", "Kazakh",
+            "Kinyarwanda", "Kirundi", "Klingon", "Kongo", "Korean",
+            "Krio (Sierra Leone)", "Kurdish", "Kurdish (Soranî)", "Kyrgyz",
+            "Laothian", "Latin", "Latvian", "Lingala", "Lithuanian", "Lozi",
+            "Luganda", "Luo", "Macedonian", "Malagasy", "Malay", "Malayalam",
+            "Maltese", "Maori", "Marathi", "Mauritian Creole", "Moldavian",
+            "Mongolian", "Montenegrin", "Nepali", "Nigerian Pidgin",
+            "Northern Sotho", "Norwegian", "Norwegian (Nynorsk)", "Occitan",
+            "Oriya", "Oromo", "Pashto", "Persian", "Pirate", "Polish",
+            "Portuguese (Brazil)", "Portuguese (Portugal)", "Punjabi", "Quechua",
+            "Romanian", "Romansh", "Runyakitara", "Russian", "Scots Gaelic",
+            "Serbian", "Serbo-Croatian", "Sesotho", "Setswana",
+            "Seychellois Creole", "Shona", "Sindhi", "Sinhalese", "Slovak",
+            "Slovenian", "Somali", "Spanish", "Spanish (Latin American)",
+            "Sundanese", "Swahili", "Swedish", "Tajik", "Tamil", "Tatar",
+            "Telugu", "Thai", "Tigrinya", "Tonga", "Tshiluba", "Tumbuka",
+            "Turkish", "Turkmen", "Twi", "Uighur", "Ukrainian", "Urdu", "Uzbek",
+            "Vietnamese", "Welsh", "Wolof", "Xhosa", "Yiddish", "Yoruba", "Zulu"
+        )]
+        [string] $Language,
+        #######################################################################
+        [parameter(
+            Mandatory = $false,
+            HelpMessage = ("The directory containing face images organized by " +
+                        "person folders. If not specified, uses the " +
+                        "configured faces directory preference.")
+        )]
+        [string] $FacesDirectory,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Embed images as base64."
+        )]
+        [switch] $EmbedImages,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Force rebuild of the image index database."
+        )]
+        [switch] $ForceIndexRebuild,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Switch to disable fallback behavior."
+        )]
+        [switch] $NoFallback,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Switch to skip database initialization and rebuilding."
+        )]
+        [switch] $NeverRebuild,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -266,13 +360,6 @@ function Find-Image {
             HelpMessage = "Scene categories to look for, wildcards allowed."
         )]
         [string[]] $Scenes = @(),
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The image directory paths to search."
-        )]
-        [Alias("ImageDirectory")]
-        [string[]] $ImageDirectories = @(".\"),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -315,158 +402,6 @@ function Find-Image {
         )]
         [string] $Description = ("Hover over images to see face recognition " +
             "and object detection data"),
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The language for retrieving descriptions and keywords."
-        )]
-        [PSDefaultValue(Value = "English")]
-        [ValidateSet(
-            "Afrikaans",
-            "Akan",
-            "Albanian",
-            "Amharic",
-            "Arabic",
-            "Armenian",
-            "Azerbaijani",
-            "Basque",
-            "Belarusian",
-            "Bemba",
-            "Bengali",
-            "Bihari",
-            "Bosnian",
-            "Breton",
-            "Bulgarian",
-            "Cambodian",
-            "Catalan",
-            "Cherokee",
-            "Chichewa",
-            "Chinese (Simplified)",
-            "Chinese (Traditional)",
-            "Corsican",
-            "Croatian",
-            "Czech",
-            "Danish",
-            "Dutch",
-            "English",
-            "Esperanto",
-            "Estonian",
-            "Ewe",
-            "Faroese",
-            "Filipino",
-            "Finnish",
-            "French",
-            "Frisian",
-            "Ga",
-            "Galician",
-            "Georgian",
-            "German",
-            "Greek",
-            "Guarani",
-            "Gujarati",
-            "Haitian Creole",
-            "Hausa",
-            "Hawaiian",
-            "Hebrew",
-            "Hindi",
-            "Hungarian",
-            "Icelandic",
-            "Igbo",
-            "Indonesian",
-            "Interlingua",
-            "Irish",
-            "Italian",
-            "Japanese",
-            "Javanese",
-            "Kannada",
-            "Kazakh",
-            "Kinyarwanda",
-            "Kirundi",
-            "Kongo",
-            "Korean",
-            "Krio (Sierra Leone)",
-            "Kurdish",
-            "Kurdish (Soranî)",
-            "Kyrgyz",
-            "Laothian",
-            "Latin",
-            "Latvian",
-            "Lingala",
-            "Lithuanian",
-            "Lozi",
-            "Luganda",
-            "Luo",
-            "Macedonian",
-            "Malagasy",
-            "Malay",
-            "Malayalam",
-            "Maltese",
-            "Maori",
-            "Marathi",
-            "Mauritian Creole",
-            "Moldavian",
-            "Mongolian",
-            "Montenegrin",
-            "Nepali",
-            "Nigerian Pidgin",
-            "Northern Sotho",
-            "Norwegian",
-            "Norwegian (Nynorsk)",
-            "Occitan",
-            "Oriya",
-            "Oromo",
-            "Pashto",
-            "Persian",
-            "Polish",
-            "Portuguese (Brazil)",
-            "Portuguese (Portugal)",
-            "Punjabi",
-            "Quechua",
-            "Romanian",
-            "Romansh",
-            "Runyakitara",
-            "Russian",
-            "Scots Gaelic",
-            "Serbian",
-            "Serbo-Croatian",
-            "Sesotho",
-            "Setswana",
-            "Seychellois Creole",
-            "Shona",
-            "Sindhi",
-            "Sinhalese",
-            "Slovak",
-            "Slovenian",
-            "Somali",
-            "Spanish",
-            "Spanish (Latin American)",
-            "Sundanese",
-            "Swahili",
-            "Swedish",
-            "Tajik",
-            "Tamil",
-            "Tatar",
-            "Telugu",
-            "Thai",
-            "Tigrinya",
-            "Tonga",
-            "Tshiluba",
-            "Tumbuka",
-            "Turkish",
-            "Turkmen",
-            "Twi",
-            "Uighur",
-            "Ukrainian",
-            "Urdu",
-            "Uzbek",
-            "Vietnamese",
-            "Welsh",
-            "Wolof",
-            "Xhosa",
-            "Yiddish",
-            "Yoruba",
-            "Zulu")]
-        [string] $Language,
         ###############################################################################
         [Alias("lang", "locale")]
         [Parameter(
@@ -538,12 +473,12 @@ function Find-Image {
                 "image gallery.")
         )]
         [Alias("show", "s")]
-        [switch] $ShowImageGallery,
+        [switch] $ShowInBrowser,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = ("Return image data as objects. When used with " +
-                "-ShowImageGallery, both displays the gallery and returns " +
+                "-ShowInBrowser, both displays the gallery and returns " +
                 "the objects.")
         )]
         [switch] $PassThru,
@@ -552,7 +487,7 @@ function Find-Image {
             Mandatory = $false,
             HelpMessage = ("Will connect to browser and adds additional buttons " +
                 "like Edit and Delete. Only effective when used with " +
-                "-ShowImageGallery.")
+                "-ShowInBrowser.")
         )]
         [Alias("i", "editimages")]
         [switch] $Interactive,
@@ -688,52 +623,35 @@ function Find-Image {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Embed images as base64 data URLs instead of " +
-                "file:// URLs for better portability.")
+            HelpMessage = "Show only pictures in a rounded rectangle, no text below."
         )]
-        [switch] $EmbedImages,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Array of path-like patterns to filter image files (wildcards allowed)."
-        )]
-        [string[]] $PathLike = @()
+        [Alias("NoMetadata", "OnlyPictures")]
+        [switch] $ShowOnlyPictures
     )
     begin {
+
+        $Language = GenXdev.AI\Get-AIMetaLanguage -Language (
+            [String]::IsNullOrWhiteSpace($Language) ?
+            (GenXdev.Helpers\Get-DefaultWebLanguage) :
+            $Language
+        )
 
         # enable interactive mode when interactive switch is used
         if ($Interactive) {
 
-            $ShowImageGallery = $true
+            $ShowInBrowser = $true
         }
 
         # initialize results collection for all found images
         $results = [System.Collections.Generic.List[Object]] @()
 
-        # get configured directories and language using Get-ImageDirectories
-        $config = GenXdev.AI\Get-ImageDirectories `
-            -DefaultValue $ImageDirectories
-
         # use provided directories or get from configuration
-        if ($ImageDirectories) {
-
-            $directories = $ImageDirectories
-        }
-        else {
-
-            $directories = $config.ImageDirectories
-        }
-
-        # resolve default language if not explicitly provided
-        if ([string]::IsNullOrEmpty($Language)) {
-
-            $Language = $config.Language
-        }
+        $directories = GenXdev.AI\Get-AIImageCollection -ImageDirectories $ImageDirectories
 
         if ($null -ne $Any -and
             $Any.Length -gt 0) {
 
-            $Any = @($Any | ForEach-Object {
+            $Any = @($Any | Microsoft.PowerShell.Core\ForEach-Object {
 
                 $entry = $_.Trim()
 
@@ -1326,7 +1244,7 @@ function Find-Image {
                 processImageFile $_ |
                     Microsoft.PowerShell.Core\ForEach-Object {
 
-                    if (-not $ShowImageGallery) {
+                    if (-not $ShowInBrowser) {
 
                         Microsoft.PowerShell.Utility\Write-Output $_
                     }
@@ -1359,8 +1277,8 @@ function Find-Image {
             return
         }
 
-        # if ShowImageGallery is requested, display the gallery
-        if ($ShowImageGallery) {
+        # if ShowInBrowser is requested, display the gallery
+        if ($ShowInBrowser) {
 
             if ([String]::IsNullOrWhiteSpace($Title)) {
 
@@ -1374,16 +1292,16 @@ function Find-Image {
 
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "Show-ImageGallery" `
+                -FunctionName "GenXdev.AI\Show-FoundImagesInBrowser" `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue)
 
-            # pass the results to Show-ImageGallery
-            $null = GenXdev.AI\Show-ImageGallery @params -InputObject $results
+            # pass the results to Show-FoundImagesInBrowser
+            $null = GenXdev.AI\Show-FoundImagesInBrowser @params -InputObject $results
         }
 
-        if ((-not $ShowImageGallery) -or $PassThru) {
+        if ((-not $ShowInBrowser) -or $PassThru) {
 
             return $results
         }

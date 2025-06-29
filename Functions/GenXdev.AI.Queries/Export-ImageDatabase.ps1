@@ -20,7 +20,7 @@ under Storage\allimages.meta.db.
 
 .PARAMETER ImageDirectories
 Array of directory paths to search for images. If not specified, uses the
-configured image directories from Get-ImageDirectories.
+configured image directories from Get-AIImageCollection.
 
 .PARAMETER EmbedImages
 Embed images directly into the database.
@@ -37,11 +37,7 @@ function Export-ImageDatabase {
     [Alias("indexcachedimages", "Inititalize-ImageDatabase", "Recreate-ImageIndex")]
 
     param(
-        ###########################################################################
-        <#
-        Accepts search results from a Find-Image call to regenerate the view.
-        #>
-        ###########################################################################
+
         [Parameter(
             Position = 0,
             Mandatory = $false,
@@ -50,41 +46,115 @@ function Export-ImageDatabase {
                 "call to regenerate the view.")
         )]
         [object[]] $InputObject,
-        ###########################################################################
-        <#
-        Path to the SQLite database file. If not specified, uses the default location
-        under Storage\allimages.meta.db.
-        #>
-        ###########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Path to the SQLite database file"
+       ###############################################################################
+       [Parameter(
+        Position = 0,
+        Mandatory = $false,
+        HelpMessage = "The path to the image database file. If not specified, a default path is used."
         )]
-        [string]$DatabaseFilePath,
-        ###########################################################################
-        <#
-        Array of directory paths to search for images. If not specified, uses the
-        configured image directories from Get-ImageDirectories.
-        #>
-        ###########################################################################
+        [string] $DatabaseFilePath,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Array of directory paths to search for images"
         )]
-        [string[]]$ImageDirectories,
-        ###########################################################################
-        <#
-        Embed images directly into the database.
-        #>
-        ###########################################################################
+        [ValidateNotNullOrEmpty()]
+        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
+        [string[]] $ImageDirectories,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Embed images directly into the database"
+            HelpMessage = (
+                "Array of directory path-like search strings to filter images by " +
+                "path (SQL LIKE patterns, e.g. '%\\2024\\%')"
+            )
         )]
-        [switch] $EmbedImages
+        [string[]] $PathLike = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Language for descriptions and keywords."
+        )]
+        [ValidateSet(
+            "Afrikaans", "Akan", "Albanian", "Amharic", "Arabic", "Armenian",
+            "Azerbaijani", "Basque", "Belarusian", "Bemba", "Bengali", "Bihari",
+            "Bork, bork, bork!", "Bosnian", "Breton", "Bulgarian", "Cambodian",
+            "Catalan", "Cherokee", "Chichewa", "Chinese (Simplified)",
+            "Chinese (Traditional)", "Corsican", "Croatian", "Czech", "Danish",
+            "Dutch", "Elmer Fudd", "English", "Esperanto", "Estonian", "Ewe",
+            "Faroese", "Filipino", "Finnish", "French", "Frisian", "Ga",
+            "Galician", "Georgian", "German", "Greek", "Guarani", "Gujarati",
+            "Hacker", "Haitian Creole", "Hausa", "Hawaiian", "Hebrew", "Hindi",
+            "Hungarian", "Icelandic", "Igbo", "Indonesian", "Interlingua",
+            "Irish", "Italian", "Japanese", "Javanese", "Kannada", "Kazakh",
+            "Kinyarwanda", "Kirundi", "Klingon", "Kongo", "Korean",
+            "Krio (Sierra Leone)", "Kurdish", "Kurdish (Soranî)", "Kyrgyz",
+            "Laothian", "Latin", "Latvian", "Lingala", "Lithuanian", "Lozi",
+            "Luganda", "Luo", "Macedonian", "Malagasy", "Malay", "Malayalam",
+            "Maltese", "Maori", "Marathi", "Mauritian Creole", "Moldavian",
+            "Mongolian", "Montenegrin", "Nepali", "Nigerian Pidgin",
+            "Northern Sotho", "Norwegian", "Norwegian (Nynorsk)", "Occitan",
+            "Oriya", "Oromo", "Pashto", "Persian", "Pirate", "Polish",
+            "Portuguese (Brazil)", "Portuguese (Portugal)", "Punjabi", "Quechua",
+            "Romanian", "Romansh", "Runyakitara", "Russian", "Scots Gaelic",
+            "Serbian", "Serbo-Croatian", "Sesotho", "Setswana",
+            "Seychellois Creole", "Shona", "Sindhi", "Sinhalese", "Slovak",
+            "Slovenian", "Somali", "Spanish", "Spanish (Latin American)",
+            "Sundanese", "Swahili", "Swedish", "Tajik", "Tamil", "Tatar",
+            "Telugu", "Thai", "Tigrinya", "Tonga", "Tshiluba", "Tumbuka",
+            "Turkish", "Turkmen", "Twi", "Uighur", "Ukrainian", "Urdu", "Uzbek",
+            "Vietnamese", "Welsh", "Wolof", "Xhosa", "Yiddish", "Yoruba", "Zulu"
+        )]
+        [string] $Language,
+        #######################################################################
+        [parameter(
+            Mandatory = $false,
+            HelpMessage = ("The directory containing face images organized by " +
+                        "person folders. If not specified, uses the " +
+                        "configured faces directory preference.")
+        )]
+        [string] $FacesDirectory,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Embed images as base64."
+        )]
+        [switch] $EmbedImages,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Force rebuild of the image index database."
+        )]
+        [switch] $ForceIndexRebuild,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Switch to disable fallback behavior."
+        )]
+        [switch] $NoFallback,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Switch to skip database initialization and rebuilding."
+        )]
+        [switch] $NeverRebuild
+    ###############################################################################
     )
 
     begin {
+
+        # determine database file path if not provided
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-ImageDatabasePath" `
+            -DefaultValues (
+                Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
+        )
+
+        $DatabaseFilePath = GenXdev.AI\Get-ImageDatabasePath @params -NeverRebuild
+
+        # retrieve configured image directories if not provided
+        $ImageDirectories = GenXdev.AI\Get-AIImageCollection -ImageDirectories $ImageDirectories
 
         # output that the image index database is being recreated
         Microsoft.PowerShell.Utility\Write-Host @"
@@ -119,16 +189,6 @@ Image directories = $(($ImageDirectories -join ", "))
             FoundResults = $false
             TotalImages = 0
         }
-
-        # determine database file path if not provided
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
-            -BoundParameters $PSBoundParameters `
-            -FunctionName "Get-ImageDatabasePath" `
-            -DefaultValues (
-                Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
-        )
-
-        $DatabaseFilePath = GenXdev.AI\Get-ImageDatabasePath @params -NeverRebuild
 
         if ([String]::IsNullOrWhiteSpace($DatabaseFilePath)) {
 
@@ -194,14 +254,6 @@ Image directories = $(($ImageDirectories -join ", "))
                     }
                 }
             }
-        }
-
-        # get image directories from parameter or configuration
-        if ($null -eq $ImageDirectories -or $ImageDirectories.Count -eq 0) {
-
-            # retrieve configured image directories if not provided
-            $config = GenXdev.AI\Get-ImageDirectories
-            $ImageDirectories = $config.ImageDirectories
         }
 
         # output verbose information about database and metadata paths
@@ -484,7 +536,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
         # create transaction for batch operations
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "Get-SQLiteTransaction" `
+            -FunctionName "GenXdev.Data\Get-SQLiteTransaction" `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
         $transaction = GenXdev.Data\Get-SQLiteTransaction @params
@@ -505,14 +557,11 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             # copy identical parameter values for Find-Image
             $findImageParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "Find-Image" `
+                -FunctionName "GenXdev.AI\Find-Image" `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
             # set image directories for Find-Image
-            $findImageParams.ImageDirectories = ((
-                $null -eq $ImageDirectories) -or $ImageDirectories.Count -eq 0) `
-                ? (GenXdev.AI\Get-ImageDirectories).ImageDirectories `
-                : $ImageDirectories
+            $findImageParams.ImageDirectories = GenXdev.AI\Get-AIImageCollection -ImageDirectories $ImageDirectories
 
             # prepare lookup table inserts
             [System.Collections.Generic.List[String]] $lookupQueries = [System.Collections.Generic.List[String]]::new()
@@ -718,7 +767,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
 
                     $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
-                        -FunctionName "Update-AllImageMetaData" `
+                        -FunctionName "GenXdev.AI\Update-AllImageMetaData" `
                         -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
                     $null = GenXdev.AI\Update-AllImageMetaData @params
@@ -765,7 +814,12 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             # output image database stats if PassThru is not enabled
             if (-not $PassThru) {
 
-                GenXdev.AI\Get-ImageDatabaseStats -DatabaseFilePath $DatabaseFilePath |
+                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                    -BoundParameters $PSBoundParameters `
+                    -FunctionName "GenXdev.AI\Get-ImageDatabaseStats" `
+                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+
+                GenXdev.AI\Get-ImageDatabaseStats @params |
                     Microsoft.PowerShell.Utility\Write-Output
             }
 

@@ -17,12 +17,12 @@ image directories configuration.
 Forces removal without confirmation prompts.
 
 .EXAMPLE
-Remove-ImageDirectory -ImageDirectories @("C:\OldPhotos", "D:\TempImages")
+Remove-AIImageCollectionDirectory -ImageDirectories @("C:\OldPhotos", "D:\TempImages")
 
 Removes the specified directories from the image directories configuration.
 
 .EXAMPLE
-Remove-ImageDirectory "C:\Temp\*"
+Remove-AIImageCollectionDirectory "C:\Temp\*"
 
 Removes all directories that match the wildcard pattern.
 
@@ -31,7 +31,7 @@ removeimgdir @("C:\OldPhotos") -Force
 
 Uses alias to forcibly remove a directory from the configuration without confirmation.
 #>
-function Remove-ImageDirectory {
+function Remove-AIImageCollectionDirectory {
 
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
@@ -45,7 +45,8 @@ function Remove-ImageDirectory {
             ValueFromPipeline = $true,
             HelpMessage = "Array of directory paths or patterns to remove from image directories"
         )]
-        [SupportsWildcards()]
+        [ValidateNotNullOrEmpty()]
+        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
         [string[]] $ImageDirectories,
         ###############################################################################
         [Parameter(
@@ -59,13 +60,13 @@ function Remove-ImageDirectory {
     begin {
 
         # get current configuration
-        $currentConfig = GenXdev.AI\Get-ImageDirectories
+        $currentConfig = GenXdev.AI\Get-AIImageCollection
 
         # initialize collection for remaining directories
         $remainingDirectories = [System.Collections.Generic.List[string]]::new()
 
         # add all existing directories to start
-        foreach ($dir in $currentConfig.ImageDirectories) {
+        foreach ($dir in $currentConfig) {
 
             $remainingDirectories.Add($dir)
         }
@@ -74,7 +75,7 @@ function Remove-ImageDirectory {
         $removedDirectories = [System.Collections.Generic.List[string]]::new()
 
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Current image directories: [$($currentConfig.ImageDirectories -join ', ')]"
+            "Current image directories: [$($ImageDirectories -join ', ')]"
         )
     }
 
@@ -137,7 +138,7 @@ function Remove-ImageDirectory {
             return
         }
 
-        # convert to array for the Set-ImageDirectories call
+        # convert to array for the Set-AIImageCollection call
         $finalDirectories = $remainingDirectories.ToArray()
 
         # determine if we should proceed based on Force parameter or ShouldProcess
@@ -148,8 +149,8 @@ function Remove-ImageDirectory {
 
         if ($shouldProceed) {
 
-            # use Set-ImageDirectories to update the configuration
-            GenXdev.AI\Set-ImageDirectories -ImageDirectories $finalDirectories -Language $currentConfig.Language
+            # use Set-AIImageCollection to update the configuration
+            GenXdev.AI\Set-AIImageCollection -ImageDirectories $finalDirectories
 
             # output confirmation
             Microsoft.PowerShell.Utility\Write-Host (

@@ -10,7 +10,7 @@ classifications, confidence scores, and labels. The function supports batch
 processing with configurable confidence thresholds and can optionally skip
 existing metadata files or retry previously failed classifications.
 
-.PARAMETER ImageDirectory
+.PARAMETER AIImageCollectionDirectory
 The directory path containing images to process. Can be relative or absolute
 path. Default is the current directory.
 
@@ -62,12 +62,8 @@ startup. Must be between 1 and 10 seconds. Default is 3.
 Custom Docker image name to use instead of the default DeepStack image.
 Allows using alternative scene classification models or configurations.
 
-.PARAMETER FacesPath
-The path inside the container where face data is stored. This should match
-the DeepStack configuration. Default is "/datastore".
-
 .EXAMPLE
-Invoke-ImageScenesUpdate -ImageDirectory "C:\Photos" -Recurse
+Invoke-ImageScenesUpdate -AIImageCollectionDirectory "C:\Photos" -Recurse
 
 Processes all images in C:\Photos and subdirectories for scene classification.
 
@@ -77,12 +73,12 @@ scenerecognition "C:\Photos" -RetryFailed -OnlyNew
 Uses alias to retry failed classifications and only process new images.
 
 .EXAMPLE
-Invoke-ImageScenesUpdate -ImageDirectory ".\MyImages" -Force -UseGPU
+Invoke-ImageScenesUpdate -AIImageCollectionDirectory ".\MyImages" -Force -UseGPU
 
 Forces container rebuild and uses GPU acceleration for faster processing.
 
 .EXAMPLE
-Invoke-ImageScenesUpdate -ImageDirectory "C:\Photos" -ConfidenceThreshold 0.6 -Recurse
+Invoke-ImageScenesUpdate -AIImageCollectionDirectory "C:\Photos" -ConfidenceThreshold 0.6 -Recurse
 
 Processes all images recursively and only stores scene classifications with confidence >= 60%.
 
@@ -104,7 +100,7 @@ function Invoke-ImageScenesUpdate {
         [Parameter(
             HelpMessage = "The directory path containing images to process"
         )]
-        [string] $ImageDirectory = ".\",
+        [string] $AIImageCollectionDirectory = ".\",
         #######################################################################
         [Parameter(
             HelpMessage = "Custom Docker image name to use instead of default"
@@ -123,12 +119,6 @@ function Invoke-ImageScenesUpdate {
         )]
         [ValidateNotNullOrEmpty()]
         [string] $VolumeName = "deepstack_face_data",
-        #######################################################################
-        [Parameter(
-            HelpMessage = "The path inside the container where faces are stored"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore",
         #######################################################################
         [Parameter(
             HelpMessage = "The port number for the DeepStack service"
@@ -204,7 +194,7 @@ function Invoke-ImageScenesUpdate {
     begin {
 
         # resolve the absolute path for the image directory
-        $path = GenXdev.FileSystem\Expand-Path $ImageDirectory
+        $path = GenXdev.FileSystem\Expand-Path $AIImageCollectionDirectory
 
         # check if the specified directory exists
         if (-not (Microsoft.PowerShell.Management\Test-Path $path -PathType Container)) {
@@ -226,7 +216,7 @@ function Invoke-ImageScenesUpdate {
             # copy parameter values for the EnsureDeepStack function call
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName 'EnsureDeepStack' `
+                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue)

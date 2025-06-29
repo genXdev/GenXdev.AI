@@ -56,7 +56,7 @@ Switch to filter for images that do NOT contain explicit content. Uses indexed b
 Optional path to the SQLite database file. If not specified, uses the default
 location under Storage\allimages.meta.db.
 
-.PARAMETER ShowImageGallery
+.PARAMETER ShowInBrowser
 Switch to display the search results in a browser-based masonry layout gallery.
 
 .PARAMETER PassThru
@@ -160,10 +160,10 @@ Array of directory path-like search strings to filter images by path (SQL LIKE
 patterns, e.g. '%\2024\%').
 
 .EXAMPLE
-Find-IndexedImage -Keywords "cat","dog" -ShowImageGallery -NoNudity
+Find-IndexedImage -Keywords "cat","dog" -ShowInBrowser -NoNudity
 
 .EXAMPLE
-lii "cat","dog" -ShowImageGallery -NoNudity
+lii "cat","dog" -ShowInBrowser -NoNudity
 #>
 function Find-IndexedImage {
 
@@ -179,6 +179,98 @@ function Find-IndexedImage {
             HelpMessage = "Will match any of all the possible meta data types."
         )]
         [string[]] $Any = @(),
+        ###############################################################################
+        [Parameter(
+            Position = 0,
+            Mandatory = $false,
+            HelpMessage = "The path to the image database file. If not specified, a default path is used."
+        )]
+        [string] $DatabaseFilePath,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Array of directory paths to search for images"
+        )]
+        [ValidateNotNullOrEmpty()]
+        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
+        [string[]] $ImageDirectories,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = (
+                "Array of directory path-like search strings to filter images by " +
+                "path (SQL LIKE patterns, e.g. '%\\2024\\%')"
+            )
+        )]
+        [string[]] $PathLike = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Language for descriptions and keywords."
+        )]
+        [ValidateSet(
+            "Afrikaans", "Akan", "Albanian", "Amharic", "Arabic", "Armenian",
+            "Azerbaijani", "Basque", "Belarusian", "Bemba", "Bengali", "Bihari",
+            "Bork, bork, bork!", "Bosnian", "Breton", "Bulgarian", "Cambodian",
+            "Catalan", "Cherokee", "Chichewa", "Chinese (Simplified)",
+            "Chinese (Traditional)", "Corsican", "Croatian", "Czech", "Danish",
+            "Dutch", "Elmer Fudd", "English", "Esperanto", "Estonian", "Ewe",
+            "Faroese", "Filipino", "Finnish", "French", "Frisian", "Ga",
+            "Galician", "Georgian", "German", "Greek", "Guarani", "Gujarati",
+            "Hacker", "Haitian Creole", "Hausa", "Hawaiian", "Hebrew", "Hindi",
+            "Hungarian", "Icelandic", "Igbo", "Indonesian", "Interlingua",
+            "Irish", "Italian", "Japanese", "Javanese", "Kannada", "Kazakh",
+            "Kinyarwanda", "Kirundi", "Klingon", "Kongo", "Korean",
+            "Krio (Sierra Leone)", "Kurdish", "Kurdish (Soranî)", "Kyrgyz",
+            "Laothian", "Latin", "Latvian", "Lingala", "Lithuanian", "Lozi",
+            "Luganda", "Luo", "Macedonian", "Malagasy", "Malay", "Malayalam",
+            "Maltese", "Maori", "Marathi", "Mauritian Creole", "Moldavian",
+            "Mongolian", "Montenegrin", "Nepali", "Nigerian Pidgin",
+            "Northern Sotho", "Norwegian", "Norwegian (Nynorsk)", "Occitan",
+            "Oriya", "Oromo", "Pashto", "Persian", "Pirate", "Polish",
+            "Portuguese (Brazil)", "Portuguese (Portugal)", "Punjabi", "Quechua",
+            "Romanian", "Romansh", "Runyakitara", "Russian", "Scots Gaelic",
+            "Serbian", "Serbo-Croatian", "Sesotho", "Setswana",
+            "Seychellois Creole", "Shona", "Sindhi", "Sinhalese", "Slovak",
+            "Slovenian", "Somali", "Spanish", "Spanish (Latin American)",
+            "Sundanese", "Swahili", "Swedish", "Tajik", "Tamil", "Tatar",
+            "Telugu", "Thai", "Tigrinya", "Tonga", "Tshiluba", "Tumbuka",
+            "Turkish", "Turkmen", "Twi", "Uighur", "Ukrainian", "Urdu", "Uzbek",
+            "Vietnamese", "Welsh", "Wolof", "Xhosa", "Yiddish", "Yoruba", "Zulu"
+        )]
+        [string] $Language,
+        #######################################################################
+        [parameter(
+            Mandatory = $false,
+            HelpMessage = ("The directory containing face images organized by " +
+                        "person folders. If not specified, uses the " +
+                        "configured faces directory preference.")
+        )]
+        [string] $FacesDirectory,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Embed images as base64."
+        )]
+        [switch] $EmbedImages,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Force rebuild of the image index database."
+        )]
+        [switch] $ForceIndexRebuild,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Switch to disable fallback behavior."
+        )]
+        [switch] $NoFallback,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Switch to skip database initialization and rebuilding."
+        )]
+        [switch] $NeverRebuild,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -254,16 +346,10 @@ function Find-IndexedImage {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Path to the SQLite database file."
-        )]
-        [string] $DatabaseFilePath,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
             HelpMessage = "Show results in a browser gallery."
         )]
         [Alias("show", "s")]
-        [switch] $ShowImageGallery,
+        [switch] $ShowInBrowser,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -282,158 +368,6 @@ function Find-IndexedImage {
             HelpMessage = "Description for the image gallery."
         )]
         [string] $Description,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Language for descriptions and keywords."
-        )]
-        [PSDefaultValue(Value = "English")]
-        [ValidateSet(
-            "Afrikaans",
-            "Akan",
-            "Albanian",
-            "Amharic",
-            "Arabic",
-            "Armenian",
-            "Azerbaijani",
-            "Basque",
-            "Belarusian",
-            "Bemba",
-            "Bengali",
-            "Bihari",
-            "Bosnian",
-            "Breton",
-            "Bulgarian",
-            "Cambodian",
-            "Catalan",
-            "Cherokee",
-            "Chichewa",
-            "Chinese (Simplified)",
-            "Chinese (Traditional)",
-            "Corsican",
-            "Croatian",
-            "Czech",
-            "Danish",
-            "Dutch",
-            "English",
-            "Esperanto",
-            "Estonian",
-            "Ewe",
-            "Faroese",
-            "Filipino",
-            "Finnish",
-            "French",
-            "Frisian",
-            "Ga",
-            "Galician",
-            "Georgian",
-            "German",
-            "Greek",
-            "Guarani",
-            "Gujarati",
-            "Haitian Creole",
-            "Hausa",
-            "Hawaiian",
-            "Hebrew",
-            "Hindi",
-            "Hungarian",
-            "Icelandic",
-            "Igbo",
-            "Indonesian",
-            "Interlingua",
-            "Irish",
-            "Italian",
-            "Japanese",
-            "Javanese",
-            "Kannada",
-            "Kazakh",
-            "Kinyarwanda",
-            "Kirundi",
-            "Kongo",
-            "Korean",
-            "Krio (Sierra Leone)",
-            "Kurdish",
-            "Kurdish (Soranî)",
-            "Kyrgyz",
-            "Laothian",
-            "Latin",
-            "Latvian",
-            "Lingala",
-            "Lithuanian",
-            "Lozi",
-            "Luganda",
-            "Luo",
-            "Macedonian",
-            "Malagasy",
-            "Malay",
-            "Malayalam",
-            "Maltese",
-            "Maori",
-            "Marathi",
-            "Mauritian Creole",
-            "Moldavian",
-            "Mongolian",
-            "Montenegrin",
-            "Nepali",
-            "Nigerian Pidgin",
-            "Northern Sotho",
-            "Norwegian",
-            "Norwegian (Nynorsk)",
-            "Occitan",
-            "Oriya",
-            "Oromo",
-            "Pashto",
-            "Persian",
-            "Polish",
-            "Portuguese (Brazil)",
-            "Portuguese (Portugal)",
-            "Punjabi",
-            "Quechua",
-            "Romanian",
-            "Romansh",
-            "Runyakitara",
-            "Russian",
-            "Scots Gaelic",
-            "Serbian",
-            "Serbo-Croatian",
-            "Sesotho",
-            "Setswana",
-            "Seychellois Creole",
-            "Shona",
-            "Sindhi",
-            "Sinhalese",
-            "Slovak",
-            "Slovenian",
-            "Somali",
-            "Spanish",
-            "Spanish (Latin American)",
-            "Sundanese",
-            "Swahili",
-            "Swedish",
-            "Tajik",
-            "Tamil",
-            "Tatar",
-            "Telugu",
-            "Thai",
-            "Tigrinya",
-            "Tonga",
-            "Tshiluba",
-            "Tumbuka",
-            "Turkish",
-            "Turkmen",
-            "Twi",
-            "Uighur",
-            "Ukrainian",
-            "Urdu",
-            "Uzbek",
-            "Vietnamese",
-            "Welsh",
-            "Wolof",
-            "Xhosa",
-            "Yiddish",
-            "Yoruba",
-            "Zulu")]
-        [string] $Language = "English",
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -591,27 +525,6 @@ function Find-IndexedImage {
             HelpMessage = "Only return HTML."
         )]
         [switch] $OnlyReturnHtml,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Embed images as base64."
-        )]
-        [switch] $EmbedImages,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Force rebuild of the image index database."
-        )]
-        [switch] $ForceIndexRebuild,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = (
-                "Array of directory path-like search strings to filter images by " +
-                "path (SQL LIKE patterns, e.g. '%\\2024\\%')"
-            )
-        )]
-        [string[]] $PathLike = @(),
          ###############################################################################
          [Parameter(
             Mandatory = $false,
@@ -619,11 +532,24 @@ function Find-IndexedImage {
             HelpMessage = ("Accepts search results from a previous -PassThru " +
                 "call to regenerate the view.")
         )]
-        [object[]] $InputObject
+        [object[]] $InputObject,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Show only pictures in a rounded rectangle, no text below."
+        )]
+        [Alias("NoMetadata", "OnlyPictures")]
+        [switch] $ShowOnlyPictures
     )
 
     ###############################################################################
     begin {
+        $Language = GenXdev.AI\Get-AIMetaLanguage -Language (
+            [String]::IsNullOrWhiteSpace($Language) ?
+            (GenXdev.Helpers\Get-DefaultWebLanguage) :
+            $Language
+        )
+
         $info = @{
             resultCount = 0
         }
@@ -632,7 +558,7 @@ function Find-IndexedImage {
         if ($null -ne $Any -and
             $Any.Length -gt 0) {
 
-            $Any = @($Any | ForEach-Object {
+            $Any = @($Any | Microsoft.PowerShell.Core\ForEach-Object {
 
                 $entry = $_.Trim()
 
@@ -679,7 +605,7 @@ function Find-IndexedImage {
 
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "Find-Image" `
+                -FunctionName "GenXdev.AI\Find-Image" `
                 -DefaultValues (
                     Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
             )
@@ -750,7 +676,7 @@ function Find-IndexedImage {
                     $peopleObj = $DbResult.people_json | Microsoft.PowerShell.Utility\ConvertFrom-Json
                     # Ensure predictions array is present
                     if (-not $peopleObj.PSObject.Properties['predictions']) {
-                        $peopleObj | Add-Member -MemberType NoteProperty -Name predictions -Value @()
+                        $peopleObj | Microsoft.PowerShell.Utility\Add-Member -MemberType NoteProperty -Name predictions -Value @()
                     }
                     $peopleObj
                 } else {
@@ -794,7 +720,7 @@ function Find-IndexedImage {
                     $objectsObj = $DbResult.objects_json | Microsoft.PowerShell.Utility\ConvertFrom-Json
                     # Ensure objects array is present
                     if (-not $objectsObj.PSObject.Properties['objects']) {
-                        $objectsObj | Add-Member -MemberType NoteProperty -Name objects -Value @()
+                        $objectsObj | Microsoft.PowerShell.Utility\Add-Member -MemberType NoteProperty -Name objects -Value @()
                     }
                     $objectsObj
                 } else {
@@ -814,7 +740,7 @@ function Find-IndexedImage {
         # determine database file path if not provided
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "Get-ImageDatabasePath" `
+            -FunctionName "GenXdev.AI\Get-ImageDatabasePath" `
             -DefaultValues (
                 Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
         )
@@ -1065,8 +991,8 @@ function Find-IndexedImage {
         $startTime = Microsoft.PowerShell.Utility\Get-Date
 
 
-        # for ShowImageGallery we need to collect all results first, otherwise we stream them
-        if ($ShowImageGallery) {
+        # for ShowInBrowser we need to collect all results first, otherwise we stream them
+        if ($ShowInBrowser) {
 
             $dbResults = GenXdev.Data\Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath -Queries $sqlQuery -SqlParameters $parameters
             $queryTime = (Microsoft.PowerShell.Utility\Get-Date) - $startTime
@@ -1075,7 +1001,7 @@ function Find-IndexedImage {
                 "Index-optimized database query completed in $($queryTime.TotalMilliseconds)ms, found $($dbResults.Count) results (no table scans)"
             )
 
-            # convert database results to image objects compatible with Show-ImageGallery
+            # convert database results to image objects compatible with Show-FoundImagesInBrowser
             foreach ($dbResult in $dbResults) {
                 $imageObj = ConvertTo-ImageObject -DbResult $dbResult -EmbedImages:$EmbedImages
                 $Info.resultCount++
@@ -1099,7 +1025,7 @@ function Find-IndexedImage {
     }
     ###############################################################################
     end {
-        # This end block only executes for ShowImageGallery mode since streaming mode exits early
+        # This end block only executes for ShowInBrowser mode since streaming mode exits early
 
          # provide appropriate message if no results were found in streaming mode
          if ($Info.resultCount -eq 0) {
@@ -1131,8 +1057,8 @@ function Find-IndexedImage {
             }
         }
 
-        # if ShowImageGallery is requested, display the gallery
-        if ($ShowImageGallery) {
+        # if ShowInBrowser is requested, display the gallery
+        if ($ShowInBrowser) {
 
             if ([String]::IsNullOrWhiteSpace($Title)) {
                 $Title = "🚀 Fast Indexed Image Search Results"
@@ -1146,17 +1072,17 @@ function Find-IndexedImage {
             # copy all the gallery-related parameters
             $galleryParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "Show-ImageGallery" `
+                -FunctionName "GenXdev.AI\Show-FoundImagesInBrowser" `
                 -DefaultValues (
                     Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
             )
 
-            # pass the results to Show-ImageGallery
-            $null = GenXdev.AI\Show-ImageGallery @galleryParams -InputObject $results
+            # pass the results to Show-FoundImagesInBrowser
+            $null = GenXdev.AI\Show-FoundImagesInBrowser @galleryParams -InputObject $results
 
             if ($PassThru) {
 
-                 $results | ForEach-Object {
+                 $results | Microsoft.PowerShell.Core\ForEach-Object {
 
                     Microsoft.PowerShell.Utility\Write-Output $_
                  }

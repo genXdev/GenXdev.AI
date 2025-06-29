@@ -9,20 +9,43 @@ This module provides PowerShell functions to interact with DeepStack's face reco
 ## Quick Start
 
 ```powershell
-# Ensure the DeepStack server is running
+
+
+# manually ensure LMStudio is working
+EnsureLMStudio -ShowWindow -Model "MiniPCM" `
+    -ModelLMSGetIdentifier ("lmstudio-community/MiniCPM-V-2_6-" +
+                            "GGUF/MiniCPM-V-2_6-Q4_K_M.gguf")
+
+# manually ensure docker desktop is working
+EnsureDockerDesktop -ShowWindow
 EnsureDeepStack
 
-# Register faces for recognition
-Register-Face -Identifier "JohnDoe" -ImagePath "C:\path\to\john.jpg"
+# create a directory containing only directories having names of
+# each known person, each knownperson folder can contain multiple
+# png, jpeg or gif images of that person
 
-# Check if faces are recognized in an image
-Get-ImageDetectedFaces -ImagePath "C:\path\to\group_photo.jpg"
+# set directories
+Set-AIKnownFacesRootpath -FacesDirectory "C:\path\to\dir\with\for\each\person\a\directory\withmultipleiomages.jpg"
+Set-AIImageCollection -ImageDirectories @("~\Pictures")
 
-# Remove a registered face
-Unregister-Face -Identifier "JohnDoe"
+# update
+Update-AllAIMetadata -ShowWindow
+Export-ImageDatabase
 
-# Enhance an image
-Invoke-ImageEnhancement -ImagePath "C:\path\to\photo.jpg" -OutputPath "C:\path\to\enhanced.jpg"
+Find-IndexedImage -HasNudity -HasExplicitContent -ShowInBrowser -InterActive
+
+# you can keep the output and reuse them
+$foundImages = Find-IndexedImage -HasNudity -HasExplicitContent
+
+# all Find-IndexedImage's parameters, except -PathsLike, are inclusive
+# to truly filter using exclusions, chain commands using pipes |
+$foundImages |
+    Find-Image -Objects person, dog |
+    Find-Image -StyleType *photography* |
+    Show-FoundImagesInBrowser -Monitor 0 -Right -Interactive
+
+Set-WindowsPosition -Monitor 0 -Left
+
 ```
 
 ## Prerequisites

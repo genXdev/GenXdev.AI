@@ -111,7 +111,7 @@ function Get-TextTranslation {
             "Turkish", "Turkmen", "Twi", "Uighur", "Ukrainian", "Urdu", "Uzbek",
             "Vietnamese", "Welsh", "Wolof", "Xhosa", "Yiddish", "Yoruba", "Zulu"
         )]
-        [string] $Language = "",
+        [string] $Language,
         ########################################################################
         [Parameter(
             Position = 2,
@@ -189,16 +189,14 @@ function Get-TextTranslation {
 
     begin {
 
+        $Language = GenXdev.AI\Get-AIMetaLanguage -Language (
+            [String]::IsNullOrWhiteSpace($Language) ?
+            (GenXdev.Helpers\Get-DefaultWebLanguage) :
+            $Language
+        )
+
         Microsoft.PowerShell.Utility\Write-Verbose ("Starting translation " +
             "process to target language: $Language")
-
-        if ([string]::IsNullOrWhiteSpace($Language)) {
-
-            # get system default language when none specified
-            $Language = GenXdev.Helpers\Get-DefaultWebLanguage
-            Microsoft.PowerShell.Utility\Write-Verbose (
-                "Using system default language: $Language")
-        }
     }
 
     process {

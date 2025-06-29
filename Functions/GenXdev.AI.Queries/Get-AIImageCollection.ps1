@@ -16,13 +16,13 @@ not specified, returns the system default directories (Downloads, OneDrive,
 Pictures).
 
 .EXAMPLE
-Get-ImageDirectories
+Get-AIImageCollection
 
 Returns the configured image directories and default language, or system
 defaults if none are configured.
 
 .EXAMPLE
-$config = Get-ImageDirectories -DefaultValue @("C:\MyImages")
+$config = Get-AIImageCollection -DefaultValue @("C:\MyImages")
 
 Returns configured directories or the specified default if none are configured.
 
@@ -31,7 +31,7 @@ getimgdirs
 
 Uses alias to get the current image directory configuration.
 #>
-function Get-ImageDirectories {
+function Get-AIImageCollection {
 
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
@@ -46,20 +46,24 @@ function Get-ImageDirectories {
             HelpMessage = "Default directories to return if none are configured"
         )]
         [AllowNull()]
-        [string[]] $DefaultValue = $null
+        [string[]] $ImageDirectories
         ###############################################################################
     )
 
     begin {
 
-        # initialize result object
-        $result = [PSCustomObject]@{
-            ImageDirectories = @()
-            Language = "English"
-        }
     }
 
     process {
+
+        if ($null -ne $ImageDirectories -and
+            $ImageDirectories.Count -gt 0) {
+
+            # use provided directories if available
+            $result = $ImageDirectories
+            Microsoft.PowerShell.Utility\Write-Output $result
+            return;
+        }
 
         # get image directories from preferences or global variable
         $imageDirectoriesPreference = $null
@@ -90,17 +94,12 @@ function Get-ImageDirectories {
             $imageDirectoriesPreference.Count -gt 0) {
 
             # use preference value if available and not empty
-            $result.ImageDirectories = $imageDirectoriesPreference
+            $result = $imageDirectoriesPreference
         }
         elseif ($Global:ImageDirectories -and $Global:ImageDirectories.Count -gt 0) {
 
             # fallback to global variable if preference not available
-            $result.ImageDirectories = $Global:ImageDirectories
-        }
-        elseif ($null -ne $DefaultValue) {
-
-            # use provided default value if no other configuration exists
-            $result.ImageDirectories = $DefaultValue
+            $result = $Global:ImageDirectories
         }
         else {
 
@@ -121,57 +120,19 @@ function Get-ImageDirectories {
             # define default directories for image processing operations
             $result.ImageDirectories = @(
                 (GenXdev.FileSystem\Expand-Path '~\downloads'),
-                (GenXdev.FileSystem\Expand-Path '~\\onedrive'),
+                (GenXdev.FileSystem\Expand-Path '~\onedrive'),
                 $picturesPath
             )
         }
-
-        # determine which default language to use for image metadata
-        if ($Global:DefaultImagesMetaLanguage) {
-
-            # use global variable if available
-            $result.Language = $Global:DefaultImagesMetaLanguage
-        }
-        else {
-
-            # try to get from preferences
-            try {
-
-                # retrieve default language preference from genxdev data storage
-                $defaultLanguage = GenXdev.Data\Get-GenXdevPreference `
-                    -Name "DefaultImagesMetaLanguage" `
-                    -DefaultValue "English" `
-                    -ErrorAction SilentlyContinue
-
-                if (-not [string]::IsNullOrEmpty($defaultLanguage)) {
-
-                    # use preference value if available and not empty
-                    $result.Language = $defaultLanguage
-                }
-                else {
-
-                    # fallback to english if preference is empty
-                    $result.Language = "English"
-                }
-            }
-            catch {
-
-                # fallback to english if preference retrieval fails
-                $result.Language = "English"
-            }
-        }
-
-        # output verbose information about retrieved configuration
-        Microsoft.PowerShell.Utility\Write-Verbose (
-            "Retrieved image directories: [$($result.ImageDirectories -join ', ')] " +
-            "with default language: $($result.Language)"
-        )
     }
 
     end {
 
         # return the configured image directories and language
-        return $result
+        $result |  Microsoft.PowerShell.Core\ForEach-Object {
+
+            Microsoft.PowerShell.Utility\Write-Output (GenXdev.FileSystem\Expand-Path $_)
+        }
     }
 }
 ################################################################################

@@ -222,12 +222,11 @@ function Save-Transcriptions {
 
     begin {
 
-        # check if language input parameter is empty or whitespace
-        if ([string]::IsNullOrWhiteSpace($LanguageIn)) {
-
-            # get default language from system settings
-            $LanguageIn = GenXdev.Helpers\Get-DefaultWebLanguage
-        }
+        $LanguageIn = GenXdev.AI\Get-AIMetaLanguage -Language (
+            [String]::IsNullOrWhiteSpace($LanguageIn) ?
+            (GenXdev.Helpers\Get-DefaultWebLanguage) :
+            $LanguageIn
+        )
 
         # define array of supported media file extensions for processing
         $extensions = @(

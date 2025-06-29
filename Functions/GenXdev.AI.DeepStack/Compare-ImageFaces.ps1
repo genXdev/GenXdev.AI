@@ -43,10 +43,6 @@ seconds. Default is 3.
 Custom Docker image name to use instead of the default DeepStack image. This
 allows using custom or updated DeepStack images.
 
-.PARAMETER FacesPath
-The path inside the container where faces are stored. This should match the
-DeepStack configuration. Default is "/datastore".
-
 .PARAMETER NoDockerInitialize
 Skip Docker initialization when this switch is used. This is typically used
 when already called by parent function to avoid duplicate initialization.
@@ -154,15 +150,6 @@ function Compare-ImageFaces {
         [string] $ImageName,
         ###############################################################################
         [Parameter(
-            Position = 8,
-            Mandatory = $false,
-            HelpMessage = ("The path inside the container where faces are " +
-                          "stored")
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore",
-        ###############################################################################
-        [Parameter(
             Mandatory = $false,
             HelpMessage = ("Skip Docker initialization (used when already " +
                           "called by parent function)")
@@ -202,7 +189,7 @@ function Compare-ImageFaces {
             # copy parameter values for the ensuredeepstack function call
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName 'EnsureDeepStack' `
+                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue)

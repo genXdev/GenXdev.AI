@@ -44,9 +44,6 @@ availability.
 .PARAMETER ImageName
 Custom Docker image name to use instead of the default DeepStack image.
 
-.PARAMETER FacesPath
-The path inside the container where face data files are stored.
-
 .EXAMPLE
 Unregister-AllFaces
 
@@ -144,17 +141,10 @@ function Unregister-AllFaces {
             HelpMessage = "Custom Docker image name to use"
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ImageName,
+        [string] $ImageName
         ###########################################################################
-        [Parameter(
-            Mandatory = $false,
-            Position = 6,
-            HelpMessage = "The path inside the container where faces are stored"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore"
-        ###########################################################################
-    )    begin {
+    )
+    begin {
 
         # use script-scoped variables set by ensuredeepstack with fallback
         # defaults
@@ -169,12 +159,6 @@ function Unregister-AllFaces {
             $script:ContainerName = "deepstack_face_recognition"
         }
 
-        # initialize faces path from script scope if not already set
-        if (-not $script:FacesPath) {
-
-            $script:FacesPath = "/datastore"
-        }
-
         # ensure the deepstack face recognition service is running
         if (-not $NoDockerInitialize) {
 
@@ -185,7 +169,7 @@ function Unregister-AllFaces {
             # copy matching parameters from current function to ensure function
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName 'EnsureDeepStack' `
+                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue)
@@ -304,7 +288,7 @@ function Unregister-AllFaces {
 
                 # ensure the faces directory exists with proper permissions
                 $null = docker exec $script:ContainerName `
-                    mkdir -p $script:FacesPath 2>$null
+                    mkdir -p /datastore 2>$null
 
                 # throw error if directory creation failed
                 if ($LASTEXITCODE -ne 0) {
@@ -314,7 +298,7 @@ function Unregister-AllFaces {
 
                 # set proper permissions
                 $null = docker exec $script:ContainerName `
-                    chmod 755 $script:FacesPath 2>$null
+                    chmod 755 /datastore 2>$null
 
                 # warn if permission setting failed but continue
                 if ($LASTEXITCODE -ne 0) {
@@ -326,7 +310,7 @@ function Unregister-AllFaces {
 
                 # verify the directory is accessible and empty
                 $null = docker exec $script:ContainerName `
-                    test -d $script:FacesPath 2>$null
+                    test -d /datastore 2>$null
 
                 # throw error if directory verification failed
                 if ($LASTEXITCODE -ne 0) {
@@ -336,13 +320,13 @@ function Unregister-AllFaces {
 
                 # test write permissions
                 $null = docker exec $script:ContainerName `
-                    touch $script:FacesPath/.test_write 2>$null
+                    touch /datastore/.test_write 2>$null
 
                 # verify write permissions and clean up test file
                 if ($LASTEXITCODE -eq 0) {
 
                     $null = docker exec $script:ContainerName `
-                        rm -f $script:FacesPath/.test_write 2>$null
+                        rm -f /datastore/.test_write 2>$null
 
                     Microsoft.PowerShell.Utility\Write-Verbose (
                         "Directory is writable and ready"
@@ -404,13 +388,13 @@ function Unregister-AllFaces {
                 }
 
                 Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Removing all faces from: $script:FacesPath"
+                    "Removing all faces from: /datastore"
                 )
 
                 # remove all contents of faces directory using comprehensive
                 # approach first try to remove all image files specifically
                 $removeFilesResult = docker exec $script:ContainerName bash -c (
-                    "find $script:FacesPath -type f \( " +
+                    "find /datastore -type f \( " +
                     "-name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o " +
                     "-name '*.gif' \) -delete"
                 ) 2>&1
@@ -425,7 +409,7 @@ function Unregister-AllFaces {
 
                 # then remove any remaining files and subdirectories
                 $removeAllResult = docker exec $script:ContainerName bash -c (
-                    "rm -rf $script:FacesPath/* $script:FacesPath/.*"
+                    "rm -rf /datastore/* /datastore/.*"
                 ) 2>&1
 
                 # note if some hidden files could not be removed
@@ -439,12 +423,12 @@ function Unregister-AllFaces {
 
                 # verify the directory is empty after cleanup
                 $null = docker exec $script:ContainerName bash -c (
-                    "ls -la $script:FacesPath"
+                    "ls -la /datastore"
                 ) 2>&1
 
                 # count remaining files to verify cleanup success
                 $remainingFiles = docker exec $script:ContainerName bash -c (
-                    "find $script:FacesPath -type f | wc -l"
+                    "find /datastore -type f | wc -l"
                 ) 2>&1
 
                 # verify all files were successfully removed

@@ -17,7 +17,7 @@ configuration. Paths can be relative or absolute and will be expanded
 automatically. Duplicates are filtered out using case-insensitive comparison.
 
 .EXAMPLE
-Add-ImageDirectory -ImageDirectories @("C:\NewPhotos", "D:\MoreImages")
+Add-AIImageCollectionDirectory -ImageDirectories @("C:\NewPhotos", "D:\MoreImages")
 
 Adds the specified directories to the existing image directories configuration
 using full parameter names.
@@ -28,7 +28,7 @@ addimgdir @("C:\Temp\Photos", "E:\Backup\Images")
 Uses alias to add multiple directories to the configuration with positional
 parameters.
 #>
-function Add-ImageDirectory {
+function Add-AIImageCollectionDirectory {
 
 
 
@@ -44,6 +44,8 @@ function Add-ImageDirectory {
             ValueFromPipeline = $true,
             HelpMessage = "Array of directory paths to add to image directories"
         )]
+        [ValidateNotNullOrEmpty()]
+        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
         [string[]] $ImageDirectories
         ###############################################################################
     )
@@ -51,13 +53,13 @@ function Add-ImageDirectory {
     begin {
 
         # retrieve current image directories configuration
-        $currentConfig = GenXdev.AI\Get-ImageDirectories
+        $currentConfig =  GenXdev.AI\Get-AIImageCollection
 
         # initialize new collection to store all directories including existing ones
         $newDirectories = [System.Collections.Generic.List[string]]::new()
 
         # populate collection with existing directories to preserve them
-        foreach ($dir in $currentConfig.ImageDirectories) {
+        foreach ($dir in $currentConfig) {
 
             $newDirectories.Add($dir)
         }
@@ -65,7 +67,7 @@ function Add-ImageDirectory {
         # output current configuration state for debugging purposes
         Microsoft.PowerShell.Utility\Write-Verbose (
             "Current image directories: " +
-            "[$($currentConfig.ImageDirectories -join ', ')]"
+            "[$($ImageDirectories -join ', ')]"
         )
     }
 
@@ -116,9 +118,8 @@ function Add-ImageDirectory {
         )) {
 
             # update configuration using the dedicated setter function
-            GenXdev.AI\Set-ImageDirectories `
-                -ImageDirectories $finalDirectories `
-                -Language $currentConfig.Language
+            GenXdev.AI\Set-AIImageCollection `
+                -ImageDirectories $finalDirectories
 
             # display success confirmation to user with statistics
             Microsoft.PowerShell.Utility\Write-Host (

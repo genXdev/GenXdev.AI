@@ -17,7 +17,7 @@ eliminating the need for _1, _2, etc. suffixes.
 
 .PARAMETER FacesDirectory
 The directory containing face images organized by person folders.
-If not specified, uses the configured faces directory from Set-FacesDirectory.
+If not specified, uses the configured faces directory from Set-AIKnownFacesRootpath.
 If no configuration exists, defaults to "b:\media\faces\"
 
 .PARAMETER MaxRetries
@@ -42,9 +42,6 @@ Interval in seconds between health check attempts.
 .PARAMETER ImageName
 Custom Docker image name to use.
 
-.PARAMETER FacesPath
-The path inside the container where faces are stored.
-
 .PARAMETER NoDockerInitialize
 Skip Docker Desktop initialization (used when already called by parent
 function).
@@ -65,12 +62,11 @@ Use GPU-accelerated version (requires NVIDIA GPU).
 .EXAMPLE
 Register-AllFaces -FacesDirectory "b:\media\faces\" -MaxRetries 3 `
     -ContainerName "deepstack_face_recognition" -VolumeName "deepstack_face_data" `
-    -ServicePort 5000 -HealthCheckTimeout 60 -HealthCheckInterval 3 `
-    -FacesPath "/datastore"
+    -ServicePort 5000 -HealthCheckTimeout 60 -HealthCheckInterval 3
 
 .EXAMPLE
 Register-AllFaces
-Uses the configured faces directory from Set-FacesDirectory or defaults to "b:\media\faces\"
+Uses the configured faces directory from Set-AIKnownFacesRootpath or defaults to "b:\media\faces\"
 
 .EXAMPLE
 updatefaces -RenameFailed
@@ -148,14 +144,7 @@ function Register-AllFaces {
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImageName,
-        #######################################################################
-        [parameter(
-            Position = 8,
-            Mandatory = $false,
-            HelpMessage = "The path inside the container where faces are stored"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore",
+
         #######################################################################
         [parameter(
             Mandatory = $false,
@@ -193,46 +182,12 @@ function Register-AllFaces {
 
     begin {
 
-        # use provided directory or get from preference store
-        if ([string]::IsNullOrEmpty($FacesDirectory)) {
+       $FacesDirectory = GenXdev.AI\Get-AIKnownFacesRootpath `
+            -FacesDirectory $FacesDirectory
 
-            # get configured faces directory from preference store
-            $configuredFacesDirectory = $null
-
-            try {
-
-                $configuredFacesDirectory = GenXdev.Data\Get-GenXdevPreference `
-                    -Name "FacesDirectory" `
-                    -DefaultValue $null `
-                    -ErrorAction SilentlyContinue
-            }
-            catch {
-
-                $configuredFacesDirectory = $null
-            }
-
-            # use configured directory or fallback to default
-            if (-not [string]::IsNullOrEmpty($configuredFacesDirectory)) {
-
-                $FacesDirectory = $configuredFacesDirectory
-
-                Microsoft.PowerShell.Utility\Write-Verbose `
-                    "Using configured faces directory: $FacesDirectory"
-            }
-            else {
-
-                # fallback to default directory
-                $FacesDirectory = GenXdev.FileSystem\Expand-Path ".\"
-
-                Microsoft.PowerShell.Utility\Write-Verbose `
-                    "Using default faces directory: $FacesDirectory"
-            }
-        }
-        else {
-
-            Microsoft.PowerShell.Utility\Write-Verbose `
+        Microsoft.PowerShell.Utility\Write-Verbose `
                 "Using provided faces directory: $FacesDirectory"
-        }
+
 
         # initialize script-level tracking variables for registration results
         $script:RegistrationErrors = @()
@@ -283,7 +238,7 @@ function Register-AllFaces {
                     # copy parameters for the EnsureDeepStack function call
                     $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
-                        -FunctionName 'EnsureDeepStack' `
+                        -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                         -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                             -Scope Local `
                             -ErrorAction SilentlyContinue)
@@ -390,7 +345,7 @@ function Register-AllFaces {
                     # copy parameters for the Register-Face function call
                     $registerParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
-                        -FunctionName 'Register-Face' `
+                        -FunctionName 'GenXdev.AI\Register-Face' `
                         -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                             -Scope Local `
                             -ErrorAction SilentlyContinue)
@@ -621,7 +576,7 @@ function Register-AllFaces {
                 # copy parameters for the Unregister-AllFaces function call
                 $unregisterParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
-                    -FunctionName 'Unregister-AllFaces' `
+                    -FunctionName 'GenXdev.AI\Unregister-AllFaces' `
                     -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                         -Scope Local `
                         -ErrorAction SilentlyContinue)

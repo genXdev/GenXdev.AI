@@ -49,10 +49,6 @@ seconds. Default is 3.
 Custom Docker image name to use instead of the default DeepStack image. This
 allows using custom or updated DeepStack images.
 
-.PARAMETER FacesPath
-The path inside the container where faces are stored. This should match the
-DeepStack configuration. Default is "/datastore".
-
 .EXAMPLE
 Get-ImageDetectedScenes -ImagePath "C:\Users\YourName\landscape.jpg"
 Classifies the scene in the specified image using default settings.
@@ -209,21 +205,6 @@ function Get-ImageDetectedScenes {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The path inside the container where faces are " +
-                          "stored")
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore",
-        #######################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Skip Docker initialization (used when already " +
-                          "called by parent function)")
-        )]
-        [switch] $NoDockerInitialize,
-        #######################################################################
-        [Parameter(
-            Mandatory = $false,
             HelpMessage = ("Force rebuild of Docker container and remove " +
                           "existing data")
         )]
@@ -257,7 +238,7 @@ function Get-ImageDetectedScenes {
             # copy parameter values for the ensuredeepstack function call
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName 'EnsureDeepStack' `
+                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue)

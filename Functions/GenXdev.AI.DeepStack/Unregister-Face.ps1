@@ -38,9 +38,6 @@ Interval in seconds between health check attempts.
 .PARAMETER ImageName
 Custom Docker image name to use.
 
-.PARAMETER FacesPath
-The path inside the container where faces are stored.
-
 .EXAMPLE
 Unregister-Face -Identifier "JohnDoe" -NoDockerInitialize $false `
     -ContainerName "deepstack_face_recognition" -ServicePort 5000
@@ -122,15 +119,6 @@ function Unregister-Face {
         [string] $ImageName,
         ###############################################################################
         [Parameter(
-            Position = 7,
-            Mandatory = $false,
-            HelpMessage = ("The path inside the container where faces are " +
-                "stored")
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $FacesPath = "/datastore",
-        ###############################################################################
-        [Parameter(
             Mandatory = $false,
             HelpMessage = ("Skip Docker initialization (used when already " +
                 "called by parent function)")
@@ -169,7 +157,7 @@ function Unregister-Face {
             # copy matching parameters to pass to ensuredeepstack function
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName 'EnsureDeepStack' `
+                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local -ErrorAction SilentlyContinue)
 

@@ -1,17 +1,17 @@
 ################################################################################
-Pester\Describe "Add-ImageDirectory" {
+Describe "Get-AIMetaLanguage" {
 
-    Pester\It "should pass PSScriptAnalyzer rules" {
+    It "should pass PSScriptAnalyzer rules" {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Add-ImageDirectory.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Get-AIMetaLanguage.ps1"
 
         # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 
         [string] $message = ""
-        $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
+        $analyzerResults | ForEach-Object {
 
             $message = $message + @"
 --------------------------------------------------
@@ -22,7 +22,7 @@ Message: $($_.Message)
 "@
         }
 
-        $analyzerResults.Count | Pester\Should -Be 0 -Because @"
+        $analyzerResults.Count | Should -Be 0 -Because @"
 The following PSScriptAnalyzer rules are being violated:
 $message
 "@;

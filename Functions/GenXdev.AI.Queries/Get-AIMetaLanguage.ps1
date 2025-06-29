@@ -1,55 +1,20 @@
 ################################################################################
 <#
-.SYNOPSIS
-Sets the directories and default language for image files used in GenXdev.AI
-operations.
 
-.DESCRIPTION
-This function configures the global image directories and default language
-used by the GenXdev.AI module for various image processing and AI operations.
-It updates both the global variables and the module's preference storage to
-persist the configuration across sessions.
-
-.PARAMETER ImageDirectories
-An array of directory paths where image files are located. These directories
-will be used by GenXdev.AI functions for image discovery and processing
-operations.
-
-.PARAMETER Language
-The default language to use for image metadata operations. This will be used
-by Remove-ImageMetaData, Update-AllImageMetaData, and Find-Image functions
-when no language is explicitly specified.
-
-.EXAMPLE
-Set-ImageDirectories -ImageDirectories @("C:\Images", "D:\Photos") -Language "Spanish"
-
-.EXAMPLE
-Set-ImageDirectories @("C:\Pictures", "E:\Graphics\Stock") "French"
-
-.EXAMPLE
-Set-ImageDirectories @("C:\Pictures")
 #>
-function Set-ImageDirectories {
+function Get-AIMetaLanguage {
 
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
+    [Alias("getimgmetalang")]
 
     param(
-        ###############################################################################
         [Parameter(
-            Mandatory = $true,
             Position = 0,
-            HelpMessage = "Array of directory paths for image files"
-        )]
-        [string[]] $ImageDirectories,
-        ###############################################################################
-        [Parameter(
             Mandatory = $false,
-            Position = 1,
             HelpMessage = "The default language for image metadata operations"
         )]
-        [PSDefaultValue(Value = "English")]
         [ValidateSet(
             "Afrikaans",
             "Akan",
@@ -195,58 +160,69 @@ function Set-ImageDirectories {
             "Yiddish",
             "Yoruba",
             "Zulu")]
-        [string] $Language = "English"
-        ###############################################################################
+        [string] $Language
     )
 
     begin {
 
-        # validate that parameters are properly set
-        Microsoft.PowerShell.Utility\Write-Verbose (
-            "Setting image directories for GenXdev.AI module: " +
-            "[$($ImageDirectories -join ', ')] with default language: $Language"
-        )
+        # initialize result object
+        $result = GenXdev.Helpers\Get-DefaultWebLanguage
     }
 
     process {
 
-        # confirm the operation with the user before proceeding
-        if ($PSCmdlet.ShouldProcess(
-            "GenXdev.AI Module Configuration",
-            ("Set image directories to: [$($ImageDirectories -join ', ')] " +
-            "and default language to: $Language")
-        )) {
+        if (-not [string]::IsNullOrWhiteSpace($Language)) {
 
-            # set the global variable for immediate use by other functions
-            $Global:ImageDirectories = $ImageDirectories
+            # if no language specified, use default web language
+            $result = $Language
+            return;
+        }
 
-            # set the global default language variable
-            $Global:DefaultImagesMetaLanguage = $Language
+        # get image directories from preferences or global variable
+        $LanguagePreference = $null
 
-            # serialize the array to json for storage in preferences
-            $serializedDirectories = $ImageDirectories |
-                Microsoft.PowerShell.Utility\ConvertTo-Json -Compress `
-                    -ErrorAction SilentlyContinue
+        try {
 
-            # store the configuration in module preferences for persistence
-            $null = GenXdev.Data\Set-GenXdevPreference `
-                -Name "ImageDirectories" `
-                -Value $serializedDirectories
+            # retrieve image directories preference from genxdev data storage
+            $json = GenXdev.Data\Get-GenXdevPreference `
+                -Name "ImagesMetaLanguage" `
+                -DefaultValue $null `
+                -ErrorAction SilentlyContinue
 
-            # store the default language configuration in module preferences
-            $null = GenXdev.Data\Set-GenXdevPreference `
-                -Name "DefaultImagesMetaLanguage" `
-                -Value $Language
+            if (-not [string]::IsNullOrEmpty($json)) {
 
-            # output confirmation of the operation
-            Microsoft.PowerShell.Utility\Write-Verbose (
-                "Successfully configured $($ImageDirectories.Count) image " +
-                "directories and default language '$Language' in GenXdev.AI module"
-            )
+                # convert json preference to powershell object
+                $LanguagePreference = $json |
+                    Microsoft.PowerShell.Utility\ConvertFrom-Json
+            }
+        }
+        catch {
+
+            # set to null if preference retrieval fails
+            $LanguagePreference = $null
+        }
+
+        # determine which image directories to use based on priority
+        if (-not ([string]::IsNullOrWhiteSpace(($LanguagePreference)))) {
+
+            # use preference value if available and not empty
+            $result = $LanguagePreference
+        }
+        elseif (-not ([string]::IsNullOrWhiteSpace($Global:Language))) {
+
+            # fallback to global variable if preference not available
+            $result = $Global:Language
+        }
+        else {
+
+            $result = "English";
         }
     }
 
     end {
+
+        # return the configured image directories and language
+        return $result
     }
 }
 ################################################################################
