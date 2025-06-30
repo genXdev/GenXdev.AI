@@ -546,7 +546,7 @@ function Register-AllFaces {
             catch {
 
                 # output warning for unexpected processing errors
-                Microsoft.PowerShell.Utility\Write-Warning `
+                Microsoft.PowerShell.Utility\Write-Verbose `
                     ("Unexpected error processing images for " +
                     "$personName`: $_")
             }

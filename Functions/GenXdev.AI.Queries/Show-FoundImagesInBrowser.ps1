@@ -351,7 +351,7 @@ function Show-FoundImagesInBrowser {
     }
 
     process {
-        $InputObject | ForEach-Object {
+        $InputObject | Microsoft.PowerShell.Core\ForEach-Object -ErrorAction SilentlyContinue {
 
             # add unique input objects to the results collection
             $null = $results.Add($_)
@@ -529,7 +529,7 @@ function Show-FoundImagesInBrowser {
                                     # ensure paint.net is available for editing
                                     $null = GenXdev.AI\EnsurePaintNet
 
-                                    Microsoft.PowerShell.Utility\Write-Warning (
+                                    Microsoft.PowerShell.Utility\Write-Verbose (
                                         ("Paint.NET is not installed or not " +
                                          "found in PATH. Please install it to " +
                                          "use the edit feature."))

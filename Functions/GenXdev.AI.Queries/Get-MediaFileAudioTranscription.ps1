@@ -546,17 +546,42 @@ function Get-MediaFileAudioTranscription {
         [switch] $NoContext,
         ################################################################################
         [Parameter(Mandatory = $false, HelpMessage = "Use beam search sampling strategy")]
-        [switch] $WithBeamSearchSamplingStrategy
+        [switch] $WithBeamSearchSamplingStrategy,
+        ########################################################################
+        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $SessionOnly,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $ClearSession,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [Alias("FromPreferences")]
+        [switch] $SkipSession
+        ########################################################################
     )
 
     begin {
 
-        $LanguageIn = GenXdev.AI\Get-AIMetaLanguage -Language (
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        $LanguageIn = GenXdev.AI\Get-AIMetaLanguage @params -Language (
             [String]::IsNullOrWhiteSpace($LanguageIn) ?
             (GenXdev.Helpers\Get-DefaultWebLanguage) :
             $LanguageIn
         )
-        $LanguageOut = GenXdev.AI\Get-AIMetaLanguage -Language (
+        $LanguageOut = GenXdev.AI\Get-AIMetaLanguage @params -Language (
             [String]::IsNullOrWhiteSpace($LanguageOut) ?
             (GenXdev.Helpers\Get-DefaultWebLanguage) :
             $LanguageOut
@@ -752,8 +777,12 @@ process {
 
                         try {
                             # translate the text
+                            $translateParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                                -BoundParameters $PSBoundParameters `
+                                -FunctionName "GenXdev.AI\Get-TextTranslation" `
+                                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
                             $result = @{
-                                Text  = (GenXdev.AI\Get-TextTranslation -Text:($result.Text) -Language:$LanguageOut -Model:$TranslateUsingLMStudioModel -Instructions "Translate this partial subtitle text, into the [Language] language. ommit only the translation no yapping or chatting. return in json format like so: {`"Translation`":`"Translated text here`"}" | Microsoft.PowerShell.Utility\ConvertFrom-Json).Translation;
+                                Text  = (GenXdev.AI\Get-TextTranslation @translateParams -Text:($result.Text) -Language:$LanguageOut -Model:$TranslateUsingLMStudioModel -Instructions "Translate this partial subtitle text, into the [Language] language. ommit only the translation no yapping or chatting. return in json format like so: {`"Translation`":`"Translated text here`"}" | Microsoft.PowerShell.Utility\ConvertFrom-Json).Translation;
                                 Start = $result.Start;
                                 End   = $result.End;
                             }
@@ -790,7 +819,11 @@ process {
                 $results = GenXdev.AI\Start-AudioTranscription @invocationArguments
 
                 # delegate
-                GenXdev.AI\Get-TextTranslation -Text "$results" -Language $LanguageOut -Model $TranslateUsingLMStudioModel
+                $translateParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                    -BoundParameters $PSBoundParameters `
+                    -FunctionName "GenXdev.AI\Get-TextTranslation" `
+                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+                GenXdev.AI\Get-TextTranslation @translateParams -Text "$results" -Language $LanguageOut -Model $TranslateUsingLMStudioModel
 
                 # end of translation
                 return;

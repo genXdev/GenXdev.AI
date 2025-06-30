@@ -444,8 +444,28 @@ function Update-AllImageMetaData {
             Mandatory = $false,
             HelpMessage = "Detects changes in the faces directory and re-registers faces if needed"
         )]
-        [switch] $AutoUpdateFaces
-        ################################################################################
+        [switch] $AutoUpdateFaces,
+        ########################################################################
+        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $SessionOnly,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $ClearSession,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [Alias("FromPreferences")]
+        [switch] $SkipSession
+        ########################################################################
     )
 
     begin {
@@ -462,8 +482,8 @@ function Update-AllImageMetaData {
         try {
             $a = (GenXDev.Windows\Get-Window -ProcessName "Docker Desktop") ;
             if ($null -eq $a) { return }
-            $a.Show()
-            $a.Restore()
+            $null = $a.Show()
+            $null = $a.Restore()
             GenXDev.Windows\Set-WindowPosition -WindowHelper $a -Monitor 0 -Right -Bottom
             GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
         }
@@ -472,7 +492,11 @@ function Update-AllImageMetaData {
         }
 
 
-        $FacesDirectory = GenXdev.AI\Get-AIKnownFacesRootpath -FacesDirectory $FacesDirectory
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AIKnownFacesRootpath" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        $FacesDirectory = GenXdev.AI\Get-AIKnownFacesRootpath @params
         $filecount = (
             @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\" -PassThru) +
             @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\*.jpeg" -PassThru) +
@@ -547,7 +571,11 @@ function Update-AllImageMetaData {
             "across directories"
         )
 
-        $Language = GenXdev.AI\Get-AIMetaLanguage -Language (
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        $Language = GenXdev.AI\Get-AIMetaLanguage @params -Language (
             [String]::IsNullOrWhiteSpace($Language) ?
             (GenXdev.Helpers\Get-DefaultWebLanguage) :
             $Language
@@ -569,8 +597,8 @@ function Update-AllImageMetaData {
             try {
                 $a = (GenXDev.Windows\Get-Window -ProcessName "LM Studio") ;
                 if ($null -eq $a) { return }
-                $a.Show()
-                $a.Restore()
+                $null = $a.Show()
+                $null = $a.Restore()
                 GenXDev.Windows\Set-WindowPosition -WindowHelper $a -Monitor 0 -Right -Top
                 GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
             }
@@ -638,7 +666,11 @@ function Update-AllImageMetaData {
     process {
 
         # get configured directories and language using get-imagedirectories
-        $directories = GenXdev.AI\Get-AIImageCollection -ImageDirectories $ImageDirectories
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AIImageCollection" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        $directories = GenXdev.AI\Get-AIImageCollection @params
 
         # detect if output is being redirected/piped by checking MyInvocation
 

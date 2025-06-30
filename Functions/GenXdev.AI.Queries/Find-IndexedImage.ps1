@@ -539,12 +539,37 @@ function Find-IndexedImage {
             HelpMessage = "Show only pictures in a rounded rectangle, no text below."
         )]
         [Alias("NoMetadata", "OnlyPictures")]
-        [switch] $ShowOnlyPictures
+        [switch] $ShowOnlyPictures,
+        ########################################################################
+        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $SessionOnly,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $ClearSession,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [Alias("FromPreferences")]
+        [switch] $SkipSession
+        ########################################################################
     )
 
     ###############################################################################
     begin {
-        $Language = GenXdev.AI\Get-AIMetaLanguage -Language (
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        $Language = GenXdev.AI\Get-AIMetaLanguage @params -Language (
             [String]::IsNullOrWhiteSpace($Language) ?
             (GenXdev.Helpers\Get-DefaultWebLanguage) :
             $Language
@@ -799,7 +824,7 @@ function Find-IndexedImage {
                 if (-not $pattern.StartsWith('%')) {
                     # use prefix index for patterns like "cat*" -> "cat%"
                     $condition = (
-                        "$TableAlias.$ColumnName LIKE @$ParamName COLLATE NOCASE)"
+                        "$TableAlias.$ColumnName LIKE @$ParamName COLLATE NOCASE"
                     )
                     $Parameters[$ParamName] = $pattern
                 } else {
@@ -852,7 +877,7 @@ function Find-IndexedImage {
                 $keywordConditions += $condition
                 $paramCounter++
             }
-            $whereClauses += "(EXISTS (SELECT 1 FROM ImageKeywords ik WHERE ik.image_id = i.id AND (" + ($keywordConditions -join " OR ") + ")))"
+            $whereClauses += "(EXISTS (SELECT * FROM ImageKeywords ik WHERE ik.image_id = i.id AND (" + ($keywordConditions -join " OR ") + ")))"
         }
 
         # add people search with optimized indexed lookup (NO TABLE SCANS)
@@ -864,7 +889,7 @@ function Find-IndexedImage {
                 $peopleConditions += $condition
                 $paramCounter++
             }
-            $whereClauses += "(EXISTS (SELECT 1 FROM ImagePeople ip WHERE ip.image_id = i.id AND (" + ($peopleConditions -join " OR ") + ")))"
+            $whereClauses += "(EXISTS (SELECT * FROM ImagePeople ip WHERE ip.image_id = i.id AND (" + ($peopleConditions -join " OR ") + ")))"
         }
 
         # add objects search with optimized indexed lookup (NO TABLE SCANS)
@@ -876,7 +901,7 @@ function Find-IndexedImage {
                 $objectConditions += $condition
                 $paramCounter++
             }
-            $whereClauses += "(EXISTS (SELECT 1 FROM ImageObjects io WHERE io.image_id = i.id AND (" + ($objectConditions -join " OR ") + ")))"
+            $whereClauses += "(EXISTS (SELECT * FROM ImageObjects io WHERE io.image_id = i.id AND (" + ($objectConditions -join " OR ") + ")))"
         }
 
         # add scenes search with optimized indexed lookup (NO TABLE SCANS)
@@ -888,7 +913,7 @@ function Find-IndexedImage {
                 $sceneConditions += $condition
                 $paramCounter++
             }
-            $whereClauses += "(EXISTS (SELECT 1 FROM ImageScenes isc WHERE isc.image_id = i.id AND (" + ($sceneConditions -join " OR ") + ")))"
+            $whereClauses += "(EXISTS (SELECT * FROM ImageScenes isc WHERE isc.image_id = i.id AND (" + ($sceneConditions -join " OR ") + ")))"
         }
         # add picture type filter with optimized indexed column (NO TABLE SCANS)
         if ($PictureType -and $PictureType.Count -gt 0) {

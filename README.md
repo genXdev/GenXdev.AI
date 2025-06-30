@@ -154,8 +154,8 @@ Update-Module
 | [Find-Image](#Find-Image) | findimages, li | Scans image files for keywords and descriptions using metadata files. |
 | [Find-IndexedImage](#Find-IndexedImage) | findindexedimages, lii | Searches for images using an optimized SQLite database with fast indexed lookups. |
 | [Get-AIImageCollection](#Get-AIImageCollection) | getimgdirs |  |
-| [Get-AIKnownFacesRootpath](#Get-AIKnownFacesRootpath) |  |  |
-| [Get-AIMetaLanguage](#Get-AIMetaLanguage) | getimgmetalang |  |
+| [Get-AIKnownFacesRootpath](#Get-AIKnownFacesRootpath) |  | Gets the configured directory for face image files used in GenXdev.AI operations. |
+| [Get-AIMetaLanguage](#Get-AIMetaLanguage) | getimgmetalang | Gets the configured default language for image metadata operations. |
 | [Get-Fallacy](#Get-Fallacy) | dispicetext | Analyzes text to identify logical fallacies using AI-powered detection. |
 | [Get-ImageDatabasePath](#Get-ImageDatabasePath) |  | Returns the path to the image database, initializing or rebuilding it if needed. |
 | [Get-ImageDatabaseStats](#Get-ImageDatabaseStats) | getimagedbstats, gids | Retrieves comprehensive statistics and information about the image database. |
@@ -805,7 +805,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-TextTranslation [[-Text] <String>] [[-Language] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>]
+    Get-TextTranslation [[-Text] <String>] [[-Language] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -955,6 +955,34 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -1174,7 +1202,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-LLMBooleanEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-SetClipboard] [-ShowWindow] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-AllowDefaultTools] [<CommonParameters>]
+    Invoke-LLMBooleanEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-SetClipboard] [-ShowWindow] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -1417,6 +1445,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -1461,7 +1517,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-LLMQuery [[-Query] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-ResponseFormat <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-ChatMode <String>] [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [<CommonParameters>]
+    Invoke-LLMQuery [[-Query] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-ResponseFormat <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-ChatMode <String>] [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -1760,6 +1816,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -1802,7 +1886,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-LLMStringListEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-ApiEndpoint <String>] [-ApiKey <String>] [-SetClipboard] [-ShowWindow] [-Force] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [<CommonParameters>]
+    Invoke-LLMStringListEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-ApiEndpoint <String>] [-ApiKey <String>] [-SetClipboard] [-ShowWindow] [-Force] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -2070,6 +2154,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -2125,7 +2237,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-LLMTextTransformation [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-SetClipboard] [-ShowWindow] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-AllowDefaultTools] [<CommonParameters>]
+    Invoke-LLMTextTransformation [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-SetClipboard] [-ShowWindow] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -2361,6 +2473,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -2491,7 +2631,7 @@ SYNOPSIS
     
     
 SYNTAX
-    New-LLMAudioChat [[-query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-AudioTemperature <Double>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Int32>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-ResponseFormat <String>] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-WhatIf] [-Confirm] [<CommonParameters>]
+    New-LLMAudioChat [[-query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-AudioTemperature <Double>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Int32>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-ResponseFormat <String>] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -2899,6 +3039,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -WhatIf [<SwitchParameter>]
         
         Required?                    false
@@ -2957,7 +3125,7 @@ NAME
     New-LLMTextChat
     
 SYNTAX
-    New-LLMTextChat [[-Query] <string>] [[-Model] <string>] [[-ModelLMSGetIdentifier] <string>] [[-Instructions] <string>] [[-Attachments] <string[]>] [-Temperature <double>] [-MaxToken <int>] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ImageDetail {low | medium | high}] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <string[]>] [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <string>] [-ApiKey <string>] [-ResponseFormat <string>] [-WhatIf] [-Confirm] [<CommonParameters>]
+    New-LLMTextChat [[-Query] <string>] [[-Model] <string>] [[-ModelLMSGetIdentifier] <string>] [[-Instructions] <string>] [[-Attachments] <string[]>] [-Temperature <double>] [-MaxToken <int>] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ImageDetail {low | medium | high}] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <string[]>] [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <string>] [-ApiKey <string>] [-ResponseFormat <string>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 PARAMETERS
@@ -2996,6 +3164,17 @@ PARAMETERS
         
     -ChatOnce
         Used internally, to only invoke chat mode once after the llm invocation
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -ClearSession
+        Clear alternative settings stored in session for AI preferences like Language, Image collections, etc
         
         Required?                    false
         Position?                    Named
@@ -3191,6 +3370,17 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -SessionOnly
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -ShowWindow
         Show the LM Studio window
         
@@ -3199,6 +3389,17 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SkipSession
+        Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      FromPreferences
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -6320,7 +6521,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Start-LMStudioApplication [[-WithVisibleWindow]] [-Passthru] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Start-LMStudioApplication [[-ShowWindow]] [-Passthru] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -6330,7 +6531,8 @@ DESCRIPTION
     
 
 PARAMETERS
-    -WithVisibleWindow [<SwitchParameter>]
+    -ShowWindow [<SwitchParameter>]
+        Determines if the LM Studio window should be visible after starting.
         
         Required?                    false
         Position?                    1
@@ -6379,7 +6581,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Start-LMStudioApplication -WithVisibleWindow -Passthru
+    PS > Start-LMStudioApplication -ShowWindow -Passthru
     
     
     
@@ -6509,7 +6711,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>]
+    Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -6646,6 +6848,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -6690,7 +6920,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Add-ImageDirectories [-ImageDirectories] <String[]> [-WhatIf] [-Confirm] [<CommonParameters>]
+    Add-ImageDirectories [-ImageDirectories] <String[]> [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -6712,6 +6942,34 @@ PARAMETERS
         Position?                    1
         Default value                
         Accept pipeline input?       true (ByValue)
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
@@ -6776,7 +7034,7 @@ SYNOPSIS
     
     
 SYNTAX
-    ConvertFrom-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>]
+    ConvertFrom-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -6923,6 +7181,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -6963,7 +7249,7 @@ NAME
     ConvertFrom-DiplomaticSpeak
     
 SYNTAX
-    ConvertFrom-DiplomaticSpeak [[-Text] <string>] [[-Instructions] <string>] [[-Model] <string>] [-ModelLMSGetIdentifier <string>] [-Temperature <double>] [-MaxToken <int>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ApiEndpoint <string>] [-ApiKey <string>] [<CommonParameters>]
+    ConvertFrom-DiplomaticSpeak [[-Text] <string>] [[-Instructions] <string>] [[-Model] <string>] [-ModelLMSGetIdentifier <string>] [-Temperature <double>] [-MaxToken <int>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ApiEndpoint <string>] [-ApiKey <string>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 PARAMETERS
@@ -6980,6 +7266,17 @@ PARAMETERS
         
     -ApiKey <string>
         The API key to use for the request
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -ClearSession
+        Clear alternative settings stored in session for AI preferences like Language, Image collections, etc
         
         Required?                    false
         Position?                    Named
@@ -7055,6 +7352,17 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -SessionOnly
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -SetClipboard
         Copy the transformed text to clipboard
         
@@ -7074,6 +7382,17 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SkipSession
+        Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      FromPreferences
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -7142,7 +7461,7 @@ SYNOPSIS
     
     
 SYNTAX
-    ConvertTo-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>]
+    ConvertTo-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -7288,6 +7607,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -7328,7 +7675,7 @@ NAME
     ConvertTo-DiplomaticSpeak
     
 SYNTAX
-    ConvertTo-DiplomaticSpeak [[-Text] <string>] [[-Instructions] <string>] [[-Model] <string>] [-ModelLMSGetIdentifier <string>] [-Temperature <double>] [-MaxToken <int>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ApiEndpoint <string>] [-ApiKey <string>] [<CommonParameters>]
+    ConvertTo-DiplomaticSpeak [[-Text] <string>] [[-Instructions] <string>] [[-Model] <string>] [-ModelLMSGetIdentifier <string>] [-Temperature <double>] [-MaxToken <int>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ApiEndpoint <string>] [-ApiKey <string>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 PARAMETERS
@@ -7345,6 +7692,17 @@ PARAMETERS
         
     -ApiKey <string>
         The API key to use for the request
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -ClearSession
+        Clear alternative settings stored in session for AI preferences like Language, Image collections, etc
         
         Required?                    false
         Position?                    Named
@@ -7420,6 +7778,17 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -SessionOnly
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -SetClipboard
         Copy the transformed text to clipboard
         
@@ -7439,6 +7808,17 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SkipSession
+        Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      FromPreferences
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -7507,7 +7887,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Export-ImageDatabase [[-InputObject] <Object[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [<CommonParameters>]
+    Export-ImageDatabase [[-InputObject] <Object[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -7616,6 +7996,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -7653,7 +8061,7 @@ NAME
     Find-Image
     
 SYNTAX
-    Find-Image [[-DatabaseFilePath] <string>] [-ImageDirectories <string[]>] [-PathLike <string[]>] [-Language {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bork, bork, bork! | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | Elmer Fudd | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Hacker | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Klingon | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Pirate | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [-FacesDirectory <string>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-DescriptionSearch <string[]>] [-Keywords <string[]>] [-People <string[]>] [-Objects <string[]>] [-Scenes <string[]>] [-InputObject <Object[]>] [-PictureType <string[]>] [-StyleType <string[]>] [-OverallMood <string[]>] [-Title <string>] [-Description <string>] [-AcceptLang <string>] [-Monitor <int>] [-Width <int>] [-Height <int>] [-X <int>] [-Y <int>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-ShowOnlyPictures] [<CommonParameters>]
+    Find-Image [[-DatabaseFilePath] <string>] [-ImageDirectories <string[]>] [-PathLike <string[]>] [-Language {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bork, bork, bork! | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | Elmer Fudd | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Hacker | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Klingon | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Pirate | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [-FacesDirectory <string>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-DescriptionSearch <string[]>] [-Keywords <string[]>] [-People <string[]>] [-Objects <string[]>] [-Scenes <string[]>] [-InputObject <Object[]>] [-PictureType <string[]>] [-StyleType <string[]>] [-OverallMood <string[]>] [-Title <string>] [-Description <string>] [-AcceptLang <string>] [-Monitor <int>] [-Width <int>] [-Height <int>] [-X <int>] [-Y <int>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-ShowOnlyPictures] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 PARAMETERS
@@ -7742,6 +8150,17 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      c
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -ClearSession
+        Clear alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -8163,6 +8582,17 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -SessionOnly
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -ShowInBrowser
         Display the search results in a browser-based image gallery.
         
@@ -8182,6 +8612,17 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      NoMetadata, OnlyPictures
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SkipSession
+        Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      FromPreferences
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -8286,7 +8727,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Find-IndexedImage [[-Any] <String[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-InputObject <Object[]>] [-ShowOnlyPictures] [<CommonParameters>]
+    Find-IndexedImage [[-Any] <String[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-InputObject <Object[]>] [-ShowOnlyPictures] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -8839,6 +9280,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -8887,7 +9356,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-AIImageCollection [[-ImageDirectories] <String[]>] [<CommonParameters>]
+    Get-AIImageCollection [[-ImageDirectories] <String[]>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -8899,10 +9368,41 @@ DESCRIPTION
 
 PARAMETERS
     -ImageDirectories <String[]>
+        Optional default value to return if no image directories are configured. If not specified, returns the system default directories (Downloads, OneDrive, Pictures).
         
         Required?                    false
         Position?                    1
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        When specified, clears the session image directories setting (Global variable) before retrieving the configuration.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        When specified, skips checking the session setting (Global variable) and retrieves only from persistent preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -8921,22 +9421,39 @@ OUTPUTS
     
     PS > Get-AIImageCollection
     
-    Returns the configured image directories and default language, or system
-    defaults if none are configured.
+    Gets the currently configured image directories from Global variables or preferences.
     
     
     
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > $config = Get-AIImageCollection -DefaultValue @("C:\MyImages")
+    PS > Get-AIImageCollection -SkipSession
+    
+    Gets the configured image directories only from persistent preferences, ignoring any session setting.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Get-AIImageCollection -ClearSession
+    
+    Clears the session image directories setting and then gets the directories from persistent preferences.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > $config = Get-AIImageCollection -ImageDirectories @("C:\MyImages")
     
     Returns configured directories or the specified default if none are configured.
     
     
     
     
-    -------------------------- EXAMPLE 3 --------------------------
+    -------------------------- EXAMPLE 5 --------------------------
     
     PS > getimgdirs
     
@@ -8953,20 +9470,57 @@ RELATED LINKS
 NAME
     Get-AIKnownFacesRootpath
     
+SYNOPSIS
+    Gets the configured directory for face image files used in GenXdev.AI operations.
+    
+    
 SYNTAX
-    Get-AIKnownFacesRootpath [[-FacesDirectory] <string>] [<CommonParameters>]
+    Get-AIKnownFacesRootpath [[-FacesDirectory] <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
+DESCRIPTION
+    This function retrieves the global face directory used by the GenXdev.AI module for various face recognition and AI operations. It checks Global variables first (unless SkipSession is specified), then falls back to persistent preferences, and finally uses system defaults.
+    
+
 PARAMETERS
-    -FacesDirectory <string>
-        Directory path for face image files
+    -FacesDirectory <String>
+        Optional faces directory override. If specified, this directory will be returned instead of retrieving from configuration.
         
         Required?                    false
-        Position?                    0
+        Position?                    1
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        When specified, clears the session faces directory setting (Global variable) before retrieving the configuration.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        When specified, skips checking the session setting (Global variable) and retrieves only from persistent preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
         Accept wildcard characters?  false
         
     <CommonParameters>
@@ -8975,40 +9529,105 @@ PARAMETERS
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
         about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
     
-    
 INPUTS
-    None
-    
     
 OUTPUTS
-    System.Object
     
-ALIASES
-    None
+    -------------------------- EXAMPLE 1 --------------------------
     
-
-REMARKS
-    None 
+    PS > Get-AIKnownFacesRootpath
+    
+    Gets the currently configured faces directory from Global variables or preferences.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Get-AIKnownFacesRootpath -SkipSession
+    
+    Gets the configured faces directory only from persistent preferences, ignoring any session setting.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Get-AIKnownFacesRootpath -ClearSession
+    
+    Clears the session faces directory setting and then gets the directory from persistent preferences.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > Get-AIKnownFacesRootpath "C:\MyFaces"
+    
+    Returns the specified directory after expanding the path.
+    
+    
+    
+    
+    
+RELATED LINKS 
 
 <br/><hr/><hr/><br/>
  
 NAME
     Get-AIMetaLanguage
     
+SYNOPSIS
+    Gets the configured default language for image metadata operations.
+    
+    
 SYNTAX
-    Get-AIMetaLanguage [[-Language] {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [<CommonParameters>]
+    Get-AIMetaLanguage [[-Language] <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
+DESCRIPTION
+    This function retrieves the default language used by the GenXdev.AI module for image metadata operations. It checks Global variables first (unless SkipSession is specified), then falls back to persistent preferences, and finally uses system defaults.
+    
+
 PARAMETERS
-    -Language <string>
-        The default language for image metadata operations
+    -Language <String>
+        Optional language override. If specified, this language will be returned instead of retrieving from configuration.
         
         Required?                    false
-        Position?                    0
+        Position?                    1
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        When specified, clears the session language setting (Global variable) before retrieving the configuration.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        When specified, skips checking the session setting (Global variable) and retrieves only from persistent preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
         Accept wildcard characters?  false
         
     <CommonParameters>
@@ -9017,20 +9636,48 @@ PARAMETERS
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
         about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
     
-    
 INPUTS
-    None
-    
     
 OUTPUTS
-    System.Object
     
-ALIASES
-    getimgmetalang
+    -------------------------- EXAMPLE 1 --------------------------
     
-
-REMARKS
-    None 
+    PS > Get-AIMetaLanguage
+    
+    Gets the currently configured language from Global variables or preferences.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Get-AIMetaLanguage -SkipSession
+    
+    Gets the configured language only from persistent preferences, ignoring any session setting.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Get-AIMetaLanguage -ClearSession
+    
+    Clears the session language setting and then gets the language from persistent preferences.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > getimgmetalang
+    
+    Uses alias to get the current language configuration.
+    
+    
+    
+    
+    
+RELATED LINKS 
 
 <br/><hr/><hr/><br/>
  
@@ -9042,7 +9689,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-Fallacy [-Text] <String[]> [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-ApiKey <String>] [-ApiEndpoint <String>] [-Functions <Hashtable[]>] [-Gpu <Int32>] [-ImageDetail <String>] [-MaxToken <Int32>] [-NoConfirmationToolFunctionNames <String[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Temperature <Double>] [-TTLSeconds <Int32>] [-ContinueLast] [-Force] [-IncludeThoughts] [-NoSessionCaching] [-OpenInImdb] [-ShowWindow] [-Speak] [-SpeakThoughts] [<CommonParameters>]
+    Get-Fallacy [-Text] <String[]> [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-ApiKey <String>] [-ApiEndpoint <String>] [-Functions <Hashtable[]>] [-Gpu <Int32>] [-ImageDetail <String>] [-MaxToken <Int32>] [-NoConfirmationToolFunctionNames <String[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Temperature <Double>] [-TTLSeconds <Int32>] [-ContinueLast] [-Force] [-IncludeThoughts] [-NoSessionCaching] [-OpenInImdb] [-ShowWindow] [-Speak] [-SpeakThoughts] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -9305,6 +9952,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -9345,10 +10020,21 @@ NAME
     Get-ImageDatabasePath
     
 SYNTAX
-    Get-ImageDatabasePath [[-DatabaseFilePath] <string>] [-ImageDirectories <string[]>] [-PathLike <string[]>] [-Language {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bork, bork, bork! | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | Elmer Fudd | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Hacker | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Klingon | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Pirate | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [-FacesDirectory <string>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [<CommonParameters>]
+    Get-ImageDatabasePath [[-DatabaseFilePath] <string>] [-ImageDirectories <string[]>] [-PathLike <string[]>] [-Language {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bork, bork, bork! | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | Elmer Fudd | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Hacker | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Klingon | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Pirate | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [-FacesDirectory <string>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 PARAMETERS
+    -ClearSession
+        Clear alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -DatabaseFilePath <string>
         The path to the image database file. If not specified, a default path is used.
         
@@ -9448,6 +10134,28 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -SessionOnly
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SkipSession
+        Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      FromPreferences
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -9480,7 +10188,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ImageDatabaseStats [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-ShowDetails] [<CommonParameters>]
+    Get-ImageDatabaseStats [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-ShowDetails] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -9565,6 +10273,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -9606,7 +10342,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SRT] [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>] [-SplitOnWord] [-MaxTokensPerSegment <Int32>] [-IgnoreSilence] [-MaxDurationOfSilence <Object>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] [-TemperatureInc <Single>] [-Prompt <String>] [-SuppressRegex <String>] [-WithProgress] [-AudioContextSize <Int32>] [-DontSuppressBlank] [-MaxDuration <Object>] [-Offset <Object>] [-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <Object>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [<CommonParameters>]
+    Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SRT] [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>] [-SplitOnWord] [-MaxTokensPerSegment <Int32>] [-IgnoreSilence] [-MaxDurationOfSilence <Object>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] [-TemperatureInc <Single>] [-Prompt <String>] [-SuppressRegex <String>] [-WithProgress] [-AudioContextSize <Int32>] [-DontSuppressBlank] [-MaxDuration <Object>] [-Offset <Object>] [-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <Object>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -9962,6 +10698,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -9994,7 +10758,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ScriptExecutionErrorFixPrompt [-Script] <ScriptBlock> [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>]
+    Get-ScriptExecutionErrorFixPrompt [-Script] <ScriptBlock> [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -10201,6 +10965,34 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -10413,7 +11205,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-AIPowershellCommand [-Query] <String> [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-Clipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Invoke-AIPowershellCommand [-Query] <String> [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-Clipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -10544,6 +11336,34 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -10795,7 +11615,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageKeywordUpdate [[-ImageDirectories] <String>] [[-Recurse]] [[-OnlyNew]] [[-RetryFailed]] [[-Language] <String>] [<CommonParameters>]
+    Invoke-ImageKeywordUpdate [[-ImageDirectories] <String>] [[-Recurse]] [[-OnlyNew]] [[-RetryFailed]] [[-Language] <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -10856,6 +11676,34 @@ PARAMETERS
         Required?                    false
         Position?                    5
         Default value                English
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -11362,7 +12210,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Instructions] <String>] [-Model <String>] [-ModelLMSGetIdentifier <String>] [-ResponseFormat <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-ImageDetail <String>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-ShowWindow] [-Force] [-IncludeThoughts] [<CommonParameters>]
+    Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Instructions] <String>] [-Model <String>] [-ModelLMSGetIdentifier <String>] [-ResponseFormat <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-ImageDetail <String>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-ShowWindow] [-Force] [-IncludeThoughts] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -11556,6 +12404,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -11601,7 +12477,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Remove-ImageDirectories [-ImageDirectories] <String[]> [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Remove-ImageDirectories [-ImageDirectories] <String[]> [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -11625,6 +12501,34 @@ PARAMETERS
         
     -Force [<SwitchParameter>]
         Forces removal without confirmation prompts.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -11701,7 +12605,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Remove-ImageMetaData [[-ImageDirectories] <String[]>] [[-Recurse]] [-OnlyKeywords] [-OnlyPeople] [-OnlyObjects] [-OnlyScenes] [-Language <String>] [-AllLanguages] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Remove-ImageMetaData [[-ImageDirectories] <String[]>] [[-Recurse]] [-OnlyKeywords] [-OnlyPeople] [-OnlyObjects] [-OnlyScenes] [-Language <String>] [-AllLanguages] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -11790,6 +12694,34 @@ PARAMETERS
     -AllLanguages [<SwitchParameter>]
         When specified, removes metadata files for all supported languages by iterating
         through all languages from Get-WebLanguageDictionary.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -11894,7 +12826,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Save-FoundImageFaces [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-DatabaseFilePath <String>] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-Language <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ForceIndexRebuild] [-PathLike <String[]>] [-InputObject <Object[]>] [-OutputDirectory <String>] [-SaveUnknownPersons] [<CommonParameters>]
+    Save-FoundImageFaces [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-DatabaseFilePath <String>] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-Language <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ForceIndexRebuild] [-PathLike <String[]>] [-InputObject <Object[]>] [-OutputDirectory <String>] [-SaveUnknownPersons] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -12362,6 +13294,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -12391,7 +13351,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Save-FoundImageObjects [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-DatabaseFilePath <String>] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-Language <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ForceIndexRebuild] [-PathLike <String[]>] [-InputObject <Object[]>] [-OutputDirectory <String>] [-SaveUnknownPersons] [<CommonParameters>]
+    Save-FoundImageObjects [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-DatabaseFilePath <String>] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-Language <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ForceIndexRebuild] [-PathLike <String[]>] [-InputObject <Object[]>] [-OutputDirectory <String>] [-SaveUnknownPersons] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -12859,6 +13819,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -12888,7 +13876,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [<CommonParameters>]
+    Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -12944,6 +13932,35 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        end of translation
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -12985,18 +14002,18 @@ SYNOPSIS
     
     
 SYNTAX
-    Set-AIImageCollection [-ImageDirectories] <String[]> [[-Language] <String>] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Set-AIImageCollection [[-ImageDirectories] <String[]>] [[-Language] <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function configures the global image directories and default language used by the GenXdev.AI module for various image processing and AI operations. It updates both the global variables and the module's preference storage to persist the configuration across sessions.
+    This function configures the global image directories and default language used by the GenXdev.AI module for various image processing and AI operations. Settings can be stored persistently in preferences (default), only in the current session (using -SessionOnly), or cleared from the session (using -ClearSession).
     
 
 PARAMETERS
     -ImageDirectories <String[]>
         An array of directory paths where image files are located. These directories will be used by GenXdev.AI functions for image discovery and processing operations.
         
-        Required?                    true
+        Required?                    false
         Position?                    1
         Default value                
         Accept pipeline input?       false
@@ -13009,6 +14026,35 @@ PARAMETERS
         Required?                    false
         Position?                    2
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        When specified, stores the settings only in the current session (Global variables) without persisting to preferences. Settings will be lost when the session ends.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        When specified, clears only the session settings (Global variables) without affecting persistent preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13045,7 +14091,7 @@ OUTPUTS
     
     PS > Set-AIImageCollection -ImageDirectories @("C:\Images", "D:\Photos") -Language "Spanish"
     
-    
+    Sets the image directories and language persistently in preferences.
     
     
     
@@ -13054,7 +14100,25 @@ OUTPUTS
     
     PS > Set-AIImageCollection @("C:\Pictures", "E:\Graphics\Stock") "French"
     
+    Sets the image directories and language persistently in preferences.
     
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Set-AIImageCollection -ImageDirectories @("C:\TempImages") -Language "German" -SessionOnly
+    
+    Sets the image directories and language only for the current session (Global variables).
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > Set-AIImageCollection -ClearSession
+    
+    Clears the session image directories and language settings (Global variables) without affecting persistent preferences.
     
     
     
@@ -13072,14 +14136,14 @@ SYNOPSIS
     
     
 SYNTAX
-    Set-AIKnownFacesRootpath [-FacesDirectory] <String> [-WhatIf] [-Confirm] [<CommonParameters>]
+    Set-AIKnownFacesRootpath [[-FacesDirectory] <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
     This function configures the global face directory used by the GenXdev.AI
-    module for various face recognition and AI operations. It updates both the
-    global variable and the module's preference storage to persist the
-    configuration across sessions.
+    module for various face recognition and AI operations. Settings can be stored
+    persistently in preferences (default), only in the current session (using -SessionOnly),
+    or cleared from the session (using -ClearSession).
     
 
 PARAMETERS
@@ -13088,9 +14152,40 @@ PARAMETERS
         will be used by GenXdev.AI functions for face discovery and processing
         operations.
         
-        Required?                    true
+        Required?                    false
         Position?                    1
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        When specified, stores the setting only in the current session (Global variable)
+        without persisting to preferences. Setting will be lost when the session ends.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        When specified, clears only the session setting (Global variable) without
+        affecting persistent preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13127,7 +14222,7 @@ OUTPUTS
     
     PS > Set-AIKnownFacesRootpath -FacesDirectory "C:\Faces"
     
-    
+    Sets the faces directory persistently in preferences.
     
     
     
@@ -13136,7 +14231,25 @@ OUTPUTS
     
     PS > Set-AIKnownFacesRootpath "C:\FacePictures"
     
+    Sets the faces directory persistently in preferences.
     
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Set-AIKnownFacesRootpath -FacesDirectory "C:\TempFaces" -SessionOnly
+    
+    Sets the faces directory only for the current session (Global variable).
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > Set-AIKnownFacesRootpath -ClearSession
+    
+    Clears the session faces directory setting (Global variable) without affecting persistent preferences.
     
     
     
@@ -13154,7 +14267,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Set-AIMetaLanguage [-Language] <String> [[-ImageDirectories] <String[]>] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Set-AIMetaLanguage [[-Language] <String>] [[-ImageDirectories] <String[]>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -13165,7 +14278,7 @@ PARAMETERS
     -Language <String>
         The default language to use for image metadata operations. This will be used by Remove-ImageMetaData, Update-AllImageMetaData, and Find-Image functions when no language is explicitly specified.
         
-        Required?                    true
+        Required?                    false
         Position?                    1
         Default value                
         Accept pipeline input?       false
@@ -13178,6 +14291,35 @@ PARAMETERS
         Required?                    false
         Position?                    2
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        When specified, stores the settings only in the current session (Global variables) without persisting to preferences. Settings will be lost when the session ends.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        When specified, clears only the session settings (Global variables) without affecting persistent preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13214,7 +14356,7 @@ OUTPUTS
     
     PS > Set-AIMetaLanguage -Language "Spanish" -ImageDirectories @("C:\Images", "D:\Photos")
     
-    
+    Sets the language and image directories persistently in preferences.
     
     
     
@@ -13223,7 +14365,25 @@ OUTPUTS
     
     PS > Set-AIMetaLanguage "French"
     
+    Sets the language persistently in preferences.
     
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Set-AIMetaLanguage -Language "German" -SessionOnly
+    
+    Sets the language only for the current session (Global variable).
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > Set-AIMetaLanguage -ClearSession
+    
+    Clears the session language setting (Global variable) without affecting persistent preferences.
     
     
     
@@ -13868,7 +15028,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX] [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] [[-TokenTimestampsSumThreshold] <Single>] [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] [-IgnoreSilence] [[-MaxDurationOfSilence] <Object>] [[-SilenceThreshold] <Int32>] [[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>] [[-TemperatureInc] <Single>] [-WithTranslate] [[-Prompt] <String>] [[-SuppressRegex] <String>] [-WithProgress] [[-AudioContextSize] <Int32>] [-DontSuppressBlank] [[-MaxDuration] <Object>] [[-Offset] <Object>] [[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <Object>] [[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] [[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-Realtime] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX] [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] [[-TokenTimestampsSumThreshold] <Single>] [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] [-IgnoreSilence] [[-MaxDurationOfSilence] <Object>] [[-SilenceThreshold] <Int32>] [[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>] [[-TemperatureInc] <Single>] [-WithTranslate] [[-Prompt] <String>] [[-SuppressRegex] <String>] [-WithProgress] [[-AudioContextSize] <Int32>] [-DontSuppressBlank] [[-MaxDuration] <Object>] [[-Offset] <Object>] [[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <Object>] [[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] [[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-Realtime] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -14244,6 +15404,34 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -WhatIf [<SwitchParameter>]
         
         Required?                    false
@@ -14308,7 +15496,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Update-AllImageMetaData [[-ImageDirectories] <String[]>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-ConfidenceThreshold] <Double>] [[-Language] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-ApiEndpoint] <String>] [[-ApiKey] <String>] [[-TimeoutSeconds] <Int32>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-FacesDirectory <String>] [-RetryFailed] [-RedoAll] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [-PassThru] [-AutoUpdateFaces] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Update-AllImageMetaData [[-ImageDirectories] <String[]>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-ConfidenceThreshold] <Double>] [[-Language] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-ApiEndpoint] <String>] [[-ApiKey] <String>] [[-TimeoutSeconds] <Int32>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-FacesDirectory <String>] [-RetryFailed] [-RedoAll] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [-PassThru] [-AutoUpdateFaces] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -14573,6 +15761,34 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -AutoUpdateFaces [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
         
         Required?                    false
         Position?                    named

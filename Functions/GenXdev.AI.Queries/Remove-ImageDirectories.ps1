@@ -54,14 +54,38 @@ function Remove-ImageDirectories {
             Mandatory = $false,
             HelpMessage = "Forces removal without confirmation prompts"
         )]
-        [switch] $Force
-        ###############################################################################
+        [switch] $Force,
+        ########################################################################
+        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $SessionOnly,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $ClearSession,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [Alias("FromPreferences")]
+        [switch] $SkipSession
+        ########################################################################
     )
 
     begin {
 
         # get current configuration
-        $currentConfig = GenXdev.AI\Get-AIImageCollection
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AIImageCollection" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        $currentConfig = GenXdev.AI\Get-AIImageCollection @params
 
         # initialize collection for remaining directories
         $remainingDirectories = [System.Collections.Generic.List[string]]::new()
@@ -151,7 +175,11 @@ function Remove-ImageDirectories {
         if ($shouldProceed) {
 
             # use Set-AIImageCollection to update the configuration
-            GenXdev.AI\Set-AIImageCollection -ImageDirectories $finalDirectories
+            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName "GenXdev.AI\Set-AIImageCollection" `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+            GenXdev.AI\Set-AIImageCollection @params -ImageDirectories $finalDirectories
 
             # output confirmation
             Microsoft.PowerShell.Utility\Write-Host (

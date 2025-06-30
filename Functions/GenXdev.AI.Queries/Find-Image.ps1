@@ -626,11 +626,36 @@ function Find-Image {
             HelpMessage = "Show only pictures in a rounded rectangle, no text below."
         )]
         [Alias("NoMetadata", "OnlyPictures")]
-        [switch] $ShowOnlyPictures
+        [switch] $ShowOnlyPictures,
+        ########################################################################
+        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $SessionOnly,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $ClearSession,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [Alias("FromPreferences")]
+        [switch] $SkipSession
+        ########################################################################
     )
     begin {
 
-        $Language = GenXdev.AI\Get-AIMetaLanguage -Language (
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        $Language = GenXdev.AI\Get-AIMetaLanguage @params -Language (
             [String]::IsNullOrWhiteSpace($Language) ?
             (GenXdev.Helpers\Get-DefaultWebLanguage) :
             $Language
@@ -646,7 +671,11 @@ function Find-Image {
         $results = [System.Collections.Generic.List[Object]] @()
 
         # use provided directories or get from configuration
-        $directories = GenXdev.AI\Get-AIImageCollection -ImageDirectories $ImageDirectories
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AIImageCollection" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        $directories = GenXdev.AI\Get-AIImageCollection @params
 
         if ($null -ne $Any -and
             $Any.Length -gt 0) {
@@ -1199,7 +1228,7 @@ function Find-Image {
             return;
         }
 
-        $directories = $directories | Select-Object -Unique
+        $directories = $directories | Microsoft.PowerShell.Utility\Select-Object -Unique
 
         # iterate through each specified image directory
         foreach ($imageDirectory in $directories) {
@@ -1307,9 +1336,9 @@ function Find-Image {
 
             if ($PassThru) {
 
-                $results | ForEach-Object {
+                $results | Microsoft.PowerShell.Core\ForEach-Object {
 
-                    Write-Output $_
+                    Microsoft.PowerShell.Utility\Write-Output $_
                 }
             }
         }

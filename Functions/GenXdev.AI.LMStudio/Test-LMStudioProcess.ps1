@@ -16,6 +16,7 @@ function Test-LMStudioProcess {
     [OutputType([bool])]
     param (
         [Parameter(Mandatory = $false)]
+        [Alias("sw")]
         [switch] $ShowWindow
     )
 

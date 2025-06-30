@@ -51,8 +51,7 @@ Set-WindowsPosition -Monitor 0 -Left
 ## Prerequisites
 
 - Docker Desktop installed and running
-- PowerShell 5.1 or later (PowerShell Core is also supported)
-- At least 4GB of available RAM (8GB recommended)
+- At least 16GB of available RAM
 - GPU with CUDA support (optional, for faster processing)
 
 ## Available Functions
@@ -127,18 +126,6 @@ Invoke-ImageEnhancement -ImagePath "C:\Users\You\Pictures\low_quality.jpg" -Outp
 Invoke-ImageEnhancement -ImagePath "C:\Users\You\Pictures\low_quality.jpg" -UseGPU -OutputPath "C:\Users\You\Pictures\enhanced.jpg"
 ```
 
-## DeepStack API Endpoints
-
-The functions in this module interact with these DeepStack API endpoints:
-
-- `POST /v1/vision/face/register` - Register known faces
-- `POST /v1/vision/face/recognize` - Recognize faces in an image
-- `POST /v1/vision/face/list` - List registered faces
-- `POST /v1/vision/face/delete` - Remove registered face
-- `POST /v1/vision/enhance` - Enhance image quality and size
-
-## Troubleshooting
-
 ### Common Issues
 
 - **Container Fails to Start**: Ensure you have sufficient memory and CPU resources
@@ -151,6 +138,7 @@ The functions in this module interact with these DeepStack API endpoints:
 To view the DeepStack server logs:
 
 ```powershell
+ensuredeepstack
 docker logs deepstack_face_recognition
 ```
 

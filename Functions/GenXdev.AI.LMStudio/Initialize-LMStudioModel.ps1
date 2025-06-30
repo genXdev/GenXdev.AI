@@ -198,6 +198,10 @@ function Initialize-LMStudioModel {
                 if (-not $installationOk) {
                     throw "LM Studio not found or properly installed"
                 }
+
+                Microsoft.PowerShell.Utility\Start-Sleep 15
+                Microsoft.PowerShell.Management\Get-Process "LM Studio" -ErrorAction SilentlyContinue | Microsoft.PowerShell.Management\Stop-Process -force
+                $processOk = GenXdev.AI\Test-LMStudioProcess -ShowWindow:$ShowWindow
             }
 
             $paths = GenXdev.AI\Get-LMStudioPaths
@@ -205,7 +209,7 @@ function Initialize-LMStudioModel {
             if (-not $processOk) {
 
                 # attempt to start the server asynchronously
-                $null = GenXdev.AI\Start-LMStudioApplication -WithVisibleWindow:$ShowWindow
+                $null = GenXdev.AI\Start-LMStudioApplication -ShowWindow:$ShowWindow
             }
         }
 

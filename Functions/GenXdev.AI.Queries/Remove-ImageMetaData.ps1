@@ -279,15 +279,43 @@ function Remove-ImageMetaData {
             HelpMessage = ("Remove metadata files for all supported " +
                           "languages.")
         )]
-        [switch] $AllLanguages
-        #######################################################################
+        [switch] $AllLanguages,
+        ########################################################################
+        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $SessionOnly,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $ClearSession,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [Alias("FromPreferences")]
+        [switch] $SkipSession
+        ########################################################################
     )
 
     begin {
 
-        $directories = GenXdev.AI\Get-AIImageCollection
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AIImageCollection" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        $directories = GenXdev.AI\Get-AIImageCollection @params
 
-        $Language = GenXdev.AI\Get-AIMetaLanguage -Language (
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        $Language = GenXdev.AI\Get-AIMetaLanguage @params -Language (
             [String]::IsNullOrWhiteSpace($Language) ?
             (GenXdev.Helpers\Get-DefaultWebLanguage) :
             $Language

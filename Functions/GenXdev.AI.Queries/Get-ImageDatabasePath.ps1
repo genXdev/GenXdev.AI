@@ -44,6 +44,7 @@ function Get-ImageDatabasePath {
 
     [CmdletBinding()]
     [OutputType([string])]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
 
     param(
         ###############################################################################
@@ -137,8 +138,28 @@ function Get-ImageDatabasePath {
             Mandatory = $false,
             HelpMessage = "Switch to skip database initialization and rebuilding."
         )]
-        [switch] $NeverRebuild
-        ###############################################################################
+        [switch] $NeverRebuild,
+        ########################################################################
+        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $SessionOnly,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $ClearSession,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [Alias("FromPreferences")]
+        [switch] $SkipSession
+        ########################################################################
     )
 
     begin {
@@ -146,7 +167,11 @@ function Get-ImageDatabasePath {
         # define required schema version constant
         $SCHEMA_VERSION = "1.0.0.3"
 
-        $Language = GenXdev.AI\Get-AIMetaLanguage -Language (
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        $Language = GenXdev.AI\Get-AIMetaLanguage @params -Language (
             [String]::IsNullOrWhiteSpace($Language) ?
             (GenXdev.Helpers\Get-DefaultWebLanguage) :
             $Language
@@ -155,17 +180,56 @@ function Get-ImageDatabasePath {
 
     process {
 
-        # check if DatabaseFilePath is null or whitespace and set default path
+        # check if DatabaseFilePath is null or whitespace and set from preferences/session
         if ([String]::IsNullOrWhiteSpace($DatabaseFilePath)) {
 
-            # expand the default database file path using environment variable
-            $DatabaseFilePath = GenXdev.FileSystem\Expand-Path (
-                "$($ENV:LOCALAPPDATA)\GenXdev.PowerShell\allimages.meta.db"
-            ) -ErrorAction SilentlyContinue
-        }
-        else {
+            # first check global variable for database path (unless SkipSession is specified)
+            if ((-not $SkipSession) -and (-not [String]::IsNullOrWhiteSpace($Global:ImageDatabasePath))) {
 
-            # expand the provided database file path
+                # use global variable if available
+                $DatabaseFilePath = $Global:ImageDatabasePath
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    "Using session image database path: $DatabaseFilePath"
+                )
+            }
+            elseif (-not $SessionOnly) {
+
+                # fallback to preference storage
+                try {
+                    $preferencePath = GenXdev.Data\Get-GenXdevPreference `
+                        -Name "ImageDatabasePath" `
+                        -DefaultValue $null `
+                        -ErrorAction SilentlyContinue
+
+                    if (-not [String]::IsNullOrWhiteSpace($preferencePath)) {
+                        $DatabaseFilePath = $preferencePath
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Using preference image database path: $DatabaseFilePath"
+                        )
+                    }
+                }
+                catch {
+                    # ignore preference retrieval errors and use default
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Failed to retrieve database path preference, using default"
+                    )
+                }
+            }
+
+            # if still no path found, use default
+            if ([String]::IsNullOrWhiteSpace($DatabaseFilePath)) {
+                # expand the default database file path using environment variable
+                $DatabaseFilePath = GenXdev.FileSystem\Expand-Path (
+                    "$($ENV:LOCALAPPDATA)\GenXdev.PowerShell\allimages.meta.db"
+                ) -ErrorAction SilentlyContinue
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    "Using default image database path: $DatabaseFilePath"
+                )
+            }
+        }
+
+        # expand the database file path
+        if (-not [String]::IsNullOrWhiteSpace($DatabaseFilePath)) {
             $DatabaseFilePath = GenXdev.FileSystem\Expand-Path (
                 $DatabaseFilePath
             ) -ErrorAction SilentlyContinue

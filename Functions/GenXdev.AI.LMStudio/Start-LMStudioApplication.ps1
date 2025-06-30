@@ -15,7 +15,7 @@ Determines if the LM Studio window should be visible after starting.
 When specified, returns the Process object of the LM Studio application.
 
 .EXAMPLE
-Start-LMStudioApplication -WithVisibleWindow -Passthru
+Start-LMStudioApplication -ShowWindow -Passthru
 #>
 function Start-LMStudioApplication {
 
@@ -27,8 +27,7 @@ function Start-LMStudioApplication {
             Position = 0,
             HelpMessage = "Show or hide the LM Studio window after starting"
         )]
-        [Alias("sw", "ShowWindow")]
-        [switch]$WithVisibleWindow,
+        [switch]$ShowWindow,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -77,19 +76,17 @@ process {
                         # start server component
                         $null = Microsoft.PowerShell.Management\Start-Process `
                             -FilePath $paths.LMSExe `
-                            -ArgumentList "server", "start", "--port", "1234" `
-                            -NoNewWindow
+                            -ArgumentList "server", "start", "--port", "1234"
                         Microsoft.PowerShell.Utility\Start-Sleep -Seconds 4
+                        $null = Microsoft.PowerShell.Management\Start-Process `
+                            -FilePath $paths.LMStudioExe
+                        Microsoft.PowerShell.Utility\Start-Sleep -Seconds 4
+
                     }
                     ArgumentList = @($paths, ($ShowWindow -eq $true))
                 }
 
                 $null = Microsoft.PowerShell.Core\Start-Job @jobParams | Microsoft.PowerShell.Core\Wait-Job
-
-                if ($showWindow) {
-
-                    $null = GenXdev.AI\Get-LMStudioWindow -ShowWindow -NoAutoStart -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
-                }
 
                 # verify process starts within timeout period
                 Microsoft.PowerShell.Utility\Write-Verbose "Waiting for LM Studio process..."
@@ -110,13 +107,25 @@ process {
 
         # return process object if requested
         if ($Passthru) {
-            Microsoft.PowerShell.Management\Get-Process -Name "LM Studio" -ErrorAction Stop
+            Microsoft.PowerShell.Management\Get-Process -Name "LM Studio" -ErrorAction Stop |
+            Microsoft.PowerShell.Core\Where-Object -Property MainWindowHandle -ne 0 |
+            Microsoft.PowerShell.Utility\Select-Object -First 1
         }
     }
 
     end {
         if ($ShowWindow -and $PSCmdlet.ShouldProcess("LM Studio", "Show window")) {
-            $null = GenXdev.AI\Get-LMStudioWindow -NoAutoStart -ShowWindow -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            try {
+                $a = (GenXDev.Windows\Get-Window -ProcessName "LM Studio") ;
+                if ($null -eq $a) { return }
+                $null = $a.Show()
+                $null = $a.Restore()
+                $null = GenXDev.Windows\Set-WindowPosition -WindowHelper $a -Monitor 0 -Right
+                $null = GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
+            }
+            catch {
+
+            }
         }
     }
 }

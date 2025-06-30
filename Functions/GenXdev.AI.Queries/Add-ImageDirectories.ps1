@@ -46,14 +46,38 @@ function Add-ImageDirectories {
         )]
         [ValidateNotNullOrEmpty()]
         [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
-        [string[]] $ImageDirectories
-        ###############################################################################
+        [string[]] $ImageDirectories,
+        ########################################################################
+        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $SessionOnly,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $ClearSession,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [Alias("FromPreferences")]
+        [switch] $SkipSession
+        ########################################################################
     )
 
     begin {
 
         # retrieve current image directories configuration
-        $currentConfig =  GenXdev.AI\Get-AIImageCollection
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AIImageCollection" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        $currentConfig = GenXdev.AI\Get-AIImageCollection @params
 
         # initialize new collection to store all directories including existing ones
         $newDirectories = [System.Collections.Generic.List[string]]::new()
@@ -119,7 +143,10 @@ function Add-ImageDirectories {
 
             # update configuration using the dedicated setter function
             GenXdev.AI\Set-AIImageCollection `
-                -ImageDirectories $finalDirectories
+                -ImageDirectories $finalDirectories `
+                -SessionOnly:$SessionOnly `
+                -ClearSession:$ClearSession `
+                -SkipSession:$SkipSession
 
             # display success confirmation to user with statistics
             Microsoft.PowerShell.Utility\Write-Host (

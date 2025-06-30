@@ -30,6 +30,7 @@
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Set-AIImageCollection.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Set-AIKnownFacesRootpath.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Set-AIMetaLanguage.ps1"
+. "$PSScriptRoot\Functions\GenXdev.AI.Queries\Set-ImageDatabasePath.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Show-FoundImagesInBrowser.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Show-GenXdevScriptErrorFixInIde.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Start-AudioTranscription.ps1"

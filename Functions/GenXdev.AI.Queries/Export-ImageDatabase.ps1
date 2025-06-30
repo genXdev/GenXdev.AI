@@ -137,8 +137,28 @@ function Export-ImageDatabase {
             Mandatory = $false,
             HelpMessage = "Switch to skip database initialization and rebuilding."
         )]
-        [switch] $NeverRebuild
-    ###############################################################################
+        [switch] $NeverRebuild,
+        ########################################################################
+        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $SessionOnly,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [switch] $ClearSession,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+        )]
+        [Alias("FromPreferences")]
+        [switch] $SkipSession
+        ########################################################################
     )
 
     begin {
@@ -154,7 +174,13 @@ function Export-ImageDatabase {
         $DatabaseFilePath = GenXdev.AI\Get-ImageDatabasePath @params -NeverRebuild
 
         # retrieve configured image directories if not provided
-        $ImageDirectories = GenXdev.AI\Get-AIImageCollection -ImageDirectories $ImageDirectories
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AIImageCollection" `
+            -DefaultValues (
+                Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
+            )
+        $ImageDirectories = GenXdev.AI\Get-AIImageCollection @params
 
         # output that the image index database is being recreated
         Microsoft.PowerShell.Utility\Write-Host @"
@@ -561,7 +587,11 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
             # set image directories for Find-Image
-            $findImageParams.ImageDirectories = GenXdev.AI\Get-AIImageCollection -ImageDirectories $ImageDirectories
+            $imageCollectionParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName "GenXdev.AI\Get-AIImageCollection" `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+            $findImageParams.ImageDirectories = GenXdev.AI\Get-AIImageCollection @imageCollectionParams
 
             # prepare lookup table inserts
             [System.Collections.Generic.List[String]] $lookupQueries = [System.Collections.Generic.List[String]]::new()
