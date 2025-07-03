@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Starts the LM Studio application if it's not already running.
@@ -16,7 +16,7 @@ When specified, returns the Process object of the LM Studio application.
 
 .EXAMPLE
 Start-LMStudioApplication -ShowWindow -Passthru
-#>
+        ###############################################################################>
 function Start-LMStudioApplication {
 
     [CmdletBinding(SupportsShouldProcess = $true)]
@@ -129,4 +129,4 @@ process {
         }
     }
 }
-################################################################################
+        ###############################################################################

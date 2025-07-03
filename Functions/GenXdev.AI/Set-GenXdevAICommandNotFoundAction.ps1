@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Sets up custom command not found handling with AI assistance.
@@ -11,7 +11,7 @@ for navigation, and finally offers AI assistance for unknown commands.
 
 .EXAMPLE
 Set-GenXdevAICommandNotFoundAction
-#>
+        ###############################################################################>
 function Set-GenXdevAICommandNotFoundAction {
 
     [CmdletBinding(SupportsShouldProcess)]
@@ -165,4 +165,4 @@ process {
         Microsoft.PowerShell.Utility\Write-Verbose "Command not found handler configuration completed"
     }
 }
-################################################################################
+        ###############################################################################

@@ -2,10 +2,10 @@ Pester\Describe "Start-LMStudioApplication functionality tests" {
 
     Pester\It "Should pass PSScriptAnalyzer rules" {
 
-        # get the script path for analysis
+# get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Start-LMStudioApplication.ps1"
 
-        # run analyzer with explicit settings
+# run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 
@@ -29,22 +29,22 @@ $message
 
     Pester\It "Should successfully start LM Studio application with default settings" {
 
-        # start lm studio
+# start lm studio
         $result = GenXdev.AI\Start-LMStudioApplication
 
-        # verify process started
+# verify process started
         $result | Pester\Should -BeNull
 
-        # start lm studio
+# start lm studio
         $result = GenXdev.AI\Start-LMStudioApplication -Passthru
 
-        # verify process started
+# verify process started
         $result | Pester\Should -Not -BeNullOrEmpty
 
-        # give it time to start
+# give it time to start
         Microsoft.PowerShell.Utility\Start-Sleep -Seconds 2
 
-        # verify process is running
+# verify process is running
         $process = Microsoft.PowerShell.Management\Get-Process -Name "LM Studio" -ErrorAction SilentlyContinue
         $process | Pester\Should -Not -BeNullOrEmpty
     }

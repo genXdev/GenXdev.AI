@@ -3,7 +3,7 @@ using module GenXdev.Helpers
 Pester\Describe "Invoke-CommandFromToolCall cmdlet tests" {
 
     Pester\BeforeAll {
-        # store test variables in script scope
+# store test variables in script scope
         $Script:testFunctions = @(
             @{
                 function = @{
@@ -46,13 +46,13 @@ Pester\Describe "Invoke-CommandFromToolCall cmdlet tests" {
     }
 
     Pester\It "Should pass PSScriptAnalyzer rules" {
-        # analyze main function implementation
+# analyze main function implementation
         $scriptPath = "$PSScriptRoot\..\..\Functions\GenXdev.AI\" +
         "Invoke-CommandFromToolCall.ps1"
 
         Microsoft.PowerShell.Utility\Write-Verbose "Analyzing  $scriptPath"
 
-        # Get settings to verify what's being passed
+# Get settings to verify what's being passed
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath `
             -ErrorAction SilentlyContinue
@@ -76,7 +76,7 @@ $message
     }
 
     Pester\It "Should reject invalid parameters" {
-        # create test call with invalid parameter
+# create test call with invalid parameter
         $invalidCall = @{
             function = @{
                 name      = "Get-Movies"
@@ -93,7 +93,7 @@ $message
     }
 
     Pester\It "Should require confirmation by default" {
-        # mock host UI for confirmation prompt
+# mock host UI for confirmation prompt
         Pester\Mock -CommandName "Write-Host" -ModuleName "GenXdev.AI"
         Pester\Mock -CommandName "Read-Host" -ModuleName "GenXdev.AI" -MockWith { return 'y' }
 
@@ -107,7 +107,7 @@ $message
     }
 
     Pester\It "Should handle missing required parameters" {
-        # create test call without required parameter
+# create test call without required parameter
         $invalidCall = @{
             function = @{
                 name      = "Get-Movies"
@@ -130,11 +130,11 @@ $message
             -ExposedCmdLets $Script:testCmdlets `
             -NoConfirmationToolFunctionNames @("Get-Movies")
 
-        # verify successful execution
+# verify successful execution
         $result.CommandExposed | Pester\Should -Be $true
         $result.Output | Pester\Should -Not -BeNullOrEmpty
 
-        # parse and verify JSON output
+# parse and verify JSON output
         $jsonOutput = $result.Output | Microsoft.PowerShell.Utility\ConvertFrom-Json
         $jsonOutput.movies | Pester\Should -Not -BeNullOrEmpty
         $jsonOutput.movies.Count | Pester\Should -Be 2

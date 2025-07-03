@@ -18,18 +18,41 @@ read from the system clipboard. Multiple lines of text are supported.
 Additional instructions to guide the AI model in converting the text.
 These can help fine-tune the tone and style of the corporate language.
 
-.PARAMETER Model
-Specifies which AI model to use for text transformation. Different models may
-produce varying results in terms of corporate language style.
-
-.PARAMETER ModelLMSGetIdentifier
-Identifier used for getting specific model from LM Studio.
-
 .PARAMETER Temperature
 Temperature for response randomness (0.0-1.0).
 
+.PARAMETER LLMQueryType
+The type of LLM query.
+
+.PARAMETER Model
+The model identifier or pattern to use for AI operations.
+
+.PARAMETER HuggingFaceIdentifier
+The LM Studio specific model identifier.
+
 .PARAMETER MaxToken
-Maximum tokens in response (-1 for default).
+The maximum number of tokens to use in AI operations.
+
+.PARAMETER Cpu
+The number of CPU cores to dedicate to AI operations.
+
+.PARAMETER Gpu
+How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
+all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
+layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
+offload to the GPU. -2 = Auto.
+
+.PARAMETER ApiEndpoint
+The API endpoint URL for AI operations.
+
+.PARAMETER ApiKey
+The API key for authenticated AI operations.
+
+.PARAMETER TimeoutSeconds
+The timeout in seconds for AI operations.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
 
 .PARAMETER SetClipboard
 When specified, copies the transformed text back to the system clipboard.
@@ -37,34 +60,31 @@ When specified, copies the transformed text back to the system clipboard.
 .PARAMETER ShowWindow
 Shows the LM Studio window during processing.
 
-.PARAMETER TTLSeconds
-Set a TTL (in seconds) for models loaded via API requests.
-
-.PARAMETER Gpu
-How much to offload to the GPU. -2=Auto, -1=LMStudio decides, 0=Off, 0-1=Layer
-fraction.
-
 .PARAMETER Force
 Force stop LM Studio before initialization.
 
-.PARAMETER ApiEndpoint
-Api endpoint url, defaults to http://localhost:1234/v1/chat/completions.
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences.
 
-.PARAMETER ApiKey
-The API key to use for the request.
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences.
+
+.PARAMETER SkipSession
+Store settings only in persistent preferences without affecting session.
 
 .EXAMPLE
-ConvertTo-CorporateSpeak -Text "That's a terrible idea" -Model "qwen"
--SetClipboard
+ConvertTo-CorporateSpeak -Text "That's a terrible idea" -Model "qwen" -SetClipboard
 
 .EXAMPLE
 "This makes no sense" | corporatize
 #>
+################################################################################
 function ConvertTo-CorporateSpeak {
 
     [CmdletBinding()]
     [OutputType([System.String])]
     [Alias("corporatize")]
+
     param (
         ########################################################################
         [Parameter(
@@ -84,20 +104,6 @@ function ConvertTo-CorporateSpeak {
         [string]$Instructions = "",
         ########################################################################
         [Parameter(
-            Position = 2,
-            Mandatory = $false,
-            HelpMessage = "The LM-Studio model to use"
-        )]
-        [SupportsWildcards()]
-        [string]$Model,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Identifier for getting specific model from LM Studio"
-        )]
-        [string]$ModelLMSGetIdentifier,
-        ########################################################################
-        [Parameter(
             Mandatory = $false,
             HelpMessage = "Temperature for response randomness (0.0-1.0)"
         )]
@@ -106,10 +112,78 @@ function ConvertTo-CorporateSpeak {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)"
+            HelpMessage = "The type of LLM query"
         )]
-        [Alias("MaxTokens")]
-        [int]$MaxToken = -1,
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string]$LLMQueryType = "Knowledge",
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The model identifier or pattern to use for AI operations"
+        )]
+        [string]$Model,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The LM Studio specific model identifier"
+        )]
+        [Alias("ModelLMSGetIdentifier")]
+        [string]$HuggingFaceIdentifier,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The maximum number of tokens to use in AI operations"
+        )]
+        [int]$MaxToken,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+        )]
+        [int]$Cpu,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
+                           "offloading is disabled. If 'max', all layers are " +
+                           "offloaded to GPU. If a number between 0 and 1, " +
+                           "that fraction of layers will be offloaded to the " +
+                           "GPU. -1 = LM Studio will decide how much to " +
+                           "offload to the GPU. -2 = Auto")
+        )]
+        [ValidateRange(-2, 1)]
+        [int]$Gpu = -1,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API endpoint URL for AI operations"
+        )]
+        [string]$ApiEndpoint,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key for authenticated AI operations"
+        )]
+        [string]$ApiKey,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The timeout in seconds for AI operations"
+        )]
+        [int]$TimeoutSeconds,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string]$PreferencesDatabasePath,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -125,63 +199,44 @@ function ConvertTo-CorporateSpeak {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API"
-        )]
-        [Alias("ttl")]
-        [int]$TTLSeconds = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "GPU offload level (-2=Auto through 1=Full)"
-        )]
-        [ValidateRange(-2, 1)]
-        [int]$Gpu = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
             HelpMessage = "Force stop LM Studio before initialization"
         )]
         [switch]$Force,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Api endpoint url"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences")
         )]
-        [string]$ApiEndpoint = $null,
+        [switch]$SessionOnly,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The API key to use for the request"
+            HelpMessage = ("Clear alternative settings stored in session for AI " +
+                "preferences")
         )]
-        [string]$ApiKey = $null,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
-        )]
-        [switch] $SessionOnly,
+        [switch]$ClearSession,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
-        )]
-        [switch] $ClearSession,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Store settings only in persistent preferences without " +
+                "affecting session")
         )]
         [Alias("FromPreferences")]
-        [switch] $SkipSession
+        [switch]$SkipSession
         ########################################################################
     )
 
     begin {
-        Microsoft.PowerShell.Utility\Write-Verbose "Starting corporate speak conversion"
+
+        # output verbose message about starting the conversion process
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Starting corporate speak conversion"
+        )
     }
 
     process {
+
         # setup corporate language transformation instructions
         $corporateInstructions = @"
 Translate users input from the a brutal or direct phrase into polite,
@@ -203,7 +258,10 @@ Translation: 'I feel that I am at my most productive when I have more autonomy.'
 $Instructions
 "@
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Processing text transformation"
+        # output verbose message about the transformation process
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Processing text transformation"
+        )
 
         # invoke the language model with corporate instructions
         GenXdev.AI\Invoke-LLMTextTransformation @PSBoundParameters `
@@ -211,7 +269,11 @@ $Instructions
     }
 
     end {
-        Microsoft.PowerShell.Utility\Write-Verbose "Completed corporate speak conversion"
+
+        # output verbose message about completion of the conversion process
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Completed corporate speak conversion"
+        )
     }
 }
 ################################################################################

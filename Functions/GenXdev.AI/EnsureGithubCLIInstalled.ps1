@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Ensures GitHub CLI is properly installed and configured on the system.
@@ -15,7 +15,7 @@ The function handles all prerequisites and ensures a working GitHub CLI setup.
 .EXAMPLE
 EnsureGithubCLIInstalled
 This will verify and setup GitHub CLI if needed.
-#>
+        ###############################################################################>
 function EnsureGithubCLIInstalled {
 
     [CmdletBinding()]
@@ -152,4 +152,4 @@ process {
 
     end {}
 }
-################################################################################
+        ###############################################################################

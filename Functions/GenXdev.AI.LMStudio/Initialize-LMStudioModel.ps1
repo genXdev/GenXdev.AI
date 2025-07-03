@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Initializes and loads an AI model in LM Studio.
@@ -10,7 +10,7 @@ verification, process management, and model loading with GPU support.
 .PARAMETER Model
 Name or partial path of the model to initialize. Searched against available models.
 
-.PARAMETER ModelLMSGetIdentifier
+.PARAMETER HuggingFaceIdentifier
 The specific LM-Studio model identifier to use for download/initialization.
 
 .PARAMETER MaxToken
@@ -28,16 +28,13 @@ Shows the LM Studio window during initialization.
 .PARAMETER Force
 Force stops LM Studio before initialization.
 
-.PARAMETER PreferredModels
-Array of model names to try if specified model not found.
-
 .PARAMETER Unload
 Unloads the specified model instead of loading it.
 
 .EXAMPLE
 Initialize-LMStudioModel -Model "qwen2.5-14b-instruct" -ShowWindow -MaxToken 2048
 
-#>
+###############################################################################>
 function Initialize-LMStudioModel {
 
     [CmdletBinding()]
@@ -45,46 +42,6 @@ function Initialize-LMStudioModel {
         "PSUseUsingScopeModifierInNewRunspaces", ""
     )]
     param(
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            Position = 0,
-            ValueFromPipeline = $true,
-            HelpMessage = "Name or partial path of the model to initialize"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [SupportsWildcards()]
-        [string]$Model = [string]::Empty,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            Position = 1,
-            HelpMessage = "The LM-Studio model to use"
-        )]
-        [string]$ModelLMSGetIdentifier,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            Position = 2,
-            HelpMessage = "The number of tokens to consider as context when generating text. If not provided, the default value will be used."
-        )]
-        [Alias("MaxTokens")]
-        [int]$MaxToken = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            Position = 3,
-            HelpMessage = "TTL (seconds): If provided, when the model is not used for this number of seconds, it will be unloaded."
-        )]
-        [Alias("ttl")]
-        [int]$TTLSeconds = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            Position = 4,
-            HelpMessage = "How much to offload to the GPU. If `"off`", GPU offloading is disabled. If `"max`", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto "
-        )]
-        [int]$Gpu = -1,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -100,23 +57,119 @@ function Initialize-LMStudioModel {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "List of preferred models to try if specified not found"
+            HelpMessage = "Unloads the specified model instead of loading it"
         )]
-        [string[]]$PreferredModels = @(
-            "qwen2.5-14b-instruct", "vicuna", "alpaca", "gpt", "mistral", "falcon", "mpt",
-            "koala", "wizard", "guanaco", "bloom", "rwkv", "camel", "pythia",
-            "baichuan"
-        ),
+        [switch]$Unload,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Unloads the specified model instead of loading it"
+            HelpMessage = "The type of LLM query"
         )]
-        [switch]$Unload
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string] $LLMQueryType = "SimpleIntelligence",
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The model identifier or pattern to use for AI operations"
+        )]
+        [string] $Model,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The LM Studio specific model identifier"
+        )]
+        [Alias("ModelLMSGetIdentifier")]
+        [string] $HuggingFaceIdentifier,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The maximum number of tokens to use in AI operations"
+        )]
+        [int] $MaxToken,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+        )]
+        [int] $Cpu,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "GPU offloading level: -2=Auto, -1=LMStudio decides, 0=Off, 0-1=Layer fraction"
+        )]
+        [int] $Gpu = -1,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The time-to-live in seconds for cached AI responses"
+        )]
+        [int] $TTLSeconds,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The timeout in seconds for AI operations"
+        )]
+        [int] $TimeoutSeconds,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences")
+        )]
+        [switch] $SessionOnly,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Clear alternative settings stored in session for AI " +
+                "preferences")
+        )]
+        [switch] $ClearSession,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Store settings only in persistent preferences without " +
+                "affecting session")
+        )]
+        [Alias("FromPreferences")]
+        [switch] $SkipSession
         ########################################################################
-    )
+        )
 
     begin {
+
+        # Initialize variables that may be used across blocks
+        $paths = $null
+        $installationOk = $false
+        $processOk = $false
+
+        $llmConfigParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AILLMSettings" `
+            -DefaultValues  (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+
+        $llmConfig = GenXdev.AI\Get-AILLMSettings @llmConfigParams
+
+        foreach ($param in $llmConfig.Keys) {
+
+            if (Microsoft.PowerShell.Utility\Get-Variable -Name $param -Scope Local -ErrorAction SilentlyContinue) {
+
+                Microsoft.PowerShell.Utility\Set-Variable -Name $param -Value $llmConfig[$param] `
+                    -Scope Local -Force
+            }
+        }
 
         # force stop LM Studio processes if requested
         if ($Force) {
@@ -130,54 +183,6 @@ function Initialize-LMStudioModel {
             Microsoft.PowerShell.Utility\Write-Verbose "Force parameter specified, stopping LM Studio processes"
             $null = Microsoft.PowerShell.Management\Get-Process "LM Studio", "LMS" -ErrorAction SilentlyContinue |
                 Microsoft.PowerShell.Management\Stop-Process -Force
-        }
-
-        # no model specified?
-        if ([string]::IsNullOrWhiteSpace($Model)) {
-
-            # but we do have a model get identifier?
-            if (-not [string]::IsNullOrWhiteSpace($ModelLMSGetIdentifier)) {
-
-                # extract model name from get identifier
-                if ($ModelLMSGetIdentifier.ToLowerInvariant() -like "https://huggingface.co/lmstudio-community/*-GGUF") {
-
-                    $Model = $ModelLMSGetIdentifier.Substring($ModelLMSGetIdentifier.LastIndexOf("/") + 1).ToLowerInvariant();
-                }
-                else {
-
-                    $Model = $ModelLMSGetIdentifier
-                }
-            }
-
-            if ([string]::IsNullOrWhiteSpace($Model)) {
-
-                if (-not $PSBoundParameters.ContainsKey("Model")) {
-
-                    $null = $PSBoundParameters.Add("Model", $Model)
-                }
-                else {
-
-                    $PSBoundParameters["Model"] = $Model
-                }
-
-                if (-not $PSBoundParameters.ContainsKey("ModelLMSGetIdentifier")) {
-
-                    $null = $PSBoundParameters.Add("ModelLMSGetIdentifier", $ModelLMSGetIdentifier)
-                }
-                else {
-
-                    $PSBoundParameters["ModelLMSGetIdentifier"] = $ModelLMSGetIdentifier
-                }
-
-                if (-not $PSBoundParameters.ContainsKey("MaxToken")) {
-
-                    $null = $PSBoundParameters.Add("MaxToken", $ModelLMSGetIdentifier)
-                }
-                else {
-
-                    $PSBoundParameters["MaxToken"] = $ModelLMSGetIdentifier
-                }
-            }
         }
 
         # get lm studio installation paths
@@ -232,8 +237,8 @@ function Initialize-LMStudioModel {
         # attempt to download model if not found and identifier provided
         if (-not $foundModel) {
 
-            if (-not [string]::IsNullOrWhiteSpace($ModelLMSGetIdentifier)) {
-                $null = & "$($paths.LMSExe)" get $ModelLMSGetIdentifier
+            if (-not [string]::IsNullOrWhiteSpace($HuggingFaceIdentifier)) {
+                $null = & "$($paths.LMSExe)" get $HuggingFaceIdentifier
 
                 # refresh model list after download
                 $modelList = GenXdev.AI\Get-LMStudioModelList
@@ -243,21 +248,6 @@ function Initialize-LMStudioModel {
             }
         }
 
-        # try preferred models if still not found
-        if (-not $foundModel) {
-            Microsoft.PowerShell.Utility\Write-Verbose "Model '$Model' not found, trying preferred models"
-
-            foreach ($preferredModel in $PreferredModels) {
-                $foundModel = $modelList |
-                    Microsoft.PowerShell.Core\Where-Object { $_.path -like "*$preferredModel*" } |
-                    Microsoft.PowerShell.Utility\Select-Object -First 1
-
-                if ($foundModel) {
-                    Microsoft.PowerShell.Utility\Write-Verbose "Found preferred model: $($foundModel.path)"
-                    break
-                }
-            }
-        }
 
         if (-not $foundModel) {
             throw "Model '$Model' not found"
@@ -488,4 +478,4 @@ function Initialize-LMStudioModel {
         }
     }
 }
-################################################################################
+        ###############################################################################

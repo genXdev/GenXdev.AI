@@ -2,10 +2,10 @@ Pester\Describe "ConvertTo-LMStudioFunctionDefinition" {
 
     Pester\It "Should pass PSScriptAnalyzer rules" {
 
-        # get the script path for analysis
+# get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\ConvertTo-LMStudioFunctionDefinition.ps1"
 
-        # run analyzer with explicit settings
+# run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 
@@ -72,12 +72,12 @@ $message
 
         $callback | Pester\Should -BeOfType [System.Management.Automation.CommandInfo]
 
-        # Convert dictionary to proper parameter hashtable
+# Convert dictionary to proper parameter hashtable
         $params = @{"Path" = "$PSScriptRoot" }
 
         Microsoft.PowerShell.Utility\Write-Verbose "Final parameter hashtable: $($params | Microsoft.PowerShell.Utility\ConvertTo-Json -WarningAction SilentlyContinue)"
 
-        # Use $functionDefinition instead of undefined $matchedFunc
+# Use $functionDefinition instead of undefined $matchedFunc
         $callbackResult = & $callback @params | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -WarningAction SilentlyContinue
         $callbackResult | Pester\Should -BeLike "*ConvertTo-LMStudioFunctionDefinition.Tests.ps1*"
     }

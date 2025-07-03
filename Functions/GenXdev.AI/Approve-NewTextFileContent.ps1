@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Interactive file content comparison and approval using WinMerge.
@@ -25,7 +25,7 @@ Returns a hashtable with these properties:
 - approvedAsIs: True if content was accepted without modifications
 - savedContent: Final content if modified by user
 - userDeletedFile: True if user deleted existing file
-#>
+        ###############################################################################>
 function Approve-NewTextFileContent {
 
     [CmdletBinding()]
@@ -109,4 +109,4 @@ process {
     end {
     }
 }
-################################################################################
+        ###############################################################################

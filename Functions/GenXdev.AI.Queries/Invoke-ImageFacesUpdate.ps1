@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Updates face recognition metadata for image files in a specified directory.
@@ -57,8 +57,7 @@ Invoke-ImageFacesUpdate -ImageDirectories "C:\Photos" -Recurse
 
 .EXAMPLE
 facerecognition "C:\Photos" -RetryFailed -OnlyNew
-#>
-###############################################################################
+###############################################################################>
 function Invoke-ImageFacesUpdate {
 
     [CmdletBinding()]
@@ -188,7 +187,7 @@ function Invoke-ImageFacesUpdate {
         # retrieve all supported image files from the specified directory
         # applying recursion only if the -Recurse switch was provided
         Microsoft.PowerShell.Management\Get-ChildItem `
-            -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
+            -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.gif", "$path\*.png" `
             -Recurse:$Recurse `
             -File `
             -ErrorAction SilentlyContinue |
@@ -196,66 +195,36 @@ function Invoke-ImageFacesUpdate {
 
                 # store the full path to the current image for better readability
                 $image = $PSItem.FullName
-
-                # if retry mode is active, handle previously failed images
-                if ($RetryFailed) {
-
-                    if ([System.IO.File]::Exists("$($image):people.json")) {
-
-                        # read existing metadata to check for empty or invalid content
-                        $content = [System.IO.File]::ReadAllText(
-                            "$($image):people.json")
-
-                        # check if metadata file contains no faces or invalid data
-                        if ($content.StartsWith("{}") -or
-                            $content -eq ('{"predictions":null,"count":1,' +
-                                         '"faces":[""]}')) {
-
-                            $content = "{}"
-                        }
-                    }
-                }
-
-                Microsoft.PowerShell.Utility\Write-Verbose ("Processing image: " +
-                                                            "$image")
-
-                # remove read-only attribute if present to ensure file modification
-                if ($PSItem.Attributes -band [System.IO.FileAttributes]::ReadOnly) {
-
-                    $PSItem.Attributes = $PSItem.Attributes -bxor
-                    [System.IO.FileAttributes]::ReadOnly
-                }
+                $metadataFilePath = "$($image):people.json"
 
                 # check if a metadata file already exists for this image
-                $metadataFilePath = "$($image):people.json"
                 $fileExists = [System.IO.File]::Exists($metadataFilePath)
 
-                # read existing content or use empty JSON object as default
-                $content = if ($fileExists) {
-                    [System.IO.File]::ReadAllText($metadataFilePath)
-                } else {
-                    "{}"
+                # check if we have valid existing content
+                $hasValidContent = $false
+                if ($fileExists) {
+                    try {
+                        $content = [System.IO.File]::ReadAllText($metadataFilePath)
+                        $existingData = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
+                        $hasValidContent = $existingData.predictions -and $existingData.predictions.Count -gt 0
+                    }
+                    catch {
+                        # If JSON parsing fails, treat as invalid content
+                        $hasValidContent = $false
+                    }
                 }
 
                 # determine if image should be processed based on options
-                $shouldProcess = (
-                    (-not $OnlyNew) -or
-                    (-not $fileExists) -or
-                    ($content -eq "{}") -or
-                    (-not $content.Contains("predictions"))
-                )
+                Microsoft.PowerShell.Utility\Write-Verbose `
+                    ("OnlyNew: $OnlyNew, FileExists: $fileExists, " +
+                     "HasValidContent: $hasValidContent")
+
+                $shouldProcess = (-not $OnlyNew) -or (-not $fileExists) -or (-not $hasValidContent)
+
+                Microsoft.PowerShell.Utility\Write-Verbose `
+                    "Should process '$image': $shouldProcess"
 
                 if ($shouldProcess) {
-
-                    # create an empty metadata file as placeholder if needed
-                    if (-not $fileExists) {
-
-                        $null = [System.IO.File]::WriteAllText($metadataFilePath,
-                                                               "{}")
-
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Created new metadata file for: $image")
-                    }
 
                     # obtain face recognition data using ai recognition technology
                     $faceData = GenXdev.AI\Get-ImageDetectedFaces `
@@ -323,13 +292,6 @@ function Invoke-ImageFacesUpdate {
                                 -Depth 20 `
                                 -WarningAction SilentlyContinue)
 
-                        # handle invalid json response by resetting to empty object
-                        if ($newContent -eq ('{"predictions":null,"count":1,' +
-                                             '"faces":[""]}')) {
-
-                            $newContent = '{}'
-                        }
-
                         # save the processed face data to metadata file
                         [System.IO.File]::WriteAllText($metadataFilePath,
                                                        $newContent)
@@ -350,4 +312,4 @@ function Invoke-ImageFacesUpdate {
     end {
     }
 }
-################################################################################
+        ###############################################################################

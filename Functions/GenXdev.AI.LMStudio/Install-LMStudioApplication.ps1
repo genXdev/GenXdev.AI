@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Installs LM Studio application using WinGet package manager.
@@ -9,7 +9,7 @@ installing LM Studio if not already present. Uses WinGet module with CLI fallbac
 
 .EXAMPLE
 Install-LMStudioApplication
-#>
+        ###############################################################################>
 function Install-LMStudioApplication {
 
     [CmdletBinding()]
@@ -92,4 +92,4 @@ process {
 
     end {}
 }
-################################################################################
+        ###############################################################################

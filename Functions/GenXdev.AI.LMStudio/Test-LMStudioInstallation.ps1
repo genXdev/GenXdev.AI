@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Tests if LMStudio is installed and accessible on the system.
@@ -15,7 +15,7 @@ Returns $true if LMStudio is properly installed, $false otherwise.
 .EXAMPLE
 tlms
 Uses the alias to check LMStudio installation status.
-#>
+        ###############################################################################>
 function Test-LMStudioInstallation {
 
     [CmdletBinding()]
@@ -44,4 +44,4 @@ process {
 
     end {}
 }
-################################################################################
+        ###############################################################################

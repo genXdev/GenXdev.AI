@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Generates subtitle files for audio and video files using OpenAI Whisper.
@@ -26,33 +26,47 @@ will be translated from LanguageIn to this language using LM Studio.
 The LM Studio model name to use for translation. Defaults to "qwen". Only used
 when LanguageOut is specified.
 
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SkipSession
+Dont use alternative settings stored in session for AI preferences like
+Language, Image collections, etc.
+
 .EXAMPLE
 Save-Transcriptions -DirectoryPath "C:\Videos" -LanguageIn "English"
 
 .EXAMPLE
 Save-Transcriptions "C:\Media" "Japanese" "English" "qwen"
-#>
-################################################################################
+###############################################################################>
+#######################################################################
 function Save-Transcriptions {
 
     [CmdletBinding()]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
 
     param(
-        ################################################################################
+    #######################################################################
         [parameter(
             Mandatory = $false,
             Position = 0,
             HelpMessage = "The directory path to search for media files"
         )]
         [string] $DirectoryPath = ".\",
-        ################################################################################
+    #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 1,
             HelpMessage = "The language to expect in the audio."
         )]
-        [PSDefaultValue(Value = "English")]
         [ValidateSet(
             "Afrikaans",
             "Akan",
@@ -203,55 +217,58 @@ function Save-Transcriptions {
             "Yiddish",
             "Yoruba",
             "Zulu")]
-        [string] $LanguageIn = "",
-        ################################################################################
+        [string] $LanguageIn,
+    #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 2,
             HelpMessage = "Sets the language to translate to."
         )]
-        [string]$LanguageOut = $null,
-        ################################################################################
+        [string]$LanguageOut,
+    #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The LM Studio model to use for translation."
-        )]
-        [string] $TranslateUsingLMStudioModel = "qwen",
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences like Language, Image collections, etc")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+    #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for " +
+                "AI preferences like Language, Image collections, etc")
         )]
         [switch] $ClearSession,
-        ########################################################################
+    #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+    #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Dont use alternative settings stored in session " +
+                "for AI preferences like Language, Image collections, etc")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
-        # end of translation
+    #######################################################################
     )
 
     begin {
 
+        # copy identical parameter values for meta language processing
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-        $LanguageIn = GenXdev.AI\Get-AIMetaLanguage @params -Language (
-            [String]::IsNullOrWhiteSpace($LanguageIn) ?
-            (GenXdev.Helpers\Get-DefaultWebLanguage) :
-            $LanguageIn
-        )
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
+
+        # get resolved language using meta language processing
+        $LanguageIn = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageIn
+        $LanguageOut = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageOut
 
         # define array of supported media file extensions for processing
         $extensions = @(
@@ -403,8 +420,8 @@ function Save-Transcriptions {
         # store current location to restore at end of processing
         Microsoft.PowerShell.Management\Push-Location
 
-        Microsoft.PowerShell.Utility\Write-Verbose ("Current working directory " +
-            "stored for later restoration")
+        Microsoft.PowerShell.Utility\Write-Verbose ("Current working " +
+            "directory stored for later restoration")
     }
 
     process {
@@ -413,8 +430,8 @@ function Save-Transcriptions {
         Microsoft.PowerShell.Management\Set-Location `
             (GenXdev.FileSystem\Expand-Path $DirectoryPath)
 
-        Microsoft.PowerShell.Utility\Write-Verbose ("Changed working directory " +
-            "to: $DirectoryPath")
+        Microsoft.PowerShell.Utility\Write-Verbose ("Changed working " +
+            "directory to: $DirectoryPath")
 
         # recursively process each file in directory and subdirectories
         Microsoft.PowerShell.Management\Get-ChildItem -File -rec |
@@ -423,8 +440,8 @@ function Save-Transcriptions {
             # skip files that don't have a supported media extension
             if ($extensions -notcontains $PSItem.Extension.ToLower()) {
 
-                Microsoft.PowerShell.Utility\Write-Verbose ("Skipping file with " +
-                    "unsupported extension: $($PSItem.Name)")
+                Microsoft.PowerShell.Utility\Write-Verbose ("Skipping file " +
+                    "with unsupported extension: $($PSItem.Name)")
 
                 return
             }
@@ -456,13 +473,16 @@ function Save-Transcriptions {
 
                 if ([io.file]::Exists($nlPath)) {
 
-                    $null = Microsoft.PowerShell.Management\Remove-Item $nlPathOld `
+                    $null = Microsoft.PowerShell.Management\Remove-Item `
+                        $nlPathOld `
                         -Force
                 }
                 else {
 
-                    $null = Microsoft.PowerShell.Management\Move-Item $nlPathOld `
-                        $nlPath -Force
+                    $null = Microsoft.PowerShell.Management\Move-Item `
+                        $nlPathOld `
+                        $nlPath `
+                        -Force
                 }
             }
 
@@ -471,13 +491,16 @@ function Save-Transcriptions {
 
                 if ([io.file]::Exists($enPath)) {
 
-                    $null = Microsoft.PowerShell.Management\Remove-Item $enPathOld `
+                    $null = Microsoft.PowerShell.Management\Remove-Item `
+                        $enPathOld `
                         -Force
                 }
                 else {
 
-                    $null = Microsoft.PowerShell.Management\Move-Item $enPathOld `
-                        $enPath -Force
+                    $null = Microsoft.PowerShell.Management\Move-Item `
+                        $enPathOld `
+                        $enPath `
+                        -Force
                 }
             }
 
@@ -502,24 +525,18 @@ function Save-Transcriptions {
                         "transcription for: $($PSItem.FullName)")
 
                     # prepare parameters for transcription generation
-                    $params = @{
+                    $params = (GenXdev.Helpers\Copy-IdenticalParamValues `
+                        -BoundParameters $PSBoundParameters `
+                        -FunctionName "GenXdev.AI\Get-MediaFileAudioTranscription" `
+                        -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                            -Scope Local `
+                            -ErrorAction SilentlyContinue)
+                    ) +
+                    @{
                         FilePath                    = $PSItem.FullName
                         SRT                         = $true
                         MaxTokensPerSegment         = 20
                         CpuThreads                  = 4
-                        TranslateUsingLMStudioModel = $TranslateUsingLMStudioModel
-                    }
-
-                    # add source language if specified
-                    if (-not [String]::IsNullOrWhiteSpace($LanguageIn)) {
-
-                        $params += @{ LanguageIn = $LanguageIn }
-                    }
-
-                    # add target language if translation requested
-                    if (-not [String]::IsNullOrWhiteSpace($LanguageOut)) {
-
-                        $params += @{ LanguageOut = $LanguageOut }
                     }
 
                     # generate transcription using whisper model
@@ -535,8 +552,8 @@ function Save-Transcriptions {
             }
             catch {
 
-                Microsoft.PowerShell.Utility\Write-Verbose ("Failed to process " +
-                    "file: $($PSItem.FullName)")
+                Microsoft.PowerShell.Utility\Write-Verbose ("Failed to " +
+                    "process file: $($PSItem.FullName)")
 
                 Microsoft.PowerShell.Utility\Write-Verbose ("Error details: " +
                     "$PSItem")
@@ -560,8 +577,8 @@ function Save-Transcriptions {
         # restore original working directory
         Microsoft.PowerShell.Management\Pop-Location
 
-        Microsoft.PowerShell.Utility\Write-Verbose ("Original working directory " +
-            "restored")
+        Microsoft.PowerShell.Utility\Write-Verbose ("Original working " +
+            "directory restored")
     }
 }
-################################################################################
+###############################################################################

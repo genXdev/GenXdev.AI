@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Classifies an image into one of 365 scene categories using DeepStack.
@@ -126,8 +126,7 @@ veterinarians_office, viaduct, village, vineyard, volcano,
 volleyball_court, waiting_room, water_park, water_tower, waterfall,
 watering_hole, wave, wet_bar, wheat_field, wind_farm, windmill, yard,
 youth_hostel, zen_garden.
-#>
-###############################################################################
+###############################################################################>
 function Get-ImageDetectedScenes {
 
     [CmdletBinding()]
@@ -202,6 +201,13 @@ function Get-ImageDetectedScenes {
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImageName,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Skip Docker initialization (used when already " +
+                          "called by parent function)")
+        )]
+        [switch] $NoDockerInitialize,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -308,7 +314,9 @@ function Get-ImageDetectedScenes {
                 $SceneData.confidence
             } else {
                 0.0
-            }            Microsoft.PowerShell.Utility\Write-Verbose `
+            }
+
+            Microsoft.PowerShell.Utility\Write-Verbose `
                 "Detected scene: $scene (confidence: $confidence)"
 
             # check if confidence meets the threshold
@@ -404,4 +412,4 @@ function Get-ImageDetectedScenes {
         # no cleanup required for this function
     }
 }
-################################################################################
+        ###############################################################################

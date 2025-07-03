@@ -1,11 +1,100 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
-Saves cropped Object images from indexed image search results.
+Saves cropped object images from indexed image search results to files.
 
 .DESCRIPTION
-This function takes image search results and extracts/saves individual Object regions as separate image files.
-It can search for Objects using various criteria and save them to a specified output directory.
+This function takes image search results and extracts individual detected
+object regions, saving them as separate image files. It can search for objects
+using various criteria including keywords, people, scenes, and metadata filters.
+The function processes images with AI-detected object boundaries and crops them
+to individual PNG files in the specified output directory.
+
+.PARAMETER Any
+Will match any of all the possible meta data types including descriptions,
+keywords, people, objects, scenes, picture types, style types, and moods.
+
+.PARAMETER DescriptionSearch
+The description text to look for, wildcards allowed.
+
+.PARAMETER Keywords
+The keywords to look for, wildcards allowed.
+
+.PARAMETER People
+People to look for, wildcards allowed.
+
+.PARAMETER Objects
+Objects to look for, wildcards allowed.
+
+.PARAMETER Scenes
+Scenes to look for, wildcards allowed.
+
+.PARAMETER PictureType
+Picture types to filter by, wildcards allowed.
+
+.PARAMETER StyleType
+Style types to filter by, wildcards allowed.
+
+.PARAMETER OverallMood
+Overall moods to filter by, wildcards allowed.
+
+.PARAMETER HasNudity
+Filter images that contain nudity.
+
+.PARAMETER NoNudity
+Filter images that do NOT contain nudity.
+
+.PARAMETER HasExplicitContent
+Filter images that contain explicit content.
+
+.PARAMETER NoExplicitContent
+Filter images that do NOT contain explicit content.
+
+.PARAMETER DatabaseFilePath
+Path to the SQLite database file.
+
+.PARAMETER PassThru
+Return image data as objects.
+
+.PARAMETER Language
+Language for descriptions and keywords.
+
+.PARAMETER ForceIndexRebuild
+Force rebuild of the image index database.
+
+.PARAMETER PathLike
+Array of directory path-like search strings to filter images by path
+(SQL LIKE patterns, e.g. '%\2024\%').
+
+.PARAMETER InputObject
+Accepts search results from a previous -PassThru call to regenerate the view.
+
+.PARAMETER OutputDirectory
+Directory to save cropped object images.
+
+.PARAMETER SaveUnknownPersons
+Also save unknown persons detected as objects.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SkipSession
+Dont use alternative settings stored in session for AI preferences like
+Language, Image collections, etc.
+
+.EXAMPLE
+Save-FoundImageObjects -Objects "car", "tree" -OutputDirectory "C:\CroppedObjects"
+
+.EXAMPLE
+saveimageObjects -Any "sunset" -SaveUnknownPersons
 #>
 function Save-FoundImageObjects {
 
@@ -73,46 +162,9 @@ function Save-FoundImageObjects {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter images that contain nudity."
-        )]
-        [switch] $HasNudity,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Filter images that do NOT contain nudity."
-        )]
-        [switch] $NoNudity,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Filter images that contain explicit content."
-        )]
-        [switch] $HasExplicitContent,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Filter images that do NOT contain explicit content."
-        )]
-        [switch] $NoExplicitContent,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
             HelpMessage = "Path to the SQLite database file."
         )]
         [string] $DatabaseFilePath,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Show results in a browser gallery."
-        )]
-        [Alias("show", "s")]
-        [switch] $ShowInBrowser,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Return image data as objects."
-        )]
-        [switch] $PassThru,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -279,189 +331,18 @@ function Save-FoundImageObjects {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Browser accept-language header."
-        )]
-        [string] $AcceptLang,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Monitor to use for display."
-        )]
-        [int] $Monitor,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Initial width of browser window."
-        )]
-        [int] $Width,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Initial height of browser window."
-        )]
-        [int] $Height,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Initial X position of browser window."
-        )]
-        [int] $X,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Initial Y position of browser window."
-        )]
-        [int] $Y,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Enable interactive browser features."
-        )]
-        [Alias("i", "editimages")]
-        [switch] $Interactive,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Open in private/incognito mode."
-        )]
-        [switch] $Private,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Force enable debugging port."
-        )]
-        [switch] $Force,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Open in Microsoft Edge."
-        )]
-        [switch] $Edge,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Open in Google Chrome."
-        )]
-        [switch] $Chrome,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Open in Chromium-based browser."
-        )]
-        [switch] $Chromium,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Open in Firefox."
-        )]
-        [switch] $Firefox,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Open in all browsers."
-        )]
-        [switch] $All,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Open in fullscreen mode."
-        )]
-        [switch] $FullScreen,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Place window on left side."
-        )]
-        [switch] $Left,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Place window on right side."
-        )]
-        [switch] $Right,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Place window on top."
-        )]
-        [switch] $Top,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Place window on bottom."
-        )]
-        [switch] $Bottom,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Center the window."
-        )]
-        [switch] $Centered,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Hide browser controls."
-        )]
-        [switch] $ApplicationMode,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Disable browser extensions."
-        )]
-        [switch] $NoBrowserExtensions,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Disable popup blocker."
-        )]
-        [switch] $DisablePopupBlocker,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Restore PowerShell focus."
-        )]
-        [switch] $RestoreFocus,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Create new browser window."
-        )]
-        [switch] $NewWindow,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Only return HTML."
-        )]
-        [switch] $OnlyReturnHtml,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Embed images as base64."
-        )]
-        [switch] $EmbedImages,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Force rebuild of the image index database."
-        )]
-        [switch] $ForceIndexRebuild,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = (
-                "Array of directory path-like search strings to filter images by " +
-                "path (SQL LIKE patterns, e.g. '%\\2024\\%')"
-            )
+            HelpMessage = ("Array of directory path-like search strings to " +
+                "filter images by path (SQL LIKE patterns, e.g. '%\\2024\\%')")
         )]
         [string[]] $PathLike = @(),
-         ###############################################################################
-         [Parameter(
+        ###############################################################################
+        [Parameter(
             Mandatory = $false,
             ValueFromPipeline = $true,
             HelpMessage = ("Accepts search results from a previous -PassThru " +
                 "call to regenerate the view.")
         )]
-        [object[]] $InputObject,
+        [System.Object[]] $InputObject,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -471,206 +352,434 @@ function Save-FoundImageObjects {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Filter images that contain nudity."
+        )]
+        [switch] $HasNudity,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Filter images that do NOT contain nudity."
+        )]
+        [switch] $NoNudity,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Filter images that contain explicit content."
+        )]
+        [switch] $HasExplicitContent,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Filter images that do NOT contain explicit content."
+        )]
+        [switch] $NoExplicitContent,
+
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Force rebuild of the image index database."
+        )]
+        [switch] $ForceIndexRebuild,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = "Also save unknown persons detected as objects."
         )]
         [switch] $SaveUnknownPersons,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences like Language, Image collections, etc")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for AI " +
+                "preferences like Language, Image collections, etc")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Dont use alternative settings stored in session " +
+                "for AI preferences like Language, Image collections, etc")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+        ###############################################################################
     )
+
 
     ###############################################################################
     begin {
+
+        # copy parameters for the ai meta language function to resolve language
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-        $Language = GenXdev.AI\Get-AIMetaLanguage @params -Language (
-            [String]::IsNullOrWhiteSpace($Language) ?
-            (GenXdev.Helpers\Get-DefaultWebLanguage) :
-            $Language
-        )
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
 
+        # resolve the language parameter using ai meta language function
+        $language = GenXdev.AI\Get-AIMetaLanguage @params
 
+        # initialize information tracking object for processing statistics
         $info = @{
             resultCount = 0
         }
 
-        if ($null -ne $Any -and
-            $Any.Length -gt 0) {
+        # process the any parameter if provided to expand search criteria
+        if ($null -ne $Any -and $Any.Length -gt 0) {
 
-            $Any = @($Any | Microsoft.PowerShell.Core\ForEach-Object {
+            # transform each entry in any parameter to include wildcards if needed
+            $any = @($Any |
+                Microsoft.PowerShell.Core\ForEach-Object {
 
-                $entry = $_.Trim()
+                    # trim whitespace from the entry
+                    $entry = $_.Trim()
 
-                if ($entry.IndexOfAny([char[]]@('*', '?')) -lt 0) {
+                    # add wildcards if no wildcard characters are present
+                    if ($entry.IndexOfAny([char[]]@('*', '?')) -lt 0) {
 
-                    "*$entry*"
-                }
-                else {
-                    $_
-                }
-            })
+                        "*$entry*"
+                    }
+                    else {
+                        $_
+                    }
+                })
 
-            # if Any parameter is used, treat it as a set of keywords
-            $DescriptionSearch = $null -ne $DescriptionSearch ? ($DescriptionSearch + $Any) :
-                $Any
+            # merge any parameter values with existing search criteria arrays
+            $descriptionSearch = $null -ne $DescriptionSearch ?
+                ($DescriptionSearch + $Any) : $Any
 
-            $Keywords = $null -ne $Keywords ? ($Keywords + $Any) :
-                $Any
+            $keywords = $null -ne $Keywords ?
+                ($Keywords + $Any) : $Any
 
-            $People = $null -ne $People ? ($People + $Any) :
-                $Any
+            $people = $null -ne $People ?
+                ($People + $Any) : $Any
 
-            $Objects = $null -ne $Objects ? ($Objects + $Any) :
-                $Any
+            $objects = $null -ne $Objects ?
+                ($Objects + $Any) : $Any
 
-            $Scenes = $null -ne $Scenes ? ($Scenes + $Any) :
-                $Any
+            $scenes = $null -ne $Scenes ?
+                ($Scenes + $Any) : $Any
 
-            $PictureType = $null -ne $PictureType ? ($PictureType + $Any) :
-                $Any
+            $pictureType = $null -ne $PictureType ?
+                ($PictureType + $Any) : $Any
 
-            $StyleType = $null -ne $StyleType ? ($StyleType + $Any) :
-                $Any
+            $styleType = $null -ne $StyleType ?
+                ($StyleType + $Any) : $Any
 
-            $OverallMood = $null -ne $OverallMood ? ($OverallMood + $Any) :
-                $Any
+            $overallMood = $null -ne $OverallMood ?
+                ($OverallMood + $Any) : $Any
         }
     }
     ###############################################################################
     process {
-        # Ensure output directory exists
-        $OutputDirectory = GenXdev.FileSystem\Expand-Path $OutputDirectory -CreateDirectory
 
-        # if InputObject is provided, convert each item to an image object
+        # ensure the output directory exists by expanding the path
+        $outputDirectory = GenXdev.FileSystem\Expand-Path $OutputDirectory `
+            -CreateDirectory
+
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "using output directory: $outputDirectory")
+
+        # define internal function to save image objects from processed images
         function saveImage {
 
             param ($InputObject)
 
-            $InputObject | Microsoft.PowerShell.Core\ForEach-Object {
-                $image = $_
-                if ($null -eq $image -or -not $image.path) { return }
+            # process each image object in the pipeline
+            $InputObject |
+                Microsoft.PowerShell.Core\ForEach-Object {
 
-                # Handle object detection data
-                $objects = $null
-                if ($image.objects -and $image.objects.objects) {
-                    $objects = $image.objects.objects
-                }
-                $savedObjectRects = @()
-                if ($objects) {
-                    $imgPath = $image.path
-                    try {
-                        $imgObj = [System.Drawing.Image]::FromFile($imgPath)
+                    # get current image object and validate it has required data
+                    $image = $_
+                    if ($null -eq $image -or -not $image.path) { return }
+
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "processing image: $($image.path)")
+
+                    # extract object detection data if available
+                    $objects = $null
+                    if ($image.objects -and $image.objects.objects) {
+                        $objects = $image.objects.objects
+                    }
+
+                    # track coordinates of saved object rectangles to avoid duplicates
+                    $savedObjectRects = @()
+
+                    # process detected objects if any exist
+                    if ($objects) {
+
+                        # get the full path to the source image file
+                        $imgPath = $image.path
+
                         try {
-                            $imgBase = [System.IO.Path]::GetFileNameWithoutExtension($imgPath)
-                            $objectIdx = 0
-                            foreach ($obj in $objects) {
-                                $x_min = [Math]::Max(0, [Math]::Min($obj.x_min, $imgObj.Width - 1))
-                                $y_min = [Math]::Max(0, [Math]::Min($obj.y_min, $imgObj.Height - 1))
-                                $x_max = [Math]::Max($x_min + 1, [Math]::Min($obj.x_max, $imgObj.Width))
-                                $y_max = [Math]::Max($y_min + 1, [Math]::Min($obj.y_max, $imgObj.Height))
-                                $width = $x_max - $x_min
-                                $height = $y_max - $y_min
-                                if ($width -le 0 -or $height -le 0) { continue }
-                                $cropRect = [System.Drawing.Rectangle]::new($x_min, $y_min, $width, $height)
-                                $croppedBitmap = [System.Drawing.Bitmap]::new($width, $height)
-                                $croppedGraphics = [System.Drawing.Graphics]::FromImage($croppedBitmap)
-                                $destRect = [System.Drawing.Rectangle]::new(0, 0, $width, $height)
-                                $null = $croppedGraphics.DrawImage($imgObj, $destRect, $cropRect, [System.Drawing.GraphicsUnit]::Pixel)
-                                $croppedGraphics.Dispose()
-                                $objectLabel = if ($obj.label) { $obj.label } else { "object$objectIdx" }
-                                $objectLabel = $objectLabel -replace '[^\w\-_]', '_'
-                                $outFile = Microsoft.PowerShell.Management\Join-Path $OutputDirectory ("${imgBase}_${objectLabel}_${objectIdx}.png")
-                                $croppedBitmap.Save($outFile, [System.Drawing.Imaging.ImageFormat]::Png)
-                                $croppedBitmap.Dispose()
-                                $savedObjectRects += @{x_min=$x_min;y_min=$y_min;x_max=$x_max;y_max=$y_max}
-                                $objectIdx++
-                            }
-                            # Save unknown persons if requested
-                            if ($SaveUnknownPersons -and $image.people -and $image.people.predictions) {
-                                $personIdx = 0
-                                foreach ($person in $image.people.predictions) {
-                                    try {
-                                        $x_min = [Math]::Max(0, [Math]::Min($person.x_min, $imgObj.Width - 1))
-                                        $y_min = [Math]::Max(0, [Math]::Min($person.y_min, $imgObj.Height - 1))
-                                        $x_max = [Math]::Max($x_min + 1, [Math]::Min($person.x_max, $imgObj.Width))
-                                        $y_max = [Math]::Max($y_min + 1, [Math]::Min($person.y_max, $imgObj.Height))
-                                        $width = $x_max - $x_min
-                                        $height = $y_max - $y_min
-                                        if ($width -le 0 -or $height -le 0) { continue }
-                                        # Check if this person overlaps with any saved object
-                                        $overlap = $false
-                                        foreach ($rect in $savedObjectRects) {
-                                            if ((($x_min -le $rect.x_max) -and ($x_max -ge $rect.x_min)) -and (($y_min -le $rect.y_max) -and ($y_max -ge $rect.y_min))) {
-                                                $overlap = $true
-                                                break
-                                            }
-                                        }
-                                        if ($overlap) { continue }
-                                        $cropRect = [System.Drawing.Rectangle]::new($x_min, $y_min, $width, $height)
-                                        $croppedBitmap = [System.Drawing.Bitmap]::new($width, $height)
-                                        $croppedGraphics = [System.Drawing.Graphics]::FromImage($croppedBitmap)
-                                        $destRect = [System.Drawing.Rectangle]::new(0, 0, $width, $height)
-                                        $null = $croppedGraphics.DrawImage($imgObj, $destRect, $cropRect, [System.Drawing.GraphicsUnit]::Pixel)
-                                        $croppedGraphics.Dispose()
-                                        $outFile = Microsoft.PowerShell.Management\Join-Path $OutputDirectory ("${imgBase}_unknownperson_${personIdx}.png")
-                                        $croppedBitmap.Save($outFile, [System.Drawing.Imaging.ImageFormat]::Png)
-                                        $croppedBitmap.Dispose()
-                                        $personIdx++
+                            # load the source image using system drawing classes
+                            $imgObj = [System.Drawing.Image]::FromFile($imgPath)
+
+                            try {
+                                # extract base filename without extension for output naming
+                                $imgBase = [System.IO.Path]::GetFileNameWithoutExtension(
+                                    $imgPath)
+
+                                # initialize object index counter for unique naming
+                                $objectIdx = 0
+
+                                # iterate through each detected object to crop and save
+                                foreach ($obj in $objects) {
+
+                                    # calculate safe bounding rectangle coordinates within image bounds
+                                    $x_min = [Math]::Max(0,
+                                        [Math]::Min($obj.x_min, $imgObj.Width - 1))
+                                    $y_min = [Math]::Max(0,
+                                        [Math]::Min($obj.y_min, $imgObj.Height - 1))
+                                    $x_max = [Math]::Max($x_min + 1,
+                                        [Math]::Min($obj.x_max, $imgObj.Width))
+                                    $y_max = [Math]::Max($y_min + 1,
+                                        [Math]::Min($obj.y_max, $imgObj.Height))
+
+                                    # calculate width and height of the crop rectangle
+                                    $width = $x_max - $x_min
+                                    $height = $y_max - $y_min
+
+                                    # skip invalid rectangles with zero or negative dimensions
+                                    if ($width -le 0 -or $height -le 0) { continue }
+
+                                    # create rectangle objects for cropping operation
+                                    $cropRect = [System.Drawing.Rectangle]::new(
+                                        $x_min, $y_min, $width, $height)
+
+                                    # create new bitmap to hold the cropped object
+                                    $croppedBitmap = [System.Drawing.Bitmap]::new(
+                                        $width, $height)
+
+                                    # create graphics context for drawing the cropped region
+                                    $croppedGraphics = [System.Drawing.Graphics]::FromImage(
+                                        $croppedBitmap)
+
+                                    # define destination rectangle for the cropped image
+                                    $destRect = [System.Drawing.Rectangle]::new(
+                                        0, 0, $width, $height)
+
+                                    # draw the cropped portion of source image to new bitmap
+                                    $null = $croppedGraphics.DrawImage($imgObj,
+                                        $destRect, $cropRect,
+                                        [System.Drawing.GraphicsUnit]::Pixel)
+
+                                    # dispose graphics context to free resources
+                                    $croppedGraphics.Dispose()
+
+                                    # generate sanitized label for the detected object
+                                    $objectLabel = if ($obj.label) {
+                                        $obj.label
+                                    } else {
+                                        "object$objectIdx"
                                     }
-                                    catch {
-                                        Microsoft.PowerShell.Utility\Write-Warning "Failed to crop/save unknown person for $($imgPath): $_"
+
+                                    # remove invalid filename characters from object label
+                                    $objectLabel = $objectLabel `
+                                        -replace '[^\w\-_]', '_'
+
+                                    # construct output filename with object information
+                                    $outFile = Microsoft.PowerShell.Management\Join-Path `
+                                        $OutputDirectory `
+                                        ("${imgBase}_${objectLabel}_${objectIdx}.png")
+
+                                    Microsoft.PowerShell.Utility\Write-Verbose (
+                                        "saving object to: $outFile")
+
+                                    # save the cropped bitmap as png file
+                                    $croppedBitmap.Save($outFile,
+                                        [System.Drawing.Imaging.ImageFormat]::Png)
+
+                                    # dispose bitmap to free memory
+                                    $croppedBitmap.Dispose()
+
+                                    # record saved object coordinates for overlap checking
+                                    $savedObjectRects += @{
+                                        x_min = $x_min
+                                        y_min = $y_min
+                                        x_max = $x_max
+                                        y_max = $y_max
+                                    }
+
+                                    # increment object index for next iteration
+                                    $objectIdx++
+                                }
+
+                                # process unknown persons if the switch is enabled
+                                if ($SaveUnknownPersons -and
+                                    $image.people -and
+                                    $image.people.predictions) {
+
+                                    Microsoft.PowerShell.Utility\Write-Verbose (
+                                        "processing unknown persons")
+
+                                    # initialize person index counter for unique naming
+                                    $personIdx = 0
+
+                                    # iterate through detected person predictions
+                                    foreach ($person in $image.people.predictions) {
+
+                                        try {
+                                            # calculate safe person bounding rectangle coordinates
+                                            $x_min = [Math]::Max(0,
+                                                [Math]::Min($person.x_min,
+                                                    $imgObj.Width - 1))
+                                            $y_min = [Math]::Max(0,
+                                                [Math]::Min($person.y_min,
+                                                    $imgObj.Height - 1))
+                                            $x_max = [Math]::Max($x_min + 1,
+                                                [Math]::Min($person.x_max,
+                                                    $imgObj.Width))
+                                            $y_max = [Math]::Max($y_min + 1,
+                                                [Math]::Min($person.y_max,
+                                                    $imgObj.Height))
+
+                                            # calculate person rectangle dimensions
+                                            $width = $x_max - $x_min
+                                            $height = $y_max - $y_min
+
+                                            # skip invalid person rectangles
+                                            if ($width -le 0 -or $height -le 0) {
+                                                continue
+                                            }
+
+                                            # check for overlap with previously saved objects
+                                            $overlap = $false
+                                            foreach ($rect in $savedObjectRects) {
+
+                                                # test for rectangle intersection using bounds checking
+                                                if ((($x_min -le $rect.x_max) -and
+                                                    ($x_max -ge $rect.x_min)) -and
+                                                    (($y_min -le $rect.y_max) -and
+                                                    ($y_max -ge $rect.y_min))) {
+
+                                                    $overlap = $true
+                                                    break
+                                                }
+                                            }
+
+                                            # skip persons that overlap with saved objects
+                                            if ($overlap) { continue }
+
+                                            # create crop rectangle for person detection
+                                            $cropRect = [System.Drawing.Rectangle]::new(
+                                                $x_min, $y_min, $width, $height)
+
+                                            # create bitmap for cropped person image
+                                            $croppedBitmap = [System.Drawing.Bitmap]::new(
+                                                $width, $height)
+
+                                            # create graphics context for person cropping
+                                            $croppedGraphics = [System.Drawing.Graphics]::FromImage(
+                                                $croppedBitmap)
+
+                                            # define destination rectangle for person crop
+                                            $destRect = [System.Drawing.Rectangle]::new(
+                                                0, 0, $width, $height)
+
+                                            # draw cropped person region to new bitmap
+                                            $null = $croppedGraphics.DrawImage($imgObj,
+                                                $destRect, $cropRect,
+                                                [System.Drawing.GraphicsUnit]::Pixel)
+
+                                            # dispose graphics context
+                                            $croppedGraphics.Dispose()
+
+                                            # construct filename for unknown person image
+                                            $outFile = Microsoft.PowerShell.Management\Join-Path `
+                                                $OutputDirectory `
+                                                ("${imgBase}_unknownperson_${personIdx}.png")
+
+                                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                                "saving unknown person to: $outFile")
+
+                                            # save person bitmap as png file
+                                            $croppedBitmap.Save($outFile,
+                                                [System.Drawing.Imaging.ImageFormat]::Png)
+
+                                            # dispose person bitmap
+                                            $croppedBitmap.Dispose()
+
+                                            # increment person index counter
+                                            $personIdx++
+                                        }
+                                        catch {
+                                            # log warning for person processing failures
+                                            Microsoft.PowerShell.Utility\Write-Warning (
+                                                "failed to crop/save unknown person " +
+                                                "for $($imgPath): $_")
+                                        }
                                     }
                                 }
                             }
+                            finally {
+                                # ensure source image object is disposed to free memory
+                                if ($null -ne $imgObj) {
+                                    $imgObj.Dispose()
+                                }
+                            }
                         }
-                        finally {
-                            if ($null -ne $ImageObj) { $imageObj.Dispose() }
+                        catch {
+                            # log warning for general image processing failures
+                            Microsoft.PowerShell.Utility\Write-Warning (
+                                "failed to crop/save objects for $($imgPath): $_")
                         }
                     }
-                    catch {
-                        Microsoft.PowerShell.Utility\Write-Warning "Failed to crop/save objects for $($imgPath): $_"
-                    }
+
+                    # increment result counter for statistics tracking
+                    $info.resultCount++
+
+                    # output the processed image object to pipeline
+                    Microsoft.PowerShell.Utility\Write-Output $image
                 }
-                $info.resultCount++
-                Microsoft.PowerShell.Utility\Write-Output $image
-            }
         }
 
+        # process input based on whether explicit input objects are provided
         if ($null -ne $InputObject) {
 
-            $InputObject | Microsoft.PowerShell.Core\ForEach-Object { saveImage $_ }
-        }
-        else
-         {
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
-            -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Find-IndexedImage" `
-            -DefaultValues (
-                Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
-            )
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "processing provided input objects")
 
-            GenXdev.AI\Find-IndexedImage @params | Microsoft.PowerShell.Core\ForEach-Object { saveImage $_ }
-         }
+            # process each input object through the save image function
+            $InputObject |
+                Microsoft.PowerShell.Core\ForEach-Object { saveImage $_ }
+        }
+        else {
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "searching for indexed images")
+
+            # copy parameters for find-indexedimage function call
+            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName "GenXdev.AI\Find-IndexedImage" `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue)
+
+            # find indexed images and process each through save image function
+            GenXdev.AI\Find-IndexedImage @params |
+                Microsoft.PowerShell.Core\ForEach-Object { saveImage $_ }
+        }
+    }
+    ###############################################################################
+    end {
+
+        # output processing statistics to verbose stream
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "processed $($info.resultCount) images")
     }
 }
-################################################################################
+###############################################################################

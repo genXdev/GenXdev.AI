@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Enhances an image by enlarging it 4X while improving quality using DeepStack.
@@ -74,8 +74,7 @@ http://localhost:5000/v1/vision/enhance
 
 The enhanced image will be 4 times larger (2x width, 2x height) than the
 original.
-#>
-###############################################################################
+###############################################################################>
 function Invoke-ImageEnhancement {
 
     [CmdletBinding()]
@@ -390,4 +389,4 @@ function Invoke-ImageEnhancement {
         # no cleanup required for this function
     }
 }
-################################################################################
+        ###############################################################################

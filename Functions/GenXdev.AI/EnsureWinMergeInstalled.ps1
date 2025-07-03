@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Ensures WinMerge is installed and available for file comparison operations.
@@ -11,7 +11,7 @@ Handles the complete installation and configuration process automatically.
 .EXAMPLE
 EnsureWinMergeInstalled
 Ensures WinMerge is installed and properly configured.
-#>
+        ###############################################################################>
 function EnsureWinMergeInstalled {
 
     [CmdletBinding()]
@@ -140,4 +140,4 @@ function EnsureWinMergeInstalled {
     end {
     }
 }
-################################################################################
+        ###############################################################################

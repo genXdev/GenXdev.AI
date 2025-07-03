@@ -28,7 +28,6 @@
 
 * ✅ Advanced Image Intelligence and Database System
      * Uses Docker-integrated DeepStack services for face recognition, object detection, and scene analysis and `LM Studio` and model `MiniCPM` to update image metadata, all locally
-     * Use Set-ImagesDirectory for adding your image collections
      * Manually Schedule-Tasks for `Update-AllImageMetaData` and `Export-ImageDatabase` to
      update all AI generated metadata for quick access later
      * Comprehensive AI-powered image analysis with face recognition, object detection, and scene classification
@@ -45,7 +44,8 @@
      * Interactive image galleries with masonry layouts, metadata tooltips, and responsive design using `Show-FoundImagesInBrowser` -> showfoundimages
      * `Find-Image` AND `Find-IndexedImage`functions always use OR when combining search criteria,
         for AND use use the same function again with a pipe | for additional filtering
-     * [SEE GETTING STARTED](https://github.com/genXdev/GenXdev.AI/tree/main/Functions/GenXdev.AI.DeepStack#readme)
+     * Use `Set-AIImageCollection`, `Set-AIKnownFacesRootpath` and `Set-AIMetaLanguage` for setting up your preferences
+     * [Check out this getting-started documentation](https://github.com/genXdev/GenXdev.AI/tree/main/Functions/GenXdev.AI.DeepStack#readme)
 
 * ✅ Text Processing and Enhancement
      * Add contextual emoticons with `Add-EmoticonsToText` -> `emojify`
@@ -86,6 +86,8 @@ Update-Module
 | [EnsurePaintNet](#EnsurePaintNet) |  | Ensures Paint.NET is properly installed and accessible on the system. |
 | [EnsureWinMergeInstalled](#EnsureWinMergeInstalled) |  | Ensures WinMerge is installed and available for file comparison operations. |
 | [GenerateMasonryLayoutHtml](#GenerateMasonryLayoutHtml) | nometadata, onlypictures | Generates a responsive masonry layout HTML gallery from image data. |
+| [Get-AIDefaultLLMSettings](#Get-AIDefaultLLMSettings) |  | Gets all available default LLM settings configurations for AI operations in GenXdev.AI. |
+| [Get-AILLMSettings](#Get-AILLMSettings) |  | Gets the LLM settings for AI operations in GenXdev.AI. |
 | [Get-CpuCore](#Get-CpuCore) |  | Calculates and returns the total number of logical CPU cores in the system. |
 | [Get-HasCapableGpu](#Get-HasCapableGpu) |  | Determines if a CUDA-capable GPU with sufficient memory is present. |
 | [Get-NumberOfCpuCores](#Get-NumberOfCpuCores) |  | Calculates and returns the total number of logical CPU cores in the system. |
@@ -99,6 +101,7 @@ Update-Module
 | [Invoke-WinMerge](#Invoke-WinMerge) |  | Launches WinMerge to compare two files side by side. |
 | [New-LLMAudioChat](#New-LLMAudioChat) | llmaudiochat | Creates an interactive audio chat session with an LLM model. |
 | [New-LLMTextChat](#New-LLMTextChat) | llmchat | Starts an interactive text chat session with AI capabilities. |
+| [Set-AILLMSettings](#Set-AILLMSettings) |  | Sets the LLM settings for AI operations in GenXdev.AI. |
 | [Set-GenXdevAICommandNotFoundAction](#Set-GenXdevAICommandNotFoundAction) |  | Sets up custom command not found handling with AI assistance. |
 | [Test-DeepLinkImageFile](#Test-DeepLinkImageFile) |  | Tests if the specified file path is a valid image file with a supported format. |
 
@@ -149,20 +152,20 @@ Update-Module
 | [ConvertFrom-CorporateSpeak](#ConvertFrom-CorporateSpeak) | uncorporatize | Converts polite, professional corporate speak into direct, clear language using AI. |
 | [ConvertFrom-DiplomaticSpeak](#ConvertFrom-DiplomaticSpeak) | undiplomatize |  |
 | [ConvertTo-CorporateSpeak](#ConvertTo-CorporateSpeak) | corporatize | Converts direct or blunt text into polite, professional corporate speak using AI. |
-| [ConvertTo-DiplomaticSpeak](#ConvertTo-DiplomaticSpeak) | diplomatize |  |
+| [ConvertTo-DiplomaticSpeak](#ConvertTo-DiplomaticSpeak) | diplomatize | Converts direct or blunt text into polite, tactful diplomatic language. |
 | [Export-ImageDatabase](#Export-ImageDatabase) | indexcachedimages, inititalize-imagedatabase, recreate-imageindex | Initializes and populates the SQLite database by discovering images directly. |
 | [Find-Image](#Find-Image) | findimages, li | Scans image files for keywords and descriptions using metadata files. |
 | [Find-IndexedImage](#Find-IndexedImage) | findindexedimages, lii | Searches for images using an optimized SQLite database with fast indexed lookups. |
-| [Get-AIImageCollection](#Get-AIImageCollection) | getimgdirs |  |
-| [Get-AIKnownFacesRootpath](#Get-AIKnownFacesRootpath) |  | Gets the configured directory for face image files used in GenXdev.AI operations. |
+| [Get-AIImageCollection](#Get-AIImageCollection) | getimgdirs | Gets the configured directories for image files used in GenXdev.AI operations. |
+| [Get-AIKnownFacesRootpath](#Get-AIKnownFacesRootpath) |  |  |
 | [Get-AIMetaLanguage](#Get-AIMetaLanguage) | getimgmetalang | Gets the configured default language for image metadata operations. |
 | [Get-Fallacy](#Get-Fallacy) | dispicetext | Analyzes text to identify logical fallacies using AI-powered detection. |
 | [Get-ImageDatabasePath](#Get-ImageDatabasePath) |  | Returns the path to the image database, initializing or rebuilding it if needed. |
 | [Get-ImageDatabaseStats](#Get-ImageDatabaseStats) | getimagedbstats, gids | Retrieves comprehensive statistics and information about the image database. |
-| [Get-MediaFileAudioTranscription](#Get-MediaFileAudioTranscription) | transcribefile | Transcribes an audio or video file to text.. |
+| [Get-MediaFileAudioTranscription](#Get-MediaFileAudioTranscription) | transcribefile | Transcribes an audio or video file to text. |
 | [Get-ScriptExecutionErrorFixPrompt](#Get-ScriptExecutionErrorFixPrompt) | getfixprompt | Captures error messages from various streams and uses LLM to suggest fixes. |
 | [Get-SimularMovieTitles](#Get-SimularMovieTitles) | moremovietitles | Finds similar movie titles based on common properties. |
-| [Invoke-AIPowershellCommand](#Invoke-AIPowershellCommand) | hint | Generates and executes PowerShell commands using AI assistance. |
+| [Invoke-AIPowershellCommand](#Invoke-AIPowershellCommand) | hint | Converts AI command suggestions to JSON format for processing. |
 | [Invoke-ImageFacesUpdate](#Invoke-ImageFacesUpdate) | facerecognition | Updates face recognition metadata for image files in a specified directory. |
 | [Invoke-ImageKeywordUpdate](#Invoke-ImageKeywordUpdate) | updateimages | Updates image metadata with AI-generated descriptions and keywords. |
 | [Invoke-ImageObjectsUpdate](#Invoke-ImageObjectsUpdate) | objectdetection | Updates object detection metadata for image files in a specified directory. |
@@ -171,13 +174,14 @@ Update-Module
 | [Remove-ImageDirectories](#Remove-ImageDirectories) | removeimgdir | Removes directories from the configured image directories for GenXdev.AI operations. |
 | [Remove-ImageMetaData](#Remove-ImageMetaData) | removeimagedata | Removes image metadata files from image directories. |
 | [Save-FoundImageFaces](#Save-FoundImageFaces) | saveimagefaces | Saves cropped face images from indexed image search results. |
-| [Save-FoundImageObjects](#Save-FoundImageObjects) | saveimageobjects | Saves cropped Object images from indexed image search results. |
+| [Save-FoundImageObjects](#Save-FoundImageObjects) | saveimageobjects | Saves cropped object images from indexed image search results to files. |
 | [Save-Transcriptions](#Save-Transcriptions) |  | Generates subtitle files for audio and video files using OpenAI Whisper. |
-| [Set-AIImageCollection](#Set-AIImageCollection) |  | Sets the directories and default language for image files used in GenXdev.AI operations. |
+| [Set-AIImageCollection](#Set-AIImageCollection) |  |  |
 | [Set-AIKnownFacesRootpath](#Set-AIKnownFacesRootpath) |  | Sets the directory for face image files used in GenXdev.AI operations. |
-| [Set-AIMetaLanguage](#Set-AIMetaLanguage) |  | Sets the default language and optionally the image directories for GenXdev.AI image metadata operations. |
+| [Set-AIMetaLanguage](#Set-AIMetaLanguage) |  |  |
+| [Set-ImageDatabasePath](#Set-ImageDatabasePath) |  | Sets the default database file path for image operations in GenXdev.AI. |
 | [Show-FoundImagesInBrowser](#Show-FoundImagesInBrowser) | showfoundimages | Displays image search results in a masonry layout web gallery. |
-| [Show-GenXdevScriptErrorFixInIde](#Show-GenXdevScriptErrorFixInIde) | letsfixthis | Parses error messages and fixes them using Github Copilot in VSCode. |
+| [Show-GenXdevScriptErrorFixInIde](#Show-GenXdevScriptErrorFixInIde) | letsfixthis | Executes a script block and analyzes errors using AI to generate fixes in IDE. |
 | [Start-AudioTranscription](#Start-AudioTranscription) | transcribe, recordandtranscribe |  |
 | [Update-AllImageMetaData](#Update-AllImageMetaData) | updateallimages |  |
 
@@ -245,6 +249,7 @@ NOTES
         - approvedAsIs: True if content was accepted without modifications
         - savedContent: Final content if modified by user
         - userDeletedFile: True if user deleted existing file
+                ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -302,7 +307,7 @@ OUTPUTS
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > Convert-DotNetTypeToLLMType -DotNetType "System.String"
-    # Returns: "string"
+            ###############################################################################Returns: "string"
     
     
     
@@ -312,7 +317,8 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > Convert-DotNetTypeToLLMType "System.Collections.Generic.List``1"
-    # Returns: "array"
+            ###############################################################################Returns: "array"
+            ##############################################################################
     
     
     
@@ -403,6 +409,7 @@ OUTPUTS
     
     PS > EnsureGithubCLIInstalled
     This will verify and setup GitHub CLI if needed.
+            ##############################################################################
     
     
     
@@ -449,6 +456,7 @@ OUTPUTS
     
     PS > EnsurePaintNet
     This will verify and setup Paint.NET if needed.
+            ##############################################################################
     
     
     
@@ -492,6 +500,7 @@ OUTPUTS
     
     PS > EnsureWinMergeInstalled
     Ensures WinMerge is installed and properly configured.
+            ##############################################################################
     
     
     
@@ -615,16 +624,16 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > # Create gallery from image array and save to file
+    PS > ###############################################################################Create gallery from image array and save to file
     $images = @(
-        @{
-            path = "C:\photos\sunset.jpg"
-            keywords = @("nature", "sunset", "landscape")
-            description = @{
-                short_description = "Mountain sunset"
-                long_description = "Beautiful sunset over mountain range"
-            }
-        }
+    @{
+    path = "C:\photos\sunset.jpg"
+    keywords = @("nature", "sunset", "landscape")
+    description = @{
+        short_description = "Mountain sunset"
+        long_description = "Beautiful sunset over mountain range"
+    }
+    }
     )
     GenerateMasonryLayoutHtml -Images $images -FilePath "C:\output\gallery.html"
     
@@ -635,8 +644,531 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > # Generate HTML string without saving
+    PS > ###############################################################################Generate HTML string without saving
     $html = GenerateMasonryLayoutHtml $images
+    ##############################################################################
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Get-AIDefaultLLMSettings
+    
+SYNOPSIS
+    Gets all available default LLM settings configurations for AI operations in GenXdev.AI.
+    
+    
+SYNTAX
+    Get-AIDefaultLLMSettings [[-LLMQueryType] <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-TTLSeconds <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-AutoSelect] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function retrieves all available LLM (Large Language Model) configurations
+    from the default settings JSON file. It supports the same filtering and memory
+    selection logic as Get-AILLMSettings, but returns all matching configurations
+    instead of just one selected co                } else {
+                        # use system RAM for memory checking
+                        $memoryToCheck = [math]::Round(
+                            (CimCmdlets\Get-CimInstance `
+                                -Class Win32_OperatingSystem).TotalVisibleMemorySize / 1024 / 1024, 2
+                        )
+                        Microsoft.PowerShell.Utility\Write-Verbose "Using system RAM only: $memoryToCheck GB"
+                    }ion.
+    
+    When used without -AutoSelect, it returns all configurations for the specified
+    query type with their complete properties including RequiredMemoryGB.
+    
+    When used with -AutoSelect, it applies the same memory-based selection logic
+    as Get-AILLMSettings and returns only the best matching configuration.
+    
+    Memory selection strategy is determined automatically based on the Gpu and Cpu
+    parameters provided:
+    - If both Gpu and Cpu parameters are specified: Uses combined CPU + GPU memory
+    - If only Gpu parameter is specified: Prefers GPU memory (with system RAM fallback)
+    - If only Cpu parameter is specified: Uses system RAM only
+    - If neither parameter is specified: Uses combined CPU + GPU memory (default)
+    
+
+PARAMETERS
+    -LLMQueryType <String>
+        The type of LLM query to get settings for. This determines which default
+        settings to use when no custom settings are found. Valid values include
+        SimpleIntelligence, Knowledge, Pictures, TextTranslation, Coding, and ToolUse.
+        
+        Required?                    false
+        Position?                    1
+        Default value                SimpleIntelligence
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        Filter configurations by model identifier or pattern.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        Filter configurations by LM Studio specific model identifier.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        Filter configurations by maximum number of tokens.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations. Used for memory selection strategy.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        GPU offload level (-2=Auto through 1=Full). Used for memory selection strategy.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        Filter configurations by time-to-live in seconds for cached AI responses.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        Filter configurations by API endpoint URL.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        Filter configurations by API key.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        Filter configurations by timeout in seconds.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AutoSelect [<SwitchParameter>]
+        When specified, applies memory-based auto-selection logic and returns only
+        the best matching configuration based on available system memory. This makes
+        the function behave like Get-AILLMSettings.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        Clear the session setting (Global variable) before retrieving.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        When specified, skips session settings and retrieves only from persistent
+        preferences or defaults.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    System.Collections.Hashtable[]
+    
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Get-AIDefaultLLMSettings -LLMQueryType "Coding"
+    
+    Gets all available default configurations for Coding query type.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Get-AIDefaultLLMSettings -LLMQueryType "Coding" -AutoSelect
+    
+    Gets the best configuration for Coding query type based on available memory.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Get-AIDefaultLLMSettings -LLMQueryType "Coding" -Cpu 8
+    
+    Gets all Coding configurations, with memory strategy set for CPU-only.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > Get-AIDefaultLLMSettings -LLMQueryType "ToolUse" -AutoSelect -Gpu 2
+    
+    Gets the best ToolUse configuration based on GPU memory with offload level 2.
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Get-AILLMSettings
+    
+SYNOPSIS
+    Gets the LLM settings for AI operations in GenXdev.AI.
+    
+    
+SYNTAX
+    Get-AILLMSettings [[-LLMQueryType] <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-TTLSeconds <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function retrieves the LLM (Large Language Model) settings used by the
+    GenXdev.AI module for various AI operations. Settings are retrieved from
+    session variables, persistent preferences, or default settings JSON file, in
+    that order of precedence. The function supports automatic configuration
+    selection based on available system memory resources.
+    
+    Memory selection strategy is determined automatically based on the Gpu and Cpu
+    parameters provided:
+    - If both Gpu and Cpu parameters are specified: Uses combined CPU + GPU memory
+    - If only Gpu parameter is specified: Prefers GPU memory (with system RAM fallback)
+    - If only Cpu parameter is specified: Uses system RAM only
+    - If neither parameter is specified: Uses combined CPU + GPU memory (default)
+    
+
+PARAMETERS
+    -LLMQueryType <String>
+        The type of LLM query to get settings for. This determines which default
+        settings to use when no custom settings are found. Valid values include
+        SimpleIntelligence, Knowledge, Pictures, TextTranslation, Coding, and ToolUse.
+        
+        Required?                    false
+        Position?                    1
+        Default value                SimpleIntelligence
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        GPU offload level (-2=Auto through 1=Full).
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        The time-to-live in seconds for cached AI responses.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        The API endpoint URL for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key for authenticated AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        Clear the session setting (Global variable) before retrieving.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        When specified, skips session settings and retrieves only from persistent
+        preferences or defaults. This is useful when you want to ignore any temporary
+        session-level overrides.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    System.Collections.Hashtable
+    
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Get-AILLMSettings
+    
+    Gets the LLM settings for SimpleIntelligence query type (default).
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Get-AILLMSettings -LLMQueryType "Coding"
+    
+    Gets the LLM settings for Coding query type.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Get-AILLMSettings -Model "*custom*model*" -MaxToken 8192
+    
+    Gets LLM settings with specific model and token override parameters.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > Get-AILLMSettings -Cpu 8 -Gpu 2 -TimeoutSeconds 300
+    
+    Gets LLM settings with specific CPU and GPU core counts and timeout override.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 5 --------------------------
+    
+    PS > Get-AILLMSettings -LLMQueryType "ToolUse" -Cpu 8
+    
+    Gets the LLM settings for ToolUse query type with 8 CPU cores specified.
+    This will select the best configuration based on available system RAM.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 6 --------------------------
+    
+    PS > Get-AILLMSettings -LLMQueryType "Coding" -Gpu 2
+    
+    Gets the LLM settings for Coding query type with GPU offload level 2.
+    This will select the best configuration based on available GPU RAM.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 7 --------------------------
+    
+    PS > Get-AILLMSettings -LLMQueryType "Pictures" -Cpu 4 -Gpu 1
+    
+    Gets the LLM settings for Pictures query type with both CPU and GPU specified.
+    This will select the best configuration based on combined CPU + GPU memory.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 8 --------------------------
+    
+    PS > Get-AILLMSettings -SkipSession
+    
+    Gets the LLM settings from preferences or defaults only, ignoring session
+    settings.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 9 --------------------------
+    
+    PS > Get-AILLMSettings "Knowledge"
     
     
     
@@ -678,9 +1210,10 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > # Get the total number of logical CPU cores
+    PS > ###############################################################################Get the total number of logical CPU cores
     $cores = Get-CpuCore
     Write-Host "System has $cores logical CPU cores available"
+    ##############################################################################
     
     
     
@@ -727,6 +1260,7 @@ OUTPUTS
     
     PS > $hasGpu = Get-HasCapableGpu
     Write-Host "System has capable GPU: $hasGpu"
+            ##############################################################################
     
     
     
@@ -780,10 +1314,11 @@ NOTES
         - Assumes all processors support hyperthreading
         - Requires WMI access permissions
         - Works on Windows systems only
+                ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > # Get the total number of logical CPU cores
+    PS > ###############################################################################Get the total number of logical CPU cores
     $cores = Get-NumberOfCpuCores
     Write-Host "System has $cores logical CPU cores available"
     
@@ -805,7 +1340,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-TextTranslation [[-Text] <String>] [[-Language] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-TextTranslation [[-Text] <String>] [[-Language] <String>] [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -848,26 +1383,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        Specifies which AI model to use for translation. Supports wildcards.
-        
-        Required?                    false
-        Position?                    4
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        Identifier used for getting specific model from LM Studio.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Temperature <Double>
         Controls response randomness (0.0-1.0). Lower values are more deterministic.
         
@@ -878,49 +1393,61 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -LLMQueryType <String>
+        The type of LLM query to perform for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                TextTranslation
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -MaxToken <Int32>
-        Maximum tokens in response. Use -1 for default model limits.
+        The maximum number of tokens to use in AI operations.
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -SetClipboard [<SwitchParameter>]
-        When specified, copies the translated text to system clipboard after translation.
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
         
         Required?                    false
         Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ShowWindow [<SwitchParameter>]
-        Shows the LM Studio window during processing.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        Sets a Time-To-Live in seconds for models loaded via API requests.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -Gpu <Int32>
-        Controls GPU layer offloading: -2=Auto, -1=LM Studio decides, 0-1=fraction of
-        layers, "off"=disabled, "max"=all layers.
+        How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
+        all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
+        layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
+        offload to the GPU. -2 = Auto.
         
         Required?                    false
         Position?                    named
@@ -929,18 +1456,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Force [<SwitchParameter>]
-        Forces LM Studio to stop before initialization.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -ApiEndpoint <String>
-        API endpoint URL. Defaults to http://localhost:1234/v1/chat/completions
+        The API endpoint URL for AI operations.
         
         Required?                    false
         Position?                    named
@@ -950,7 +1467,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ApiKey <String>
-        API key for authentication with the endpoint.
+        The API key for authenticated AI operations.
         
         Required?                    false
         Position?                    named
@@ -959,8 +1476,48 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetClipboard [<SwitchParameter>]
+        Copy the translated text to clipboard.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Force stop LM Studio before initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -970,6 +1527,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -979,6 +1537,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
         
         Required?                    false
         Position?                    named
@@ -1011,6 +1570,7 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > "Bonjour" | translate -Language "English"
+    ##############################################################################
     
     
     
@@ -1080,7 +1640,8 @@ OUTPUTS
     PS > $v1 = @(0.12, -0.45, 0.89)
     $v2 = @(0.15, -0.40, 0.92)
     Get-VectorSimilarity -Vector1 $v1 -Vector2 $v2
-    # Returns approximately 0.998, indicating high similarity
+            ###############################################################################Returns approximately 0.998, indicating high similarity
+            ##############################################################################
     
     
     
@@ -1183,6 +1744,7 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > $result = Invoke-CommandFromToolCall $toolCall $functions -ForceAsText
+            ##############################################################################
     
     
     
@@ -1202,13 +1764,14 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-LLMBooleanEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-SetClipboard] [-ShowWindow] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Invoke-LLMBooleanEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function uses AI models to evaluate statements and determine their truth value.
-    It can accept input directly through parameters, from the pipeline, or from the
-    system clipboard.
+    This function uses AI models to evaluate statements and determine their truth
+    value. It can accept input directly through parameters, from the pipeline, or
+    from the system clipboard. The function returns a boolean result along with
+    confidence level and reasoning from the AI model.
     
 
 PARAMETERS
@@ -1224,8 +1787,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Instructions <String>
-        Instructions to guide the AI model in evaluating the statement. By default, it will
-        determine if the statement is true or false.
+        Instructions to guide the AI model in evaluating the statement. By default, it
+        will determine if the statement is true or false.
         
         Required?                    false
         Position?                    2
@@ -1234,18 +1797,79 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        Specifies which AI model to use for the evaluation. Different models
-        may produce varying results.
+    -Attachments <String[]>
+        Array of file paths to attach to the AI query for additional context.
         
         Required?                    false
         Position?                    3
-        Default value                
+        Default value                @()
         Accept pipeline input?       false
         Aliases                      
-        Accept wildcard characters?  true
+        Accept wildcard characters?  false
         
-    -ModelLMSGetIdentifier <String>
+    -Temperature <Double>
+        Temperature for response randomness (0.0-1.0). Controls creativity vs
+        determinism in AI responses.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0.2
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDetail <String>
+        Image detail level for visual processing. Valid values are low, medium, or high.
+        
+        Required?                    false
+        Position?                    named
+        Default value                low
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <Hashtable[]>
+        Array of function definitions for AI tool use capabilities.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        Array of PowerShell command definitions to use as tools in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        Array of command names that don't require confirmation before execution.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LLMQueryType <String>
+        The type of LLM query to optimize for specific use cases.
+        
+        Required?                    false
+        Position?                    named
+        Default value                Knowledge
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
         
         Required?                    false
         Position?                    named
@@ -1254,11 +1878,82 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Attachments <String[]>
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier from Hugging Face.
         
         Required?                    false
-        Position?                    4
-        Default value                @()
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        How much to offload to the GPU for AI processing.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        The API endpoint URL for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key for authenticated AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -1274,51 +1969,17 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ShowWindow [<SwitchParameter>]
+        Show the LM Studio window during processing.
         
         Required?                    false
         Position?                    named
         Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Temperature <Double>
-        
-        Required?                    false
-        Position?                    named
-        Default value                0.2
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxToken <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Gpu <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -Force [<SwitchParameter>]
+        Force stop LM Studio before initialization.
         
         Required?                    false
         Position?                    named
@@ -1327,16 +1988,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ImageDetail <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                low
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -IncludeThoughts [<SwitchParameter>]
+        Include model's thoughts in output for debugging and transparency.
         
         Required?                    false
         Position?                    named
@@ -1346,6 +1999,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -DontAddThoughtsToHistory [<SwitchParameter>]
+        Prevent model thoughts from being added to conversation history.
         
         Required?                    false
         Position?                    named
@@ -1355,6 +2009,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ContinueLast [<SwitchParameter>]
+        Continue from last conversation instead of starting fresh.
         
         Required?                    false
         Position?                    named
@@ -1363,35 +2018,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Functions <Hashtable[]>
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ExposedCmdLets <ExposedCmdletDefinition[]>
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoConfirmationToolFunctionNames <String[]>
-        Array of command names that don't require confirmation
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Speak [<SwitchParameter>]
+        Enable text-to-speech for AI responses.
         
         Required?                    false
         Position?                    named
@@ -1401,6 +2029,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SpeakThoughts [<SwitchParameter>]
+        Enable text-to-speech for AI thought responses.
         
         Required?                    false
         Position?                    named
@@ -1410,6 +2039,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -NoSessionCaching [<SwitchParameter>]
+        Don't store session in session cache for privacy or debugging.
         
         Required?                    false
         Position?                    named
@@ -1418,25 +2048,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ApiEndpoint <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ApiKey <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -AllowDefaultTools [<SwitchParameter>]
+        Allow the AI to use default tools and capabilities.
         
         Required?                    false
         Position?                    named
@@ -1446,7 +2059,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -1456,6 +2069,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -1465,6 +2079,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
         
         Required?                    false
         Position?                    named
@@ -1487,7 +2102,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Invoke-LLMBooleanEvaluation -Text "The Earth is flat"
+    PS > Invoke-LLMBooleanEvaluation -Text "The Earth is flat" -Model "gpt-4"
     
     
     
@@ -1497,6 +2112,16 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > "Humans need oxygen to survive" | Invoke-LLMBooleanEvaluation
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > equalstrue "2 + 2 = 4"
+    ##############################################################################
     
     
     
@@ -1517,7 +2142,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-LLMQuery [[-Query] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-ResponseFormat <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-ChatMode <String>] [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Invoke-LLMQuery [[-Query] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-ResponseFormat <String>] [-Temperature <Double>] [-ShowWindow] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-ChatMode <String>] [-ChatOnce] [-NoSessionCaching] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -1537,31 +2162,11 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        The name or identifier of the LM Studio model to use.
-        
-        Required?                    false
-        Position?                    2
-        Default value                qwen2.5-14b-instruct
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        Alternative identifier for getting a specific model from LM Studio.
-        
-        Required?                    false
-        Position?                    named
-        Default value                qwen2.5-14b-instruct
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Instructions <String>
         System instructions to provide context to the model.
         
         Required?                    false
-        Position?                    3
+        Position?                    2
         Default value                
         Accept pipeline input?       false
         Aliases                      
@@ -1571,7 +2176,7 @@ PARAMETERS
         Array of file paths to attach to the query. Supports images and text files.
         
         Required?                    false
-        Position?                    4
+        Position?                    3
         Default value                @()
         Accept pipeline input?       false
         Aliases                      
@@ -1597,42 +2202,12 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -MaxToken <Int32>
-        Maximum tokens allowed in the response. Use -1 for model default.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -ShowWindow [<SwitchParameter>]
         Show the LM Studio window during processing.
         
         Required?                    false
         Position?                    named
         Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        Time-to-live in seconds for loaded models.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Gpu <Int32>
-        How much to offload to the GPU. Values range from -2 (Auto) to 1 (max).
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -1787,6 +2362,64 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -LLMQueryType <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                SimpleIntelligence
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The name or identifier of the LM Studio model to use.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        Alternative identifier for getting a specific model from LM Studio.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        Maximum tokens allowed in the response. Use -1 for model default.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        How much to offload to the GPU. Values range from -2 (Auto) to 1 (max).
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -ApiEndpoint <String>
         API endpoint URL, defaults to http://localhost:1234/v1/chat/completions.
         
@@ -1811,13 +2444,12 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                86400
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
         
         Required?                    false
         Position?                    named
@@ -1831,6 +2463,15 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -1866,6 +2507,7 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > qllm "What is 2+2?" -Model "qwen"
+    ##############################################################################
     
     
     
@@ -1886,7 +2528,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-LLMStringListEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-ApiEndpoint <String>] [-ApiKey <String>] [-SetClipboard] [-ShowWindow] [-Force] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Invoke-LLMStringListEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -1921,34 +2563,12 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        Specifies which AI model to use for the analysis. Different models may produce
-        varying results. Supports wildcard patterns.
-        
-        Required?                    false
-        Position?                    3
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        Identifier used for getting specific model from LM Studio. Used for precise
-        model selection when multiple models are available.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Attachments <String[]>
         Array of file paths to attach to the AI query. These files will be included
         in the context for analysis.
         
         Required?                    false
-        Position?                    4
+        Position?                    3
         Default value                @()
         Accept pipeline input?       false
         Aliases                      
@@ -1961,39 +2581,6 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                0.2
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxToken <Int32>
-        Maximum tokens in response (-1 for default). Controls the length of the AI
-        response.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        Set a TTL (in seconds) for models loaded via API requests. Determines how long
-        the model stays loaded in memory.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Gpu <Int32>
-        How much to offload to the GPU. Options: "off" disables GPU, "max" uses all
-        GPU layers, 0-1 sets fraction, -1 lets LM Studio decide, -2 for auto.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -2041,9 +2628,72 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -LLMQueryType <String>
+        The type of LLM query to perform. Valid values are "SimpleIntelligence",
+        "Knowledge", "Pictures", "TextTranslation", "Coding", or "ToolUse".
+        
+        Required?                    false
+        Position?                    named
+        Default value                Knowledge
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        How much to offload to the GPU. If 'off', GPU offloading is disabled. If
+        'max', all layers are offloaded to GPU. If a number between 0 and 1, that
+        fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide
+        how much to offload to the GPU. -2 = Auto.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -ApiEndpoint <String>
-        API endpoint URL, defaults to http://localhost:1234/v1/chat/completions for
-        LM Studio.
+        The API endpoint URL for AI operations.
         
         Required?                    false
         Position?                    named
@@ -2053,7 +2703,27 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ApiKey <String>
-        The API key to use for the request when connecting to external AI services.
+        The API key for authenticated AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
         
         Required?                    false
         Position?                    named
@@ -2074,6 +2744,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ShowWindow [<SwitchParameter>]
+        Show the LM Studio window.
         
         Required?                    false
         Position?                    named
@@ -2083,6 +2754,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Force [<SwitchParameter>]
+        Force stop LM Studio before initialization.
         
         Required?                    false
         Position?                    named
@@ -2092,6 +2764,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -IncludeThoughts [<SwitchParameter>]
+        Include model's thoughts in output.
         
         Required?                    false
         Position?                    named
@@ -2101,6 +2774,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -DontAddThoughtsToHistory [<SwitchParameter>]
+        Don't add model's thoughts to conversation history.
         
         Required?                    false
         Position?                    named
@@ -2110,6 +2784,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ContinueLast [<SwitchParameter>]
+        Continue from last conversation.
         
         Required?                    false
         Position?                    named
@@ -2119,6 +2794,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Speak [<SwitchParameter>]
+        Enable text-to-speech for AI responses.
         
         Required?                    false
         Position?                    named
@@ -2128,6 +2804,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SpeakThoughts [<SwitchParameter>]
+        Enable text-to-speech for AI thought responses.
         
         Required?                    false
         Position?                    named
@@ -2137,6 +2814,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -NoSessionCaching [<SwitchParameter>]
+        Don't store session in session cache.
         
         Required?                    false
         Position?                    named
@@ -2146,6 +2824,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -AllowDefaultTools [<SwitchParameter>]
+        Enable default tools for the AI model.
         
         Required?                    false
         Position?                    named
@@ -2155,7 +2834,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -2165,6 +2844,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -2174,6 +2854,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
         
         Required?                    false
         Position?                    named
@@ -2196,8 +2877,11 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS>Invoke-LLMStringListEvaluation -Text "PowerShell features: object-based pipeline, integrated scripting environment, backwards compatibility, and enterprise management."
-    Returns: @("Object-based pipeline", "Integrated scripting environment", "Backwards compatibility", "Enterprise management")
+    PS>Invoke-LLMStringListEvaluation -Text ("PowerShell features: object-based " +
+        "pipeline, integrated scripting environment, backwards compatibility, " +
+        "and enterprise management.")
+    Returns: @("Object-based pipeline", "Integrated scripting environment",
+             "Backwards compatibility", "Enterprise management")
     
     
     
@@ -2206,7 +2890,8 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS>"Make a shopping list with: keyboard, mouse, monitor, headset" | Invoke-LLMStringListEvaluation
+    PS>"Make a shopping list with: keyboard, mouse, monitor, headset" |
+        Invoke-LLMStringListEvaluation
     Returns: @("Keyboard", "Mouse", "Monitor", "Headset")
     
     
@@ -2216,8 +2901,10 @@ OUTPUTS
     
     -------------------------- EXAMPLE 3 --------------------------
     
-    PS>Invoke-LLMStringListEvaluation -Text "List common PowerShell commands for file operations" -SetClipboard
-    Returns and copies to clipboard: @("Get-ChildItem", "Copy-Item", "Move-Item", "Remove-Item", "Set-Content", "Get-Content")
+    PS>getlist "List common PowerShell commands for file operations" -SetClipboard
+    Returns and copies to clipboard: @("Get-ChildItem", "Copy-Item", "Move-Item",
+                                      "Remove-Item", "Set-Content", "Get-Content")
+    ##############################################################################
     
     
     
@@ -2237,14 +2924,14 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-LLMTextTransformation [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-SetClipboard] [-ShowWindow] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Invoke-LLMTextTransformation [[-Text] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function processes input text using AI models to perform various transformations
-    such as spell checking, adding emoticons, or any other text enhancement specified
-    through instructions. It can accept input directly through parameters, from the
-    pipeline, or from the system clipboard.
+    This function processes input text using AI models to perform various
+    transformations such as spell checking, adding emoticons, or any other text
+    enhancement specified through instructions. It can accept input directly
+    through parameters, from the pipeline, or from the system clipboard.
     
 
 PARAMETERS
@@ -2260,8 +2947,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Instructions <String>
-        Instructions to guide the AI model in transforming the text. By default, it will
-        perform spell checking and grammar correction.
+        Instructions to guide the AI model in transforming the text. By default, it
+        will perform spell checking and grammar correction.
         
         Required?                    false
         Position?                    2
@@ -2270,18 +2957,78 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        Specifies which AI model to use for the text transformation. Different models
-        may produce varying results. Defaults to "qwen".
+    -Attachments <String[]>
+        Array of file paths to attach to the AI processing request.
         
         Required?                    false
         Position?                    3
-        Default value                
+        Default value                @()
         Accept pipeline input?       false
         Aliases                      
-        Accept wildcard characters?  true
+        Accept wildcard characters?  false
         
-    -ModelLMSGetIdentifier <String>
+    -Temperature <Double>
+        Temperature for response randomness, ranging from 0.0 to 1.0.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0.2
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDetail <String>
+        Image detail level for image processing operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                low
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <Hashtable[]>
+        Array of function definitions for AI tool usage.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        Array of PowerShell command definitions to use as tools.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        Array of command names that don't require confirmation.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LLMQueryType <String>
+        The type of LLM query to perform.
+        
+        Required?                    false
+        Position?                    named
+        Default value                SimpleIntelligence
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
         
         Required?                    false
         Position?                    named
@@ -2290,11 +3037,72 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Attachments <String[]>
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
         
         Required?                    false
-        Position?                    4
-        Default value                @()
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        How much to offload to the GPU for AI processing.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        The API endpoint URL for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key for authenticated AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -2311,51 +3119,17 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ShowWindow [<SwitchParameter>]
+        Show the LM Studio window during processing.
         
         Required?                    false
         Position?                    named
         Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Temperature <Double>
-        
-        Required?                    false
-        Position?                    named
-        Default value                0.2
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxToken <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Gpu <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -Force [<SwitchParameter>]
+        Force stop LM Studio before initialization.
         
         Required?                    false
         Position?                    named
@@ -2364,16 +3138,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ImageDetail <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                low
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -DontAddThoughtsToHistory [<SwitchParameter>]
+        Include model's thoughts in output history.
         
         Required?                    false
         Position?                    named
@@ -2383,6 +3149,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ContinueLast [<SwitchParameter>]
+        Continue from last conversation in the AI session.
         
         Required?                    false
         Position?                    named
@@ -2391,35 +3158,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Functions <Hashtable[]>
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ExposedCmdLets <ExposedCmdletDefinition[]>
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoConfirmationToolFunctionNames <String[]>
-        Array of command names that don't require confirmation
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Speak [<SwitchParameter>]
+        Enable text-to-speech for AI responses.
         
         Required?                    false
         Position?                    named
@@ -2429,6 +3169,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SpeakThoughts [<SwitchParameter>]
+        Enable text-to-speech for AI thought responses.
         
         Required?                    false
         Position?                    named
@@ -2438,6 +3179,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -NoSessionCaching [<SwitchParameter>]
+        Don't store session in session cache.
         
         Required?                    false
         Position?                    named
@@ -2446,25 +3188,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ApiEndpoint <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ApiKey <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -AllowDefaultTools [<SwitchParameter>]
+        Allow the use of default AI tools during processing.
         
         Required?                    false
         Position?                    named
@@ -2474,7 +3199,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -2484,6 +3209,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -2493,6 +3219,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
         
         Required?                    false
         Position?                    named
@@ -2515,7 +3242,8 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Invoke-LLMTextTransformation -Text "Hello, hwo are you todey?"
+    PS > Invoke-LLMTextTransformation -Text "Hello, hwo are you todey?" `
+        -Instructions "Fix spelling errors" -SetClipboard
     
     
     
@@ -2524,7 +3252,18 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > "Time to celerbate!" | Invoke-LLMTextTransformation -Instructions "Add celebratory emoticons"
+    PS > "Time to celerbate!" | Invoke-LLMTextTransformation `
+        -Instructions "Add celebratory emoticons"
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > spellcheck "This is a sentance with erors"
+    ##############################################################################
     
     
     
@@ -2612,6 +3351,7 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > merge "C:\source\file1.txt" "C:\target\file2.txt"
+            ##############################################################################
     
     
     
@@ -2631,19 +3371,20 @@ SYNOPSIS
     
     
 SYNTAX
-    New-LLMAudioChat [[-query] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-AudioTemperature <Double>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Int32>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-ResponseFormat <String>] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    New-LLMAudioChat [[-Query] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-AudioTemperature <Double>] [-Temperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-Cpu <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Int32>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Gpu <Int32>] [-ImageDetail <String>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-ResponseFormat <String>] [-MarkupBlocksTypeFilter <String[]>] [-PreferencesDatabasePath <String>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoSessionCaching] [-OutputMarkupBlocksOnly] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
-    Initiates a voice-based conversation with a language model, supporting audio input
-    and output. The function handles audio recording, transcription, model queries,
-    and text-to-speech responses. Supports multiple language models and various
-    configuration options.
+    Initiates a voice-based conversation with a language model, supporting audio
+    input and output. The function handles audio recording, transcription, model
+    queries, and text-to-speech responses. Supports multiple language models and
+    various configuration options.
     
 
 PARAMETERS
-    -query <String>
-        Initial text query to send to the model. Can be empty to start with voice input.
+    -Query <String>
+        Initial text query to send to the model. Can be empty to start with voice
+        input.
         
         Required?                    false
         Position?                    1
@@ -2652,31 +3393,11 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        The model name/path to use. Supports -like pattern matching. Default: "qwen2.5-14b-instruct"
-        
-        Required?                    false
-        Position?                    2
-        Default value                qwen2.5-14b-instruct
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        Model identifier for LM Studio. Default: "qwen2.5-14b-instruct"
-        
-        Required?                    false
-        Position?                    3
-        Default value                qwen2.5-14b-instruct
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Instructions <String>
         System instructions/prompt to guide the model's behavior.
         
         Required?                    false
-        Position?                    4
+        Position?                    2
         Default value                
         Accept pipeline input?       false
         Aliases                      
@@ -2686,7 +3407,7 @@ PARAMETERS
         Array of file paths to attach to the conversation for context.
         
         Required?                    false
-        Position?                    5
+        Position?                    3
         Default value                @()
         Accept pipeline input?       false
         Aliases                      
@@ -2703,151 +3424,11 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Temperature <Double>
-        Temperature for response randomness. Range: 0.0-1.0. Default: 0.0
+        Temperature for response randomness. Range: 0.0-1.0. Default: 0.2
         
         Required?                    false
         Position?                    named
         Default value                0.2
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxToken <Int32>
-        Maximum tokens in model response. Default: 8192
-        
-        Required?                    false
-        Position?                    named
-        Default value                8192
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ShowWindow [<SwitchParameter>]
-        Switch to show the LM Studio window during operation.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        Time-to-live in seconds for models loaded via API requests. Default: -1
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Gpu <Int32>
-        GPU offloading configuration. -2=Auto, -1=LM Studio decides, 0-1=fraction of layers
-        Default: -1
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Force [<SwitchParameter>]
-        Switch to force stop LM Studio before initialization.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ImageDetail <String>
-        Image detail level setting. Options: "low", "medium", "high". Default: "low"
-        
-        Required?                    false
-        Position?                    named
-        Default value                low
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -IncludeThoughts [<SwitchParameter>]
-        Switch to include model's thought process in output.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -DontAddThoughtsToHistory [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ContinueLast [<SwitchParameter>]
-        Switch to continue from last conversation context.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ExposedCmdLets <ExposedCmdletDefinition[]>
-        Array of PowerShell command definitions available as tools to the model.
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -DontSpeak [<SwitchParameter>]
-        Switch to disable text-to-speech for AI responses.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -DontSpeakThoughts [<SwitchParameter>]
-        Switch to disable text-to-speech for AI thought responses.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoVOX [<SwitchParameter>]
-        Switch to disable silence detection for automatic recording stop.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -UseDesktopAudioCapture [<SwitchParameter>]
-        Switch to use desktop audio capture instead of microphone input.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -2874,6 +3455,16 @@ PARAMETERS
         
     -CpuThreads <Int32>
         Number of CPU threads to use. 0=auto. Default: 0
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations
         
         Required?                    false
         Position?                    named
@@ -2952,6 +3543,219 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -LLMQueryType <String>
+        The type of LLM query
+        
+        Required?                    false
+        Position?                    named
+        Default value                ToolUse
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        GPU offloading configuration. -2=Auto, -1=LM Studio decides, 0-1=fraction of
+        layers. Default: -1
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDetail <String>
+        Image detail level setting. Options: "low", "medium", "high". Default: "low"
+        
+        Required?                    false
+        Position?                    named
+        Default value                low
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        The API endpoint URL for AI operations
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key for authenticated AI operations
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ResponseFormat <String>
+        A JSON schema for the requested output format
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        Will only output markup blocks of the specified types
+        
+        Required?                    false
+        Position?                    named
+        Default value                @(
+                    "json",
+                    "powershell",
+                    "C#",
+                    "python",
+                    "javascript",
+                    "typescript",
+                    "html",
+                    "css",
+                    "yaml",
+                    "xml",
+                    "bash"
+                )
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        Array of PowerShell command definitions available as tools to the model.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -IncludeThoughts [<SwitchParameter>]
+        Switch to include model's thought process in output.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        Switch to include model's thoughts in output
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        Switch to continue from last conversation context.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        Switch to disable text-to-speech for AI responses.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        Switch to disable text-to-speech for AI thought responses.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        Switch to disable silence detection for automatic recording stop.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        Switch to use desktop audio capture instead of microphone input.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -NoContext [<SwitchParameter>]
         Switch to disable context usage in conversation.
         
@@ -2992,36 +3796,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ApiEndpoint <String>
-        API endpoint URL. Default: http://localhost:1234/v1/chat/completions
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ApiKey <String>
-        API key for authentication.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ResponseFormat <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -OutputMarkupBlocksOnly [<SwitchParameter>]
+        Will only output markup block responses
         
         Required?                    false
         Position?                    named
@@ -3030,17 +3806,28 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -MarkupBlocksTypeFilter <String[]>
+    -ShowWindow [<SwitchParameter>]
+        Switch to show the LM Studio window during operation.
         
         Required?                    false
         Position?                    named
-        Default value                @("json", "powershell", "C#", "python", "javascript", "typescript", "html", "css", "yaml", "xml", "bash")
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Switch to force stop LM Studio before initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences
         
         Required?                    false
         Position?                    named
@@ -3050,6 +3837,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences
         
         Required?                    false
         Position?                    named
@@ -3059,6 +3847,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session
         
         Required?                    false
         Position?                    named
@@ -3125,12 +3914,12 @@ NAME
     New-LLMTextChat
     
 SYNTAX
-    New-LLMTextChat [[-Query] <string>] [[-Model] <string>] [[-ModelLMSGetIdentifier] <string>] [[-Instructions] <string>] [[-Attachments] <string[]>] [-Temperature <double>] [-MaxToken <int>] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ImageDetail {low | medium | high}] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <string[]>] [-ChatOnce] [-NoSessionCaching] [-ApiEndpoint <string>] [-ApiKey <string>] [-ResponseFormat <string>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    New-LLMTextChat [[-Query] <string>] [[-Instructions] <string>] [[-Attachments] <string[]>] [-Temperature <double>] [-ImageDetail {low | medium | high}] [-ResponseFormat <string>] [-LLMQueryType {SimpleIntelligence | Knowledge | Pictures | TextTranslation | Coding | ToolUse}] [-Model <string>] [-HuggingFaceIdentifier <string>] [-MaxToken <int>] [-Cpu <int>] [-Gpu <int>] [-ApiEndpoint <string>] [-ApiKey <string>] [-TimeoutSeconds <int>] [-PreferencesDatabasePath <string>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-MarkupBlocksTypeFilter <string[]>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ShowWindow] [-Force] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-ChatOnce] [-NoSessionCaching] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 PARAMETERS
     -ApiEndpoint <string>
-        Api endpoint url, defaults to http://localhost:1234/v1/chat/completions
+        The API endpoint URL for AI operations
         
         Required?                    false
         Position?                    Named
@@ -3141,7 +3930,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ApiKey <string>
-        The API key to use for the request
+        The API key for authenticated AI operations
         
         Required?                    false
         Position?                    Named
@@ -3155,7 +3944,7 @@ PARAMETERS
         Array of file paths to attach
         
         Required?                    false
-        Position?                    4
+        Position?                    2
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      None
@@ -3174,7 +3963,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession
-        Clear alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Clear alternative settings stored in session for AI preferences
         
         Required?                    false
         Position?                    Named
@@ -3196,6 +3985,17 @@ PARAMETERS
         
     -ContinueLast
         Continue from last conversation
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Cpu <int>
+        The number of CPU cores to dedicate to AI operations
         
         Required?                    false
         Position?                    Named
@@ -3239,13 +4039,24 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Gpu <int>
-        How much to offload to the GPU. If "off", GPU offloading is disabled. If "max", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto 
+        How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max', all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto
         
         Required?                    false
         Position?                    Named
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <string>
+        The LM Studio specific model identifier
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      ModelLMSGetIdentifier
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -3275,7 +4086,18 @@ PARAMETERS
         System instructions for the model
         
         Required?                    false
-        Position?                    3
+        Position?                    1
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -LLMQueryType <string>
+        The type of LLM query
+        
+        Required?                    false
+        Position?                    Named
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      None
@@ -3294,32 +4116,21 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -MaxToken <int>
-        Maximum tokens in response (-1 for default)
+        The maximum number of tokens to use in AI operations
         
         Required?                    false
         Position?                    Named
         Accept pipeline input?       false
         Parameter set name           (All)
-        Aliases                      MaxTokens
+        Aliases                      None
         Dynamic?                     false
         Accept wildcard characters?  false
         
     -Model <string>
-        The LM-Studio model to use
+        The model identifier or pattern to use for AI operations
         
         Required?                    false
-        Position?                    1
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <string>
-        The LM-Studio model identifier
-        
-        Required?                    false
-        Position?                    2
+        Position?                    Named
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      None
@@ -3339,6 +4150,17 @@ PARAMETERS
         
     -OutputMarkupBlocksOnly
         Will only output markup block responses
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <string>
+        Database path for preference data files
         
         Required?                    false
         Position?                    Named
@@ -3371,7 +4193,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences
         
         Required?                    false
         Position?                    Named
@@ -3393,7 +4215,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession
-        Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Store settings only in persistent preferences without affecting session
         
         Required?                    false
         Position?                    Named
@@ -3425,19 +4247,19 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
-    -TTLSeconds <int>
-        Set a TTL (in seconds) for models loaded via API requests
+    -Temperature <double>
+        Temperature for response randomness (0.0-1.0)
         
         Required?                    false
         Position?                    Named
         Accept pipeline input?       false
         Parameter set name           (All)
-        Aliases                      ttl
+        Aliases                      None
         Dynamic?                     false
         Accept wildcard characters?  false
         
-    -Temperature <double>
-        Temperature for response randomness (0.0-1.0)
+    -TimeoutSeconds <int>
+        The timeout in seconds for AI operations
         
         Required?                    false
         Position?                    Named
@@ -3477,6 +4299,252 @@ ALIASES
 
 REMARKS
     None 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Set-AILLMSettings
+    
+SYNOPSIS
+    Sets the LLM settings for AI operations in GenXdev.AI.
+    
+    
+SYNTAX
+    Set-AILLMSettings [-LLMQueryType] <String> [[-Model] <String>] [[-HuggingFaceIdentifier] <String>] [[-MaxToken] <Int32>] [[-Cpu] <Int32>] [[-Gpu] <Int32>] [[-TTLSeconds] <Int32>] [[-ApiEndpoint] <String>] [[-ApiKey] <String>] [[-TimeoutSeconds] <Int32>] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function configures the LLM (Large Language Model) settings used by the
+    GenXdev.AI module for various AI operations. Settings can be stored persistently
+    in preferences (default), only in the current session (using -SessionOnly), or
+    cleared from the session (using -ClearSession). The function validates that at
+    least one setting parameter is provided unless clearing session settings.
+    
+
+PARAMETERS
+    -LLMQueryType <String>
+        The type of LLM query to set settings for. This determines which configuration
+        to store or modify. Valid values are SimpleIntelligence, Knowledge, Pictures,
+        TextTranslation, Coding, and ToolUse.
+        
+        Required?                    true
+        Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
+        
+        Required?                    false
+        Position?                    2
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier to use for retrieving the model.
+        
+        Required?                    false
+        Position?                    3
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    4
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    5
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        GPU offload level (-2=Auto through 1=Full).
+        
+        Required?                    false
+        Position?                    6
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        The time-to-live in seconds for cached AI responses.
+        
+        Required?                    false
+        Position?                    7
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        The API endpoint URL for AI operations.
+        
+        Required?                    false
+        Position?                    8
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key for authenticated AI operations.
+        
+        Required?                    false
+        Position?                    9
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    10
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        When specified, stores the settings only in the current session (Global
+        variables) without persisting to preferences. Settings will be lost when the
+        session ends.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        When specified, clears only the session settings (Global variables) without
+        affecting persistent preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        When specified, stores the settings only in persistent preferences without
+        affecting the current session settings.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WhatIf [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Confirm [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Set-AILLMSettings -LLMQueryType "Coding" -Model "*Qwen*14B*" -MaxToken 32768
+    
+    Sets the LLM settings for Coding query type persistently in preferences.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Set-AILLMSettings -LLMQueryType "SimpleIntelligence" -Model "*deepseek*8b*" -TimeoutSeconds 7200 -SessionOnly
+    
+    Sets the LLM settings for SimpleIntelligence only for the current
+    session.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Set-AILLMSettings -LLMQueryType "Pictures" -ClearSession
+    
+    Clears the session LLM settings for Pictures query type without affecting
+    persistent preferences.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > Set-AILLMSettings "Coding" "*Qwen*14B*" -MaxToken 32768
+    
+    Sets the LLM settings for Coding query type using positional parameters.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 5 --------------------------
+    
+    PS > Set-AILLMSettings -LLMQueryType "Coding" -Cpu 8 -Gpu 2 -MaxToken 16384
+    
+    Sets the LLM settings for Coding query type with specific CPU and GPU core counts.
+    ##############################################################################
+    
+    
+    
+    
+    
+RELATED LINKS 
 
 <br/><hr/><hr/><br/>
  
@@ -3530,6 +4598,7 @@ OUTPUTS
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > Set-GenXdevAICommandNotFoundAction
+            ##############################################################################
     
     
     
@@ -3592,6 +4661,7 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > Test-DeepLinkImageFile "C:\Images\logo.png"
+            ##############################################################################
     
     
     
@@ -3776,6 +4846,7 @@ NOTES
         comparison.
         Example: curl -X POST -F "image1=@person1.jpg" -F "image2=@person2.jpg"
         http://localhost:5000/v1/vision/face/match
+                ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -3941,6 +5012,7 @@ NOTES
         - POST /v1/vision/face/delete : Remove registered face
         
         For more information, see: https://docs.deepstack.cc/face-recognition/
+                ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -4136,6 +5208,7 @@ NOTES
         DeepStack API Documentation: POST /v1/vision/face/recognize endpoint for face
         identification. Example: curl -X POST -F "image=@person1.jpg"
         http://localhost:5000/v1/vision/face/recognize
+        ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -4355,6 +5428,7 @@ NOTES
         potted plant, bed, dining table, toilet, tv, laptop, mouse, remote, keyboard,
         cell phone, microwave, oven, toaster, sink, refrigerator, book, clock, vase,
         scissors, teddy bear, hair drier, toothbrush.
+                ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -4389,7 +5463,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ImageDetectedScenes [-ImagePath] <String> [[-ConfidenceThreshold] <Double>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [-ImageName <String>] [-Force] [-UseGPU] [-ShowWindow] [<CommonParameters>]
+    Get-ImageDetectedScenes [-ImagePath] <String> [[-ConfidenceThreshold] <Double>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [-ImageName <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -4482,6 +5556,17 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoDockerInitialize [<SwitchParameter>]
+        Skip Docker initialization when this switch is used. This is typically used
+        when already called by parent function to avoid duplicate initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -4590,6 +5675,7 @@ NOTES
         volleyball_court, waiting_room, water_park, water_tower, waterfall,
         watering_hole, wave, wet_bar, wheat_field, wind_farm, windmill, yard,
         youth_hostel, zen_garden.
+        ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -4779,6 +5865,7 @@ NOTES
     
     
         DeepStack API Documentation: POST /v1/vision/face/list endpoint
+                ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -4991,6 +6078,7 @@ NOTES
         
         The enhanced image will be 4 times larger (2x width, 2x height) than the
         original.
+        ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -5231,6 +6319,7 @@ OUTPUTS
     -------------------------- EXAMPLE 3 --------------------------
     
     PS > updatefaces -RenameFailed
+    ##############################################################################
     
     
     
@@ -5414,6 +6503,7 @@ OUTPUTS
     -------------------------- EXAMPLE 3 --------------------------
     
     PS > Register-Face -Identifier "JohnDoe" -ImagePath "C:\Users\YourName\faces\john.jpg"
+            ##############################################################################
     
     
     
@@ -5609,6 +6699,7 @@ OUTPUTS
     PS > unregall -Force
     
     Uses alias to remove all faces without confirmation.
+            ##############################################################################
     
     
     
@@ -5780,6 +6871,7 @@ NOTES
     
         DeepStack API Documentation: POST /v1/vision/face/delete endpoint
         This endpoint is used to remove a previously registered face from the system.
+                ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -5816,7 +6908,7 @@ SYNOPSIS
     
     
 SYNTAX
-    EnsureLMStudio [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow] [-Force] [<CommonParameters>]
+    EnsureLMStudio [[-Model] <String>] [[-HuggingFaceIdentifier] <String>] [[-MaxToken] <Int32>] [[-Cpu] <Int32>] [[-TTLSeconds] <Int32>] [[-TimeoutSeconds] <Int32>] [[-LLMQueryType] <String>] [[-PreferencesDatabasePath] <String>] [-ShowWindow] [-Force] [-Unload] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -5827,50 +6919,87 @@ DESCRIPTION
 
 PARAMETERS
     -Model <String>
-        Name or partial path of the model to initialize. Supports wildcard patterns.
-        Defaults to "qwen2.5-14b-instruct".
+        The model identifier or pattern to use for AI operations.
         
         Required?                    false
         Position?                    1
-        Default value                qwen2.5-14b-instruct
-        Accept pipeline input?       true (ByValue)
+        Default value                
+        Accept pipeline input?       false
         Aliases                      
-        Accept wildcard characters?  true
+        Accept wildcard characters?  false
         
-    -ModelLMSGetIdentifier <String>
-        The specific LM-Studio model identifier to use. This should match an available
-        model in LM Studio.
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
         
         Required?                    false
         Position?                    2
-        Default value                qwen2.5-14b-instruct
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -MaxToken <Int32>
-        Maximum number of tokens allowed in responses. Use -1 for default setting.
-        Default is 8192.
+        The maximum number of tokens to use in AI operations.
         
         Required?                    false
         Position?                    3
-        Default value                8192
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    4
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -TTLSeconds <Int32>
-        Time-to-live in seconds for models loaded via API requests. Use -1 for no TTL.
+        The time-to-live in seconds for cached AI responses.
         
         Required?                    false
-        Position?                    4
-        Default value                -1
+        Position?                    5
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    6
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LLMQueryType <String>
+        The type of LLM query.
+        
+        Required?                    false
+        Position?                    7
+        Default value                SimpleIntelligence
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    8
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -ShowWindow [<SwitchParameter>]
-        Shows the LM Studio window during initialization when specified.
+        Show LM Studio window during initialization.
         
         Required?                    false
         Position?                    named
@@ -5880,7 +7009,47 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Force [<SwitchParameter>]
-        Forces LM Studio to stop before initialization when specified.
+        Force stop LM Studio before initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        Unloads the specified model instead of loading it.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
         
         Required?                    false
         Position?                    named
@@ -5901,7 +7070,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > EnsureLMStudio -Model "qwen2.5-14b-instruct" -MaxToken 8192 -ShowWindow
+    PS > EnsureLMStudio -LMSQueryType "TextTranslate" -MaxToken 8192 -ShowWindow
     
     
     
@@ -5910,7 +7079,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > EnsureLMStudio "mistral-7b" -ttl 3600 -Force
+    PS > EnsureLMStudio -Model "mistral-7b" -TTLSeconds 3600 -Force
     
     
     
@@ -5955,6 +7124,7 @@ OUTPUTS
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > Get-LMStudioLoadedModelList
+            ##############################################################################
     
     
     
@@ -6011,6 +7181,7 @@ OUTPUTS
     
     PS > Get-LMStudioModelList -Verbose
     Retrieves models while showing detailed progress information.
+            ##############################################################################
     
     
     
@@ -6059,6 +7230,7 @@ OUTPUTS
     
     PS > $paths = Get-LMStudioPaths
     Write-Output "LM Studio path: $($paths.LMStudioExe)"
+            ##############################################################################
     
     
     
@@ -6078,13 +7250,13 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-LMStudioTextEmbedding [-Text] <String[]> [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>]
+    Get-LMStudioTextEmbedding [-Text] <String[]> [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-TTLSeconds <Int32>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-LLMQueryType <String>] [-ShowWindow] [-Force] [-Unload] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
     Gets text embeddings for the provided text using LM Studio's API. Can work with
     both local and remote LM Studio instances. Handles model initialization and API
-    communication.
+    communication for converting text into numerical vector representations.
     
 
 PARAMETERS
@@ -6099,21 +7271,81 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Model <String>
-        The LM Studio model to use for embeddings.
-        
-        Required?                    false
-        Position?                    2
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        Specific identifier used for getting model from LM Studio.
+        The model identifier or pattern to use for AI operations.
         
         Required?                    false
         Position?                    named
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        The time-to-live in seconds for cached AI responses.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LLMQueryType <String>
+        The type of LLM query for optimal model selection.
+        
+        Required?                    false
+        Position?                    named
+        Default value                SimpleIntelligence
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -6128,31 +7360,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -TTLSeconds <Int32>
-        Time-to-live in seconds for models loaded via API requests.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Gpu <Int32>
-        GPU offloading configuration:
-        -2 = Auto
-        -1 = LM Studio decides
-        0-1 = Fraction of layers to offload
-        "off" = Disabled
-        "max" = Maximum offloading
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Force [<SwitchParameter>]
         Forces LM Studio restart before processing.
         
@@ -6163,22 +7370,42 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ApiEndpoint <String>
-        API endpoint URL, defaults to http://localhost:1234/v1/embeddings.
+    -Unload [<SwitchParameter>]
+        Unloads the specified model instead of loading it.
         
         Required?                    false
         Position?                    named
-        Default value                
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -ApiKey <String>
-        The API key to use for requests.
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
-        Default value                
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -6204,7 +7431,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > "Sample text" | embed-text -ttl 3600
+    PS > "Sample text" | embed-text -TTLSeconds 3600
     
     
     
@@ -6224,7 +7451,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-LMStudioWindow [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-ShowWindow] [-Force] [-NoAutoStart] [<CommonParameters>]
+    Get-LMStudioWindow [[-LLMQueryType] <String>] [[-Model] <String>] [[-HuggingFaceIdentifier] <String>] [[-MaxToken] <Int32>] [[-Cpu] <Int32>] [[-TTLSeconds] <Int32>] [[-TimeoutSeconds] <Int32>] [[-PreferencesDatabasePath] <String>] [-Unload] [-ShowWindow] [-Force] [-NoAutoStart] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -6234,42 +7461,92 @@ DESCRIPTION
     
 
 PARAMETERS
-    -Model <String>
-        Name or partial path of the model to initialize.
+    -LLMQueryType <String>
+        The type of LLM query to use for AI operations.
         
         Required?                    false
         Position?                    1
-        Default value                qwen2.5-14b-instruct
-        Accept pipeline input?       true (ByValue)
+        Default value                SimpleIntelligence
+        Accept pipeline input?       false
         Aliases                      
-        Accept wildcard characters?  true
+        Accept wildcard characters?  false
         
-    -ModelLMSGetIdentifier <String>
-        The specific LM-Studio model identifier to use.
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
         
         Required?                    false
         Position?                    2
-        Default value                qwen2.5-14b-instruct
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
+        
+        Required?                    false
+        Position?                    3
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -MaxToken <Int32>
-        Maximum tokens in response. Use -1 for default value.
+        The maximum number of tokens to use in AI operations.
         
         Required?                    false
-        Position?                    3
-        Default value                8192
+        Position?                    4
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    5
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -TTLSeconds <Int32>
-        Set a Time To Live (in seconds) for models loaded via API.
+        The time-to-live in seconds for cached AI responses.
         
         Required?                    false
-        Position?                    4
-        Default value                -1
+        Position?                    6
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    7
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    8
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        Switch to unload the specified model instead of loading it.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -6304,6 +7581,37 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SessionOnly [<SwitchParameter>]
+        Switch to use alternative settings stored in session for AI preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        Switch to clear alternative settings stored in session for AI preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        Switch to store settings only in persistent preferences without affecting
+        session.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -6325,7 +7633,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > Get-LMStudioWindow "qwen2.5-14b-instruct" -ttl 3600
+    PS > Get-LMStudioWindow "qwen2.5-14b-instruct" -TTLSeconds 3600
     
     
     
@@ -6345,7 +7653,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Initialize-LMStudioModel [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [[-Gpu] <Int32>] [-ShowWindow] [-Force] [-PreferredModels <String[]>] [-Unload] [<CommonParameters>]
+    Initialize-LMStudioModel [-ShowWindow] [-Force] [-Unload] [[-LLMQueryType] <String>] [[-Model] <String>] [[-HuggingFaceIdentifier] <String>] [[-MaxToken] <Int32>] [[-Cpu] <Int32>] [[-Gpu] <Int32>] [[-TTLSeconds] <Int32>] [[-TimeoutSeconds] <Int32>] [-SessionOnly] [-ClearSession] [[-PreferencesDatabasePath] <String>] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -6354,56 +7662,6 @@ DESCRIPTION
     
 
 PARAMETERS
-    -Model <String>
-        Name or partial path of the model to initialize. Searched against available models.
-        
-        Required?                    false
-        Position?                    1
-        Default value                [string]::Empty
-        Accept pipeline input?       true (ByValue)
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        The specific LM-Studio model identifier to use for download/initialization.
-        
-        Required?                    false
-        Position?                    2
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxToken <Int32>
-        Maximum tokens allowed in response. -1 for default limit.
-        
-        Required?                    false
-        Position?                    3
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        Time-to-live in seconds for loaded models. -1 for no TTL.
-        
-        Required?                    false
-        Position?                    4
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Gpu <Int32>
-        GPU offloading level: -2=Auto, -1=LMStudio decides, 0=Off, 0-1=Layer fraction
-        
-        Required?                    false
-        Position?                    5
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -ShowWindow [<SwitchParameter>]
         Shows the LM Studio window during initialization.
         
@@ -6424,22 +7682,121 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -PreferredModels <String[]>
-        Array of model names to try if specified model not found.
+    -Unload [<SwitchParameter>]
+        Unloads the specified model instead of loading it.
         
         Required?                    false
         Position?                    named
-        Default value                @(
-                    "qwen2.5-14b-instruct", "vicuna", "alpaca", "gpt", "mistral", "falcon", "mpt",
-                    "koala", "wizard", "guanaco", "bloom", "rwkv", "camel", "pythia",
-                    "baichuan"
-                )
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -Unload [<SwitchParameter>]
-        Unloads the specified model instead of loading it.
+    -LLMQueryType <String>
+        
+        Required?                    false
+        Position?                    1
+        Default value                SimpleIntelligence
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        Name or partial path of the model to initialize. Searched against available models.
+        
+        Required?                    false
+        Position?                    2
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The specific LM-Studio model identifier to use for download/initialization.
+        
+        Required?                    false
+        Position?                    3
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        Maximum tokens allowed in response. -1 for default limit.
+        
+        Required?                    false
+        Position?                    4
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        
+        Required?                    false
+        Position?                    5
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        GPU offloading level: -2=Auto, -1=LMStudio decides, 0=Off, 0-1=Layer fraction
+        
+        Required?                    false
+        Position?                    6
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        Time-to-live in seconds for loaded models. -1 for no TTL.
+        
+        Required?                    false
+        Position?                    7
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        
+        Required?                    false
+        Position?                    8
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        
+        Required?                    false
+        Position?                    9
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -6462,7 +7819,7 @@ OUTPUTS
     
     PS > Initialize-LMStudioModel -Model "qwen2.5-14b-instruct" -ShowWindow -MaxToken 2048
     
-    
+    ##############################################################################
     
     
     
@@ -6502,6 +7859,7 @@ OUTPUTS
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > Install-LMStudioApplication
+            ##############################################################################
     
     
     
@@ -6582,6 +7940,7 @@ OUTPUTS
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > Start-LMStudioApplication -ShowWindow -Passthru
+            ##############################################################################
     
     
     
@@ -6637,6 +7996,7 @@ OUTPUTS
     
     PS > tlms
     Uses the alias to check LMStudio installation status.
+            ##############################################################################
     
     
     
@@ -6689,6 +8049,7 @@ OUTPUTS
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > [bool] $lmStudioRunning = Test-LMStudioProcess
+            ##############################################################################
     
     
     
@@ -6711,7 +8072,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -6744,28 +8105,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        Specifies which AI model to use for emoticon selection and placement. Different
-        models may produce varying results in terms of emoticon selection and context
-        understanding. Defaults to "qwen".
-        
-        Required?                    false
-        Position?                    3
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Temperature <Double>
+        Temperature for response randomness (0.0-1.0).
         
         Required?                    false
         Position?                    named
@@ -6774,11 +8115,105 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -LLMQueryType <String>
+        The type of LLM query.
+        
+        Required?                    false
+        Position?                    named
+        Default value                Knowledge
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
+        all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
+        layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
+        offload to the GPU. -2 = Auto.
         
         Required?                    false
         Position?                    named
         Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        The API endpoint URL for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key for authenticated AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -6795,33 +8230,17 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ShowWindow [<SwitchParameter>]
+        Show the LM Studio window.
         
         Required?                    false
         Position?                    named
         Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Gpu <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -Force [<SwitchParameter>]
+        Force stop LM Studio before initialization.
         
         Required?                    false
         Position?                    named
@@ -6830,26 +8249,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ApiEndpoint <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ApiKey <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -6859,6 +8260,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -6868,6 +8270,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
         
         Required?                    false
         Position?                    named
@@ -6901,6 +8304,7 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > "Time to celebrate!" | emojify
+    ##############################################################################
     
     
     
@@ -6920,7 +8324,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Add-ImageDirectories [-ImageDirectories] <String[]> [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Add-ImageDirectories [-ImageDirectories] <String[]> [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -6946,7 +8350,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -6956,6 +8361,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -6964,7 +8371,19 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -7034,7 +8453,7 @@ SYNOPSIS
     
     
 SYNTAX
-    ConvertFrom-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    ConvertFrom-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-SetClipboard] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -7069,27 +8488,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        Specifies which AI model to use for text transformation. Different models may
-        produce varying results in terms of language style.
-        
-        Required?                    false
-        Position?                    3
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        Identifier used for getting specific model from LM Studio.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Temperature <Double>
         Temperature for response randomness (0.0-1.0).
         
@@ -7100,42 +8498,53 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -LLMQueryType <String>
+        The type of LLM query to use for processing the text transformation.
+        
+        Required?                    false
+        Position?                    named
+        Default value                Knowledge
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        Specifies which AI model to use for text transformation. Different models may
+        produce varying results in terms of language style.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        Identifier used for getting specific model from LM Studio.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -MaxToken <Int32>
         Maximum tokens in response (-1 for default).
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -SetClipboard [<SwitchParameter>]
-        When specified, copies the transformed text back to the system clipboard.
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
         
         Required?                    false
         Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ShowWindow [<SwitchParameter>]
-        Shows the LM Studio window during processing.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        Set a TTL (in seconds) for models loaded via API requests.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -7147,16 +8556,6 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Force [<SwitchParameter>]
-        Force stop LM Studio before initialization.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -7181,8 +8580,48 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetClipboard [<SwitchParameter>]
+        When specified, copies the transformed text back to the system clipboard.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
+        Shows the LM Studio window during processing.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Force stop LM Studio before initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -7192,6 +8631,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -7200,7 +8640,18 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
         
         Required?                    false
         Position?                    named
@@ -7224,7 +8675,7 @@ OUTPUTS
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > ConvertFrom-CorporateSpeak -Text "I would greatly appreciate your timely
-    response" -Model "qwen" -SetClipboard
+    response" -SetClipboard
     
     
     
@@ -7234,6 +8685,7 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > "We should circle back" | uncorporatize
+    ##############################################################################
     
     
     
@@ -7248,185 +8700,219 @@ RELATED LINKS
 NAME
     ConvertFrom-DiplomaticSpeak
     
+SYNOPSIS
+    Converts diplomatic or tactful language into direct, clear, and
+    straightforward language.
+    
+    
 SYNTAX
-    ConvertFrom-DiplomaticSpeak [[-Text] <string>] [[-Instructions] <string>] [[-Model] <string>] [-ModelLMSGetIdentifier <string>] [-Temperature <double>] [-MaxToken <int>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ApiEndpoint <string>] [-ApiKey <string>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    ConvertFrom-DiplomaticSpeak [[-Text] <String>] [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
+DESCRIPTION
+    This function takes diplomatic speak and translates it to reveal the true
+    meaning behind polite or politically correct language. It uses AI language
+    models to transform euphemistic expressions into direct statements, making
+    communication unambiguous and easy to understand. The function is particularly
+    useful for analyzing political statements, business communications, or any text
+    where the real meaning might be obscured by diplomatic language.
+    
+
 PARAMETERS
-    -ApiEndpoint <string>
-        Api endpoint url, defaults to http://localhost:1234/v1/chat/completions
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -ApiKey <string>
-        The API key to use for the request
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -ClearSession
-        Clear alternative settings stored in session for AI preferences like Language, Image collections, etc
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Force
-        Force stop LM Studio before initialization
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Gpu <int>
-        How much to offload to the GPU. If "off", GPU offloading is disabled. If "max", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto 
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Instructions <string>
-        Additional instructions for the AI model
+    -Text <String>
+        The text to convert from diplomatic speak. This can be provided through the
+        pipeline.
         
         Required?                    false
         Position?                    1
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Default value                
+        Accept pipeline input?       true (ByValue)
+        Aliases                      
         Accept wildcard characters?  false
         
-    -MaxToken <int>
-        Maximum tokens in response (-1 for default)
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      MaxTokens
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Model <string>
-        The LM-Studio model to use
+    -Instructions <String>
+        Additional instructions for the AI model to customize the transformation
+        process.
         
         Required?                    false
         Position?                    2
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <string>
-        Identifier used for getting specific model from LM Studio
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -SessionOnly
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+    -Temperature <Double>
+        Temperature for response randomness (0.0-1.0). Lower values produce more
+        consistent outputs while higher values increase creativity.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -SetClipboard
-        Copy the transformed text to clipboard
+    -LLMQueryType <String>
+        The type of LLM query to use for the transformation process.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                Knowledge
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -ShowWindow
-        Show the LM Studio window
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -SkipSession
-        Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier for Hugging Face models.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      FromPreferences
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -TTLSeconds <int>
-        Set a TTL (in seconds) for models loaded via API requests
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      ttl
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -Temperature <double>
-        Temperature for response randomness (0.0-1.0)
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -Text <string>
-        The text to convert from diplomatic speak
+    -Gpu <Int32>
+        How much to offload to the GPU. If 'off', GPU offloading is disabled. If
+        'max', all layers are offloaded to GPU. If a number between 0 and 1, that
+        fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide
+        how much to offload to the GPU. -2 = Auto.
         
         Required?                    false
-        Position?                    0
-        Accept pipeline input?       true (ByValue)
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        The API endpoint URL for AI operations when using external services.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key for authenticated AI operations with external services.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations to prevent hanging.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files storage.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetClipboard [<SwitchParameter>]
+        Copy the transformed text to clipboard after processing.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
+        Show the LM Studio window during processing for monitoring AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Force stop LM Studio before initialization to ensure clean startup.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
         Accept wildcard characters?  false
         
     <CommonParameters>
@@ -7435,21 +8921,42 @@ PARAMETERS
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
         about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
     
-    
 INPUTS
-    System.String
-    
     
 OUTPUTS
     System.String
     
     
-ALIASES
-    undiplomatize
+    -------------------------- EXAMPLE 1 --------------------------
     
-
-REMARKS
-    None 
+    PS > ConvertFrom-DiplomaticSpeak -Text "We have some concerns about your approach"
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > undiplomatize "Your proposal has merit but requires further consideration"
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > "We're putting you on timeout" | ConvertFrom-DiplomaticSpeak `
+        -SetClipboard -Temperature 0.2
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
 
 <br/><hr/><hr/><br/>
  
@@ -7461,7 +8968,7 @@ SYNOPSIS
     
     
 SYNTAX
-    ConvertTo-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    ConvertTo-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -7495,27 +9002,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        Specifies which AI model to use for text transformation. Different models may
-        produce varying results in terms of corporate language style.
-        
-        Required?                    false
-        Position?                    3
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        Identifier used for getting specific model from LM Studio.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Temperature <Double>
         Temperature for response randomness (0.0-1.0).
         
@@ -7526,12 +9012,105 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -LLMQueryType <String>
+        The type of LLM query.
+        
+        Required?                    false
+        Position?                    named
+        Default value                Knowledge
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -MaxToken <Int32>
-        Maximum tokens in response (-1 for default).
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
+        all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
+        layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
+        offload to the GPU. -2 = Auto.
         
         Required?                    false
         Position?                    named
         Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        The API endpoint URL for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key for authenticated AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -7556,27 +9135,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -TTLSeconds <Int32>
-        Set a TTL (in seconds) for models loaded via API requests.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Gpu <Int32>
-        How much to offload to the GPU. -2=Auto, -1=LMStudio decides, 0=Off, 0-1=Layer
-        fraction.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Force [<SwitchParameter>]
         Force stop LM Studio before initialization.
         
@@ -7587,28 +9145,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ApiEndpoint <String>
-        Api endpoint url, defaults to http://localhost:1234/v1/chat/completions.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ApiKey <String>
-        The API key to use for the request.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -7618,6 +9156,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -7627,6 +9166,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
         
         Required?                    false
         Position?                    named
@@ -7649,8 +9189,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > ConvertTo-CorporateSpeak -Text "That's a terrible idea" -Model "qwen"
-    -SetClipboard
+    PS > ConvertTo-CorporateSpeak -Text "That's a terrible idea" -Model "qwen" -SetClipboard
     
     
     
@@ -7674,185 +9213,214 @@ RELATED LINKS
 NAME
     ConvertTo-DiplomaticSpeak
     
+SYNOPSIS
+    Converts direct or blunt text into polite, tactful diplomatic language.
+    
+    
 SYNTAX
-    ConvertTo-DiplomaticSpeak [[-Text] <string>] [[-Instructions] <string>] [[-Model] <string>] [-ModelLMSGetIdentifier <string>] [-Temperature <double>] [-MaxToken <int>] [-SetClipboard] [-ShowWindow] [-TTLSeconds <int>] [-Gpu <int>] [-Force] [-ApiEndpoint <string>] [-ApiKey <string>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    ConvertTo-DiplomaticSpeak [[-Text] <String>] [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
+DESCRIPTION
+    This function transforms user input from direct or blunt phrasing into
+    diplomatic, tactful language suitable for high-level discussions, negotiations,
+    or formal communications. The function uses AI language models to maintain
+    the original intent while softening the tone and making the message more
+    diplomatic and professional.
+    
+
 PARAMETERS
-    -ApiEndpoint <string>
-        Api endpoint url
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -ApiKey <string>
-        The API key to use for the request
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -ClearSession
-        Clear alternative settings stored in session for AI preferences like Language, Image collections, etc
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Force
-        Force stop LM Studio before initialization
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Gpu <int>
-        GPU offload level (-2=Auto through 1=Full)
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Instructions <string>
-        Additional instructions for the AI model
+    -Text <String>
+        The text to convert to diplomatic speak.
         
         Required?                    false
         Position?                    1
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Default value                
+        Accept pipeline input?       true (ByValue)
+        Aliases                      
         Accept wildcard characters?  false
         
-    -MaxToken <int>
-        Maximum tokens in response (-1 for default)
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      MaxTokens
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Model <string>
-        The LM-Studio model to use
+    -Instructions <String>
+        Additional instructions for the AI model.
         
         Required?                    false
         Position?                    2
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <string>
-        Identifier for getting specific model from LM Studio
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -SessionOnly
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+    -Temperature <Double>
+        Temperature for response randomness (0.0-1.0).
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -SetClipboard
-        Copy the transformed text to clipboard
+    -LLMQueryType <String>
+        The type of LLM query.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                Knowledge
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -ShowWindow
-        Show the LM Studio window
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -SkipSession
-        Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      FromPreferences
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -TTLSeconds <int>
-        Set a TTL (in seconds) for models loaded via API
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      ttl
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -Temperature <double>
-        Temperature for response randomness (0.0-1.0)
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -Text <string>
-        The text to convert to diplomatic speak
+    -Gpu <Int32>
+        How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
+        all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
+        layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
+        offload to the GPU. -2 = Auto.
         
         Required?                    false
-        Position?                    0
-        Accept pipeline input?       true (ByValue)
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        The API endpoint URL for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key for authenticated AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetClipboard [<SwitchParameter>]
+        Copy the transformed text to clipboard.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
+        Show the LM Studio window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Force stop LM Studio before initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
         Accept wildcard characters?  false
         
     <CommonParameters>
@@ -7861,21 +9429,33 @@ PARAMETERS
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
         about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
     
-    
 INPUTS
-    System.String
-    
     
 OUTPUTS
     System.String
     
     
-ALIASES
-    diplomatize
+    -------------------------- EXAMPLE 1 --------------------------
     
-
-REMARKS
-    None 
+    PS > ConvertTo-DiplomaticSpeak -Text "Your proposal is terrible" -Temperature 0.2 `
+        -SetClipboard -ShowWindow
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > diplomatize "Your code is full of bugs"
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
 
 <br/><hr/><hr/><br/>
  
@@ -7887,7 +9467,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Export-ImageDatabase [[-InputObject] <Object[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Export-ImageDatabase [[-InputObject] <Object[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [-ShowWindow] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -7915,7 +9495,7 @@ PARAMETERS
         under Storage\allimages.meta.db.
         
         Required?                    false
-        Position?                    1
+        Position?                    2
         Default value                
         Accept pipeline input?       false
         Aliases                      
@@ -7933,6 +9513,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -PathLike <String[]>
+        Array of directory path-like search strings to filter images by path (SQL LIKE
+        patterns, e.g. '%\\2024\\%').
         
         Required?                    false
         Position?                    named
@@ -7942,6 +9524,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Language <String>
+        Language for descriptions and keywords.
         
         Required?                    false
         Position?                    named
@@ -7951,6 +9534,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -FacesDirectory <String>
+        The directory containing face images organized by person folders. If not
+        specified, uses the configured faces directory preference.
         
         Required?                    false
         Position?                    named
@@ -7960,7 +9545,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -EmbedImages [<SwitchParameter>]
-        Embed images directly into the database.
+        Embed images as base64.
         
         Required?                    false
         Position?                    named
@@ -7970,6 +9555,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ForceIndexRebuild [<SwitchParameter>]
+        Force rebuild of the image index database.
         
         Required?                    false
         Position?                    named
@@ -7979,6 +9565,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -NoFallback [<SwitchParameter>]
+        Switch to disable fallback behavior.
         
         Required?                    false
         Position?                    named
@@ -7988,6 +9575,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -NeverRebuild [<SwitchParameter>]
+        Switch to skip database initialization and rebuilding.
         
         Required?                    false
         Position?                    named
@@ -7997,7 +9585,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -8007,6 +9596,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -8015,7 +9606,28 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -8036,7 +9648,8 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Export-ImageDatabase -DatabaseFilePath "C:\Custom\Path\images.db" -ImageDirectories @("C:\Photos", "D:\Images") -EmbedImages
+    PS > Export-ImageDatabase -DatabaseFilePath "C:\Custom\Path\images.db" `
+        -ImageDirectories @("C:\Photos", "D:\Images") -EmbedImages
     
     
     
@@ -8061,7 +9674,7 @@ NAME
     Find-Image
     
 SYNTAX
-    Find-Image [[-DatabaseFilePath] <string>] [-ImageDirectories <string[]>] [-PathLike <string[]>] [-Language {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bork, bork, bork! | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | Elmer Fudd | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Hacker | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Klingon | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Pirate | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [-FacesDirectory <string>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-DescriptionSearch <string[]>] [-Keywords <string[]>] [-People <string[]>] [-Objects <string[]>] [-Scenes <string[]>] [-InputObject <Object[]>] [-PictureType <string[]>] [-StyleType <string[]>] [-OverallMood <string[]>] [-Title <string>] [-Description <string>] [-AcceptLang <string>] [-Monitor <int>] [-Width <int>] [-Height <int>] [-X <int>] [-Y <int>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-ShowOnlyPictures] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Find-Image [[-Any] <string[]>] [[-DatabaseFilePath] <string>] [-ImageDirectories <string[]>] [-PathLike <string[]>] [-Language {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bork, bork, bork! | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | Elmer Fudd | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Hacker | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Klingon | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Pirate | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [-FacesDirectory <string>] [-DescriptionSearch <string[]>] [-Keywords <string[]>] [-People <string[]>] [-Objects <string[]>] [-Scenes <string[]>] [-InputObject <Object[]>] [-PictureType <string[]>] [-StyleType <string[]>] [-OverallMood <string[]>] [-Title <string>] [-Description <string>] [-AcceptLang <string>] [-Monitor <int>] [-Width <int>] [-Height <int>] [-X <int>] [-Y <int>] [-PreferencesDatabasePath <string>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-ShowOnlyPictures] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 PARAMETERS
@@ -8168,7 +9781,7 @@ PARAMETERS
         The path to the image database file. If not specified, a default path is used.
         
         Required?                    false
-        Position?                    0
+        Position?                    1
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      None
@@ -8538,6 +10151,17 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <string>
+        Database path for preference data files
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -Private
         Opens in incognito/private browsing mode
         
@@ -8727,7 +10351,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Find-IndexedImage [[-Any] <String[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-InputObject <Object[]>] [-ShowOnlyPictures] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Find-IndexedImage [[-Any] <String[]>] [-DatabaseFilePath <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-InputObject <Object[]>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-ShowOnlyPictures] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -8739,6 +10363,7 @@ DESCRIPTION
 
 PARAMETERS
     -Any <String[]>
+        Will match any of all the possible meta data types.
         
         Required?                    false
         Position?                    1
@@ -8748,17 +10373,17 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -DatabaseFilePath <String>
-        Optional path to the SQLite database file. If not specified, uses the default
-        location under Storage\allimages.meta.db.
+        The path to the image database file. If not specified, a default path is used.
         
         Required?                    false
-        Position?                    1
+        Position?                    named
         Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -ImageDirectories <String[]>
+        Array of directory paths to search for images.
         
         Required?                    false
         Position?                    named
@@ -8779,7 +10404,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Language <String>
-        The language for retrieving descriptions and keywords.
+        Language for descriptions and keywords.
         
         Required?                    false
         Position?                    named
@@ -8789,6 +10414,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -FacesDirectory <String>
+        The directory containing face images organized by person folders. If not
+        specified, uses the configured faces directory preference.
         
         Required?                    false
         Position?                    named
@@ -8797,8 +10424,98 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -DescriptionSearch <String[]>
+        The description text to look for, wildcards allowed.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Keywords <String[]>
+        The keywords to look for, wildcards allowed.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -People <String[]>
+        People to look for, wildcards allowed.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Objects <String[]>
+        Objects to look for, wildcards allowed.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Scenes <String[]>
+        Scenes to look for, wildcards allowed.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PictureType <String[]>
+        Picture types to filter by, wildcards allowed.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -StyleType <String[]>
+        Style types to filter by, wildcards allowed.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OverallMood <String[]>
+        Overall moods to filter by, wildcards allowed.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -InputObject <Object[]>
+        Accepts search results from a previous -PassThru call to regenerate the view.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       true (ByValue)
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -EmbedImages [<SwitchParameter>]
-        Switch to embed images as base64 data URLs instead of file:// URLs.
+        Embed images as base64.
         
         Required?                    false
         Position?                    named
@@ -8818,6 +10535,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -NoFallback [<SwitchParameter>]
+        Switch to disable fallback behavior.
         
         Required?                    false
         Position?                    named
@@ -8827,6 +10545,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -NeverRebuild [<SwitchParameter>]
+        Switch to skip database initialization and rebuilding.
         
         Required?                    false
         Position?                    named
@@ -8835,95 +10554,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -DescriptionSearch <String[]>
-        The description text to look for, wildcards allowed
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Keywords <String[]>
-        Array of keywords to search for in image metadata. Supports wildcards. Keywords
-        are matched against both the description content and the keywords table.
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -People <String[]>
-        Array of people names to search for in image metadata. Supports wildcards. Uses
-        the optimized ImagePeople lookup table for fast searches.
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Objects <String[]>
-        Array of object names to search for in image metadata. Supports wildcards. Uses
-        the ImageObjects lookup table with indexed searches.
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Scenes <String[]>
-        Array of scene categories to search for in image metadata. Supports wildcards.
-        Uses the ImageScenes lookup table for efficient scene-based filtering.
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -PictureType <String[]>
-        Array of picture types to filter by (e.g., 'daylight', 'evening', 'indoor',
-        'outdoor'). Supports wildcards. Uses indexed column searches.
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -StyleType <String[]>
-        Array of style types to filter by (e.g., 'casual', 'formal'). Supports
-        wildcards. Uses indexed column searches.
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -OverallMood <String[]>
-        Array of overall moods to filter by (e.g., 'calm', 'cheerful', 'sad',
-        'energetic'). Supports wildcards. Uses indexed column searches.
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -HasNudity [<SwitchParameter>]
-        Switch to filter for images that contain nudity. Uses indexed boolean column.
+        Filter images that contain nudity.
         
         Required?                    false
         Position?                    named
@@ -8933,7 +10565,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -NoNudity [<SwitchParameter>]
-        Switch to filter for images that do NOT contain nudity. Uses indexed boolean column.
+        Filter images that do NOT contain nudity.
         
         Required?                    false
         Position?                    named
@@ -8943,7 +10575,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -HasExplicitContent [<SwitchParameter>]
-        Switch to filter for images that contain explicit content. Uses indexed boolean column.
+        Filter images that contain explicit content.
         
         Required?                    false
         Position?                    named
@@ -8953,7 +10585,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -NoExplicitContent [<SwitchParameter>]
-        Switch to filter for images that do NOT contain explicit content. Uses indexed boolean column.
+        Filter images that do NOT contain explicit content.
         
         Required?                    false
         Position?                    named
@@ -8963,7 +10595,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ShowInBrowser [<SwitchParameter>]
-        Switch to display the search results in a browser-based masonry layout gallery.
+        Show results in a browser gallery.
         
         Required?                    false
         Position?                    named
@@ -8973,7 +10605,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -PassThru [<SwitchParameter>]
-        Switch to return image data as objects.
+        Return image data as objects.
         
         Required?                    false
         Position?                    named
@@ -8983,7 +10615,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Title <String>
-        The title to display at the top of the image gallery.
+        Title for the image gallery.
         
         Required?                    false
         Position?                    named
@@ -8993,7 +10625,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Description <String>
-        The description text to display in the image gallery.
+        Description for the image gallery.
         
         Required?                    false
         Position?                    named
@@ -9003,7 +10635,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -AcceptLang <String>
-        Set the browser accept-lang http header.
+        Browser accept-language header.
         
         Required?                    false
         Position?                    named
@@ -9013,7 +10645,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Monitor <Int32>
-        The monitor to use for displaying the gallery.
+        Monitor to use for display.
         
         Required?                    false
         Position?                    named
@@ -9023,7 +10655,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Width <Int32>
-        The initial width of the web browser window.
+        Initial width of browser window.
         
         Required?                    false
         Position?                    named
@@ -9033,7 +10665,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Height <Int32>
-        The initial height of the web browser window.
+        Initial height of browser window.
         
         Required?                    false
         Position?                    named
@@ -9043,7 +10675,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -X <Int32>
-        The initial X position of the web browser window.
+        Initial X position of browser window.
         
         Required?                    false
         Position?                    named
@@ -9053,7 +10685,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Y <Int32>
-        The initial Y position of the web browser window.
+        Initial Y position of browser window.
         
         Required?                    false
         Position?                    named
@@ -9062,8 +10694,18 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ShowOnlyPictures [<SwitchParameter>]
+        Show only pictures in a rounded rectangle, no text below.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -Interactive [<SwitchParameter>]
-        Connects to browser and adds additional buttons like Edit and Delete.
+        Enable interactive browser features.
         
         Required?                    false
         Position?                    named
@@ -9073,7 +10715,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Private [<SwitchParameter>]
-        Opens in incognito/private browsing mode.
+        Open in private/incognito mode.
         
         Required?                    false
         Position?                    named
@@ -9083,7 +10725,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Force [<SwitchParameter>]
-        Force enable debugging port, stopping existing browsers if needed.
+        Force enable debugging port.
         
         Required?                    false
         Position?                    named
@@ -9093,7 +10735,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Edge [<SwitchParameter>]
-        Opens in Microsoft Edge.
+        Open in Microsoft Edge.
         
         Required?                    false
         Position?                    named
@@ -9103,7 +10745,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Chrome [<SwitchParameter>]
-        Opens in Google Chrome.
+        Open in Google Chrome.
         
         Required?                    false
         Position?                    named
@@ -9113,7 +10755,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Chromium [<SwitchParameter>]
-        Opens in Microsoft Edge or Google Chrome.
+        Open in Chromium-based browser.
         
         Required?                    false
         Position?                    named
@@ -9123,7 +10765,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Firefox [<SwitchParameter>]
-        Opens in Firefox.
+        Open in Firefox.
         
         Required?                    false
         Position?                    named
@@ -9133,7 +10775,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -All [<SwitchParameter>]
-        Opens in all registered modern browsers.
+        Open in all browsers.
         
         Required?                    false
         Position?                    named
@@ -9143,7 +10785,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -FullScreen [<SwitchParameter>]
-        Opens in fullscreen mode.
+        Open in fullscreen mode.
         
         Required?                    false
         Position?                    named
@@ -9153,7 +10795,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Left [<SwitchParameter>]
-        Place browser window on the left side of the screen.
+        Place window on left side.
         
         Required?                    false
         Position?                    named
@@ -9163,7 +10805,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Right [<SwitchParameter>]
-        Place browser window on the right side of the screen.
+        Place window on right side.
         
         Required?                    false
         Position?                    named
@@ -9173,7 +10815,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Top [<SwitchParameter>]
-        Place browser window on the top side of the screen.
+        Place window on top.
         
         Required?                    false
         Position?                    named
@@ -9183,7 +10825,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Bottom [<SwitchParameter>]
-        Place browser window on the bottom side of the screen.
+        Place window on bottom.
         
         Required?                    false
         Position?                    named
@@ -9193,7 +10835,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Centered [<SwitchParameter>]
-        Place browser window in the center of the screen.
+        Center the window.
         
         Required?                    false
         Position?                    named
@@ -9203,7 +10845,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ApplicationMode [<SwitchParameter>]
-        Hide the browser controls.
+        Hide browser controls.
         
         Required?                    false
         Position?                    named
@@ -9213,7 +10855,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -NoBrowserExtensions [<SwitchParameter>]
-        Prevent loading of browser extensions.
+        Disable browser extensions.
         
         Required?                    false
         Position?                    named
@@ -9223,7 +10865,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -DisablePopupBlocker [<SwitchParameter>]
-        Disable the popup blocker.
+        Disable popup blocker.
         
         Required?                    false
         Position?                    named
@@ -9233,7 +10875,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -RestoreFocus [<SwitchParameter>]
-        Restore PowerShell window focus.
+        Restore PowerShell focus.
         
         Required?                    false
         Position?                    named
@@ -9243,7 +10885,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -NewWindow [<SwitchParameter>]
-        Don't re-use existing browser window, instead, create a new one.
+        Create new browser window.
         
         Required?                    false
         Position?                    named
@@ -9253,25 +10895,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -OnlyReturnHtml [<SwitchParameter>]
-        Only return the generated HTML instead of displaying it in a browser.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -InputObject <Object[]>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       true (ByValue)
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ShowOnlyPictures [<SwitchParameter>]
+        Only return HTML.
         
         Required?                    false
         Position?                    named
@@ -9281,7 +10905,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -9291,6 +10916,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -9299,7 +10926,19 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -9351,24 +10990,29 @@ NAME
     Get-AIImageCollection
     
 SYNOPSIS
-    Gets the configured directories and default language for image files used in
-    GenXdev.AI operations.
+    Gets the configured directories for image files used in GenXdev.AI operations.
     
     
 SYNTAX
-    Get-AIImageCollection [[-ImageDirectories] <String[]>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-AIImageCollection [[-ImageDirectories] <String[]>] [-PreferencesDatabasePath <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function retrieves the global image directories and default language used
-    by the GenXdev.AI module for various image processing and AI operations. It
-    returns the configuration from both global variables and the module's
-    preference storage, with fallback to system defaults.
+    This function retrieves the global image directories used by the GenXdev.AI
+    module for various image processing and AI operations. It returns the
+    configuration from both global variables and the module's preference storage,
+    with fallback to system defaults.
+    
+    The function follows a priority order: first checks global variables (unless
+    SkipSession is specified), then falls back to persistent preferences (unless
+    SessionOnly is specified), and finally uses system default directories.
     
 
 PARAMETERS
     -ImageDirectories <String[]>
-        Optional default value to return if no image directories are configured. If not specified, returns the system default directories (Downloads, OneDrive, Pictures).
+        Optional default value to return if no image directories are configured. If
+        not specified, returns the system default directories (Downloads, OneDrive,
+        Pictures).
         
         Required?                    false
         Position?                    1
@@ -9377,8 +11021,19 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -9388,7 +11043,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
-        When specified, clears the session image directories setting (Global variable) before retrieving the configuration.
+        Clear the session setting (Global variable) before retrieving.
         
         Required?                    false
         Position?                    named
@@ -9398,7 +11053,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
-        When specified, skips checking the session setting (Global variable) and retrieves only from persistent preferences.
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -9421,7 +11077,8 @@ OUTPUTS
     
     PS > Get-AIImageCollection
     
-    Gets the currently configured image directories from Global variables or preferences.
+    Gets the currently configured image directories from Global variables or
+    preferences.
     
     
     
@@ -9430,7 +11087,8 @@ OUTPUTS
     
     PS > Get-AIImageCollection -SkipSession
     
-    Gets the configured image directories only from persistent preferences, ignoring any session setting.
+    Gets the configured image directories only from persistent preferences,
+    ignoring any session setting.
     
     
     
@@ -9439,7 +11097,8 @@ OUTPUTS
     
     PS > Get-AIImageCollection -ClearSession
     
-    Clears the session image directories setting and then gets the directories from persistent preferences.
+    Clears the session image directories setting and then gets the directories
+    from persistent preferences.
     
     
     
@@ -9471,20 +11130,25 @@ NAME
     Get-AIKnownFacesRootpath
     
 SYNOPSIS
-    Gets the configured directory for face image files used in GenXdev.AI operations.
+    Gets the configured directory for face image files used in GenXdev.AI
+    operations.
     
     
 SYNTAX
-    Get-AIKnownFacesRootpath [[-FacesDirectory] <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-AIKnownFacesRootpath [[-FacesDirectory] <String>] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function retrieves the global face directory used by the GenXdev.AI module for various face recognition and AI operations. It checks Global variables first (unless SkipSession is specified), then falls back to persistent preferences, and finally uses system defaults.
+    This function retrieves the global face directory used by the GenXdev.AI
+    module for various face recognition and AI operations. It checks Global
+    variables first (unless SkipSession is specified), then falls back to
+    persistent preferences, and finally uses system defaults.
     
 
 PARAMETERS
     -FacesDirectory <String>
-        Optional faces directory override. If specified, this directory will be returned instead of retrieving from configuration.
+        Optional faces directory override. If specified, this directory will be
+        returned instead of retrieving from configuration.
         
         Required?                    false
         Position?                    1
@@ -9494,7 +11158,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc
         
         Required?                    false
         Position?                    named
@@ -9504,7 +11169,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
-        When specified, clears the session faces directory setting (Global variable) before retrieving the configuration.
+        Clear the session setting (Global variable) before retrieving
         
         Required?                    false
         Position?                    named
@@ -9513,8 +11178,19 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SkipSession [<SwitchParameter>]
-        When specified, skips checking the session setting (Global variable) and retrieves only from persistent preferences.
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc
         
         Required?                    false
         Position?                    named
@@ -9537,7 +11213,8 @@ OUTPUTS
     
     PS > Get-AIKnownFacesRootpath
     
-    Gets the currently configured faces directory from Global variables or preferences.
+    Gets the currently configured faces directory from Global variables or
+    preferences.
     
     
     
@@ -9546,7 +11223,8 @@ OUTPUTS
     
     PS > Get-AIKnownFacesRootpath -SkipSession
     
-    Gets the configured faces directory only from persistent preferences, ignoring any session setting.
+    Gets the configured faces directory only from persistent preferences, ignoring
+    any session setting.
     
     
     
@@ -9555,7 +11233,8 @@ OUTPUTS
     
     PS > Get-AIKnownFacesRootpath -ClearSession
     
-    Clears the session faces directory setting and then gets the directory from persistent preferences.
+    Clears the session faces directory setting and then gets the directory from
+    persistent preferences.
     
     
     
@@ -9582,16 +11261,20 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-AIMetaLanguage [[-Language] <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-AIMetaLanguage [[-Language] <String>] [-PreferencesDatabasePath <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function retrieves the default language used by the GenXdev.AI module for image metadata operations. It checks Global variables first (unless SkipSession is specified), then falls back to persistent preferences, and finally uses system defaults.
+    This function retrieves the default language used by the GenXdev.AI module
+    for image metadata operations. It checks Global variables first (unless
+    SkipSession is specified), then falls back to persistent preferences, and
+    finally uses system defaults.
     
 
 PARAMETERS
     -Language <String>
-        Optional language override. If specified, this language will be returned instead of retrieving from configuration.
+        Optional language override. If specified, this language will be returned
+        instead of retrieving from configuration.
         
         Required?                    false
         Position?                    1
@@ -9600,8 +11283,19 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -9611,7 +11305,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
-        When specified, clears the session language setting (Global variable) before retrieving the configuration.
+        Clear the session setting (Global variable) before retrieving the
+        configuration.
         
         Required?                    false
         Position?                    named
@@ -9621,7 +11316,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
-        When specified, skips checking the session setting (Global variable) and retrieves only from persistent preferences.
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -9653,7 +11349,8 @@ OUTPUTS
     
     PS > Get-AIMetaLanguage -SkipSession
     
-    Gets the configured language only from persistent preferences, ignoring any session setting.
+    Gets the configured language only from persistent preferences, ignoring any
+    session setting.
     
     
     
@@ -9662,7 +11359,8 @@ OUTPUTS
     
     PS > Get-AIMetaLanguage -ClearSession
     
-    Clears the session language setting and then gets the language from persistent preferences.
+    Clears the session language setting and then gets the language from
+    persistent preferences.
     
     
     
@@ -9689,7 +11387,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-Fallacy [-Text] <String[]> [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [[-Attachments] <String[]>] [-ApiKey <String>] [-ApiEndpoint <String>] [-Functions <Hashtable[]>] [-Gpu <Int32>] [-ImageDetail <String>] [-MaxToken <Int32>] [-NoConfirmationToolFunctionNames <String[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Temperature <Double>] [-TTLSeconds <Int32>] [-ContinueLast] [-Force] [-IncludeThoughts] [-NoSessionCaching] [-OpenInImdb] [-ShowWindow] [-Speak] [-SpeakThoughts] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-Fallacy [-Text] <String[]> [[-Instructions] <String>] [[-Attachments] <String[]>] [-Functions <Hashtable[]>] [-ImageDetail <String>] [-NoConfirmationToolFunctionNames <String[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-ContinueLast] [-Force] [-IncludeThoughts] [-NoSessionCaching] [-OpenInImdb] [-ShowWindow] [-Speak] [-SpeakThoughts] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -9723,55 +11421,12 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        The specific LM-Studio model to use for fallacy detection. Supports wildcard
-        patterns for model selection.
-        
-        Required?                    false
-        Position?                    3
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        Identifier used to retrieve a specific model from LM Studio when multiple
-        models are available.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Attachments <String[]>
         Array of file paths to attach to the analysis request for additional context.
         
         Required?                    false
-        Position?                    4
+        Position?                    3
         Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ApiKey <String>
-        API key for authentication when using external language model services.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ApiEndpoint <String>
-        Custom API endpoint URL for the language model service. Defaults to
-        http://localhost:1234/v1/chat/completions.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9787,17 +11442,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Gpu <Int32>
-        Controls GPU offloading for model processing. -1 lets LM Studio decide, -2 for
-        auto, 0-1 for fractional offloading, "off" disables GPU, "max" uses full GPU.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -ImageDetail <String>
         Detail level for image processing when attachments include images. Options are
         low, medium, or high.
@@ -9805,17 +11449,6 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                low
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxToken <Int32>
-        Maximum number of tokens allowed in the AI response. Use -1 for model default
-        settings.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9854,13 +11487,105 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -TTLSeconds <Int32>
-        Time-to-live in seconds for models loaded via API requests. Use -1 for no
-        expiration.
+    -LLMQueryType <String>
+        The type of LLM query to perform for the analysis.
+        
+        Required?                    false
+        Position?                    named
+        Default value                Knowledge
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
+        all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
+        layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
+        offload to the GPU. -2 = Auto.
         
         Required?                    false
         Position?                    named
         Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        The API endpoint URL for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key for authenticated AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9953,7 +11678,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -9963,6 +11688,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -9972,6 +11698,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
         
         Required?                    false
         Position?                    named
@@ -9994,7 +11721,8 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Get-Fallacy -Text "All politicians are corrupt because John was corrupt and he was a politician"
+    PS > Get-Fallacy -Text ("All politicians are corrupt because John was corrupt " +
+    "and he was a politician")
     
     Analyzes the provided text for logical fallacies and returns structured
     information about any fallacies detected.
@@ -10011,6 +11739,15 @@ OUTPUTS
     
     
     
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > dispicetext "Everyone knows this is true"
+    
+    Uses the alias to analyze text for logical fallacies.
+    
+    
+    
+    
     
 RELATED LINKS 
 
@@ -10019,141 +11756,155 @@ RELATED LINKS
 NAME
     Get-ImageDatabasePath
     
+SYNOPSIS
+    Returns the path to the image database, initializing or rebuilding it if needed.
+    
+    
 SYNTAX
-    Get-ImageDatabasePath [[-DatabaseFilePath] <string>] [-ImageDirectories <string[]>] [-PathLike <string[]>] [-Language {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bork, bork, bork! | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | Elmer Fudd | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Hacker | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Klingon | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Pirate | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [-FacesDirectory <string>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-ImageDatabasePath [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
     
     
+DESCRIPTION
+    This function determines the correct path for the image database file, checks if
+    it exists and is up to date, and initializes or rebuilds it if required. It
+    supports options for language, embedding images, forcing index rebuilds, and
+    filtering images by directory or path patterns. The function returns the path to
+    the database file, or $null if initialization fails.
+    
+
 PARAMETERS
-    -ClearSession
-        Clear alternative settings stored in session for AI preferences like Language, Image collections, etc
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -DatabaseFilePath <string>
+    -DatabaseFilePath <String>
         The path to the image database file. If not specified, a default path is used.
         
         Required?                    false
-        Position?                    0
+        Position?                    1
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -EmbedImages
-        Embed images as base64.
+    -ImageDirectories <String[]>
+        An array of directory paths to search for images.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -FacesDirectory <string>
-        The directory containing face images organized by person folders. If not specified, uses the configured faces directory preference.
+    -PathLike <String[]>
+        An array of SQL LIKE patterns to filter images by path (e.g. '%\\2024\\%').
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                @()
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -ForceIndexRebuild
-        Force rebuild of the image index database.
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -ImageDirectories <string[]>
-        Array of directory paths to search for images
-        
-        Required?                    false
-        Position?                    Named
-        Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      imagespath, directories, imgdirs, imagedirectory
-        Dynamic?                     false
-        Accept wildcard characters?  false
-        
-    -Language <string>
+    -Language <String>
         Language for descriptions and keywords.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -NeverRebuild
-        Switch to skip database initialization and rebuilding.
+    -FacesDirectory <String>
+        The directory containing face images organized by person folders. If not
+        specified, uses the configured faces directory preference.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -NoFallback
+    -EmbedImages [<SwitchParameter>]
+        Switch to embed images as base64 in the database.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ForceIndexRebuild [<SwitchParameter>]
+        Switch to force a rebuild of the image index database.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoFallback [<SwitchParameter>]
         Switch to disable fallback behavior.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -PathLike <string[]>
-        Array of directory path-like search strings to filter images by path (SQL LIKE patterns, e.g. '%\\2024\\%')
+    -NeverRebuild [<SwitchParameter>]
+        Switch to skip database initialization and rebuilding.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -SessionOnly
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      None
-        Dynamic?                     false
+        Aliases                      
         Accept wildcard characters?  false
         
-    -SkipSession
-        Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc
+    -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
-        Position?                    Named
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
-        Parameter set name           (All)
-        Aliases                      FromPreferences
-        Dynamic?                     false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
         Accept wildcard characters?  false
         
     <CommonParameters>
@@ -10162,21 +11913,37 @@ PARAMETERS
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
         about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
     
-    
 INPUTS
-    None
-    
     
 OUTPUTS
     System.String
     
     
-ALIASES
-    None
+    -------------------------- EXAMPLE 1 --------------------------
     
-
-REMARKS
-    None 
+    PS > Get-ImageDatabasePath -DatabaseFilePath "C:\\Temp\\mydb.db" `
+        -ImageDirectories "C:\\Images" `
+        -PathLike '%\\2024\\%' `
+        -Language 'English' `
+        -EmbedImages `
+        -ForceIndexRebuild
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Get-ImageDatabasePath
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
 
 <br/><hr/><hr/><br/>
  
@@ -10188,7 +11955,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-ImageDatabaseStats [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-ShowDetails] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-ImageDatabaseStats [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-PreferencesDatabasePath <String>] [-EmbedImages] [-ForceIndexRebuild] [-ShowDetails] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -10199,8 +11966,7 @@ DESCRIPTION
 
 PARAMETERS
     -DatabaseFilePath <String>
-        Optional path to the SQLite database file. If not specified, uses the default
-        location under Storage\allimages.meta.db.
+        The path to the image database file. If not specified, a default path is used.
         
         Required?                    false
         Position?                    1
@@ -10210,6 +11976,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ImageDirectories <String[]>
+        Array of directory paths to search for images.
         
         Required?                    false
         Position?                    named
@@ -10219,6 +11986,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -PathLike <String[]>
+        Array of directory path-like search strings to filter images by path (SQL LIKE
+        patterns, e.g. '%\\2024\\%').
         
         Required?                    false
         Position?                    named
@@ -10228,6 +11997,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Language <String>
+        Language for descriptions and keywords.
         
         Required?                    false
         Position?                    named
@@ -10237,6 +12007,18 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -FacesDirectory <String>
+        The directory containing face images organized by person folders. If not
+        specified, uses the configured faces directory preference.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
         
         Required?                    false
         Position?                    named
@@ -10246,6 +12028,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -EmbedImages [<SwitchParameter>]
+        Embed images as base64.
         
         Required?                    false
         Position?                    named
@@ -10255,6 +12038,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ForceIndexRebuild [<SwitchParameter>]
+        Force rebuild of the image index database.
         
         Required?                    false
         Position?                    named
@@ -10264,7 +12048,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ShowDetails [<SwitchParameter>]
-        Shows detailed statistics including top keywords, people, objects, and scenes.
+        Show detailed statistics including top keywords, people, objects, and scenes.
         
         Required?                    false
         Position?                    named
@@ -10274,7 +12058,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -10284,6 +12069,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -10293,6 +12080,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -10313,7 +12102,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Get-ImageDatabaseStat
+    PS > Get-ImageDatabaseStats
     
     
     
@@ -10322,7 +12111,16 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > Get-ImageDatabaseStat -ShowDetails
+    PS > Get-ImageDatabaseStats -ShowDetails
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > gids -ShowDetails
     
     
     
@@ -10338,15 +12136,19 @@ NAME
     Get-MediaFileAudioTranscription
     
 SYNOPSIS
-    Transcribes an audio or video file to text..
+    Transcribes an audio or video file to text.
     
     
 SYNTAX
-    Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SRT] [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>] [-SplitOnWord] [-MaxTokensPerSegment <Int32>] [-IgnoreSilence] [-MaxDurationOfSilence <Object>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] [-TemperatureInc <Single>] [-Prompt <String>] [-SuppressRegex <String>] [-WithProgress] [-AudioContextSize <Int32>] [-DontSuppressBlank] [-MaxDuration <Object>] [-Offset <Object>] [-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <Object>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>] [-SplitOnWord] [-MaxTokensPerSegment <Int32>] [-IgnoreSilence] [-MaxDurationOfSilence <Object>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] [-TemperatureInc <Single>] [-Prompt <String>] [-SuppressRegex <String>] [-WithProgress] [-AudioContextSize <Int32>] [-DontSuppressBlank] [-MaxDuration <Object>] [-Offset <Object>] [-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <Object>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-SRT] [-PassThru] [-UseDesktopAudioCapture] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
-    Transcribes an audio or video file to text using the Whisper AI model
+    Transcribes an audio or video file to text using the Whisper AI model. The
+    function can handle various audio and video formats, convert them to the
+    appropriate format for transcription, and optionally translate the output
+    to a different language. Supports SRT subtitle format output and various
+    audio processing parameters for fine-tuning the transcription quality.
     
 
 PARAMETERS
@@ -10376,46 +12178,6 @@ PARAMETERS
         Required?                    false
         Position?                    3
         Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TranslateUsingLMStudioModel <String>
-        The LM Studio model to use for translation.
-        
-        Required?                    false
-        Position?                    named
-        Default value                qwen
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -SRT [<SwitchParameter>]
-        Output in SRT format.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -PassThru [<SwitchParameter>]
-        Returns objects instead of strings.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -UseDesktopAudioCapture [<SwitchParameter>]
-        Whether to use desktop audio capture instead of microphone input
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -10461,6 +12223,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -IgnoreSilence [<SwitchParameter>]
+        Whether to ignore silence (will mess up timestamps).
         
         Required?                    false
         Position?                    named
@@ -10500,7 +12263,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Temperature <Single>
-        Temperature for speech generation.
+        Temperature for speech recognition.
         
         Required?                    false
         Position?                    named
@@ -10520,6 +12283,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Prompt <String>
+        Prompt to use for the model.
         
         Required?                    false
         Position?                    named
@@ -10698,8 +12462,39 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SRT [<SwitchParameter>]
+        Output in SRT format.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
+        Returns objects instead of strings.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        Whether to use desktop audio capture instead of microphone input
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -10709,6 +12504,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -10717,7 +12514,19 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -10738,7 +12547,18 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Get-MediaFileAudioTranscription -FilePath "C:\path\to\audio.wav" -LanguageIn "English" -LanguageOut "French" -SRT
+    PS > Get-MediaFileAudioTranscription -FilePath "C:\path\to\audio.wav" `
+        -LanguageIn "English" -LanguageOut "French" -SRT
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > transcribefile "C:\video.mp4" "English"
+    ##############################################################################
     
     
     
@@ -10753,248 +12573,284 @@ RELATED LINKS
 NAME
     Get-ScriptExecutionErrorFixPrompt
     
-SYNOPSIS
-    Captures error messages from various streams and uses LLM to suggest fixes.
-    
-    
 SYNTAX
-    Get-ScriptExecutionErrorFixPrompt [-Script] <ScriptBlock> [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-ScriptExecutionErrorFixPrompt [-Script] <scriptblock> [-Temperature <double>] [-LLMQueryType {SimpleIntelligence | Knowledge | Pictures | TextTranslation | Coding | ToolUse}] [-Model <string>] [-HuggingFaceIdentifier <string>] [-MaxToken <int>] [-Cpu <int>] [-Gpu <int>] [-ApiEndpoint <string>] [-ApiKey <string>] [-TimeoutSeconds <int>] [-PreferencesDatabasePath <string>] [-Functions <hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <string[]>] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
-DESCRIPTION
-    This cmdlet captures error messages from various PowerShell streams (pipeline
-    input, verbose, information, error, and warning) and formulates a structured
-    prompt for an LLM to analyze and suggest fixes. It then invokes the LLM query
-    and returns the suggested solution.
-    
-
 PARAMETERS
-    -Script <ScriptBlock>
+    -ApiEndpoint <string>
+        The API endpoint URL for AI operations
         
-        Required?                    true
-        Position?                    1
-        Default value                
-        Accept pipeline input?       true (ByValue)
-        Aliases                      
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -Model <String>
-        The name or identifier of the LM Studio model to use.
-        Default: qwen2.5-14b-instruct
+    -ApiKey <string>
+        The API key for authenticated AI operations
         
         Required?                    false
-        Position?                    2
-        Default value                qwen2.5-14b-instruct
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        Alternative identifier for getting a specific model from LM Studio.
-        Default: qwen2.5-14b-instruct
-        
-        Required?                    false
-        Position?                    3
-        Default value                qwen2.5-14b-instruct
-        Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -Temperature <Double>
-        Controls response randomness (0.0-1.0). Lower values are more deterministic.
-        Default: 0.0
+    -ClearSession
+        Clear alternative settings stored in session for AI preferences
         
         Required?                    false
-        Position?                    named
-        Default value                0.2
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -MaxToken <Int32>
-        Maximum tokens allowed in the response. Use -1 for model default.
-        Default: -1
+    -ContinueLast
+        Continue from last conversation
         
         Required?                    false
-        Position?                    named
-        Default value                -1
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -ShowWindow [<SwitchParameter>]
-        Show the LM Studio window during processing.
+    -Cpu <int>
+        The number of CPU cores to dedicate to AI operations
         
         Required?                    false
-        Position?                    named
-        Default value                False
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -TTLSeconds <Int32>
-        Time-to-live in seconds for loaded models.
-        Default: -1
+    -DontAddThoughtsToHistory
+        Include model's thoughts in output
         
         Required?                    false
-        Position?                    named
-        Default value                -1
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Gpu <Int32>
-        GPU offloading control:
-        -2 = Auto
-        -1 = LM Studio decides
-        0-1 = Fraction of layers to offload
-        "off" = Disabled
-        "max" = All layers
-        Default: -1
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Force [<SwitchParameter>]
-        Force stop LM Studio before initialization.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -DontAddThoughtsToHistory [<SwitchParameter>]
-        Exclude model's thoughts from output history.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ContinueLast [<SwitchParameter>]
-        Continue from the last conversation context.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Functions <Hashtable[]>
-        Array of function definitions to expose to LLM.
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
     -ExposedCmdLets <ExposedCmdletDefinition[]>
-        Array of PowerShell command definitions to expose as tools.
+        Array of PowerShell command definitions to use as tools
         
         Required?                    false
-        Position?                    named
-        Default value                
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -NoConfirmationToolFunctionNames <String[]>
-        Array of command names that don't require confirmation.
+    -Force
+        Force stop LM Studio before initialization
         
         Required?                    false
-        Position?                    named
-        Default value                @()
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -Speak [<SwitchParameter>]
-        Enable text-to-speech for AI responses.
+    -Functions <hashtable[]>
+        Array of function definitions
         
         Required?                    false
-        Position?                    named
-        Default value                False
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -SpeakThoughts [<SwitchParameter>]
-        Enable text-to-speech for AI thought process.
+    -Gpu <int>
+        How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max', all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto
         
         Required?                    false
-        Position?                    named
-        Default value                False
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -NoSessionCaching [<SwitchParameter>]
-        Don't store session in session cache.
+    -HuggingFaceIdentifier <string>
+        The LM Studio specific model identifier
         
         Required?                    false
-        Position?                    named
-        Default value                False
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      ModelLMSGetIdentifier
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -ApiEndpoint <String>
-        API endpoint URL. Defaults to http://localhost:1234/v1/chat/completions
+    -LLMQueryType <string>
+        The type of LLM query
         
         Required?                    false
-        Position?                    named
-        Default value                
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -ApiKey <String>
-        The API key to use for requests.
+    -MaxToken <int>
+        The maximum number of tokens to use in AI operations
         
         Required?                    false
-        Position?                    named
-        Default value                
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+    -Model <string>
+        The model identifier or pattern to use for AI operations
         
         Required?                    false
-        Position?                    named
-        Default value                False
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -ClearSession [<SwitchParameter>]
+    -NoConfirmationToolFunctionNames <string[]>
+        Array of command names that don't require confirmation
         
         Required?                    false
-        Position?                    named
-        Default value                False
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      NoConfirmationFor
+        Dynamic?                     false
         Accept wildcard characters?  false
         
-    -SkipSession [<SwitchParameter>]
+    -NoSessionCaching
+        Don't store session in session cache
         
         Required?                    false
-        Position?                    named
-        Default value                False
+        Position?                    Named
         Accept pipeline input?       false
-        Aliases                      
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <string>
+        Database path for preference data files
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Script <scriptblock>
+        The script to execute and analyze for errors
+        
+        Required?                    true
+        Position?                    0
+        Accept pipeline input?       true (ByValue)
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SessionOnly
+        Use alternative settings stored in session for AI preferences
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -ShowWindow
+        Show the LM Studio window
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SkipSession
+        Store settings only in persistent preferences without affecting session
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      FromPreferences
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Speak
+        Enable text-to-speech for AI responses
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SpeakThoughts
+        Enable text-to-speech for AI thought responses
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Temperature <double>
+        Temperature for response randomness (0.0-1.0)
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <int>
+        The timeout in seconds for AI operations
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
         Accept wildcard characters?  false
         
     <CommonParameters>
@@ -11003,26 +12859,21 @@ PARAMETERS
         OutBuffer, PipelineVariable, and OutVariable. For more information, see
         about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
     
+    
 INPUTS
+    System.Management.Automation.ScriptBlock
+    
     
 OUTPUTS
     System.Object[]
     
     
-    -------------------------- EXAMPLE 1 --------------------------
+ALIASES
+    getfixprompt
     
-    PS > $errorInfo = Get-ScriptExecutionErrorFixPrompt -Model *70b* {
-    
-    My-ScriptThatFails
-    }
-    
-    Write-Host $errorInfo
-    
-    
-    
-    
-    
-RELATED LINKS 
+
+REMARKS
+    None 
 
 <br/><hr/><hr/><br/>
  
@@ -11034,7 +12885,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-SimularMovieTitles [-Movies] <String[]> [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-OpenInImdb] [-ShowWindow] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>]
+    Get-SimularMovieTitles [-Movies] <String[]> [[-LLMQueryType] <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-Temperature <Double>] [-OpenInImdb] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -11054,22 +12905,115 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        The LM-Studio model to use for analysis.
+    -LLMQueryType <String>
+        The type of LLM query.
         
         Required?                    false
         Position?                    2
-        Default value                
+        Default value                Knowledge
         Accept pipeline input?       false
         Aliases                      
-        Accept wildcard characters?  true
+        Accept wildcard characters?  false
         
-    -ModelLMSGetIdentifier <String>
-        Identifier used for getting specific model from LM Studio.
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
         
         Required?                    false
         Position?                    named
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
+        all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
+        layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
+        offload to the GPU. -2 = Auto.
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        The API endpoint URL for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key for authenticated AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Temperature <Double>
+        Temperature for response randomness (0.0-1.0).
+        
+        Required?                    false
+        Position?                    named
+        Default value                0.2
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -11094,46 +13038,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Temperature <Double>
-        Temperature for response randomness (0.0-1.0).
-        
-        Required?                    false
-        Position?                    named
-        Default value                0.2
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxToken <Int32>
-        Maximum tokens in response (-1 for default).
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        Set a TTL (in seconds) for models loaded via API requests.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Gpu <Int32>
-        GPU offload configuration (-2=Auto, -1=LMStudio decides, 0-1=fraction, off=CPU).
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Force [<SwitchParameter>]
         Force stop LM Studio before initialization.
         
@@ -11144,22 +13048,32 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ApiEndpoint <String>
-        Api endpoint url, defaults to http://localhost:1234/v1/chat/completions.
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
-        Default value                
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -ApiKey <String>
-        The API key to use for the request.
+    -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
-        Default value                
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -11205,14 +13119,15 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-AIPowershellCommand [-Query] <String> [[-Instructions] <String>] [[-Model] <String>] [-ModelLMSGetIdentifier <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-Clipboard] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-ApiEndpoint <String>] [-ApiKey <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Invoke-AIPowershellCommand [-Query] <String> [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-Clipboard] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
-    Uses LM-Studio to generate PowerShell commands based on natural language queries.
-    The function can either send commands directly to the PowerShell window or copy
-    them to the clipboard. It leverages AI models to interpret natural language and
-    convert it into executable PowerShell commands.
+    Uses LM-Studio or other AI models to generate PowerShell commands based on
+    natural language queries. The function can either send commands directly to
+    the PowerShell window or copy them to the clipboard. It leverages AI models
+    to interpret natural language and convert it into executable PowerShell
+    commands with comprehensive parameter support for various AI backends.
     
 
 PARAMETERS
@@ -11228,6 +13143,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Instructions <String>
+        Additional instructions for the AI model to customize command generation
+        behavior and provide context-specific guidance.
         
         Required?                    false
         Position?                    2
@@ -11236,29 +13153,9 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        The LM-Studio model to use for command generation. Can be a name or partial path.
-        Supports -like pattern matching for model selection.
-        
-        Required?                    false
-        Position?                    3
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Temperature <Double>
-        Controls the randomness in the AI's response generation. Values range from 0.0
-        (more focused/deterministic) to 1.0 (more creative/random).
+        Controls the randomness in the AI's response generation. Values range from
+        0.0 (more focused/deterministic) to 1.0 (more creative/random).
         
         Required?                    false
         Position?                    named
@@ -11267,44 +13164,65 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -LLMQueryType <String>
+        The type of LLM query to perform. Determines the AI model's behavior and
+        response style for different use cases.
+        
+        Required?                    false
+        Position?                    named
+        Default value                Coding
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations. Can be a name or
+        partial path with support for pattern matching.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier for Hugging Face models.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations to control response
+        length and processing time.
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -Clipboard [<SwitchParameter>]
-        When specified, copies the generated command to clipboard.
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations for performance
+        optimization.
         
         Required?                    false
         Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ShowWindow [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -Gpu <Int32>
+        How much to offload to the GPU. If 'off', GPU offloading is disabled. If
+        'max', all layers are offloaded to GPU. If a number between 0 and 1, that
+        fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide
+        how much to offload to the GPU. -2 = Auto
         
         Required?                    false
         Position?                    named
@@ -11313,16 +13231,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Force [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -ApiEndpoint <String>
+        The API endpoint URL for AI operations when using external AI services.
         
         Required?                    false
         Position?                    named
@@ -11332,6 +13242,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ApiKey <String>
+        The API key for authenticated AI operations with external services.
         
         Required?                    false
         Position?                    named
@@ -11340,8 +13251,61 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations to prevent hanging requests.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files to store AI configuration settings.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Clipboard [<SwitchParameter>]
+        When specified, copies the generated command to clipboard instead of
+        executing it directly.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
+        Show the LM Studio window during AI command generation for monitoring
+        purposes.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Force stop LM Studio before initialization to ensure clean startup state.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences instead of
+        persistent configuration.
         
         Required?                    false
         Position?                    named
@@ -11351,6 +13315,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences and reset
+        to defaults.
         
         Required?                    false
         Position?                    named
@@ -11360,6 +13326,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session
+        state.
         
         Required?                    false
         Position?                    named
@@ -11402,7 +13370,7 @@ OUTPUTS
     
     PS > Invoke-AIPowershellCommand -Query "list all running processes" -Model "qwen"
     
-    
+    Generates a PowerShell command to list running processes using the qwen model.
     
     
     
@@ -11411,7 +13379,16 @@ OUTPUTS
     
     PS > hint "list files modified today"
     
+    Uses the alias to generate a command for finding files modified today.
     
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Invoke-AIPowershellCommand -Query "stop service" -Clipboard
+    
+    Generates a command to stop a service and copies it to clipboard.
     
     
     
@@ -11596,6 +13573,7 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > facerecognition "C:\Photos" -RetryFailed -OnlyNew
+    ##############################################################################
     
     
     
@@ -11615,7 +13593,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageKeywordUpdate [[-ImageDirectories] <String>] [[-Recurse]] [[-OnlyNew]] [[-RetryFailed]] [[-Language] <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Invoke-ImageKeywordUpdate [[-ImageDirectories] <String>] [-Language <String>] [-PreferencesDatabasePath <String>] [-Recurse] [-OnlyNew] [-RetryFailed] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -11637,12 +13615,33 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -Language <String>
+        Specifies the language for generated descriptions and keywords. Defaults to
+        English.
+        
+        Required?                    false
+        Position?                    named
+        Default value                English
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -Recurse [<SwitchParameter>]
         When specified, searches for images in the specified directory and all
         subdirectories.
         
         Required?                    false
-        Position?                    2
+        Position?                    named
         Default value                False
         Accept pipeline input?       false
         Aliases                      
@@ -11653,7 +13652,7 @@ PARAMETERS
         files.
         
         Required?                    false
-        Position?                    3
+        Position?                    named
         Default value                False
         Accept pipeline input?       false
         Aliases                      
@@ -11664,24 +13663,15 @@ PARAMETERS
         failed.
         
         Required?                    false
-        Position?                    4
+        Position?                    named
         Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -Language <String>
-        Specifies the language for generated descriptions and keywords. Defaults to English.
-        
-        Required?                    false
-        Position?                    5
-        Default value                English
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -11691,6 +13681,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -11700,6 +13692,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -11952,6 +13946,7 @@ OUTPUTS
     
     This example uses GPU acceleration with higher confidence threshold of 0.7
     for more accurate but fewer object detections.
+            ##############################################################################
     
     
     
@@ -12062,7 +14057,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    8
-        Default value                0
+        Default value                0.6
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -12160,6 +14155,7 @@ NOTES
         classification results with confidence scores and scene labels from DeepStack's
         365 scene categories including places like: abbey, airplane_cabin, beach,
         forest, kitchen, office, etc.
+        ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -12210,7 +14206,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Instructions] <String>] [-Model <String>] [-ModelLMSGetIdentifier <String>] [-ResponseFormat <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-ImageDetail <String>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-ShowWindow] [-Force] [-IncludeThoughts] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Instructions] <String>] [-ResponseFormat <String>] [-Temperature <Double>] [-ImageDetail <String>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-ShowWindow] [-Force] [-IncludeThoughts] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -12253,28 +14249,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        The LM-Studio model to use for the analysis.
-        Defaults to "MiniCPM".
-        
-        Required?                    false
-        Position?                    named
-        Default value                MiniCPM
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        Identifier used for getting a specific model from LM Studio.
-        Defaults to "lmstudio-community/MiniCPM-V-2_6-GGUF/MiniCPM-V-2_6-Q4_K_M.gguf".
-        
-        Required?                    false
-        Position?                    named
-        Default value                lmstudio-community/MiniCPM-V-2_6-GGUF/MiniCPM-V-2_6-Q4_K_M.gguf
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -ResponseFormat <String>
         A JSON schema that specifies the requested output format for the response.
         
@@ -12297,23 +14271,63 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -MaxToken <Int32>
-        Limits the length of the generated response by specifying the maximum number of
-        tokens. Use -1 for an unlimited response length.
+    -ImageDetail <String>
+        Sets the detail level for image analysis.
+        Valid values are "low", "medium", or "high".
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                high
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -TTLSeconds <Int32>
-        Sets a Time-To-Live (in seconds) for models loaded via API requests.
+    -LLMQueryType <String>
+        The type of LLM query to perform. Defaults to "Pictures" for image analysis.
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                Pictures
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -12333,19 +14347,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ImageDetail <String>
-        Sets the detail level for image analysis.
-        Valid values are "low", "medium", or "high".
-        
-        Required?                    false
-        Position?                    named
-        Default value                high
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -ApiEndpoint <String>
-        The API endpoint URL. Defaults to "http://localhost:1234/v1/chat/completions".
+        The API endpoint URL for AI operations.
         
         Required?                    false
         Position?                    named
@@ -12355,7 +14358,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ApiKey <String>
-        The API key to use for the request.
+        The API key for authenticated AI operations.
         
         Required?                    false
         Position?                    named
@@ -12365,11 +14368,21 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -TimeoutSeconds <Int32>
-        The timeout in seconds for the API request. Defaults to 24 hours.
+        The timeout in seconds for AI operations.
         
         Required?                    false
         Position?                    named
-        Default value                86400
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -12405,7 +14418,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -12415,6 +14428,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -12424,6 +14438,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
         
         Required?                    false
         Position?                    named
@@ -12457,9 +14472,9 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > Invoke-QueryImageContent "Describe this image" "C:\Images\photo.jpg"
+    PS > Query-Image "Describe this image" "C:\Images\photo.jpg"
     
-    Simple image analysis using positional parameters.
+    Simple image analysis using alias and positional parameters.
     
     
     
@@ -12477,14 +14492,14 @@ SYNOPSIS
     
     
 SYNTAX
-    Remove-ImageDirectories [-ImageDirectories] <String[]> [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Remove-ImageDirectories [-ImageDirectories] <String[]> [[-PreferencesDatabasePath] <String>] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function removes one or more directory paths from the existing image directories
-    configuration used by the GenXdev.AI module. It updates both the global variable
-    and the module's preference storage to persist the configuration across sessions.
-    Supports wildcard patterns for flexible directory matching.
+    This function removes one or more directory paths from the existing image
+    directories configuration used by the GenXdev.AI module. It updates both the
+    global variable and the module's preference storage to persist the configuration
+    across sessions. Supports wildcard patterns for flexible directory matching.
     
 
 PARAMETERS
@@ -12499,6 +14514,16 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    2
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -Force [<SwitchParameter>]
         Forces removal without confirmation prompts.
         
@@ -12510,7 +14535,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -12520,6 +14546,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -12529,6 +14557,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -12587,7 +14617,8 @@ OUTPUTS
     
     PS > removeimgdir @("C:\OldPhotos") -Force
     
-    Uses alias to forcibly remove a directory from the configuration without confirmation.
+    Uses alias to forcibly remove a directory from the configuration without
+    confirmation.
     
     
     
@@ -12605,25 +14636,49 @@ SYNOPSIS
     
     
 SYNTAX
-    Remove-ImageMetaData [[-ImageDirectories] <String[]>] [[-Recurse]] [-OnlyKeywords] [-OnlyPeople] [-OnlyObjects] [-OnlyScenes] [-Language <String>] [-AllLanguages] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Remove-ImageMetaData [[-ImageDirectories] <String[]>] [[-Language] <String>] [[-PreferencesDatabasePath] <String>] [-Recurse] [-OnlyKeywords] [-OnlyPeople] [-OnlyObjects] [-OnlyScenes] [-AllLanguages] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
     The Remove-ImageMetaData function removes companion JSON metadata files that
     are associated with images. It can selectively remove only keywords
-    (description.json), people data (people.json), or objects data (objects.json),
-    or remove all metadata files if no specific switch is provided. Language-specific
-    metadata files can be removed by specifying the Language parameter, and all
-    language variants can be removed using the AllLanguages switch.
+    (description.json), people data (people.json), objects data (objects.json),
+    or scenes data (scenes.json), or remove all metadata files if no specific
+    switch is provided. Language-specific metadata files can be removed by
+    specifying the Language parameter, and all language variants can be removed
+    using the AllLanguages switch.
     
 
 PARAMETERS
     -ImageDirectories <String[]>
-        Array of directory paths to process for image metadata removal. If not specified,
-        uses default system directories including Downloads, OneDrive, and Pictures folders.
+        Array of directory paths to process for image metadata removal. If not
+        specified, uses default system directories including Downloads, OneDrive,
+        and Pictures folders.
         
         Required?                    false
         Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        Specifies the language for removing language-specific metadata files. When
+        specified, removes both the default English description.json and the
+        language-specific file. Defaults to English.
+        
+        Required?                    false
+        Position?                    2
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    3
         Default value                
         Accept pipeline input?       false
         Aliases                      
@@ -12634,14 +14689,15 @@ PARAMETERS
         subdirectories.
         
         Required?                    false
-        Position?                    2
+        Position?                    named
         Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -OnlyKeywords [<SwitchParameter>]
-        When specified, only removes the description.json files (keywords/descriptions).
+        When specified, only removes the description.json files
+        (keywords/descriptions).
         
         Required?                    false
         Position?                    named
@@ -12671,6 +14727,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -OnlyScenes [<SwitchParameter>]
+        When specified, only removes the scenes.json files (scene classification
+        data).
         
         Required?                    false
         Position?                    named
@@ -12679,21 +14737,9 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Language <String>
-        Specifies the language for removing language-specific metadata files. When
-        specified, removes both the default English description.json and the
-        language-specific file. Defaults to English.
-        
-        Required?                    false
-        Position?                    named
-        Default value                English
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -AllLanguages [<SwitchParameter>]
-        When specified, removes metadata files for all supported languages by iterating
-        through all languages from Get-WebLanguageDictionary.
+        When specified, removes metadata files for all supported languages by
+        iterating through all languages from Get-WebLanguageDictionary.
         
         Required?                    false
         Position?                    named
@@ -12703,7 +14749,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -12713,6 +14760,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -12722,6 +14771,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -12761,8 +14812,8 @@ OUTPUTS
 NOTES
     
     
-        If none of the -OnlyKeywords, -OnlyPeople, -OnlyObjects, or -OnlyScenes switches are
-        specified, all four types of metadata files will be removed.
+        If none of the -OnlyKeywords, -OnlyPeople, -OnlyObjects, or -OnlyScenes
+        switches are specified, all four types of metadata files will be removed.
         When Language is specified, both the default English and language-specific
         files are removed.
         When AllLanguages is specified, metadata files for all supported languages
@@ -12772,7 +14823,8 @@ NOTES
     
     PS > Remove-ImageMetaData -ImageDirectories @("C:\Photos", "D:\MyImages") -Recurse
     
-    Removes all metadata files for images in multiple directories and all subdirectories.
+    Removes all metadata files for images in multiple directories and all
+    subdirectories.
     
     
     
@@ -12781,7 +14833,8 @@ NOTES
     
     PS > Remove-ImageMetaData -Recurse -OnlyKeywords
     
-    Removes only description.json files from default system directories and subdirectories.
+    Removes only description.json files from default system directories and
+    subdirectories.
     
     
     
@@ -12799,7 +14852,8 @@ NOTES
     
     PS > Remove-ImageMetaData -Language "Spanish" -OnlyKeywords -Recurse
     
-    Removes both English and Spanish description files recursively from default directories.
+    Removes both English and Spanish description files recursively from default
+    directories.
     
     
     
@@ -12826,16 +14880,20 @@ SYNOPSIS
     
     
 SYNTAX
-    Save-FoundImageFaces [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-DatabaseFilePath <String>] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-Language <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ForceIndexRebuild] [-PathLike <String[]>] [-InputObject <Object[]>] [-OutputDirectory <String>] [-SaveUnknownPersons] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Save-FoundImageFaces [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-DatabaseFilePath <String>] [-Language <String>] [-PathLike <String[]>] [-InputObject <Object[]>] [-OutputDirectory <String>] [-PreferencesDatabasePath <String>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ForceIndexRebuild] [-SaveUnknownPersons] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function takes image search results and extracts/saves individual face regions as separate image files.
-    It can search for faces using various criteria and save them to a specified output directory.
+    This function takes image search results and extracts/saves individual face
+    regions as separate image files. It can search for faces using various criteria
+    and save them to a specified output directory. The function supports searching
+    by description, keywords, people, objects, scenes, picture type, style type,
+    and overall mood. It can also filter by nudity and explicit content.
     
 
 PARAMETERS
     -Any <String[]>
+        Will match any of all the possible meta data types.
         
         Required?                    false
         Position?                    1
@@ -12845,6 +14903,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -DescriptionSearch <String[]>
+        The description text to look for, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -12854,6 +14913,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Keywords <String[]>
+        The keywords to look for, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -12863,6 +14923,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -People <String[]>
+        People to look for, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -12872,6 +14933,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Objects <String[]>
+        Objects to look for, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -12881,6 +14943,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Scenes <String[]>
+        Scenes to look for, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -12890,6 +14953,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -PictureType <String[]>
+        Picture types to filter by, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -12899,6 +14963,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -StyleType <String[]>
+        Style types to filter by, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -12908,6 +14973,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -OverallMood <String[]>
+        Overall moods to filter by, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -12916,79 +14982,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -HasNudity [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoNudity [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HasExplicitContent [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoExplicitContent [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -DatabaseFilePath <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ShowInBrowser [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -PassThru [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Title <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Description <String>
+        Path to the SQLite database file.
         
         Required?                    false
         Position?                    named
@@ -12998,267 +14993,18 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Language <String>
+        Language for descriptions and keywords.
         
         Required?                    false
         Position?                    named
         Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -AcceptLang <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Monitor <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Width <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Height <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -X <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Y <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Interactive [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Private [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Force [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Edge [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Chrome [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Chromium [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Firefox [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -All [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -FullScreen [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Left [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Right [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Top [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Bottom [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Centered [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ApplicationMode [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoBrowserExtensions [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -DisablePopupBlocker [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -RestoreFocus [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NewWindow [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -OnlyReturnHtml [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -EmbedImages [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ForceIndexRebuild [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -PathLike <String[]>
+        Array of directory path-like search strings to filter images by path (SQL LIKE
+        patterns, e.g. '%\\2024\\%').
         
         Required?                    false
         Position?                    named
@@ -13268,6 +15014,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -InputObject <Object[]>
+        Accepts search results from a previous -PassThru call to regenerate the view.
         
         Required?                    false
         Position?                    named
@@ -13277,6 +15024,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -OutputDirectory <String>
+        Directory to save cropped face images.
         
         Required?                    false
         Position?                    named
@@ -13285,7 +15033,68 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HasNudity [<SwitchParameter>]
+        Filter images that contain nudity.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoNudity [<SwitchParameter>]
+        Filter images that do NOT contain nudity.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HasExplicitContent [<SwitchParameter>]
+        Filter images that contain explicit content.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoExplicitContent [<SwitchParameter>]
+        Filter images that do NOT contain explicit content.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ForceIndexRebuild [<SwitchParameter>]
+        Force rebuild of the image index database.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SaveUnknownPersons [<SwitchParameter>]
+        Also save unknown persons detected as objects.
         
         Required?                    false
         Position?                    named
@@ -13295,7 +15104,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -13305,6 +15115,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -13314,6 +15126,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -13336,6 +15150,24 @@ OUTPUTS
     System.Collections.Generic.List`1[[System.Object, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]
     
     System.String
+    
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Save-FoundImageFaces -People "John*" -OutputDirectory "C:\Faces"
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > saveimagefaces -Any "vacation" -SaveUnknownPersons
+    
+    
+    
+    
     
     
     
@@ -13347,20 +15179,25 @@ NAME
     Save-FoundImageObjects
     
 SYNOPSIS
-    Saves cropped Object images from indexed image search results.
+    Saves cropped object images from indexed image search results to files.
     
     
 SYNTAX
-    Save-FoundImageObjects [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-DatabaseFilePath <String>] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-Language <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ForceIndexRebuild] [-PathLike <String[]>] [-InputObject <Object[]>] [-OutputDirectory <String>] [-SaveUnknownPersons] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Save-FoundImageObjects [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-DatabaseFilePath <String>] [-Title <String>] [-Description <String>] [-Language <String>] [-PathLike <String[]>] [-InputObject <Object[]>] [-OutputDirectory <String>] [-PreferencesDatabasePath <String>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ForceIndexRebuild] [-SaveUnknownPersons] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function takes image search results and extracts/saves individual Object regions as separate image files.
-    It can search for Objects using various criteria and save them to a specified output directory.
+    This function takes image search results and extracts individual detected
+    object regions, saving them as separate image files. It can search for objects
+    using various criteria including keywords, people, scenes, and metadata filters.
+    The function processes images with AI-detected object boundaries and crops them
+    to individual PNG files in the specified output directory.
     
 
 PARAMETERS
     -Any <String[]>
+        Will match any of all the possible meta data types including descriptions,
+        keywords, people, objects, scenes, picture types, style types, and moods.
         
         Required?                    false
         Position?                    1
@@ -13370,6 +15207,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -DescriptionSearch <String[]>
+        The description text to look for, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -13379,6 +15217,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Keywords <String[]>
+        The keywords to look for, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -13388,6 +15227,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -People <String[]>
+        People to look for, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -13397,6 +15237,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Objects <String[]>
+        Objects to look for, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -13406,6 +15247,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Scenes <String[]>
+        Scenes to look for, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -13415,6 +15257,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -PictureType <String[]>
+        Picture types to filter by, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -13424,6 +15267,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -StyleType <String[]>
+        Style types to filter by, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -13433,6 +15277,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -OverallMood <String[]>
+        Overall moods to filter by, wildcards allowed.
         
         Required?                    false
         Position?                    named
@@ -13441,65 +15286,12 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -HasNudity [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoNudity [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HasExplicitContent [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoExplicitContent [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -DatabaseFilePath <String>
+        Path to the SQLite database file.
         
         Required?                    false
         Position?                    named
         Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ShowInBrowser [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -PassThru [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13523,267 +15315,18 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Language <String>
+        Language for descriptions and keywords.
         
         Required?                    false
         Position?                    named
         Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -AcceptLang <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Monitor <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Width <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Height <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -X <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Y <Int32>
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Interactive [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Private [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Force [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Edge [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Chrome [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Chromium [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Firefox [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -All [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -FullScreen [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Left [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Right [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Top [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Bottom [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Centered [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ApplicationMode [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoBrowserExtensions [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -DisablePopupBlocker [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -RestoreFocus [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NewWindow [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -OnlyReturnHtml [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -EmbedImages [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ForceIndexRebuild [<SwitchParameter>]
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -PathLike <String[]>
+        Array of directory path-like search strings to filter images by path
+        (SQL LIKE patterns, e.g. '%\2024\%').
         
         Required?                    false
         Position?                    named
@@ -13793,6 +15336,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -InputObject <Object[]>
+        Accepts search results from a previous -PassThru call to regenerate the view.
         
         Required?                    false
         Position?                    named
@@ -13802,6 +15346,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -OutputDirectory <String>
+        Directory to save cropped object images.
         
         Required?                    false
         Position?                    named
@@ -13810,7 +15355,68 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HasNudity [<SwitchParameter>]
+        Filter images that contain nudity.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoNudity [<SwitchParameter>]
+        Filter images that do NOT contain nudity.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HasExplicitContent [<SwitchParameter>]
+        Filter images that contain explicit content.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoExplicitContent [<SwitchParameter>]
+        Filter images that do NOT contain explicit content.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ForceIndexRebuild [<SwitchParameter>]
+        Force rebuild of the image index database.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SaveUnknownPersons [<SwitchParameter>]
+        Also save unknown persons detected as objects.
         
         Required?                    false
         Position?                    named
@@ -13820,7 +15426,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -13830,6 +15437,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -13839,6 +15448,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -13861,6 +15472,24 @@ OUTPUTS
     System.Collections.Generic.List`1[[System.Object, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]
     
     System.String
+    
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Save-FoundImageObjects -Objects "car", "tree" -OutputDirectory "C:\CroppedObjects"
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > saveimageObjects -Any "sunset" -SaveUnknownPersons
+    
+    
+    
+    
     
     
     
@@ -13876,7 +15505,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TranslateUsingLMStudioModel <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Save-Transcriptions [[-DirectoryPath] <String>] [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -13905,7 +15534,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    2
-        Default value                English
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13921,19 +15550,9 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -TranslateUsingLMStudioModel <String>
-        The LM Studio model name to use for translation. Defaults to "qwen". Only used
-        when LanguageOut is specified.
-        
-        Required?                    false
-        Position?                    named
-        Default value                qwen
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -13943,6 +15562,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -13951,8 +15572,19 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SkipSession [<SwitchParameter>]
-        end of translation
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -13983,6 +15615,7 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > Save-Transcriptions "C:\Media" "Japanese" "English" "qwen"
+    ##############################################################################
     
     
     
@@ -13998,20 +15631,27 @@ NAME
     Set-AIImageCollection
     
 SYNOPSIS
-    Sets the directories and default language for image files used in GenXdev.AI operations.
+    Sets the directories and default language for image files used in GenXdev.AI
+    operations.
     
     
 SYNTAX
-    Set-AIImageCollection [[-ImageDirectories] <String[]>] [[-Language] <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Set-AIImageCollection [[-ImageDirectories] <String[]>] [[-Language] <String>] [-PreferencesDatabasePath <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function configures the global image directories and default language used by the GenXdev.AI module for various image processing and AI operations. Settings can be stored persistently in preferences (default), only in the current session (using -SessionOnly), or cleared from the session (using -ClearSession).
+    This function configures the global image directories and default language used
+    by the GenXdev.AI module for various image processing and AI operations.
+    Settings can be stored persistently in preferences (default), only in the
+    current session (using -SessionOnly), or cleared from the session (using
+    -ClearSession).
     
 
 PARAMETERS
     -ImageDirectories <String[]>
-        An array of directory paths where image files are located. These directories will be used by GenXdev.AI functions for image discovery and processing operations.
+        An array of directory paths where image files are located. These directories
+        will be used by GenXdev.AI functions for image discovery and processing
+        operations.
         
         Required?                    false
         Position?                    1
@@ -14021,7 +15661,9 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Language <String>
-        The default language to use for image metadata operations. This will be used by Remove-ImageMetaData, Update-AllImageMetaData, and Find-Image functions when no language is explicitly specified.
+        The default language to use for image metadata operations. This will be used by
+        Remove-ImageMetaData, Update-AllImageMetaData, and Find-Image functions when no
+        language is explicitly specified.
         
         Required?                    false
         Position?                    2
@@ -14030,8 +15672,20 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
-        When specified, stores the settings only in the current session (Global variables) without persisting to preferences. Settings will be lost when the session ends.
+        When specified, stores the settings only in the current session (Global
+        variables) without persisting to preferences. Settings will be lost when the
+        session ends.
         
         Required?                    false
         Position?                    named
@@ -14041,7 +15695,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
-        When specified, clears only the session settings (Global variables) without affecting persistent preferences.
+        When specified, clears only the session settings (Global variables) without
+        affecting persistent preferences.
         
         Required?                    false
         Position?                    named
@@ -14051,6 +15706,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -14109,7 +15766,8 @@ OUTPUTS
     
     PS > Set-AIImageCollection -ImageDirectories @("C:\TempImages") -Language "German" -SessionOnly
     
-    Sets the image directories and language only for the current session (Global variables).
+    Sets the image directories and language only for the current session (Global
+    variables).
     
     
     
@@ -14118,7 +15776,8 @@ OUTPUTS
     
     PS > Set-AIImageCollection -ClearSession
     
-    Clears the session image directories and language settings (Global variables) without affecting persistent preferences.
+    Clears the session image directories and language settings (Global variables)
+    without affecting persistent preferences.
     
     
     
@@ -14136,14 +15795,14 @@ SYNOPSIS
     
     
 SYNTAX
-    Set-AIKnownFacesRootpath [[-FacesDirectory] <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Set-AIKnownFacesRootpath [[-FacesDirectory] <String>] [-PreferencesDatabasePath <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
     This function configures the global face directory used by the GenXdev.AI
     module for various face recognition and AI operations. Settings can be stored
-    persistently in preferences (default), only in the current session (using -SessionOnly),
-    or cleared from the session (using -ClearSession).
+    persistently in preferences (default), only in the current session (using
+    -SessionOnly), or cleared from the session (using -ClearSession).
     
 
 PARAMETERS
@@ -14159,9 +15818,20 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
-        When specified, stores the setting only in the current session (Global variable)
-        without persisting to preferences. Setting will be lost when the session ends.
+        When specified, stores the setting only in the current session (Global
+        variable) without persisting to preferences. Setting will be lost when the
+        session ends.
         
         Required?                    false
         Position?                    named
@@ -14182,6 +15852,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -14249,7 +15921,8 @@ OUTPUTS
     
     PS > Set-AIKnownFacesRootpath -ClearSession
     
-    Clears the session faces directory setting (Global variable) without affecting persistent preferences.
+    Clears the session faces directory setting (Global variable) without affecting
+    persistent preferences.
     
     
     
@@ -14263,20 +15936,26 @@ NAME
     Set-AIMetaLanguage
     
 SYNOPSIS
-    Sets the default language and optionally the image directories for GenXdev.AI image metadata operations.
+    Sets the default language and optionally the image directories for GenXdev.AI
+    image metadata operations.
     
     
 SYNTAX
-    Set-AIMetaLanguage [[-Language] <String>] [[-ImageDirectories] <String[]>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Set-AIMetaLanguage [[-Language] <String>] [[-ImageDirectories] <String[]>] [-PreferencesDatabasePath <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function configures the global default language for image metadata operations in the GenXdev.AI module. Optionally, it can also set the global image directories. Both settings are persisted in the module's preference storage for use across sessions.
+    This function configures the global default language for image metadata
+    operations in the GenXdev.AI module. Optionally, it can also set the global
+    image directories. Both settings are persisted in the module's preference
+    storage for use across sessions.
     
 
 PARAMETERS
     -Language <String>
-        The default language to use for image metadata operations. This will be used by Remove-ImageMetaData, Update-AllImageMetaData, and Find-Image functions when no language is explicitly specified.
+        The default language to use for image metadata operations. This will be used
+        by Remove-ImageMetaData, Update-AllImageMetaData, and Find-Image functions
+        when no language is explicitly specified.
         
         Required?                    false
         Position?                    1
@@ -14286,7 +15965,9 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ImageDirectories <String[]>
-        An optional array of directory paths where image files are located. These directories will be used by GenXdev.AI functions for image discovery and processing operations if provided.
+        An optional array of directory paths where image files are located. These
+        directories will be used by GenXdev.AI functions for image discovery and
+        processing operations if provided.
         
         Required?                    false
         Position?                    2
@@ -14295,8 +15976,20 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
-        When specified, stores the settings only in the current session (Global variables) without persisting to preferences. Settings will be lost when the session ends.
+        When specified, stores the settings only in the current session (Global
+        variables) without persisting to preferences. Settings will be lost when the
+        session ends.
         
         Required?                    false
         Position?                    named
@@ -14306,7 +15999,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
-        When specified, clears only the session settings (Global variables) without affecting persistent preferences.
+        When specified, clears only the session settings (Global variables) without
+        affecting persistent preferences.
         
         Required?                    false
         Position?                    named
@@ -14316,6 +16010,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -14383,7 +16079,153 @@ OUTPUTS
     
     PS > Set-AIMetaLanguage -ClearSession
     
-    Clears the session language setting (Global variable) without affecting persistent preferences.
+    Clears the session language setting (Global variable) without affecting
+    persistent preferences.
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Set-ImageDatabasePath
+    
+SYNOPSIS
+    Sets the default database file path for image operations in GenXdev.AI.
+    
+    
+SYNTAX
+    Set-ImageDatabasePath [[-DatabaseFilePath] <String>] [-PreferencesDatabasePath <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function configures the default database file path used by GenXdev.AI
+    functions for image processing and AI operations. The path can be stored
+    persistently in preferences (default), only in the current session (using
+    -SessionOnly), or cleared from the session (using -ClearSession).
+    
+
+PARAMETERS
+    -DatabaseFilePath <String>
+        The path to the image database file. The directory will be created if it
+        doesn't exist.
+        
+        Required?                    false
+        Position?                    1
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        When specified, stores the setting only in the current session (Global
+        variables) without persisting to preferences. Settings will be lost when the
+        session ends.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        When specified, clears only the session setting (Global variable) without
+        affecting persistent preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        When specified, stores the setting only in persistent preferences without
+        affecting the current session setting.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WhatIf [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Confirm [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Set-ImageDatabasePath -DatabaseFilePath "C:\MyProject\images.db"
+    
+    Sets the image database path persistently in preferences.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > Set-ImageDatabasePath "D:\Data\custom_images.db"
+    
+    Sets the image database path persistently in preferences using positional
+    parameter.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Set-ImageDatabasePath -DatabaseFilePath "C:\Temp\temp_images.db" -SessionOnly
+    
+    Sets the image database path only for the current session (Global variables).
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > Set-ImageDatabasePath -ClearSession
+    
+    Clears the session image database path setting (Global variable) without
+    affecting persistent preferences.
     
     
     
@@ -14401,7 +16243,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Show-FoundImagesInBrowser [-InputObject] <Object[]> [-Interactive] [-Title <String>] [-Description <String>] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-Monitor <Int32>] [-FullScreen] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-AcceptLang <String>] [-RestoreFocus] [-NoNewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ShowOnlyPictures] [<CommonParameters>]
+    Show-FoundImagesInBrowser [[-InputObject] <Object[]>] [-Interactive] [-Title <String>] [-Description <String>] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-Monitor <Int32>] [-FullScreen] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-AcceptLang <String>] [-RestoreFocus] [-NoNewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ShowOnlyPictures] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -14417,9 +16259,9 @@ PARAMETERS
         Array of image data objects containing path, keywords, description, people,
         objects, and scenes metadata.
         
-        Required?                    true
+        Required?                    false
         Position?                    1
-        Default value                
+        Default value                @()
         Accept pipeline input?       true (ByValue)
         Aliases                      
         Accept wildcard characters?  false
@@ -14762,6 +16604,7 @@ OUTPUTS
     
     PS > showfoundimages $images -Private -FullScreen
     Opens the gallery in private browsing mode in fullscreen.
+    ##############################################################################
     
     
     
@@ -14777,21 +16620,24 @@ NAME
     Show-GenXdevScriptErrorFixInIde
     
 SYNOPSIS
-    Parses error messages and fixes them using Github Copilot in VSCode.
+    Executes a script block and analyzes errors using AI to generate fixes in IDE.
     
     
 SYNTAX
-    Show-GenXdevScriptErrorFixInIde [-Script] <ScriptBlock> [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [-Temperature <Double>] [-MaxToken <Int32>] [-ShowWindow] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-ApiEndpoint <String>] [-ApiKey <String>] [<CommonParameters>]
+    Show-GenXdevScriptErrorFixInIde [-Script] <ScriptBlock> [-Temperature <Double>] [[-LLMQueryType] <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function analyzes error messages from any input source, identifies
-    files that need attention, and opens them in Visual Studio Code with appropriate
-    Github Copilot prompts to assist in fixing the issues.
+    This function executes a provided script block, captures any errors that occur,
+    and analyzes them using AI language models to generate intelligent fix prompts.
+    The function then opens Visual Studio Code with the identified problematic files
+    and provides AI-generated suggestions through GitHub Copilot to assist in
+    resolving the issues.
     
 
 PARAMETERS
     -Script <ScriptBlock>
+        The script block to execute and analyze for errors.
         
         Required?                    true
         Position?                    1
@@ -14800,28 +16646,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        The LM-Studio model to use for error analysis. Defaults to "qwen2.5-14b-instruct".
-        
-        Required?                    false
-        Position?                    2
-        Default value                qwen2.5-14b-instruct
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  true
-        
-    -ModelLMSGetIdentifier <String>
-        Identifier used for getting specific model from LM Studio.
-        
-        Required?                    false
-        Position?                    3
-        Default value                qwen2.5-14b-instruct
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Temperature <Double>
-        Temperature setting for response randomness (0.0-1.0).
+        Temperature for response randomness (0.0-1.0).
         
         Required?                    false
         Position?                    named
@@ -14830,43 +16656,61 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -LLMQueryType <String>
+        The type of LLM query to perform for error analysis.
+        
+        Required?                    false
+        Position?                    2
+        Default value                Coding
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -MaxToken <Int32>
-        Maximum tokens allowed in response (-1 for default).
+        The maximum number of tokens to use in AI operations.
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -ShowWindow [<SwitchParameter>]
-        If specified, shows the LM Studio window during processing.
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
         
         Required?                    false
         Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TTLSeconds <Int32>
-        Set a TTL (in seconds) for models loaded via API requests.
-        
-        Required?                    false
-        Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -Gpu <Int32>
-        GPU offloading configuration:
-        - "off": GPU offloading disabled
-        - "max": All layers offloaded to GPU
-        - 0-1: Fraction of layers offloaded
-        - -1: LM Studio decides offloading
-        - -2: Auto configure
+        How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
+        all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
+        layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
+        offload to the GPU. -2 = Auto.
         
         Required?                    false
         Position?                    named
@@ -14875,32 +16719,42 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Force [<SwitchParameter>]
-        Force stop LM Studio before initialization.
+    -ApiEndpoint <String>
+        The API endpoint URL for AI operations.
         
         Required?                    false
         Position?                    named
-        Default value                False
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -DontAddThoughtsToHistory [<SwitchParameter>]
-        Skip including model's thoughts in output.
+    -ApiKey <String>
+        The API key for authenticated AI operations.
         
         Required?                    false
         Position?                    named
-        Default value                False
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -ContinueLast [<SwitchParameter>]
-        Continue from last conversation.
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
         
         Required?                    false
         Position?                    named
-        Default value                False
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -14935,6 +16789,46 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ShowWindow [<SwitchParameter>]
+        Show the LM Studio window during processing.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        Force stop LM Studio before initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        Include model's thoughts in output.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        Continue from last conversation.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -Speak [<SwitchParameter>]
         Enable text-to-speech for AI responses.
         
@@ -14965,22 +16859,32 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ApiEndpoint <String>
-        Api endpoint url, defaults to http://localhost:1234/v1/chat/completions.
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
-        Default value                
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -ApiKey <String>
-        The API key for authentication.
+    -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
-        Default value                
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -14997,17 +16901,17 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > Show-GenXdevScriptErrorFixInIde -Model "qwen2.5-14b-instruct" -Script {
+    PS > Show-GenXdevScriptErrorFixInIde -Script { Get-ChildItem -Path "NonExistentPath" }
     
-    Run-ErrorousScript
-    }
+    
     
     
     
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > $errorOutput | letsfixthis
+    PS > letsfixthis { Import-Module "NonExistentModule" }
+    ##############################################################################
     
     
     
@@ -15028,7 +16932,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-VOX] [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] [[-TokenTimestampsSumThreshold] <Single>] [-SplitOnWord] [[-MaxTokensPerSegment] <Int32>] [-IgnoreSilence] [[-MaxDurationOfSilence] <Object>] [[-SilenceThreshold] <Int32>] [[-Language] <String>] [[-CpuThreads] <Int32>] [[-Temperature] <Single>] [[-TemperatureInc] <Single>] [-WithTranslate] [[-Prompt] <String>] [[-SuppressRegex] <String>] [-WithProgress] [[-AudioContextSize] <Int32>] [-DontSuppressBlank] [[-MaxDuration] <Object>] [[-Offset] <Object>] [[-MaxLastTextTokens] <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [[-MaxSegmentLength] <Int32>] [[-MaxInitialTimestamp] <Object>] [[-LengthPenalty] <Single>] [[-EntropyThreshold] <Single>] [[-LogProbThreshold] <Single>] [[-NoSpeechThreshold] <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-Realtime] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Start-AudioTranscription [[-ModelFilePath] <String>] [[-WaveFile] <String>] [-MaxDurationOfSilence <Object>] [-SilenceThreshold <Int32>] [-Language <String>] [-CpuThreads <Int32>] [-Temperature <Single>] [-TemperatureInc <Single>] [-Prompt <String>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-MaxDuration <Object>] [-Offset <Object>] [-MaxLastTextTokens <Int32>] [-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <Object>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-TokenTimestampsSumThreshold <Single>] [-MaxTokensPerSegment <Int32>] [-PreferencesDatabasePath <String>] [-VOX] [-PassThru] [-UseDesktopAudioCapture] [-WithTokenTimestamps] [-SplitOnWord] [-IgnoreSilence] [-WithTranslate] [-WithProgress] [-DontSuppressBlank] [-SingleSegmentOnly] [-PrintSpecialTokens] [-NoContext] [-WithBeamSearchSamplingStrategy] [-Realtime] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -15067,7 +16971,218 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -MaxDurationOfSilence <Object>
+        Maximum duration of silence before automatically stopping recording.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Int32>
+        Silence detect threshold (0..32767 defaults to 30).
+        
+        Required?                    false
+        Position?                    named
+        Default value                30
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        Sets the language to detect.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        Number of CPU threads to use, defaults to 0 (auto).
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Temperature <Single>
+        Temperature for speech generation.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0.01
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureInc <Single>
+        Temperature increment.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Prompt <String>
+        Prompt to use for the model.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        Regex to suppress tokens from the output.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        Size of the audio context.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxDuration <Object>
+        Maximum duration of the audio.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Offset <Object>
+        Offset for the audio.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxLastTextTokens <Int32>
+        Maximum number of last text tokens.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxSegmentLength <Int32>
+        Maximum segment length.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxInitialTimestamp <Object>
+        Start timestamps at this moment.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Single>
+        Length penalty.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Single>
+        Entropy threshold.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Single>
+        Log probability threshold.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Single>
+        No speech threshold.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TokenTimestampsSumThreshold <Single>
+        Sum threshold for token timestamps, defaults to 0.5.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0.5
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxTokensPerSegment <Int32>
+        Maximum number of tokens per segment.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -VOX [<SwitchParameter>]
+        Use silence detection to automatically stop recording.
         
         Required?                    false
         Position?                    named
@@ -15087,7 +17202,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -UseDesktopAudioCapture [<SwitchParameter>]
-        Whether to use desktop audio capture instead of microphone input
+        Whether to use desktop audio capture instead of microphone input.
         
         Required?                    false
         Position?                    named
@@ -15106,32 +17221,12 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -TokenTimestampsSumThreshold <Single>
-        Sum threshold for token timestamps, defaults to 0.5.
-        
-        Required?                    false
-        Position?                    3
-        Default value                0.5
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -SplitOnWord [<SwitchParameter>]
         Whether to split on word boundaries.
         
         Required?                    false
         Position?                    named
         Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxTokensPerSegment <Int32>
-        Maximum number of tokens per segment.
-        
-        Required?                    false
-        Position?                    4
-        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -15146,91 +17241,12 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -MaxDurationOfSilence <Object>
-        Maximum duration of silence before automatically stopping recording.
-        
-        Required?                    false
-        Position?                    5
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -SilenceThreshold <Int32>
-        Silence detect threshold (0..32767 defaults to 30).
-        
-        Required?                    false
-        Position?                    6
-        Default value                30
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Language <String>
-        Sets the language to detect.
-        
-        Required?                    false
-        Position?                    7
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -CpuThreads <Int32>
-        Number of CPU threads to use, defaults to 0 (auto).
-        
-        Required?                    false
-        Position?                    8
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Temperature <Single>
-        Temperature for speech generation.
-        
-        Required?                    false
-        Position?                    9
-        Default value                0.01
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -TemperatureInc <Single>
-        Temperature increment.
-        
-        Required?                    false
-        Position?                    10
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -WithTranslate [<SwitchParameter>]
+        Whether to translate the output.
         
         Required?                    false
         Position?                    named
         Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Prompt <String>
-        Prompt to use for the model.
-        
-        Required?                    false
-        Position?                    11
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -SuppressRegex <String>
-        Regex to suppress tokens from the output.
-        
-        Required?                    false
-        Position?                    12
-        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -15245,52 +17261,12 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -AudioContextSize <Int32>
-        Size of the audio context.
-        
-        Required?                    false
-        Position?                    13
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -DontSuppressBlank [<SwitchParameter>]
         Whether to NOT suppress blank lines.
         
         Required?                    false
         Position?                    named
         Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxDuration <Object>
-        Maximum duration of the audio.
-        
-        Required?                    false
-        Position?                    14
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Offset <Object>
-        Offset for the audio.
-        
-        Required?                    false
-        Position?                    15
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxLastTextTokens <Int32>
-        Maximum number of last text tokens.
-        
-        Required?                    false
-        Position?                    16
-        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -15311,66 +17287,6 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxSegmentLength <Int32>
-        Maximum segment length.
-        
-        Required?                    false
-        Position?                    17
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -MaxInitialTimestamp <Object>
-        Start timestamps at this moment.
-        
-        Required?                    false
-        Position?                    18
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -LengthPenalty <Single>
-        Length penalty.
-        
-        Required?                    false
-        Position?                    19
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -EntropyThreshold <Single>
-        Entropy threshold.
-        
-        Required?                    false
-        Position?                    20
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -LogProbThreshold <Single>
-        Log probability threshold.
-        
-        Required?                    false
-        Position?                    21
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoSpeechThreshold <Single>
-        No speech threshold.
-        
-        Required?                    false
-        Position?                    22
-        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -15396,6 +17312,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Realtime [<SwitchParameter>]
+        Enable real-time transcription mode.
         
         Required?                    false
         Position?                    named
@@ -15405,7 +17322,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -15415,6 +17333,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -15424,6 +17344,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -15462,9 +17384,8 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > # Basic transcription using default settings
-    $text = Start-AudioTranscription
-    Write-Output $text
+    PS > Start-AudioTranscription -ModelFilePath "C:\Models" -Language "English" `
+        -WithTokenTimestamps $true -PassThru $false
     
     
     
@@ -15473,9 +17394,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > # Advanced transcription with silence detection and desktop audio
-    $result = Start-AudioTranscription -VOX -UseDesktopAudioCapture `
-        -Language "English" -WithTokenTimestamps
+    PS > transcribe -VOX -UseDesktopAudioCapture -Language "English"
     
     
     
@@ -15496,7 +17415,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Update-AllImageMetaData [[-ImageDirectories] <String[]>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [[-ConfidenceThreshold] <Double>] [[-Language] <String>] [[-Model] <String>] [[-ModelLMSGetIdentifier] <String>] [[-ApiEndpoint] <String>] [[-ApiKey] <String>] [[-TimeoutSeconds] <Int32>] [[-MaxToken] <Int32>] [[-TTLSeconds] <Int32>] [-FacesDirectory <String>] [-RetryFailed] [-RedoAll] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [-PassThru] [-AutoUpdateFaces] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Update-AllImageMetaData [[-ImageDirectories] <String[]>] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-ConfidenceThreshold <Double>] [-Language <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSecond <Int32>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-FacesDirectory <String>] [-PreferencesDatabasePath <String>] [-RetryFailed] [-NoRecurse] [-RedoAll] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [-PassThru] [-AutoUpdateFaces] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -15505,13 +17424,13 @@ DESCRIPTION
     scene classification data using AI services. It covers media storage, system
     files, downloads, OneDrive, and personal pictures folders.
     
-    The function automatically detects output redirection and adjusts its behavior:
-    - When run standalone: Uses parallel processing across directories for maximum performance
-    - When output is piped: Processes files individually and outputs structured objects
-      compatible with Export-ImageDatabase
+    The function processes images by going through each directory and processing files
+    individually. DeepStack functions (faces, objects, scenes) are performed first,
+    followed by keyword and description generation. This ensures optimal processing
+    order and outputs structured objects compatible with Export-ImageDatabase.
     
-    This allows for both high-performance batch processing and structured data output
-    for pipeline operations like: Update-AllImageMetaData | Export-ImageDatabase
+    This allows for structured data output for pipeline operations like:
+    Update-AllImageMetaData | Export-ImageDatabase
     
 
 PARAMETERS
@@ -15530,7 +17449,7 @@ PARAMETERS
         The name for the Docker container used for face recognition processing.
         
         Required?                    false
-        Position?                    2
+        Position?                    named
         Default value                deepstack_face_recognition
         Accept pipeline input?       false
         Aliases                      
@@ -15540,7 +17459,7 @@ PARAMETERS
         The name for the Docker volume for persistent storage of face recognition data.
         
         Required?                    false
-        Position?                    3
+        Position?                    named
         Default value                deepstack_face_data
         Accept pipeline input?       false
         Aliases                      
@@ -15550,7 +17469,7 @@ PARAMETERS
         The port number for the DeepStack face recognition service.
         
         Required?                    false
-        Position?                    4
+        Position?                    named
         Default value                5000
         Accept pipeline input?       false
         Aliases                      
@@ -15560,7 +17479,7 @@ PARAMETERS
         Maximum time in seconds to wait for service health check during startup.
         
         Required?                    false
-        Position?                    5
+        Position?                    named
         Default value                60
         Accept pipeline input?       false
         Aliases                      
@@ -15570,7 +17489,7 @@ PARAMETERS
         Interval in seconds between health check attempts during service startup.
         
         Required?                    false
-        Position?                    6
+        Position?                    named
         Default value                3
         Accept pipeline input?       false
         Aliases                      
@@ -15580,7 +17499,7 @@ PARAMETERS
         Custom Docker image name to use for face recognition processing.
         
         Required?                    false
-        Position?                    7
+        Position?                    named
         Default value                
         Accept pipeline input?       false
         Aliases                      
@@ -15591,8 +17510,8 @@ PARAMETERS
         confidence below this threshold will be filtered out. Default is 0.5.
         
         Required?                    false
-        Position?                    9
-        Default value                0.5
+        Position?                    named
+        Default value                0.7
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -15602,7 +17521,7 @@ PARAMETERS
         English.
         
         Required?                    false
-        Position?                    10
+        Position?                    named
         Default value                English
         Accept pipeline input?       false
         Aliases                      
@@ -15612,18 +17531,18 @@ PARAMETERS
         Name or partial path of the model to initialize.
         
         Required?                    false
-        Position?                    11
-        Default value                MiniCPM
+        Position?                    named
+        Default value                
         Accept pipeline input?       true (ByValue)
         Aliases                      
         Accept wildcard characters?  true
         
-    -ModelLMSGetIdentifier <String>
+    -HuggingFaceIdentifier <String>
         The LM-Studio model to use.
         
         Required?                    false
-        Position?                    12
-        Default value                lmstudio-community/MiniCPM-V-2_6-GGUF/MiniCPM-V-2_6-Q4_K_M.gguf
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -15632,7 +17551,7 @@ PARAMETERS
         Api endpoint url, defaults to http://localhost:1234/v1/chat/completions.
         
         Required?                    false
-        Position?                    13
+        Position?                    named
         Default value                
         Accept pipeline input?       false
         Aliases                      
@@ -15642,18 +17561,17 @@ PARAMETERS
         The API key to use for the request.
         
         Required?                    false
-        Position?                    14
+        Position?                    named
         Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -TimeoutSeconds <Int32>
-        Timeout in seconds for the request, defaults to 24 hours.
+    -TimeoutSecond <Int32>
         
         Required?                    false
-        Position?                    15
-        Default value                86400
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -15662,8 +17580,8 @@ PARAMETERS
         Maximum tokens in response (-1 for default).
         
         Required?                    false
-        Position?                    16
-        Default value                8192
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -15672,13 +17590,25 @@ PARAMETERS
         Set a TTL (in seconds) for models loaded via API.
         
         Required?                    false
-        Position?                    17
-        Default value                -1
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -FacesDirectory <String>
+        The directory containing face images organized by person folders. If not
+        specified, uses the configured faces directory preference.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
         
         Required?                    false
         Position?                    named
@@ -15691,6 +17621,15 @@ PARAMETERS
         Specifies whether to retry previously failed image keyword updates. When
         enabled, the function will attempt to process images that failed in previous
         runs.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoRecurse [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -15752,6 +17691,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -PassThru [<SwitchParameter>]
+        PassThru to return structured objects instead of outputting to console.
         
         Required?                    false
         Position?                    named
@@ -15761,6 +17701,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -AutoUpdateFaces [<SwitchParameter>]
+        Detects changes in the faces directory and re-registers faces if needed.
         
         Required?                    false
         Position?                    named
@@ -15770,7 +17711,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
-        Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        Use alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -15780,6 +17722,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences like Language,
+        Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -15789,6 +17733,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Dont use alternative settings stored in session for AI preferences like
+        Language, Image collections, etc.
         
         Required?                    false
         Position?                    named
@@ -15847,6 +17793,7 @@ OUTPUTS
     -------------------------- EXAMPLE 3 --------------------------
     
     PS > updateallimages @("C:\MyImages") -ContainerName "custom_face_recognition"
+    ##############################################################################
     
     
     

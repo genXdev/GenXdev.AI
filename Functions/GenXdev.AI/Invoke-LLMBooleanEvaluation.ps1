@@ -1,208 +1,347 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Evaluates a statement using AI to determine if it's true or false.
 
 .DESCRIPTION
-This function uses AI models to evaluate statements and determine their truth value.
-It can accept input directly through parameters, from the pipeline, or from the
-system clipboard.
+This function uses AI models to evaluate statements and determine their truth
+value. It can accept input directly through parameters, from the pipeline, or
+from the system clipboard. The function returns a boolean result along with
+confidence level and reasoning from the AI model.
 
 .PARAMETER Text
 The statement to evaluate. If not provided, the function will read from the
 system clipboard.
 
 .PARAMETER Instructions
-Instructions to guide the AI model in evaluating the statement. By default, it will
-determine if the statement is true or false.
+Instructions to guide the AI model in evaluating the statement. By default, it
+will determine if the statement is true or false.
 
-.PARAMETER Model
-Specifies which AI model to use for the evaluation. Different models
-may produce varying results.
+.PARAMETER Attachments
+Array of file paths to attach to the AI query for additional context.
 
 .PARAMETER SetClipboard
 When specified, copies the result back to the system clipboard after processing.
 
+.PARAMETER ShowWindow
+Show the LM Studio window during processing.
+
+.PARAMETER Temperature
+Temperature for response randomness (0.0-1.0). Controls creativity vs
+determinism in AI responses.
+
+.PARAMETER Force
+Force stop LM Studio before initialization.
+
+.PARAMETER ImageDetail
+Image detail level for visual processing. Valid values are low, medium, or high.
+
+.PARAMETER IncludeThoughts
+Include model's thoughts in output for debugging and transparency.
+
+.PARAMETER DontAddThoughtsToHistory
+Prevent model thoughts from being added to conversation history.
+
+.PARAMETER ContinueLast
+Continue from last conversation instead of starting fresh.
+
+.PARAMETER Functions
+Array of function definitions for AI tool use capabilities.
+
+.PARAMETER ExposedCmdLets
+Array of PowerShell command definitions to use as tools in AI operations.
+
+.PARAMETER NoConfirmationToolFunctionNames
+Array of command names that don't require confirmation before execution.
+
+.PARAMETER Speak
+Enable text-to-speech for AI responses.
+
+.PARAMETER SpeakThoughts
+Enable text-to-speech for AI thought responses.
+
+.PARAMETER NoSessionCaching
+Don't store session in session cache for privacy or debugging.
+
+.PARAMETER AllowDefaultTools
+Allow the AI to use default tools and capabilities.
+
+.PARAMETER LLMQueryType
+The type of LLM query to optimize for specific use cases.
+
+.PARAMETER Model
+The model identifier or pattern to use for AI operations.
+
+.PARAMETER HuggingFaceIdentifier
+The LM Studio specific model identifier from Hugging Face.
+
+.PARAMETER MaxToken
+The maximum number of tokens to use in AI operations.
+
+.PARAMETER Cpu
+The number of CPU cores to dedicate to AI operations.
+
+.PARAMETER Gpu
+How much to offload to the GPU for AI processing.
+
+.PARAMETER ApiEndpoint
+The API endpoint URL for AI operations.
+
+.PARAMETER ApiKey
+The API key for authenticated AI operations.
+
+.PARAMETER TimeoutSeconds
+The timeout in seconds for AI operations.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SkipSession
+Store settings only in persistent preferences without affecting session.
+
 .EXAMPLE
-Invoke-LLMBooleanEvaluation -Text "The Earth is flat"
+Invoke-LLMBooleanEvaluation -Text "The Earth is flat" -Model "gpt-4"
 
 .EXAMPLE
 "Humans need oxygen to survive" | Invoke-LLMBooleanEvaluation
-#>
+
+.EXAMPLE
+equalstrue "2 + 2 = 4"
+###############################################################################>
 function Invoke-LLMBooleanEvaluation {
 
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     [Alias("equalstrue")]
     param (
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
             ValueFromPipeline = $true,
             HelpMessage = "The statement to evaluate"
         )]
-        [string]$Text,
-        ########################################################################
+        [string] $Text,
+        ###############################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = "Instructions for the AI model on how to evaluate the statement"
+            HelpMessage = ("Instructions for the AI model on how to evaluate " +
+                "the statement")
         )]
-        [string]$Instructions = "",
-        ########################################################################
+        [string] $Instructions = "",
+        ###############################################################################
         [Parameter(
-            Mandatory = $false,
             Position = 2,
-            HelpMessage = "The LM-Studio model to use"
-        )]
-        [SupportsWildcards()]
-        [string] $Model,
-        ########################################################################
-        [Parameter(
             Mandatory = $false,
-            HelpMessage = "Identifier used for getting specific model from LM Studio"
+            HelpMessage = "Array of file paths to attach"
         )]
-        [string] $ModelLMSGetIdentifier,
-        ########################################################################
-        [Parameter(
-            Position = 3,
-            Mandatory = $false,
-            HelpMessage = "Array of file paths to attach")]
         [string[]] $Attachments = @(),
-        ########################################################################
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Temperature for response randomness (0.0-1.0)"
+        )]
+        [ValidateRange(0.0, 1.0)]
+        [double] $Temperature = 0.2,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Image detail level"
+        )]
+        [ValidateSet("low", "medium", "high")]
+        [string] $ImageDetail = "low",
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Array of function definitions"
+        )]
+        [hashtable[]] $Functions = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Array of PowerShell command definitions to use " +
+                "as tools")
+        )]
+        [GenXdev.Helpers.ExposedCmdletDefinition[]] $ExposedCmdLets = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Array of command names that don't require " +
+                "confirmation")
+        )]
+        [Alias("NoConfirmationFor")]
+        [string[]] $NoConfirmationToolFunctionNames = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The type of LLM query"
+        )]
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string] $LLMQueryType = "Knowledge",
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("The model identifier or pattern to use for AI " +
+                "operations")
+        )]
+        [string] $Model,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The LM Studio specific model identifier"
+        )]
+        [Alias("ModelLMSGetIdentifier")]
+        [string] $HuggingFaceIdentifier,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The maximum number of tokens to use in AI operations"
+        )]
+        [int] $MaxToken,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+        )]
+        [int] $Cpu,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
+                "offloading is disabled. If 'max', all layers are " +
+                "offloaded to GPU. If a number between 0 and 1, " +
+                "that fraction of layers will be offloaded to the " +
+                "GPU. -1 = LM Studio will decide how much to " +
+                "offload to the GPU. -2 = Auto")
+        )]
+        [ValidateRange(-2, 1)]
+        [int] $Gpu = -1,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API endpoint URL for AI operations"
+        )]
+        [string] $ApiEndpoint,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key for authenticated AI operations"
+        )]
+        [string] $ApiKey,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The timeout in seconds for AI operations"
+        )]
+        [int] $TimeoutSeconds,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Copy the result to clipboard"
         )]
-        [switch]$SetClipboard,
-        ########################################################################
+        [switch] $SetClipboard,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show the LM Studio window")]
-        [switch] $ShowWindow,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Temperature for response randomness (0.0-1.0)")]
-        [ValidateRange(0.0, 1.0)]
-        [double] $Temperature = 0.2,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)")]
-        [Alias("MaxTokens")]
-        [int] $MaxToken = -1,
-        ########################################################################
-        [Alias("ttl")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests")]
-        [int] $TTLSeconds = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "How much to offload to the GPU. If `"off`", GPU offloading is disabled. If `"max`", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto "
+            HelpMessage = "Show the LM Studio window"
         )]
-        [int]$Gpu = -1,
-        ########################################################################
+        [switch] $ShowWindow,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Force stop LM Studio before initialization"
         )]
-        [switch]$Force,
-        ########################################################################
+        [switch] $Force,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Image detail level")]
-        [ValidateSet("low", "medium", "high")]
-        [string] $ImageDetail = "low",
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Include model's thoughts in output")]
+            HelpMessage = "Include model's thoughts in output"
+        )]
         [switch] $IncludeThoughts,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Include model's thoughts in output")]
+            HelpMessage = "Don't add model thoughts to conversation history"
+        )]
         [switch] $DontAddThoughtsToHistory,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Continue from last conversation")]
+            HelpMessage = "Continue from last conversation"
+        )]
         [switch] $ContinueLast,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of function definitions")]
-        [hashtable[]] $Functions = @(),
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Array of PowerShell command definitions to use as tools")]
-        [GenXdev.Helpers.ExposedCmdletDefinition[]]
-        $ExposedCmdLets = @(),
-        ########################################################################
-        # Array of command names that don't require confirmation
-        [Parameter(Mandatory = $false)]
-        [Alias("NoConfirmationFor")]
-        [string[]]
-        $NoConfirmationToolFunctionNames = @(),
-        ###########################################################################
-        [Parameter(
-            HelpMessage = "Enable text-to-speech for AI responses",
-            Mandatory = $false
+            HelpMessage = "Enable text-to-speech for AI responses"
         )]
         [switch] $Speak,
-        ###########################################################################
+        ###############################################################################
         [Parameter(
-            HelpMessage = "Enable text-to-speech for AI thought responses",
-            Mandatory = $false
+            Mandatory = $false,
+            HelpMessage = "Enable text-to-speech for AI thought responses"
         )]
         [switch] $SpeakThoughts,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Don't store session in session cache")]
+            HelpMessage = "Don't store session in session cache"
+        )]
         [switch] $NoSessionCaching,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Api endpoint url, defaults to http://localhost:1234/v1/chat/completions")]
-        [string] $ApiEndpoint = $null,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The API key to use for the request")]
-        [string] $ApiKey = $null,
-        ########################################################################
+            HelpMessage = "Allow AI to use default tools and capabilities"
+        )]
         [switch] $AllowDefaultTools,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for " +
+                "AI preferences")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session " +
+                "for AI preferences")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Store settings only in persistent preferences " +
+                "without affecting session")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+        ###############################################################################
     )
 
     begin {
 
+        # prepend evaluation instructions to user instructions
         $Instructions = @"
 Evaluate if the following statement is true or false.
 Respond with a JSON object containing 'result' (boolean), 'confidence' (0.0 - 1.0) and 'reason' (string).
@@ -211,7 +350,7 @@ Only pure facts should have high confidence.
 $Instructions
 "@
 
-        # Define response format schema for boolean evaluation
+        # define response format schema for boolean evaluation
         $responseSchema = @{
             type        = "json_schema"
             json_schema = @{
@@ -222,53 +361,76 @@ $Instructions
                     properties = @{
                         result     = @{
                             type        = "boolean"
-                            description = "The evaluation result: true if the statement is true, false if it's false"
+                            description = ("The evaluation result: true if " +
+                                "the statement is true, false if it's false")
                         }
                         confidence = @{
                             type        = "number"
                             minimum     = 0
                             maximum     = 1
-                            description = "Confidence level in the evaluation (0-1)"
+                            description = ("Confidence level in the " +
+                                "evaluation (0-1)")
                         }
                         reason     = @{
                             type        = "string"
-                            description = "Explanation for why the statement was evaluated as true or false"
+                            description = ("Explanation for why the statement " +
+                                "was evaluated as true or false")
                         }
                     }
                     required   = @("result", "confidence", "reason")
                 }
             }
-        } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
+        } |
+            Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Starting boolean evaluation with model: $Model"
+        # log initialization information
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Starting boolean evaluation with model: $Model"
+        )
 
+        # initialize result variables
         $script:result = $false
         $response = $null
     }
 
 
-process {
+    process {
+
         # check if we should read from clipboard
         $isClipboardSource = [string]::IsNullOrWhiteSpace($Text)
 
         if ($isClipboardSource) {
 
-            Microsoft.PowerShell.Utility\Write-Verbose "No direct text input, reading from clipboard"
+            # log clipboard reading operation
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "No direct text input, reading from clipboard"
+            )
+
+            # get text from system clipboard
             $Text = Microsoft.PowerShell.Management\Get-Clipboard
 
             if ([string]::IsNullOrWhiteSpace($Text)) {
-                Microsoft.PowerShell.Utility\Write-Warning "No text found in the clipboard."
+
+                Microsoft.PowerShell.Utility\Write-Warning (
+                    "No text found in the clipboard."
+                )
                 return
             }
         }
 
         try {
-            Microsoft.PowerShell.Utility\Write-Verbose "Processing statement for evaluation"
 
+            # log processing start
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "Processing statement for evaluation"
+            )
+
+            # copy parameters from current function to invoke-llmquery
             $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\Invoke-LLMQuery"
 
+            # configure query parameters for boolean evaluation
             $invocationParams.Query = $Text
             $invocationParams.Instructions = $Instructions
             $invocationParams.IncludeThoughts = $false
@@ -277,45 +439,68 @@ process {
 
             if ($AllowDefaultTools) {
 
+                # enable text prompt mode for tool usage
                 $invocationParams.ChatMode = "textprompt"
                 $invocationParams.ChatOnce = $true
             }
 
-            # Get evaluation result
-            $response = GenXdev.AI\Invoke-LLMQuery @invocationParams | Microsoft.PowerShell.Utility\ConvertFrom-Json
+            # get evaluation result from ai model
+            $response = GenXdev.AI\Invoke-LLMQuery @invocationParams |
+                Microsoft.PowerShell.Utility\ConvertFrom-Json
 
-            # Store result
+            # extract boolean result from response
             $script:result = [bool]$response.result
-            $summary = "`r`n`"$Text`"`r`n`r`nevaluates to be: $($response.result)`r`nconfidence: $($response.confidence) confidence.`r`nReason: $($response.reason)`r`n"
 
+            # create summary for verbose output
+            $summary = ("`r`n`"$Text`"`r`n`r`nevaluates to be: " +
+                "$($response.result)`r`nconfidence: $($response.confidence) " +
+                "confidence.`r`nReason: $($response.reason)`r`n")
+
+            # log evaluation summary
             Microsoft.PowerShell.Utility\Write-Verbose $summary
         }
         catch {
-            Microsoft.PowerShell.Utility\Write-Error "Failed to evaluate statement with AI model: $_"
+
+            Microsoft.PowerShell.Utility\Write-Error (
+                "Failed to evaluate statement with AI model: $_"
+            )
         }
     }
 
     end {
+
         if ($null -ne $response) {
 
             if ($SetClipboard) {
 
-                Microsoft.PowerShell.Utility\Write-Verbose "Copying result to clipboard"
+                # log clipboard operation
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    "Copying result to clipboard"
+                )
 
                 if ($IncludeThoughts) {
 
-                    $summary = "`r`n`"$Text`"`r`n`r`nevaluates to be: $($response.result)`r`nconfidence: $($response.confidence) confidence.`r`nReason: $($response.reason)`r`n"
-                    $summary | Microsoft.PowerShell.Management\Set-Clipboard
+                    # create detailed summary with thoughts
+                    $summary = ("`r`n`"$Text`"`r`n`r`nevaluates to be: " +
+                        "$($response.result)`r`nconfidence: " +
+                        "$($response.confidence) confidence.`r`nReason: " +
+                        "$($response.reason)`r`n")
+
+                    # copy summary to clipboard instead of piping
+                    $null = Microsoft.PowerShell.Management\Set-Clipboard `
+                        -Value $summary
                 }
                 else {
 
-                    Microsoft.PowerShell.Management\Set-Clipboard -Value $script:result
+                    # copy boolean result to clipboard
+                    $null = Microsoft.PowerShell.Management\Set-Clipboard `
+                        -Value $script:result
                 }
             }
         }
 
-        # Return the boolean result
+        # return the boolean result
         $script:result
     }
 }
-################################################################################
+###############################################################################

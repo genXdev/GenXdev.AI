@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Displays image search results in a masonry layout web gallery.
@@ -119,8 +119,7 @@ Displays images in interactive mode with edit/delete buttons.
 .EXAMPLE
 showfoundimages $images -Private -FullScreen
 Opens the gallery in private browsing mode in fullscreen.
-#>
-################################################################################
+###############################################################################>
 function Show-FoundImagesInBrowser {
 
     [CmdletBinding()]
@@ -132,11 +131,11 @@ function Show-FoundImagesInBrowser {
         ###############################################################################
         [Parameter(
             Position = 0,
-            Mandatory = $true,
+            Mandatory = $false,
             ValueFromPipeline = $true,
             HelpMessage = "Image data objects to display in the gallery."
         )]
-        [object[]] $InputObject,
+        [System.Object[]] $InputObject = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -353,6 +352,18 @@ function Show-FoundImagesInBrowser {
     process {
         $InputObject | Microsoft.PowerShell.Core\ForEach-Object -ErrorAction SilentlyContinue {
 
+            if ($_ -is [System.Collections.IEnumerable] -and
+                (-not $_.PSObject.Properties["Path"])) {
+
+                $_ | Microsoft.PowerShell.Core\ForEach-Object {
+
+                    $hashTable = $_ | GenXdev.Helpers\ConvertTo-HashTable
+                    if ($hashTable.ContainsKey("Path")) {
+                        $null = $results.Add($_)
+                    }
+                }
+                return
+            }
             # add unique input objects to the results collection
             $null = $results.Add($_)
         }
@@ -671,9 +682,9 @@ function Show-FoundImagesInBrowser {
 
                                                 if ($w) {
 
-                                                    $w.Show();
-                                                    $w.SetForeground();
-                                                    $w.maximize();
+                                                    $null = $w.Show();
+                                                    $null = $w.SetForeground();
+                                                    $null = $w.maximize();
                                                 }
                                             }
                                         }
@@ -694,9 +705,9 @@ function Show-FoundImagesInBrowser {
 
                                             if ($w) {
 
-                                                $w.Show();
-                                                $w.SetForeground();
-                                                $w.maximize();
+                                                $null = $w.Show();
+                                                $null = $w.SetForeground();
+                                                $null = $w.maximize();
                                             }
                                         }
                                     }
@@ -764,4 +775,4 @@ function Show-FoundImagesInBrowser {
             @parameters -Url $filePath
     }
 }
-################################################################################
+        ###############################################################################

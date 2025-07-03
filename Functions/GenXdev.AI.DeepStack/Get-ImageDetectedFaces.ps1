@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Recognizes faces in an uploaded image by comparing to known faces using
@@ -77,8 +77,7 @@ Recognizes faces using pipeline input.
 DeepStack API Documentation: POST /v1/vision/face/recognize endpoint for face
 identification. Example: curl -X POST -F "image=@person1.jpg"
 http://localhost:5000/v1/vision/face/recognize
-#>
-###############################################################################
+###############################################################################>
 function Get-ImageDetectedFaces {
 
     [CmdletBinding()]
@@ -287,4 +286,4 @@ function Get-ImageDetectedFaces {
 
     }
 }
-################################################################################
+        ###############################################################################

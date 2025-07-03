@@ -18,13 +18,78 @@ inputs through pipeline or array.
 Additional instructions for the AI model on how to analyze the text or focus
 on specific types of fallacies.
 
-.PARAMETER Model
-The specific LM-Studio model to use for fallacy detection. Supports wildcard
-patterns for model selection.
+.PARAMETER Attachments
+Array of file paths to attach to the analysis request for additional context.
 
-.PARAMETER ModelLMSGetIdentifier
-Identifier used to retrieve a specific model from LM Studio when multiple
-models are available.
+.PARAMETER Functions
+Array of custom function definitions to make available to the AI model during
+analysis.
+
+.PARAMETER ImageDetail
+Detail level for image processing when attachments include images. Options are
+low, medium, or high.
+
+.PARAMETER NoConfirmationToolFunctionNames
+Array of function names that don't require user confirmation before execution
+when used by the AI model.
+
+.PARAMETER ExposedCmdLets
+Array of PowerShell command definitions that the AI model can use as tools
+during analysis.
+
+.PARAMETER Temperature
+Controls the randomness of the AI response. Lower values (0.0-0.3) provide
+more focused analysis, higher values (0.7-1.0) allow more creative
+interpretation.
+
+.PARAMETER LLMQueryType
+The type of LLM query to perform for the analysis.
+
+.PARAMETER Model
+The model identifier or pattern to use for AI operations.
+
+.PARAMETER HuggingFaceIdentifier
+The LM Studio specific model identifier.
+
+.PARAMETER MaxToken
+The maximum number of tokens to use in AI operations.
+
+.PARAMETER Cpu
+The number of CPU cores to dedicate to AI operations.
+
+.PARAMETER Gpu
+How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
+all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
+layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
+offload to the GPU. -2 = Auto.
+
+.PARAMETER ApiEndpoint
+The API endpoint URL for AI operations.
+
+.PARAMETER ApiKey
+The API key for authenticated AI operations.
+
+.PARAMETER TimeoutSeconds
+The timeout in seconds for AI operations.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER ContinueLast
+Switch to continue from the last conversation context instead of starting a
+new analysis session.
+
+.PARAMETER Force
+Forces LM Studio to stop and restart before initializing the model for
+analysis.
+
+.PARAMETER IncludeThoughts
+Switch to include the model's reasoning process in the output alongside the
+final analysis.
+
+.PARAMETER NoSessionCaching
+Switch to disable storing the analysis session in the session cache for
+privacy or performance reasons.
 
 .PARAMETER OpenInImdb
 Switch to open IMDB searches for each detected fallacy result (legacy parameter
@@ -34,61 +99,6 @@ from inherited function structure).
 Switch to display the LM Studio window during processing for monitoring
 purposes.
 
-.PARAMETER Temperature
-Controls the randomness of the AI response. Lower values (0.0-0.3) provide
-more focused analysis, higher values (0.7-1.0) allow more creative
-interpretation.
-
-.PARAMETER MaxToken
-Maximum number of tokens allowed in the AI response. Use -1 for model default
-settings.
-
-.PARAMETER TTLSeconds
-Time-to-live in seconds for models loaded via API requests. Use -1 for no
-expiration.
-
-.PARAMETER Gpu
-Controls GPU offloading for model processing. -1 lets LM Studio decide, -2 for
-auto, 0-1 for fractional offloading, "off" disables GPU, "max" uses full GPU.
-
-.PARAMETER Force
-Forces LM Studio to stop and restart before initializing the model for
-analysis.
-
-.PARAMETER ApiEndpoint
-Custom API endpoint URL for the language model service. Defaults to
-http://localhost:1234/v1/chat/completions.
-
-.PARAMETER ApiKey
-API key for authentication when using external language model services.
-
-.PARAMETER Attachments
-Array of file paths to attach to the analysis request for additional context.
-
-.PARAMETER ImageDetail
-Detail level for image processing when attachments include images. Options are
-low, medium, or high.
-
-.PARAMETER IncludeThoughts
-Switch to include the model's reasoning process in the output alongside the
-final analysis.
-
-.PARAMETER ContinueLast
-Switch to continue from the last conversation context instead of starting a
-new analysis session.
-
-.PARAMETER Functions
-Array of custom function definitions to make available to the AI model during
-analysis.
-
-.PARAMETER ExposedCmdLets
-Array of PowerShell command definitions that the AI model can use as tools
-during analysis.
-
-.PARAMETER NoConfirmationToolFunctionNames
-Array of function names that don't require user confirmation before execution
-when used by the AI model.
-
 .PARAMETER Speak
 Switch to enable text-to-speech output for the AI analysis results.
 
@@ -96,12 +106,18 @@ Switch to enable text-to-speech output for the AI analysis results.
 Switch to enable text-to-speech output for the AI model's reasoning process
 when IncludeThoughts is enabled.
 
-.PARAMETER NoSessionCaching
-Switch to disable storing the analysis session in the session cache for
-privacy or performance reasons.
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences.
+
+.PARAMETER SkipSession
+Store settings only in persistent preferences without affecting session.
 
 .EXAMPLE
-Get-Fallacy -Text "All politicians are corrupt because John was corrupt and he was a politician"
+Get-Fallacy -Text ("All politicians are corrupt because John was corrupt " +
+"and he was a politician")
 
 Analyzes the provided text for logical fallacies and returns structured
 information about any fallacies detected.
@@ -110,7 +126,13 @@ information about any fallacies detected.
 "This product is the best because everyone uses it" | Get-Fallacy -Temperature 0.1
 
 Uses pipeline input to analyze text with low temperature for focused analysis.
+
+.EXAMPLE
+dispicetext "Everyone knows this is true"
+
+Uses the alias to analyze text for logical fallacies.
 #>
+################################################################################
 function Get-Fallacy {
 
     [CmdletBinding()]
@@ -119,7 +141,7 @@ function Get-Fallacy {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
 
     param(
-        ###########################################################################
+        #######################################################################
         [Parameter(
             ValueFromPipeline = $true,
             Position = 0,
@@ -127,7 +149,7 @@ function Get-Fallacy {
             HelpMessage = "Text to parse to find Fallacies in"
         )]
         [string[]]$Text,
-        ###########################################################################
+        #######################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
@@ -135,48 +157,89 @@ function Get-Fallacy {
                            "the string list")
         )]
         [string]$Instructions = "",
-        ###########################################################################
+        #######################################################################
         [Parameter(
             Position = 2,
-            Mandatory = $false,
-            HelpMessage = "The LM-Studio model to use"
-        )]
-        [SupportsWildcards()]
-        [string]$Model,
-        ###########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Identifier used for getting specific model from " +
-                           "LM Studio")
-        )]
-        [string]$ModelLMSGetIdentifier,
-        ###########################################################################
-        [Parameter(
-            Position = 3,
             Mandatory = $false,
             HelpMessage = "Array of file paths to attach"
         )]
         [string[]]$Attachments = @(),
-        ###########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The API key to use for the request"
-        )]
-        [string]$ApiKey = $null,
-        ###########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Api endpoint url, defaults to " +
-                           "http://localhost:1234/v1/chat/completions")
-        )]
-        [string]$ApiEndpoint = $null,
-        ###########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Array of function definitions"
         )]
         [hashtable[]]$Functions = @(),
-        ###########################################################################
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Image detail level"
+        )]
+        [ValidateSet("low", "medium", "high")]
+        [string]$ImageDetail = "low",
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Array of command names that don't require " +
+                           "confirmation")
+        )]
+        [Alias("NoConfirmationFor")]
+        [string[]]$NoConfirmationToolFunctionNames = @(),
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Array of PowerShell command definitions to use " +
+                           "as tools")
+        )]
+        [GenXdev.Helpers.ExposedCmdletDefinition[]]$ExposedCmdLets = @(),
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Temperature for response randomness (0.0-1.0)"
+        )]
+        [ValidateRange(0.0, 1.0)]
+        [double]$Temperature = 0.2,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The type of LLM query"
+        )]
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string]$LLMQueryType = "Knowledge",
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("The model identifier or pattern to use for AI " +
+                           "operations")
+        )]
+        [string]$Model,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The LM Studio specific model identifier"
+        )]
+        [Alias("ModelLMSGetIdentifier")]
+        [string]$HuggingFaceIdentifier,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The maximum number of tokens to use in AI operations"
+        )]
+        [int]$MaxToken,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+        )]
+        [int]$Cpu,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
@@ -186,124 +249,105 @@ function Get-Fallacy {
                            "GPU. -1 = LM Studio will decide how much to " +
                            "offload to the GPU. -2 = Auto")
         )]
+        [ValidateRange(-2, 1)]
         [int]$Gpu = -1,
-        ###########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Image detail level"
+            HelpMessage = "The API endpoint URL for AI operations"
         )]
-        [ValidateSet("low", "medium", "high")]
-        [string]$ImageDetail = "low",
-        ###########################################################################
+        [string]$ApiEndpoint,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)"
+            HelpMessage = "The API key for authenticated AI operations"
         )]
-        [Alias("MaxTokens")]
-        [int]$MaxToken = -1,
-        ###########################################################################
+        [string]$ApiKey,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Array of command names that don't require " +
-                           "confirmation")
+            HelpMessage = "The timeout in seconds for AI operations"
         )]
-        [Alias("NoConfirmationFor")]
-        [string[]]$NoConfirmationToolFunctionNames = @(),
-        ###########################################################################
+        [int]$TimeoutSeconds,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Array of PowerShell command definitions to use " +
-                           "as tools")
+            HelpMessage = "Database path for preference data files"
         )]
-        [GenXdev.Helpers.ExposedCmdletDefinition[]]$ExposedCmdLets = @(),
-        ###########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Temperature for response randomness (0.0-1.0)"
-        )]
-        [ValidateRange(0.0, 1.0)]
-        [double]$Temperature = 0.2,
-        ###########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Set a TTL (in seconds) for models loaded via " +
-                           "API requests")
-        )]
-        [Alias("ttl")]
-        [int]$TTLSeconds = -1,
-        ###########################################################################
+        [string]$PreferencesDatabasePath,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Continue from last conversation"
         )]
         [switch]$ContinueLast,
-        ###########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Force stop LM Studio before initialization"
         )]
         [switch]$Force,
-        ###########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Include model's thoughts in output"
         )]
         [switch]$IncludeThoughts,
-        ###########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Don't store session in session cache"
         )]
         [switch]$NoSessionCaching,
-        ###########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Opens IMDB searches for each result"
         )]
         [Alias("imdb")]
         [switch]$OpenInImdb,
-        ###########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Show the LM Studio window"
         )]
         [switch]$ShowWindow,
-        ###########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Enable text-to-speech for AI responses"
         )]
         [switch]$Speak,
-        ###########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Enable text-to-speech for AI thought responses"
         )]
         [switch]$SpeakThoughts,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                           "preferences")
         )]
-        [switch] $SessionOnly,
-        ########################################################################
+        [switch]$SessionOnly,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for " +
+                           "AI preferences")
         )]
-        [switch] $ClearSession,
-        ########################################################################
+        [switch]$ClearSession,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Store settings only in persistent preferences " +
+                           "without affecting session")
         )]
         [Alias("FromPreferences")]
-        [switch] $SkipSession
-        ########################################################################
+        [switch]$SkipSession
+        #######################################################################
     )
-
-    ###########################################################################
     begin {
 
         # output verbose information about starting fallacy analysis
@@ -398,7 +442,7 @@ Return nothing.
             "Initialized response schema for fallacy detection"
     }
 
-    ###########################################################################
+    #######################################################################
     process {
 
         # iterate through each text part provided for analysis
@@ -416,14 +460,20 @@ Return nothing.
 
                 # set specific parameters for fallacy detection analysis
                 $invocationParams.Query = $textPart
+
                 $invocationParams.Instructions = $instructions
+
                 $invocationParams.IncludeThoughts = $false
+
                 $invocationParams.ResponseFormat = $responseSchema
+
                 $invocationParams.Temperature = $Temperature
 
                 # configure chat mode if default tools are allowed
                 if ($AllowDefaultTools) {
+
                     $invocationParams.ChatMode = "textprompt"
+
                     $invocationParams.ChatOnce = $true
                 }
 
@@ -451,11 +501,12 @@ Return nothing.
         }
     }
 
-    ###########################################################################
+    #######################################################################
     end {
 
         # output appropriate verbose message based on results
         if ($results.Count -gt 0) {
+
             Microsoft.PowerShell.Utility\Write-Verbose `
                 "Returning detected fallacies"
         }

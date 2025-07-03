@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Retrieves a list of all registered face identifiers from DeepStack.
@@ -70,7 +70,7 @@ This example retrieves all faces and filters for those starting with "John".
 
 .NOTES
 DeepStack API Documentation: POST /v1/vision/face/list endpoint
-#>
+        ###############################################################################>
 function Get-RegisteredFaces {
 
     [CmdletBinding()]
@@ -305,4 +305,4 @@ function Get-RegisteredFaces {
     end {
     }
 }
-################################################################################
+        ###############################################################################

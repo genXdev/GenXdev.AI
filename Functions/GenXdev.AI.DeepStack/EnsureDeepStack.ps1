@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Ensures DeepStack face recognition service is installed and running.
@@ -60,7 +60,7 @@ DeepStack Face Recognition API Endpoints:
 - POST /v1/vision/face/delete : Remove registered face
 
 For more information, see: https://docs.deepstack.cc/face-recognition/
-#>
+        ###############################################################################>
 function EnsureDeepStack {
 
     [CmdletBinding()]
@@ -856,4 +856,4 @@ function EnsureDeepStack {
         Microsoft.PowerShell.Management\Set-Location $script:originalLocation
     }
 }
-################################################################################
+        ###############################################################################

@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Sends queries to an OpenAI compatible Large Language Chat completion API and
@@ -15,7 +15,7 @@ The text query to send to the model. Can be empty for chat modes.
 .PARAMETER Model
 The name or identifier of the LM Studio model to use.
 
-.PARAMETER ModelLMSGetIdentifier
+.PARAMETER HuggingFaceIdentifier
 Alternative identifier for getting a specific model from LM Studio.
 
 .PARAMETER Instructions
@@ -98,7 +98,7 @@ Invoke-LLMQuery -Query "What is 2+2?" -Model "qwen" -Temperature 0.7
 
 .EXAMPLE
 qllm "What is 2+2?" -Model "qwen"
-#>
+###############################################################################>
 function Invoke-LLMQuery {
 
     [CmdletBinding()]
@@ -120,25 +120,11 @@ function Invoke-LLMQuery {
         [Parameter(
             Mandatory = $false,
             Position = 1,
-            HelpMessage = "The LM-Studio model to use"
-        )]
-        [SupportsWildcards()]
-        [string] $Model = "qwen2.5-14b-instruct",
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Identifier used for getting specific model from LM Studio"
-        )]
-        [string] $ModelLMSGetIdentifier = "qwen2.5-14b-instruct",
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            Position = 2,
             HelpMessage = "System instructions for the model")]
         [string] $Instructions,
         ########################################################################
         [Parameter(
-            Position = 3,
+            Position = 2,
             Mandatory = $false,
             HelpMessage = "Array of file paths to attach")]
         [string[]] $Attachments = @(),
@@ -156,26 +142,8 @@ function Invoke-LLMQuery {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)")]
-        [Alias("MaxTokens")]
-        [int] $MaxToken = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
             HelpMessage = "Show the LM Studio window")]
         [switch] $ShowWindow,
-        ########################################################################
-        [Alias("ttl")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests")]
-        [int] $TTLSeconds = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "How much to offload to the GPU. If `"off`", GPU offloading is disabled. If `"max`", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto "
-        )]
-        [int]$Gpu = -1,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -267,42 +235,121 @@ function Invoke-LLMQuery {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Api endpoint url, defaults to http://localhost:1234/v1/chat/completions")]
-        [string] $ApiEndpoint = $null,
-        ########################################################################
+            HelpMessage = "The type of LLM query"
+        )]
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string] $LLMQueryType = "SimpleIntelligence",
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The API key to use for the request")]
-        [string] $ApiKey = $null,
-        ########################################################################
+            HelpMessage = "The model identifier or pattern to use for AI operations"
+        )]
+        [string] $Model,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Timeout in seconds for the request, defaults to 24 hours")]
-        [int] $TimeoutSeconds = (3600 * 24),
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+            HelpMessage = "The LM Studio specific model identifier"
+        )]
+        [Alias("ModelLMSGetIdentifier")]
+        [string] $HuggingFaceIdentifier,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = "The maximum number of tokens to use in AI operations"
+        )]
+        [int] $MaxToken,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+        )]
+        [int] $Cpu,
+
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
+                           "offloading is disabled. If 'max', all layers are " +
+                           "offloaded to GPU. If a number between 0 and 1, " +
+                           "that fraction of layers will be offloaded to the " +
+                           "GPU. -1 = LM Studio will decide how much to " +
+                           "offload to the GPU. -2 = Auto")
+        )]
+        [ValidateRange(-2, 1)]
+        [int]$Gpu = -1,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API endpoint URL for AI operations"
+        )]
+        [string] $ApiEndpoint,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key for authenticated AI operations"
+        )]
+        [string] $ApiKey,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The timeout in seconds for AI operations"
+        )]
+        [int] $TimeoutSeconds,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for AI " +
+                "preferences")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Store settings only in persistent preferences without " +
+                "affecting session")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
         ########################################################################
-    )
+        )
 
     begin {
+        $llmConfigParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Get-AILLMSettings" `
+            -DefaultValues  (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+
+        $llmConfig = GenXdev.AI\Get-AILLMSettings @llmConfigParams
+
+        foreach ($param in $llmConfig.Keys) {
+
+            if (Microsoft.PowerShell.Utility\Get-Variable -Name $param -Scope Local -ErrorAction SilentlyContinue) {
+
+                Microsoft.PowerShell.Utility\Set-Variable -Name $param -Value $llmConfig[$param] `
+                    -Scope Local -Force
+            }
+        }
+
         Microsoft.PowerShell.Utility\Write-Verbose "Starting LLM interaction..."
 
         # convert markup block types to lowercase for case-insensitive comparison
@@ -1285,4 +1332,4 @@ function Invoke-LLMQuery {
         Microsoft.PowerShell.Utility\Write-Verbose "Conversation history updated"
     }
 }
-################################################################################
+        ###############################################################################

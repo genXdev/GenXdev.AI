@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Updates all face recognition profiles from image files in the faces directory.
@@ -70,8 +70,7 @@ Uses the configured faces directory from Set-AIKnownFacesRootpath or defaults to
 
 .EXAMPLE
 updatefaces -RenameFailed
-#>
-################################################################################
+###############################################################################>
 function Register-AllFaces {
 
     [CmdletBinding()]
@@ -677,4 +676,4 @@ function Register-AllFaces {
             "Face registration process completed"
     }
 }
-################################################################################
+        ###############################################################################

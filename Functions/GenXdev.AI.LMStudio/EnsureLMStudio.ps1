@@ -9,137 +9,230 @@ handles process management, configuration settings, and ensures the proper model
 is loaded. It can force a restart if needed and manages window visibility.
 
 .PARAMETER Model
-Name or partial path of the model to initialize. Supports wildcard patterns.
-Defaults to "qwen2.5-14b-instruct".
+The model identifier or pattern to use for AI operations.
 
-.PARAMETER ModelLMSGetIdentifier
-The specific LM-Studio model identifier to use. This should match an available
-model in LM Studio.
+.PARAMETER HuggingFaceIdentifier
+The LM Studio specific model identifier.
 
 .PARAMETER MaxToken
-Maximum number of tokens allowed in responses. Use -1 for default setting.
-Default is 8192.
+The maximum number of tokens to use in AI operations.
+
+.PARAMETER Cpu
+The number of CPU cores to dedicate to AI operations.
 
 .PARAMETER TTLSeconds
-Time-to-live in seconds for models loaded via API requests. Use -1 for no TTL.
+The time-to-live in seconds for cached AI responses.
+
+.PARAMETER TimeoutSeconds
+The timeout in seconds for AI operations.
+
+.PARAMETER LLMQueryType
+The type of LLM query.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
 
 .PARAMETER ShowWindow
-Shows the LM Studio window during initialization when specified.
+Show LM Studio window during initialization.
 
 .PARAMETER Force
-Forces LM Studio to stop before initialization when specified.
+Force stop LM Studio before initialization.
+
+.PARAMETER Unload
+Unloads the specified model instead of loading it.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences.
+
+.PARAMETER SkipSession
+Store settings only in persistent preferences without affecting session.
 
 .EXAMPLE
-EnsureLMStudio -Model "qwen2.5-14b-instruct" -MaxToken 8192 -ShowWindow
+EnsureLMStudio -LMSQueryType "TextTranslate" -MaxToken 8192 -ShowWindow
 
 .EXAMPLE
-EnsureLMStudio "mistral-7b" -ttl 3600 -Force
+EnsureLMStudio -Model "mistral-7b" -TTLSeconds 3600 -Force
 #>
 function EnsureLMStudio {
 
     [CmdletBinding()]
     param (
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 0,
-            ValueFromPipeline = $true,
-            HelpMessage = "Name or partial path of the model to initialize"
+            HelpMessage = "The model identifier or pattern to use for AI operations"
         )]
-        [ValidateNotNullOrEmpty()]
-        [SupportsWildcards()]
-        [string]$Model = "qwen2.5-14b-instruct",
-        ########################################################################
+        [string] $Model,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 1,
-            HelpMessage = "The LM-Studio model to use"
+            HelpMessage = "The LM Studio specific model identifier"
         )]
-        [ValidateNotNullOrEmpty()]
-        [string]$ModelLMSGetIdentifier = "qwen2.5-14b-instruct",
-        ########################################################################
+        [Alias("ModelLMSGetIdentifier")]
+        [string] $HuggingFaceIdentifier,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 2,
-            HelpMessage = "Maximum tokens in response (-1 for default)"
+            HelpMessage = "The maximum number of tokens to use in AI operations"
         )]
-        [Alias("MaxTokens")]
-        [ValidateRange(-1, [int]::MaxValue)]
-        [int]$MaxToken = 8192,
-        ########################################################################
+        [int] $MaxToken,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 3,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API"
+            HelpMessage = "The number of CPU cores to dedicate to AI operations"
         )]
-        [Alias("ttl")]
-        [ValidateRange(-1, [int]::MaxValue)]
-        [int]$TTLSeconds = -1,
-        ########################################################################
+        [int] $Cpu,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The time-to-live in seconds for cached AI responses"
+        )]
+        [int] $TTLSeconds,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The timeout in seconds for AI operations"
+        )]
+        [int] $TimeoutSeconds,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The type of LLM query"
+        )]
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string] $LLMQueryType = "SimpleIntelligence",
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Show LM Studio window during initialization"
         )]
-        [switch]$ShowWindow,
-        ########################################################################
+        [switch] $ShowWindow,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Force stop LM Studio before initialization"
         )]
-        [switch]$Force
-        ########################################################################
+        [switch] $Force,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Unloads the specified model instead of loading it"
+        )]
+        [switch] $Unload,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences")
+        )]
+        [switch] $SessionOnly,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Clear alternative settings stored in session for AI " +
+                "preferences")
+        )]
+        [switch] $ClearSession,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Store settings only in persistent preferences without " +
+                "affecting session")
+        )]
+        [Alias("FromPreferences")]
+        [switch] $SkipSession
+        ###############################################################################
     )
 
     begin {
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Starting EnsureLMStudio with Model: $Model"
+        # output verbose startup message with model information
+        Microsoft.PowerShell.Utility\Write-Verbose ("Starting EnsureLMStudio " +
+            "with Model: $Model")
 
-        # ensure default model parameter is set
+        # ensure default model parameter is set if not provided
         if (-not $PSBoundParameters.ContainsKey("Model")) {
+
             $null = $PSBoundParameters.Add("Model", "qwen2.5-14b-instruct")
         }
 
-        # ensure default model identifier is set
-        if (-not $PSBoundParameters.ContainsKey("ModelLMSGetIdentifier")) {
-            $null = $PSBoundParameters.Add("ModelLMSGetIdentifier",
+        # ensure default model identifier is set if not provided
+        if (-not $PSBoundParameters.ContainsKey("HuggingFaceIdentifier")) {
+
+            $null = $PSBoundParameters.Add("HuggingFaceIdentifier",
                 "qwen2.5-14b-instruct")
         }
 
-        # ensure default max token is set
-            if (-not $PSBoundParameters.ContainsKey("MaxToken")) {
-                $null = $PSBoundParameters.Add("MaxToken", 8192)
+        # ensure default max token value is set if not provided
+        if (-not $PSBoundParameters.ContainsKey("MaxToken")) {
+
+            $null = $PSBoundParameters.Add("MaxToken", 8192)
         }
     }
 
     process {
 
-        # prepare parameters for model initialization
+        # prepare parameters for model initialization by copying identical values
         $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Initialize-LMStudioModel" `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local -Name * -ErrorAction SilentlyContinue)
 
-        Microsoft.PowerShell.Utility\Write-Verbose ("Initializing LM Studio model " +
-            "with parameters")
+        # output verbose message before initializing the model
+        Microsoft.PowerShell.Utility\Write-Verbose ("Initializing LM Studio " +
+            "model with parameters")
 
-        # initialize the model with prepared parameters
+        # initialize the model with the prepared parameter arguments
         $null = GenXdev.AI\Initialize-LMStudioModel @invocationArguments
     }
 
     end {
+
+        # show window if requested by the user
         if ($ShowWindow) {
 
             try {
-                $a = (GenXDev.Windows\Get-Window -ProcessName "LM Studio") ;
-                if ($null -eq $a) { return }
-                $null = $a.Show()
-                $null = $a.Restore()
-                GenXDev.Windows\Set-WindowPosition -WindowHelper $a -Monitor 0 -Right
+
+                # get the lm studio window handle by process name
+                $windowHandle = (GenXDev.Windows\Get-Window `
+                    -ProcessName "LM Studio")
+
+                # exit if no window was found
+                if ($null -eq $windowHandle) { return }
+
+                # show the window if it was hidden
+                $null = $windowHandle.Show()
+
+                # restore the window if it was minimized
+                $null = $windowHandle.Restore()
+
+                # position the window on the right side of the primary monitor
+                GenXDev.Windows\Set-WindowPosition -WindowHelper $windowHandle `
+                    -Monitor 0 -Right
+
+                # position another window on the left side of the primary monitor
                 GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
             }
             catch {
 
+                # silently ignore any window positioning errors
             }
         }
     }

@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Captures error messages from various streams and uses LLM to suggest fixes.
@@ -9,55 +9,29 @@ input, verbose, information, error, and warning) and formulates a structured
 prompt for an LLM to analyze and suggest fixes. It then invokes the LLM query
 and returns the suggested solution.
 
-.PARAMETER Object
-The input objects to analyze for errors.
-
-.PARAMETER Model
-The name or identifier of the LM Studio model to use.
-Default: qwen2.5-14b-instruct
-
-.PARAMETER ModelLMSGetIdentifier
-Alternative identifier for getting a specific model from LM Studio.
-Default: qwen2.5-14b-instruct
+.PARAMETER Script
+The script to execute and analyze for errors.
 
 .PARAMETER Temperature
-Controls response randomness (0.0-1.0). Lower values are more deterministic.
-Default: 0.0
-
-.PARAMETER MaxToken
-Maximum tokens allowed in the response. Use -1 for model default.
-Default: -1
+Temperature for response randomness (0.0-1.0).
 
 .PARAMETER ShowWindow
-Show the LM Studio window during processing.
-
-.PARAMETER TTLSeconds
-Time-to-live in seconds for loaded models.
-Default: -1
-
-.PARAMETER Gpu
-GPU offloading control:
--2 = Auto
--1 = LM Studio decides
-0-1 = Fraction of layers to offload
-"off" = Disabled
-"max" = All layers
-Default: -1
+Show the LM Studio window.
 
 .PARAMETER Force
 Force stop LM Studio before initialization.
 
 .PARAMETER DontAddThoughtsToHistory
-Exclude model's thoughts from output history.
+Include model's thoughts in output.
 
 .PARAMETER ContinueLast
-Continue from the last conversation context.
+Continue from last conversation.
 
 .PARAMETER Functions
-Array of function definitions to expose to LLM.
+Array of function definitions.
 
 .PARAMETER ExposedCmdLets
-Array of PowerShell command definitions to expose as tools.
+Array of PowerShell command definitions to use as tools.
 
 .PARAMETER NoConfirmationToolFunctionNames
 Array of command names that don't require confirmation.
@@ -66,26 +40,65 @@ Array of command names that don't require confirmation.
 Enable text-to-speech for AI responses.
 
 .PARAMETER SpeakThoughts
-Enable text-to-speech for AI thought process.
+Enable text-to-speech for AI thought responses.
 
 .PARAMETER NoSessionCaching
 Don't store session in session cache.
 
+.PARAMETER LLMQueryType
+The type of LLM query.
+
+.PARAMETER Model
+The model identifier or pattern to use for AI operations.
+
+.PARAMETER HuggingFaceIdentifier
+The LM Studio specific model identifier.
+
+.PARAMETER MaxToken
+The maximum number of tokens to use in AI operations.
+
+.PARAMETER Cpu
+The number of CPU cores to dedicate to AI operations.
+
+.PARAMETER Gpu
+How much to offload to the GPU. If 'off', GPU offloading is disabled. If
+'max', all layers are offloaded to GPU. If a number between 0 and 1, that
+fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide
+how much to offload to the GPU. -2 = Auto.
+
 .PARAMETER ApiEndpoint
-API endpoint URL. Defaults to http://localhost:1234/v1/chat/completions
+The API endpoint URL for AI operations.
 
 .PARAMETER ApiKey
-The API key to use for requests.
+The API key for authenticated AI operations.
+
+.PARAMETER TimeoutSeconds
+The timeout in seconds for AI operations.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SkipSession
+Store settings only in persistent preferences without affecting session.
 
 .EXAMPLE
-$errorInfo = Get-ScriptExecutionErrorFixPrompt -Model *70b* {
-
+$errorInfo = Get-ScriptExecutionErrorFixPrompt -Script {
     My-ScriptThatFails
-}
+} -Model "*70b*"
 
 Write-Host $errorInfo
-#>
 
+.EXAMPLE
+getfixprompt { Get-ChildItem -NotExistingParameter }
+###############################################################################>
+
+###############################################################################
 function Get-ScriptExecutionErrorFixPrompt {
 
     [CmdletBinding()]
@@ -93,7 +106,7 @@ function Get-ScriptExecutionErrorFixPrompt {
     [OutputType([System.Object[]])]
 
     param (
-        ########################################################################
+        #######################################################################
         [Parameter(
             Position = 0,
             Mandatory = $true,
@@ -101,143 +114,190 @@ function Get-ScriptExecutionErrorFixPrompt {
             HelpMessage = "The script to execute and analyze for errors"
         )]
         [ScriptBlock] $Script,
-        ########################################################################
+        #######################################################################
         [Parameter(
-            Position = 1,
             Mandatory = $false,
-            HelpMessage = "The LM-Studio model to use"
+            HelpMessage = "Temperature for response randomness (0.0-1.0)"
         )]
-        [SupportsWildcards()]
-        [string] $Model = "qwen2.5-14b-instruct",
-        ########################################################################
-        [Parameter(
-            Position = 2,
-            Mandatory = $false,
-            HelpMessage = "Identifier used for getting specific model from LM Studio"
-        )]
-        [string] $ModelLMSGetIdentifier = "qwen2.5-14b-instruct",
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Temperature for response randomness (0.0-1.0)")]
         [ValidateRange(0.0, 1.0)]
         [double] $Temperature = 0.2,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)")]
-        [Alias("MaxTokens")]
-        [int] $MaxToken = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Show the LM Studio window")]
-        [switch] $ShowWindow,
-        ########################################################################
-        [Alias("ttl")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests")]
-        [int] $TTLSeconds = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "How much to offload to the GPU. If `"off`", GPU offloading is disabled. If `"max`", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto "
+            HelpMessage = "The type of LLM query"
         )]
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string] $LLMQueryType = "Coding",
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The model identifier or pattern to use for AI operations"
+        )]
+        [string] $Model,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The LM Studio specific model identifier"
+        )]
+        [Alias("ModelLMSGetIdentifier")]
+        [string] $HuggingFaceIdentifier,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The maximum number of tokens to use in AI operations"
+        )]
+        [int] $MaxToken,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+        )]
+        [int] $Cpu,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
+                           "offloading is disabled. If 'max', all layers are " +
+                           "offloaded to GPU. If a number between 0 and 1, " +
+                           "that fraction of layers will be offloaded to the " +
+                           "GPU. -1 = LM Studio will decide how much to " +
+                           "offload to the GPU. -2 = Auto")
+        )]
+        [ValidateRange(-2, 1)]
         [int]$Gpu = -1,
-        ########################################################################
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API endpoint URL for AI operations"
+        )]
+        [string] $ApiEndpoint,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key for authenticated AI operations"
+        )]
+        [string] $ApiKey,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The timeout in seconds for AI operations"
+        )]
+        [int] $TimeoutSeconds,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Array of function definitions"
+        )]
+        [hashtable[]] $Functions = @(),
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Array of PowerShell command definitions to use as tools"
+        )]
+        [GenXdev.Helpers.ExposedCmdletDefinition[]]
+        $ExposedCmdLets = $null,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Array of command names that don't require confirmation"
+        )]
+        [Alias("NoConfirmationFor")]
+        [string[]]
+        $NoConfirmationToolFunctionNames = @(),
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Show the LM Studio window"
+        )]
+        [switch] $ShowWindow,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Force stop LM Studio before initialization"
         )]
-        [switch]$Force,
-        ########################################################################
+        [switch] $Force,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Include model's thoughts in output")]
+            HelpMessage = "Include model's thoughts in output"
+        )]
         [switch] $DontAddThoughtsToHistory,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Continue from last conversation")]
+            HelpMessage = "Continue from last conversation"
+        )]
         [switch] $ContinueLast,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of function definitions")]
-        [hashtable[]] $Functions = @(),
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Array of PowerShell command definitions to use as tools")]
-        [GenXdev.Helpers.ExposedCmdletDefinition[]]
-        $ExposedCmdLets = $null,
-        ########################################################################
-        # Array of command names that don't require confirmation
-        [Parameter(Mandatory = $false)]
-        [Alias("NoConfirmationFor")]
-        [string[]]
-        $NoConfirmationToolFunctionNames = @(),
-        ###########################################################################
-        [Parameter(
-            HelpMessage = "Enable text-to-speech for AI responses",
-            Mandatory = $false
+            HelpMessage = "Enable text-to-speech for AI responses"
         )]
         [switch] $Speak,
-        ###########################################################################
+        #######################################################################
         [Parameter(
-            HelpMessage = "Enable text-to-speech for AI thought responses",
-            Mandatory = $false
+            Mandatory = $false,
+            HelpMessage = "Enable text-to-speech for AI thought responses"
         )]
         [switch] $SpeakThoughts,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Don't store session in session cache")]
+            HelpMessage = "Don't store session in session cache"
+        )]
         [switch] $NoSessionCaching,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Api endpoint url, defaults to http://localhost:1234/v1/chat/completions")]
-        [string] $ApiEndpoint = $null,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The API key to use for the request")]
-        [string] $ApiKey = $null,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for AI " +
+                "preferences")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Store settings only in persistent preferences without " +
+                "affecting session")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+        #######################################################################
     )
 
     begin {
 
-        # initialize output capture builders
+        # initialize output capture builders for all powershell streams
         $verboseOutput = [System.Text.StringBuilder]::new()
+
         $errorOutput = [System.Text.StringBuilder]::new()
+
         $warningOutput = [System.Text.StringBuilder]::new()
+
         $informationOutput = [System.Text.StringBuilder]::new()
+
         $standardOutput = [System.Text.StringBuilder]::new()
 
-        # store original preference variables
+        # store original preference variables for later restoration
         $oldPreferences = @{
             Verbose = $VerbosePreference
             Error = $ErrorActionPreference
@@ -245,24 +305,46 @@ function Get-ScriptExecutionErrorFixPrompt {
             Information = $InformationPreference
         }
 
-        # set all preferences to continue for capturing
+        # set all preferences to continue for capturing all output streams
         $VerbosePreference = 'Continue'
+
         $ErrorActionPreference = 'Stop'
+
         $WarningPreference = 'Continue'
+
         $InformationPreference = 'Continue'
 
-        # register event handlers for capturing output
-        $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier "Verbose" `
-            -Action { param($Message) $null = $verboseOutput.AppendLine($Message) }
-        $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier "Error" `
-            -Action { param($Message) $null = $errorOutput.AppendLine($Message) }
-        $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier "Warning" `
-            -Action { param($Message) $null = $warningOutput.AppendLine($Message) }
-        $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier "Information" `
-            -Action { param($Message) $null = $informationOutput.AppendLine($Message) }
+        # register event handlers for capturing output from all streams
+        $null = Microsoft.PowerShell.Utility\Register-EngineEvent `
+            -SourceIdentifier "Verbose" `
+            -Action {
+                param($Message)
+                $null = $verboseOutput.AppendLine($Message)
+            }
 
-        # initialize response schema for LLM output
-        $ResponseFormat = @{
+        $null = Microsoft.PowerShell.Utility\Register-EngineEvent `
+            -SourceIdentifier "Error" `
+            -Action {
+                param($Message)
+                $null = $errorOutput.AppendLine($Message)
+            }
+
+        $null = Microsoft.PowerShell.Utility\Register-EngineEvent `
+            -SourceIdentifier "Warning" `
+            -Action {
+                param($Message)
+                $null = $warningOutput.AppendLine($Message)
+            }
+
+        $null = Microsoft.PowerShell.Utility\Register-EngineEvent `
+            -SourceIdentifier "Information" `
+            -Action {
+                param($Message)
+                $null = $informationOutput.AppendLine($Message)
+            }
+
+        # initialize response schema for structured LLM output
+        $responseFormat = @{
             type = "json_schema"
             json_schema = @{
                 name = "error_resolution_response"
@@ -289,10 +371,12 @@ function Get-ScriptExecutionErrorFixPrompt {
                     }
                 }
             }
-        } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
+        } |
+        Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
 
         # initialize exposed cmdlets if not provided
         if (-not $ExposedCmdLets) {
+
             $ExposedCmdLets = @(
                 @{
                     Name          = "Microsoft.PowerShell.Management\Get-ChildItem"
@@ -320,15 +404,21 @@ function Get-ScriptExecutionErrorFixPrompt {
                     JsonDepth     = 5
                 },
                 @{
-                    Name          = "Microsoft.PowerShell.Utility\Invoke-WebRequest"
-                    AllowedParams = @("Uri=string", "Method=string", "Body", "ContentType=string", "Method=string", "UserAgent=string")
+                    Name          = ("Microsoft.PowerShell.Utility\" +
+                                     "Invoke-WebRequest")
+                    AllowedParams = @("Uri=string", "Method=string",
+                                      "Body", "ContentType=string",
+                                      "Method=string", "UserAgent=string")
                     OutputText    = $false
                     Confirm       = $false
                     JsonDepth     = 4
                 },
                 @{
-                    Name          = "Microsoft.PowerShell.Utility\Invoke-RestMethod"
-                    AllowedParams = @("Uri=string", "Method=string", "Body", "ContentType=string", "Method=string", "UserAgent=string")
+                    Name          = ("Microsoft.PowerShell.Utility\" +
+                                     "Invoke-RestMethod")
+                    AllowedParams = @("Uri=string", "Method=string",
+                                      "Body", "ContentType=string",
+                                      "Method=string", "UserAgent=string")
                     OutputText    = $false
                     Confirm       = $false
                     JsonDepth     = 10
@@ -341,7 +431,8 @@ function Get-ScriptExecutionErrorFixPrompt {
                 },
                 @{
                     Name          = "Microsoft.PowerShell.Utility\Get-Variable"
-                    AllowedParams = @("Name=string", "Scope=string", "ValueOnly=boolean")
+                    AllowedParams = @("Name=string", "Scope=string",
+                                      "ValueOnly=boolean")
                     OutputText    = $false
                     Confirm       = $false
                     JsonDepth     = 3
@@ -352,46 +443,78 @@ function Get-ScriptExecutionErrorFixPrompt {
 
     process {
 
-        $Object = @()
+        # initialize object array to capture script output
+        $object = @()
+
         try {
 
-            $Object = & $Script
+            # execute the provided script and capture its output
+            $object = & $Script
         }
         catch {
 
+            # capture exception details for error analysis
             $exception = $_.Exception
+
             $exceptionDetails = @()
-            $exceptionDetails += "Exception Type: $($exception.GetType().FullName)"
+
+            $exceptionDetails += ("Exception Type: " +
+                                 "$($exception.GetType().FullName)")
+
             $exceptionDetails += "Message: $($exception.Message)"
+
+            # walk through inner exceptions to capture full error chain
             while ($exception.InnerException) {
+
                 if ($exception.InnerException) {
-                    $exceptionDetails += "Inner Exception: $($exception.InnerException.Message)"
+
+                    $exceptionDetails += ("Inner Exception: " +
+                                         "$($exception.InnerException.Message)")
                 }
+
                 if ($exception.StackTrace) {
-                    $exceptionDetails += "Stack Trace: $($exception.StackTrace)"
+
+                    $exceptionDetails += ("Stack Trace: " +
+                                         "$($exception.StackTrace)")
                 }
+
                 $exception = $exception.InnerException
             }
 
+            # append detailed exception information to error output
             $null = $errorOutput.AppendLine($exceptionDetails -join "`n")
         }
-        foreach ($item in $Object) {
 
-            $null = $standardOutput.AppendLine(($item | Microsoft.PowerShell.Utility\Out-String))
+        # capture each output item as string for analysis
+        foreach ($item in $object) {
+
+            $null = $standardOutput.AppendLine(($item |
+                Microsoft.PowerShell.Utility\Out-String))
         }
     }
 
     end {
 
         try {
+
+            # return successful output if no errors occurred
             if ($errorOutput.Length -eq 0) {
+
+                Microsoft.PowerShell.Utility\Write-Verbose ("No errors " +
+                    "detected during script execution")
+
                 return @(@{
-                    StandardOutput= @($Object)
+                    StandardOutput= @($object)
                 });
             }
 
             try {
 
+                # output verbose message about starting llm analysis
+                Microsoft.PowerShell.Utility\Write-Verbose ("Analyzing " +
+                    "captured errors using LLM")
+
+                # create instructions for the llm to analyze errors
                 $instructions = @"
 Your job is to analyze all output of a PowerShell script execution
 and execute the following tasks:
@@ -408,9 +531,10 @@ and execute the following tasks:
 - Ensure your response is concise and does not repeat information.
 "@
 
-if ($ExposedCmdLets -and $ExposedCmdLets.Count) {
+                # append exposed cmdlets instructions if available
+                if ($ExposedCmdLets -and $ExposedCmdLets.Count) {
 
-    $instructions += @"
+                    $instructions += @"
 - You are allowed to use the following PowerShell cmdlets:
     + $($ExposedCmdLets.Name -join ", ")
     If needed use these tools to turn assumptions into facts
@@ -420,9 +544,10 @@ if ($ExposedCmdLets -and $ExposedCmdLets.Count) {
     websites and webapi's, clipboard contents, etc.
     You are an experienced senior debugger, so you know what to do.
 "@
-}
+                }
 
-                    $prompt = @"
+                # construct comprehensive prompt with all captured output
+                $prompt = @"
 Current directory: $($PWD.Path)
 --
 Current time: $(Microsoft.PowerShell.Utility\Get-Date)
@@ -451,39 +576,65 @@ Captured information output:
 $($informationOutput.ToString())
 "@
 
+                # copy parameters for llm invocation
                 $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName "GenXdev.AI\Invoke-LLMQuery"
 
+                # set specific parameters for the llm query
                 $invocationArgs.Query = $prompt
-                $invocationArgs.ExposedCmdLets = $ExposedCmdLets
-                $invocationArgs.Instructions = $instructions
-                $invocationArgs.ResponseFormat = $ResponseFormat
 
-                GenXdev.AI\Invoke-LLMQuery @invocationArgs | Microsoft.PowerShell.Utility\ConvertFrom-Json
+                $invocationArgs.ExposedCmdLets = $ExposedCmdLets
+
+                $invocationArgs.Instructions = $instructions
+
+                $invocationArgs.ResponseFormat = $responseFormat
+
+                # output verbose message about invoking llm
+                Microsoft.PowerShell.Utility\Write-Verbose ("Invoking LLM " +
+                    "query for error analysis")
+
+                # invoke llm and convert response from json
+                GenXdev.AI\Invoke-LLMQuery @invocationArgs |
+                Microsoft.PowerShell.Utility\ConvertFrom-Json
             }
             catch {
-                Microsoft.PowerShell.Utility\Write-Error "Error while processing: $_"
+
+                # log error during processing
+                Microsoft.PowerShell.Utility\Write-Error ("Error while " +
+                    "processing: $_")
+
                 throw "Error while processing: $_"
             }
         }
         finally {
-            # cleanup event handlers
-            $null = Microsoft.PowerShell.Utility\Unregister-Event -SourceIdentifier "Verbose" `
-                -ErrorAction SilentlyContinue
-            $null = Microsoft.PowerShell.Utility\Unregister-Event -SourceIdentifier "Error" `
-                -ErrorAction SilentlyContinue
-            $null = Microsoft.PowerShell.Utility\Unregister-Event -SourceIdentifier "Warning" `
-                -ErrorAction SilentlyContinue
-            $null = Microsoft.PowerShell.Utility\Unregister-Event -SourceIdentifier "Information" `
+
+            # cleanup event handlers to prevent memory leaks
+            $null = Microsoft.PowerShell.Utility\Unregister-Event `
+                -SourceIdentifier "Verbose" `
                 -ErrorAction SilentlyContinue
 
-            # restore original preferences
+            $null = Microsoft.PowerShell.Utility\Unregister-Event `
+                -SourceIdentifier "Error" `
+                -ErrorAction SilentlyContinue
+
+            $null = Microsoft.PowerShell.Utility\Unregister-Event `
+                -SourceIdentifier "Warning" `
+                -ErrorAction SilentlyContinue
+
+            $null = Microsoft.PowerShell.Utility\Unregister-Event `
+                -SourceIdentifier "Information" `
+                -ErrorAction SilentlyContinue
+
+            # restore original preferences to avoid side effects
             $VerbosePreference = $oldPreferences.Verbose
+
             $ErrorActionPreference = $oldPreferences.Error
+
             $WarningPreference = $oldPreferences.Warning
+
             $InformationPreference = $oldPreferences.Information
         }
     }
 }
-################################################################################
+###############################################################################

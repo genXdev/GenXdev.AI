@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Registers a new face with the DeepStack face recognition API.
@@ -53,7 +53,7 @@ Register-Face "JohnDoe" @("C:\Users\YourName\faces\john1.jpg", "C:\Users\YourNam
 
 .EXAMPLE
 Register-Face -Identifier "JohnDoe" -ImagePath "C:\Users\YourName\faces\john.jpg"
-#>
+        ###############################################################################>
 function Register-Face {
 
     [CmdletBinding()]
@@ -358,4 +358,4 @@ function Register-Face {
 
     }
 }
-################################################################################
+        ###############################################################################

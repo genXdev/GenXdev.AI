@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Executes a tool call function with validation and parameter filtering.
@@ -29,7 +29,7 @@ Invoke-CommandFromToolCall -ToolCall $toolCall -Functions $functions `
 
 .EXAMPLE
 $result = Invoke-CommandFromToolCall $toolCall $functions -ForceAsText
-#>
+        ###############################################################################>
 function Invoke-CommandFromToolCall {
 
     [CmdletBinding()]
@@ -533,4 +533,4 @@ process {
         Microsoft.PowerShell.Utility\Write-Output $result
     }
 }
-################################################################################
+        ###############################################################################

@@ -4,10 +4,10 @@
 Removes directories from the configured image directories for GenXdev.AI operations.
 
 .DESCRIPTION
-This function removes one or more directory paths from the existing image directories
-configuration used by the GenXdev.AI module. It updates both the global variable
-and the module's preference storage to persist the configuration across sessions.
-Supports wildcard patterns for flexible directory matching.
+This function removes one or more directory paths from the existing image
+directories configuration used by the GenXdev.AI module. It updates both the
+global variable and the module's preference storage to persist the configuration
+across sessions. Supports wildcard patterns for flexible directory matching.
 
 .PARAMETER ImageDirectories
 An array of directory paths or wildcard patterns to remove from the existing
@@ -15,6 +15,21 @@ image directories configuration.
 
 .PARAMETER Force
 Forces removal without confirmation prompts.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SkipSession
+Dont use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
 
 .EXAMPLE
 Remove-ImageDirectories -ImageDirectories @("C:\OldPhotos", "D:\TempImages")
@@ -29,8 +44,10 @@ Removes all directories that match the wildcard pattern.
 .EXAMPLE
 removeimgdir @("C:\OldPhotos") -Force
 
-Uses alias to forcibly remove a directory from the configuration without confirmation.
+Uses alias to forcibly remove a directory from the configuration without
+confirmation.
 #>
+################################################################################
 function Remove-ImageDirectories {
 
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
@@ -39,7 +56,7 @@ function Remove-ImageDirectories {
     [Alias("removeimgdir")]
 
     param(
-        ###############################################################################
+        ################################################################################
         [Parameter(
             Mandatory = $true,
             Position = 0,
@@ -49,56 +66,67 @@ function Remove-ImageDirectories {
         [ValidateNotNullOrEmpty()]
         [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
         [string[]] $ImageDirectories,
-        ###############################################################################
+        ################################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 1,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        ################################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Forces removal without confirmation prompts"
         )]
         [switch] $Force,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        ################################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        ################################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
         )]
         [switch] $ClearSession,
-        ########################################################################
+        ################################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+        ################################################################################
     )
 
     begin {
 
-        # get current configuration
+        # get current configuration using helper function to copy identical parameters
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Get-AIImageCollection" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
+
+        # retrieve the current image collection configuration
         $currentConfig = GenXdev.AI\Get-AIImageCollection @params
 
-        # initialize collection for remaining directories
+        # initialize collection for tracking directories that will remain
         $remainingDirectories = [System.Collections.Generic.List[string]]::new()
 
-        # add all existing directories to start
+        # populate the remaining directories list with current configuration
         foreach ($dir in $currentConfig) {
 
-            $remainingDirectories.Add($dir)
+            $null = $remainingDirectories.Add($dir)
         }
 
-        # track directories that will be removed for reporting
+        # initialize collection for tracking directories that get removed
         $removedDirectories = [System.Collections.Generic.List[string]]::new()
 
+        # output verbose information about the directories to be processed
         Microsoft.PowerShell.Utility\Write-Verbose (
             "Current image directories: [$($ImageDirectories -join ', ')]"
         )
@@ -106,50 +134,67 @@ function Remove-ImageDirectories {
 
     process {
 
-        # process each directory pattern to remove
+        # iterate through each directory pattern provided for removal
         foreach ($directoryPattern in $ImageDirectories) {
 
-            # expand the path to handle relative paths and environment variables
+            # expand the path to resolve relative paths and environment variables
             $expandedPattern = GenXdev.FileSystem\Expand-Path $directoryPattern
 
-            # find matching directories (support wildcards)
+            # find directories that match the pattern using wildcard support
             $matchingDirectories = $remainingDirectories |
                 Microsoft.PowerShell.Core\Where-Object {
                     $_ -like $expandedPattern
                 }
 
-            # remove matching directories
+            # remove each matching directory from the remaining collection
             foreach ($matchingDir in $matchingDirectories) {
 
+                # attempt to remove the directory and track successful removals
                 if ($remainingDirectories.Remove($matchingDir)) {
 
-                    $removedDirectories.Add($matchingDir)
-                    Microsoft.PowerShell.Utility\Write-Verbose "Marked for removal: $matchingDir"
+                    $null = $removedDirectories.Add($matchingDir)
+
+                    # output verbose information about the removal
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Marked for removal: $matchingDir"
+                    )
                 }
             }
 
-            # if no matches found and no wildcards, try exact match (case-insensitive)
-            if ($matchingDirectories.Count -eq 0 -and -not $expandedPattern.Contains('*') -and -not $expandedPattern.Contains('?')) {
+            # handle exact matches when no wildcards are used and no pattern matches found
+            if ($matchingDirectories.Count -eq 0 -and
+                -not $expandedPattern.Contains('*') -and
+                -not $expandedPattern.Contains('?')) {
 
+                # perform case-insensitive exact match search
                 $exactMatch = $remainingDirectories |
                     Microsoft.PowerShell.Core\Where-Object {
                         $_.ToLower() -eq $expandedPattern.ToLower()
                     }
 
+                # process exact matches if found
                 if ($exactMatch) {
 
                     foreach ($match in $exactMatch) {
 
+                        # attempt to remove the exact match and track removal
                         if ($remainingDirectories.Remove($match)) {
 
-                            $removedDirectories.Add($match)
-                            Microsoft.PowerShell.Utility\Write-Verbose "Marked for removal (exact match): $match"
+                            $null = $removedDirectories.Add($match)
+
+                            # output verbose information about exact match removal
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                "Marked for removal (exact match): $match"
+                            )
                         }
                     }
                 }
                 else {
 
-                    Microsoft.PowerShell.Utility\Write-Warning "Directory not found in configuration: $expandedPattern"
+                    # warn user when directory is not found in configuration
+                    Microsoft.PowerShell.Utility\Write-Warning (
+                        "Directory not found in configuration: $expandedPattern"
+                    )
                 }
             }
         }
@@ -157,43 +202,63 @@ function Remove-ImageDirectories {
 
     end {
 
+        # check if any directories were actually marked for removal
         if ($removedDirectories.Count -eq 0) {
 
-            Microsoft.PowerShell.Utility\Write-Host "No directories were found to remove." -ForegroundColor Yellow
+            # inform user that no directories were found to remove
+            Microsoft.PowerShell.Utility\Write-Host (
+                "No directories were found to remove."
+            ) -ForegroundColor Yellow
+
             return
         }
 
-        # convert to array for the Set-AIImageCollection call
+        # convert the remaining directories list to array for function call
         $finalDirectories = $remainingDirectories.ToArray()
 
-        # determine if we should proceed based on Force parameter or ShouldProcess
+        # determine if removal should proceed based on force flag or user confirmation
         $shouldProceed = $Force -or $PSCmdlet.ShouldProcess(
             "GenXdev.AI Module Configuration",
-            "Remove directories from image directories: [$($removedDirectories -join ', ')]"
+            ("Remove directories from image directories: " +
+                "[$($removedDirectories -join ', ')]")
         )
 
+        # proceed with the removal if confirmed or forced
         if ($shouldProceed) {
 
-            # use Set-AIImageCollection to update the configuration
+            # prepare parameters for the set operation using helper function
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\Set-AIImageCollection" `
-                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-            GenXdev.AI\Set-AIImageCollection @params -ImageDirectories $finalDirectories
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue)
 
-            # output confirmation
+            # update the image collection with the remaining directories
+            GenXdev.AI\Set-AIImageCollection @params `
+                -ImageDirectories $finalDirectories
+
+            # output confirmation message with summary statistics
             Microsoft.PowerShell.Utility\Write-Host (
-                "Removed $($removedDirectories.Count) directories from image directories configuration. " +
-                "Remaining directories: $($finalDirectories.Count)"
+                ("Removed $($removedDirectories.Count) directories from image " +
+                    "directories configuration. " +
+                    "Remaining directories: $($finalDirectories.Count)")
             ) -ForegroundColor Green
 
-            # list removed directories
+            # display list of removed directories if any were removed
             if ($removedDirectories.Count -gt 0) {
 
-                Microsoft.PowerShell.Utility\Write-Host "Removed directories:" -ForegroundColor Cyan
+                # display header for removed directories list
+                Microsoft.PowerShell.Utility\Write-Host (
+                    "Removed directories:"
+                ) -ForegroundColor Cyan
+
+                # iterate through and display each removed directory
                 foreach ($removedDir in $removedDirectories) {
 
-                    Microsoft.PowerShell.Utility\Write-Host "  - $removedDir" -ForegroundColor Gray
+                    Microsoft.PowerShell.Utility\Write-Host (
+                        "  - $removedDir"
+                    ) -ForegroundColor Gray
                 }
             }
         }

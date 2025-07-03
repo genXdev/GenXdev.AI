@@ -1,10 +1,14 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
-Transcribes an audio or video file to text..
+Transcribes an audio or video file to text.
 
 .DESCRIPTION
-Transcribes an audio or video file to text using the Whisper AI model
+Transcribes an audio or video file to text using the Whisper AI model. The
+function can handle various audio and video formats, convert them to the
+appropriate format for transcription, and optionally translate the output
+to a different language. Supports SRT subtitle format output and various
+audio processing parameters for fine-tuning the transcription quality.
 
 .PARAMETER FilePath
 The file path of the audio or video file to transcribe.
@@ -24,12 +28,6 @@ Returns objects instead of strings.
 .PARAMETER UseDesktopAudioCapture
 Whether to use desktop audio capture instead of microphone input
 
-.PARAMETER TranslateUsingLMStudioModel
-The LM Studio model to use for translation.
-
-.PARAMETER MaxSrtChars
-The maximum number of characters per line in the SRT output.
-
 .PARAMETER WithTokenTimestamps
 Whether to include token timestamps in the output.
 
@@ -42,6 +40,9 @@ Whether to split on word boundaries.
 .PARAMETER MaxTokensPerSegment
 Maximum number of tokens per segment.
 
+.PARAMETER IgnoreSilence
+Whether to ignore silence (will mess up timestamps).
+
 .PARAMETER MaxDurationOfSilence
 Maximum duration of silence before automatically stopping recording.
 
@@ -52,10 +53,13 @@ Silence detect threshold (0..32767 defaults to 30)
 Number of CPU threads to use, defaults to 0 (auto).
 
 .PARAMETER Temperature
-Temperature for speech generation.
+Temperature for speech recognition.
 
 .PARAMETER TemperatureInc
 Temperature increment.
+
+.PARAMETER Prompt
+Prompt to use for the model.
 
 .PARAMETER SuppressRegex
 Regex to suppress tokens from the output.
@@ -108,21 +112,41 @@ Don't use context.
 .PARAMETER WithBeamSearchSamplingStrategy
 Use beam search sampling strategy.
 
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SkipSession
+Dont use alternative settings stored in session for AI preferences like
+Language, Image collections, etc.
+
 .EXAMPLE
-    Get-MediaFileAudioTranscription -FilePath "C:\path\to\audio.wav" -LanguageIn "English" -LanguageOut "French" -SRT
-#>
+Get-MediaFileAudioTranscription -FilePath "C:\path\to\audio.wav" `
+    -LanguageIn "English" -LanguageOut "French" -SRT
+
+.EXAMPLE
+transcribefile "C:\video.mp4" "English"
+###############################################################################>
 function Get-MediaFileAudioTranscription {
+
     [CmdletBinding()]
     [Alias("transcribefile")]
     param (
-        ################################################################################
+        ###########################################################################
         [Parameter(
-            Mandatory,
+            Mandatory = $true,
             Position = 0,
             HelpMessage = "The file path of the audio or video file to transcribe."
         )]
         [string] $FilePath,
-        ################################################################################
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 1,
@@ -280,7 +304,7 @@ function Get-MediaFileAudioTranscription {
             "Yoruba",
             "Zulu")]
         [string] $LanguageIn,
-        ################################################################################
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 2,
@@ -436,408 +460,625 @@ function Get-MediaFileAudioTranscription {
             "Yiddish",
             "Yoruba",
             "Zulu")]
-        [string]$LanguageOut = $null,
-        ################################################################################
+        [string] $LanguageOut = $null,
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The LM Studio model to use for translation."
+            HelpMessage = "Whether to include token timestamps in the output"
         )]
-        [SupportsWildcards()]
-        [string] $TranslateUsingLMStudioModel = "qwen",
-        ################################################################################
+        [switch] $WithTokenTimestamps,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Sum threshold for token timestamps, defaults to 0.5"
+        )]
+        [float] $TokenTimestampsSumThreshold = 0.5,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Whether to split on word boundaries"
+        )]
+        [switch] $SplitOnWord,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Maximum number of tokens per segment"
+        )]
+        [int] $MaxTokensPerSegment,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Whether to ignore silence (will mess up timestamps)"
+        )]
+        [switch] $IgnoreSilence,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Maximum duration of silence before automatically " +
+                           "stopping recording")
+        )]
+        [object] $MaxDurationOfSilence,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Silence detect threshold (0..32767 defaults to 30)"
+        )]
+        [ValidateRange(0, 32767)]
+        [int] $SilenceThreshold,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Number of CPU threads to use, defaults to 0 (auto)"
+        )]
+        [int] $CpuThreads = 0,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Temperature for speech recognition"
+        )]
+        [ValidateRange(0, 100)]
+        [float] $Temperature = 0.01,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Temperature increment"
+        )]
+        [ValidateRange(0, 1)]
+        [float] $TemperatureInc,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Prompt to use for the model"
+        )]
+        [string] $Prompt,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Regex to suppress tokens from the output"
+        )]
+        [string] $SuppressRegex = $null,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Whether to show progress"
+        )]
+        [switch] $WithProgress,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Size of the audio context"
+        )]
+        [int] $AudioContextSize,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Whether to NOT suppress blank lines"
+        )]
+        [switch] $DontSuppressBlank,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Maximum duration of the audio"
+        )]
+        [object] $MaxDuration,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Offset for the audio"
+        )]
+        [object] $Offset,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Maximum number of last text tokens"
+        )]
+        [int] $MaxLastTextTokens,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Whether to use single segment only"
+        )]
+        [switch] $SingleSegmentOnly,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Whether to print special tokens"
+        )]
+        [switch] $PrintSpecialTokens,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Maximum segment length"
+        )]
+        [int] $MaxSegmentLength,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Start timestamps at this moment"
+        )]
+        [object] $MaxInitialTimestamp,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Length penalty"
+        )]
+        [ValidateRange(0, 1)]
+        [float] $LengthPenalty,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Entropy threshold"
+        )]
+        [ValidateRange(0, 1)]
+        [float] $EntropyThreshold,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Log probability threshold"
+        )]
+        [ValidateRange(0, 1)]
+        [float] $LogProbThreshold,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "No speech threshold"
+        )]
+        [ValidateRange(0, 1)]
+        [float] $NoSpeechThreshold,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Don't use context"
+        )]
+        [switch] $NoContext,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Use beam search sampling strategy"
+        )]
+        [switch] $WithBeamSearchSamplingStrategy,
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Output in SRT format."
         )]
         [switch] $SRT,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Returns objects instead of strings")]
-        [switch] $PassThru,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Whether to use desktop audio capture instead of microphone input")]
-        [switch] $UseDesktopAudioCapture,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Whether to include token timestamps in the output")]
-        [switch] $WithTokenTimestamps,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Sum threshold for token timestamps, defaults to 0.5")]
-        [float] $TokenTimestampsSumThreshold = 0.5,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Whether to split on word boundaries")]
-        [switch] $SplitOnWord,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Maximum number of tokens per segment")]
-        [int] $MaxTokensPerSegment,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Whether to ignore silence (will mess up timestamps)")]
-        [switch] $IgnoreSilence,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Maximum duration of silence before automatically stopping recording")]
-        [object] $MaxDurationOfSilence,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Silence detect threshold (0..32767 defaults to 30)")]
-        [ValidateRange(0, 32767)]
-        [int] $SilenceThreshold,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Number of CPU threads to use, defaults to 0 (auto)")]
-        [int] $CpuThreads = 0,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Temperature for speech recognition")]
-        [ValidateRange(0, 100)]
-        [float] $Temperature = 0.01,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Temperature increment")]
-        [ValidateRange(0, 1)]
-        [float] $TemperatureInc,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Prompt to use for the model")]
-        [string] $Prompt,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Regex to suppress tokens from the output")]
-        [string] $SuppressRegex = $null,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Whether to show progress")]
-        [switch] $WithProgress,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Size of the audio context")]
-        [int] $AudioContextSize,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Whether to NOT suppress blank lines")]
-        [switch] $DontSuppressBlank,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Maximum duration of the audio")]
-        [object] $MaxDuration,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Offset for the audio")]
-        [object] $Offset,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Maximum number of last text tokens")]
-        [int] $MaxLastTextTokens,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Whether to use single segment only")]
-        [switch] $SingleSegmentOnly,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Whether to print special tokens")]
-        [switch] $PrintSpecialTokens,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Maximum segment length")]
-        [int] $MaxSegmentLength,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Start timestamps at this moment")]
-        [object] $MaxInitialTimestamp,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Length penalty")]
-        [ValidateRange(0, 1)]
-        [float] $LengthPenalty,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Entropy threshold")]
-        [ValidateRange(0, 1)]
-        [float] $EntropyThreshold,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Log probability threshold")]
-        [ValidateRange(0, 1)]
-        [float] $LogProbThreshold,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "No speech threshold")]
-        [ValidateRange(0, 1)]
-        [float] $NoSpeechThreshold,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Don't use context")]
-        [switch] $NoContext,
-        ################################################################################
-        [Parameter(Mandatory = $false, HelpMessage = "Use beam search sampling strategy")]
-        [switch] $WithBeamSearchSamplingStrategy,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = "Returns objects instead of strings"
+        )]
+        [switch] $PassThru,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Whether to use desktop audio capture instead of " +
+                           "microphone input")
+        )]
+        [switch] $UseDesktopAudioCapture,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                           "preferences like Language, Image collections, etc")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for " +
+                           "AI preferences like Language, Image collections, etc")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Dont use alternative settings stored in session " +
+                           "for AI preferences like Language, Image " +
+                           "collections, etc")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+        ###########################################################################
     )
 
     begin {
 
+        # copy identical parameter values for ai meta language helper function
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-        $LanguageIn = GenXdev.AI\Get-AIMetaLanguage @params -Language (
-            [String]::IsNullOrWhiteSpace($LanguageIn) ?
-            (GenXdev.Helpers\Get-DefaultWebLanguage) :
-            $LanguageIn
-        )
-        $LanguageOut = GenXdev.AI\Get-AIMetaLanguage @params -Language (
-            [String]::IsNullOrWhiteSpace($LanguageOut) ?
-            (GenXdev.Helpers\Get-DefaultWebLanguage) :
-            $LanguageOut
-        )
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local -ErrorAction SilentlyContinue)
 
-        if ($PSBoundParameters.ContainsKey("MaxDurationOfSilence") -and (-not ($MaxDurationOfSilence -is [System.TimeSpan]))) {
+        # resolve the input language to a standard format
+        $LanguageIn = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageIn
 
-            $MaxDurationOfSilence = [System.TimeSpan]::FromSeconds($MaxDurationOfSilence)
+        # resolve the output language to a standard format
+        $LanguageOut = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageOut
+
+        # convert maxdurationofsilence to timespan if it's not already
+        if ($PSBoundParameters.ContainsKey("MaxDurationOfSilence") -and `
+            (-not ($MaxDurationOfSilence -is [System.TimeSpan]))) {
+
+            $MaxDurationOfSilence = [System.TimeSpan]::FromSeconds(`
+                $MaxDurationOfSilence)
             $PSBoundParameters["MaxDurationOfSilence"] = $MaxDurationOfSilence
         }
 
-        if ($PSBoundParameters.ContainsKey("MaxDuration") -and (-not ($MaxDuration -is [System.TimeSpan]))) {
+        # convert maxduration to timespan if it's not already
+        if ($PSBoundParameters.ContainsKey("MaxDuration") -and `
+            (-not ($MaxDuration -is [System.TimeSpan]))) {
 
             $MaxDuration = [System.TimeSpan]::FromSeconds($MaxDuration)
             $PSBoundParameters["MaxDuration"] = $MaxDuration
         }
 
-        if ($PSBoundParameters.ContainsKey("Offset") -and (-not ($Offset -is [System.TimeSpan]))) {
+        # convert offset to timespan if it's not already
+        if ($PSBoundParameters.ContainsKey("Offset") -and `
+            (-not ($Offset -is [System.TimeSpan]))) {
 
             $Offset = [System.TimeSpan]::FromSeconds($Offset)
             $PSBoundParameters["Offset"] = $Offset
         }
 
-        if ($PSBoundParameters.ContainsKey("MaxInitialTimestamp") -and (-not ($MaxInitialTimestamp -is [System.TimeSpan]))) {
+        # convert maxinitialtimestamp to timespan if it's not already
+        if ($PSBoundParameters.ContainsKey("MaxInitialTimestamp") -and `
+            (-not ($MaxInitialTimestamp -is [System.TimeSpan]))) {
 
-            $MaxInitialTimestamp = [System.TimeSpan]::FromSeconds($MaxInitialTimestamp)
+            $MaxInitialTimestamp = [System.TimeSpan]::FromSeconds(`
+                $MaxInitialTimestamp)
             $PSBoundParameters["MaxInitialTimestamp"] = $MaxInitialTimestamp
         }
 
-        $ffmpegPath = (Microsoft.PowerShell.Management\Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Microsoft.PowerShell.Utility\Select-Object -First 1 | Microsoft.PowerShell.Core\ForEach-Object FullName)
+        # locate the ffmpeg executable path in winget installation directory
+        $ffmpegPath = (Microsoft.PowerShell.Management\Get-ChildItem `
+            "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" `
+            -File -rec -ErrorAction SilentlyContinue | `
+            Microsoft.PowerShell.Utility\Select-Object -First 1 | `
+            Microsoft.PowerShell.Core\ForEach-Object FullName)
     }
 
 
 process {
 
-        $MaxSrtChars = [System.Math]::Min(200, [System.Math]::Max(20, $MaxSrtChars))
+        # ensure maxsrtchars is between 20 and 200 characters
+        $MaxSrtChars = [System.Math]::Min(200, [System.Math]::Max(20, `
+            $MaxSrtChars))
 
+        # helper function to check if winget powershell client is installed
         function IsWinGetInstalled {
-            Microsoft.PowerShell.Core\Import-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
-            $module = Microsoft.PowerShell.Core\Get-Module "Microsoft.WinGet.Client" -ErrorAction SilentlyContinue
+
+            # try to import the winget client module
+            Microsoft.PowerShell.Core\Import-Module "Microsoft.WinGet.Client" `
+                -ErrorAction SilentlyContinue
+
+            # check if the module was successfully loaded
+            $module = Microsoft.PowerShell.Core\Get-Module "Microsoft.WinGet.Client" `
+                -ErrorAction SilentlyContinue
+
             if ($null -eq $module) {
+
                 return $false
             }
+
             return $true
         }
 
+        # helper function to install winget powershell client
         function InstallWinGet {
 
-            Microsoft.PowerShell.Utility\Write-Verbose "Installing WinGet PowerShell client.."
-            PowerShellGet\Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber
+            Microsoft.PowerShell.Utility\Write-Verbose `
+                "Installing WinGet PowerShell client.."
+
+            # install the winget client module
+            PowerShellGet\Install-Module "Microsoft.WinGet.Client" `
+                -Force -AllowClobber
+
+            # import the newly installed module
             Microsoft.PowerShell.Core\Import-Module "Microsoft.WinGet.Client"
         }
 
+        # helper function to install ffmpeg using winget
         function Installffmpeg {
 
-            if ([IO.File]::Exists($ffmpegPath)) { return }
+            # check if ffmpeg is already installed
+            if ([IO.File]::Exists($ffmpegPath)) {
 
+                return
+            }
+
+            # ensure winget is installed before proceeding
             if (-not (IsWinGetInstalled)) {
 
                 InstallWinGet
             }
 
+            # define the ffmpeg package identifier
             $ffmpeg = "Gyan.FFmpeg"
-            $ffmpegPackage = Microsoft.WinGet.Client\Get-WinGetPackage -Id $ffmpeg
 
+            # check if ffmpeg package is available
+            $ffmpegPackage = Microsoft.WinGet.Client\Get-WinGetPackage `
+                -Id $ffmpeg
+
+            # install ffmpeg if not found
             if ($null -eq $ffmpegPackage) {
 
                 Microsoft.PowerShell.Utility\Write-Verbose "Installing ffmpeg.."
+
                 try {
-                    Microsoft.WinGet.Client\Install-WinGetPackage -Id $ffmpeg -Force
+                    # attempt to install using winget client module
+                    Microsoft.WinGet.Client\Install-WinGetPackage -Id $ffmpeg `
+                        -Force
                 }
                 catch {
+                    # fallback to winget command line tool
                     winget install $ffmpeg
                 }
-                $ffmpegPath = (Microsoft.PowerShell.Management\Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Microsoft.PowerShell.Utility\Select-Object -First 1).FullName
+
+                # update the ffmpeg path after installation
+                $ffmpegPath = (Microsoft.PowerShell.Management\Get-ChildItem `
+                    "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" `
+                    -File -rec -ErrorAction SilentlyContinue | `
+                    Microsoft.PowerShell.Utility\Select-Object -First 1).FullName
             }
         }
 
-        # Make sure ffmpeg is installed
-        Installffmpeg | Microsoft.PowerShell.Core\Out-Null
+        # ensure ffmpeg is installed before proceeding
+        $null = Installffmpeg
 
-        # Replace these paths with your actual file paths
+        # expand the input file path to absolute path
         $inputFile = GenXdev.FileSystem\Expand-Path $FilePath
-        $outputFile = [IO.Path]::GetTempFileName() + ".wav";
 
-        # Construct and execute the ffmpeg command
-        Microsoft.PowerShell.Utility\Write-Verbose "Converting the file '$inputFile' to WAV format.."
+        # create a temporary wav file for conversion
+        $outputFile = [IO.Path]::GetTempFileName() + ".wav"
 
-        $job = Microsoft.PowerShell.Core\Start-Job -ArgumentList $ffmpegPath, $inputFile, $outputFile -ScriptBlock {
+        # inform user about the conversion process
+        Microsoft.PowerShell.Utility\Write-Verbose `
+            ("Converting the file '$inputFile' to WAV format..")
+
+        # start background job to convert media file to wav format
+        $job = Microsoft.PowerShell.Core\Start-Job `
+            -ArgumentList $ffmpegPath, $inputFile, $outputFile -ScriptBlock {
 
             param($ffmpegPath, $inputFile, $outputFile)
 
-            $ffmpegPath = (Microsoft.PowerShell.Management\Get-ChildItem "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" -File -rec -ErrorAction SilentlyContinue | Microsoft.PowerShell.Utility\Select-Object -First 1 | Microsoft.PowerShell.Core\ForEach-Object FullName)
+            # locate ffmpeg path in case it's not passed correctly
+            $ffmpegPath = (Microsoft.PowerShell.Management\Get-ChildItem `
+                "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" `
+                -File -rec -ErrorAction SilentlyContinue | `
+                Microsoft.PowerShell.Utility\Select-Object -First 1 | `
+                Microsoft.PowerShell.Core\ForEach-Object FullName)
+
             try {
-                # Convert the file to WAV format
-                & $ffmpegPath -i "$inputFile" -ac 1 -ar 16000 -sample_fmt s16 "$outputFile" -loglevel quiet -y | Microsoft.PowerShell.Core\Out-Null
+                # convert file to wav with specific audio parameters for whisper
+                & $ffmpegPath -i "$inputFile" -ac 1 -ar 16000 `
+                    -sample_fmt s16 "$outputFile" -loglevel quiet -y | `
+                    Microsoft.PowerShell.Core\Out-Null
             }
             finally {
+                # clear the terminal line to remove ffmpeg output
                 [System.Console]::Write("`e[1A`e[2K")
             }
 
+            # return the exit code for success/failure checking
             return $LASTEXITCODE
         }
 
-        # Wait for the job to complete and check the result
-        $job | Microsoft.PowerShell.Core\Wait-Job | Microsoft.PowerShell.Core\Out-Null
-        $success = ($job | Microsoft.PowerShell.Core\Receive-Job) -eq 0
-        Microsoft.PowerShell.Core\Remove-Job -Job $job | Microsoft.PowerShell.Core\Out-Null
+        # wait for the conversion job to complete
+        $job | Microsoft.PowerShell.Core\Wait-Job | `
+            Microsoft.PowerShell.Core\Out-Null
 
+        # check if the conversion was successful
+        $success = ($job | Microsoft.PowerShell.Core\Receive-Job) -eq 0
+
+        # clean up the completed job
+        Microsoft.PowerShell.Core\Remove-Job -Job $job | `
+            Microsoft.PowerShell.Core\Out-Null
+
+        # handle conversion failure
         if (-not $success) {
 
-            Microsoft.PowerShell.Utility\Write-Warning "Failed to convert the file '$inputFile' to WAV format."
+            Microsoft.PowerShell.Utility\Write-Warning `
+                ("Failed to convert the file '$inputFile' to WAV format.")
 
-            # Clean up the temporary file
+            # clean up the temporary file if it exists
             if ([IO.File]::Exists($outputFile)) {
 
-                Microsoft.PowerShell.Management\Remove-Item -Path $outputFile -Force | Microsoft.PowerShell.Core\Out-Null
+                $null = Microsoft.PowerShell.Management\Remove-Item `
+                    -Path $outputFile -Force
             }
 
             return
         }
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Transcribing the audio file '$inputFile'.."
+        # inform user about the transcription process
+        Microsoft.PowerShell.Utility\Write-Verbose `
+            ("Transcribing the audio file '$inputFile'..")
 
+        # add language parameter if languagein was specified
         if ($PSBoundParameters.ContainsKey("LanguageIn")) {
 
-            $null = $PSBoundParameters.Add("Language", $LanguageIn) | Microsoft.PowerShell.Core\Out-Null;
+            $null = $PSBoundParameters.Add("Language", $LanguageIn)
         }
 
+        # remove withtranslate parameter if it exists (legacy cleanup)
         if ($PSBoundParameters.ContainsKey("WithTranslate")) {
 
-            $null = $PSBoundParameters.Remove("WithTranslate", $true) | Microsoft.PowerShell.Core\Out-Null;
+            $null = $PSBoundParameters.Remove("WithTranslate", $true)
         }
 
-        if (($SRT -eq $true) -and (-not $PSBoundParameters.ContainsKey("PassThru"))) {
+        # handle srt format parameter dependencies
+        if (($SRT -eq $true) -and `
+            (-not $PSBoundParameters.ContainsKey("PassThru"))) {
 
-            $null = $PSBoundParameters.Add("PassThru", $true) | Microsoft.PowerShell.Core\Out-Null;
+            $null = $PSBoundParameters.Add("PassThru", $true)
         }
         else {
 
             if ((-not $SRT) -and $PSBoundParameters.ContainsKey("PassThru")) {
 
-                $null = $PSBoundParameters.Remove("PassThru") | Microsoft.PowerShell.Core\Out-Null
+                $null = $PSBoundParameters.Remove("PassThru")
             }
         }
 
+        # add the converted wav file path to parameters
         if (-not $PSBoundParameters.ContainsKey("WaveFile")) {
 
-            $null = $PSBoundParameters.Add("WaveFile", $outputFile) | Microsoft.PowerShell.Core\Out-Null;
+            $null = $PSBoundParameters.Add("WaveFile", $outputFile)
         }
 
+        # ensure error action is set to stop for proper error handling
         if (-not $PSBoundParameters.ContainsKey("ErrorAction")) {
 
-            $null = $PSBoundParameters.Add("ErrorAction", "Stop") | Microsoft.PowerShell.Core\Out-Null;
+            $null = $PSBoundParameters.Add("ErrorAction", "Stop")
         }
 
+        # handle model file path parameter
         if (-not $PSBoundParameters.ContainsKey("ModelFilePath")) {
 
-            $null = $PSBoundParameters.Add("ModelFilePath", $ModelFilePath) | Microsoft.PowerShell.Core\Out-Null;
+            $null = $PSBoundParameters.Add("ModelFilePath", $ModelFilePath)
         }
         else {
 
-            $PSBoundParameters["ModelFilePath"] = $ModelFilePath;
+            $PSBoundParameters["ModelFilePath"] = $ModelFilePath
         }
 
+        # optimize cpu thread usage based on gpu availability
         if (-not (GenXdev.AI\Get-HasCapableGpu)) {
 
             if (-not $PSBoundParameters.ContainsKey("CpuThreads")) {
 
-                $null = $PSBoundParameters.Add("CpuThreads", (GenXdev.AI\Get-NumberOfCpuCores)) | Microsoft.PowerShell.Core\Out-Null;
+                $null = $PSBoundParameters.Add("CpuThreads", `
+                    (GenXdev.AI\Get-NumberOfCpuCores))
             }
         }
 
         try {
 
-            # outputting in SRT format?
+            # check if output should be in srt subtitle format
             if ($SRT) {
 
-                # initialize srt counter
+                # initialize subtitle counter for srt format
                 $i = 1
+
+                # copy parameters for audio transcription function
                 $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName "GenXdev.AI\Start-AudioTranscription"
 
-                GenXdev.AI\Start-AudioTranscription @invocationArguments | Microsoft.PowerShell.Core\ForEach-Object {
+                # process each transcription segment for srt output
+                GenXdev.AI\Start-AudioTranscription @invocationArguments | `
+                    Microsoft.PowerShell.Core\ForEach-Object {
 
-                    $result = $PSItem;
+                    $result = $PSItem
 
-                    # needs translation?
+                    # check if translation to output language is required
                     if (-not [string]::IsNullOrWhiteSpace($LanguageOut)) {
 
-                        Microsoft.PowerShell.Utility\Write-Verbose "Translating text to $LanguageOut for: `"$($result.Text)`".."
+                        Microsoft.PowerShell.Utility\Write-Verbose `
+                            ("Translating text to $LanguageOut for: " +
+                             "`"$($result.Text)`"..")
 
                         try {
-                            # translate the text
-                            $translateParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                            # prepare parameters for text translation
+                            $translateParams = `
+                                GenXdev.Helpers\Copy-IdenticalParamValues `
                                 -BoundParameters $PSBoundParameters `
                                 -FunctionName "GenXdev.AI\Get-TextTranslation" `
-                                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+                                -DefaultValues `
+                                (Microsoft.PowerShell.Utility\Get-Variable `
+                                -Scope Local -ErrorAction SilentlyContinue)
+
+                            # create new result with translated text
                             $result = @{
-                                Text  = (GenXdev.AI\Get-TextTranslation @translateParams -Text:($result.Text) -Language:$LanguageOut -Model:$TranslateUsingLMStudioModel -Instructions "Translate this partial subtitle text, into the [Language] language. ommit only the translation no yapping or chatting. return in json format like so: {`"Translation`":`"Translated text here`"}" | Microsoft.PowerShell.Utility\ConvertFrom-Json).Translation;
-                                Start = $result.Start;
-                                End   = $result.End;
+                                Text  = (GenXdev.AI\Get-TextTranslation `
+                                    @translateParams -Text:($result.Text) `
+                                    -Language:$LanguageOut `
+                                    -Instructions ("Translate this partial " +
+                                        "subtitle text, into the [Language] " +
+                                        "language. ommit only the translation " +
+                                        "no yapping or chatting. return in " +
+                                        "json format like so: " +
+                                        "{`"Translation`":`"Translated text " +
+                                        "here`"}") | `
+                                    Microsoft.PowerShell.Utility\ConvertFrom-Json).Translation
+                                Start = $result.Start
+                                End   = $result.End
                             }
 
-                            Microsoft.PowerShell.Utility\Write-Verbose "Text translated to: `"$($result.Text)`".."
+                            Microsoft.PowerShell.Utility\Write-Verbose `
+                                ("Text translated to: `"$($result.Text)`"..")
                         }
                         catch {
 
-                            Microsoft.PowerShell.Utility\Write-Verbose "Translating text to $LanguageOut, failed: $PSItem"
+                            Microsoft.PowerShell.Utility\Write-Verbose `
+                                ("Translating text to $LanguageOut, " +
+                                 "failed: $PSItem")
                         }
                     }
 
-                    $start = $result.Start.ToString("hh\:mm\:ss\,fff", [CultureInfo]::InvariantCulture);
-                    $end = $result.end.ToString("hh\:mm\:ss\,fff", [CultureInfo]::InvariantCulture);
+                    # format timestamps for srt output
+                    $start = $result.Start.ToString("hh\:mm\:ss\,fff", `
+                        [CultureInfo]::InvariantCulture)
+                    $end = $result.end.ToString("hh\:mm\:ss\,fff", `
+                        [CultureInfo]::InvariantCulture)
 
+                    # output srt formatted subtitle entry
                     "$i`r`n$start --> $end`r`n$($result.Text)`r`n`r`n"
 
-                    # increment the counter
+                    # increment subtitle counter
                     $i++
                 }
 
-                # end of SRT format
-                return;
+                # exit early for srt format processing
+                return
             }
 
-            #  needs translation?
+            # check if translation is needed for non-srt output
             if (-not [string]::IsNullOrWhiteSpace($LanguageOut)) {
 
+                # copy parameters for audio transcription function
                 $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName "GenXdev.AI\Start-AudioTranscription"
 
-                # transcribe the audio file to text
-                $results = GenXdev.AI\Start-AudioTranscription @invocationArguments
+                # transcribe the audio file to get raw text
+                $results = GenXdev.AI\Start-AudioTranscription `
+                    @invocationArguments
 
-                # delegate
+                # prepare parameters for text translation
                 $translateParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName "GenXdev.AI\Get-TextTranslation" `
-                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-                GenXdev.AI\Get-TextTranslation @translateParams -Text "$results" -Language $LanguageOut -Model $TranslateUsingLMStudioModel
+                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                        -Scope Local -ErrorAction SilentlyContinue)
 
-                # end of translation
-                return;
+                # translate the complete transcribed text
+                GenXdev.AI\Get-TextTranslation @translateParams `
+                    -Text "$results" -Language $LanguageOut
+
+                # exit early for translation processing
+                return
             }
 
-            # return the text results without translation
+            # handle standard transcription without translation
             $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\Start-AudioTranscription"
 
+            # return transcribed text without translation
             GenXdev.AI\Start-AudioTranscription @invocationArguments
         }
         catch {
 
+            # only show error if it's not a user abort
             if ("$PSItem" -notlike "*aborted*") {
 
                 Microsoft.PowerShell.Utility\Write-Error $PSItem
@@ -845,11 +1086,16 @@ process {
         }
         finally {
 
-            # Clean up the temporary file
+            # always clean up temporary files
             if ([IO.File]::Exists($outputFile)) {
 
-                Microsoft.PowerShell.Management\Remove-Item -Path $outputFile -Force
+                Microsoft.PowerShell.Management\Remove-Item -Path $outputFile `
+                    -Force
             }
         }
     }
+
+    end {
+    }
 }
+###############################################################################

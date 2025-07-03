@@ -1,4 +1,5 @@
-################################################################################
+###############################################################################
+
 <#
 .SYNOPSIS
 Removes image metadata files from image directories.
@@ -6,21 +7,32 @@ Removes image metadata files from image directories.
 .DESCRIPTION
 The Remove-ImageMetaData function removes companion JSON metadata files that
 are associated with images. It can selectively remove only keywords
-(description.json), people data (people.json), or objects data (objects.json),
-or remove all metadata files if no specific switch is provided. Language-specific
-metadata files can be removed by specifying the Language parameter, and all
-language variants can be removed using the AllLanguages switch.
+(description.json), people data (people.json), objects data (objects.json),
+or scenes data (scenes.json), or remove all metadata files if no specific
+switch is provided. Language-specific metadata files can be removed by
+specifying the Language parameter, and all language variants can be removed
+using the AllLanguages switch.
 
 .PARAMETER ImageDirectories
-Array of directory paths to process for image metadata removal. If not specified,
-uses default system directories including Downloads, OneDrive, and Pictures folders.
+Array of directory paths to process for image metadata removal. If not
+specified, uses default system directories including Downloads, OneDrive,
+and Pictures folders.
 
 .PARAMETER Recurse
 When specified, searches for images in the specified directory and all
 subdirectories.
 
+.PARAMETER Language
+Specifies the language for removing language-specific metadata files. When
+specified, removes both the default English description.json and the
+language-specific file. Defaults to English.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
 .PARAMETER OnlyKeywords
-When specified, only removes the description.json files (keywords/descriptions).
+When specified, only removes the description.json files
+(keywords/descriptions).
 
 .PARAMETER OnlyPeople
 When specified, only removes the people.json files (face recognition data).
@@ -28,24 +40,37 @@ When specified, only removes the people.json files (face recognition data).
 .PARAMETER OnlyObjects
 When specified, only removes the objects.json files (object detection data).
 
-.PARAMETER Language
-Specifies the language for removing language-specific metadata files. When
-specified, removes both the default English description.json and the
-language-specific file. Defaults to English.
+.PARAMETER OnlyScenes
+When specified, only removes the scenes.json files (scene classification
+data).
 
 .PARAMETER AllLanguages
-When specified, removes metadata files for all supported languages by iterating
-through all languages from Get-WebLanguageDictionary.
+When specified, removes metadata files for all supported languages by
+iterating through all languages from Get-WebLanguageDictionary.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER SkipSession
+Dont use alternative settings stored in session for AI preferences like
+Language, Image collections, etc.
 
 .EXAMPLE
 Remove-ImageMetaData -ImageDirectories @("C:\Photos", "D:\MyImages") -Recurse
 
-Removes all metadata files for images in multiple directories and all subdirectories.
+Removes all metadata files for images in multiple directories and all
+subdirectories.
 
 .EXAMPLE
 Remove-ImageMetaData -Recurse -OnlyKeywords
 
-Removes only description.json files from default system directories and subdirectories.
+Removes only description.json files from default system directories and
+subdirectories.
 
 .EXAMPLE
 Remove-ImageMetaData -OnlyPeople -ImageDirectories @(".\MyPhotos")
@@ -55,7 +80,8 @@ Removes only people.json files from the MyPhotos directory.
 .EXAMPLE
 Remove-ImageMetaData -Language "Spanish" -OnlyKeywords -Recurse
 
-Removes both English and Spanish description files recursively from default directories.
+Removes both English and Spanish description files recursively from default
+directories.
 
 .EXAMPLE
 removeimagedata -AllLanguages -OnlyKeywords
@@ -63,13 +89,14 @@ removeimagedata -AllLanguages -OnlyKeywords
 Uses alias to remove keyword files for all supported languages.
 
 .NOTES
-If none of the -OnlyKeywords, -OnlyPeople, -OnlyObjects, or -OnlyScenes switches are
-specified, all four types of metadata files will be removed.
+If none of the -OnlyKeywords, -OnlyPeople, -OnlyObjects, or -OnlyScenes
+switches are specified, all four types of metadata files will be removed.
 When Language is specified, both the default English and language-specific
 files are removed.
 When AllLanguages is specified, metadata files for all supported languages
 are removed.
 #>
+###############################################################################
 function Remove-ImageMetaData {
 
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
@@ -80,7 +107,9 @@ function Remove-ImageMetaData {
         [Parameter(
             Mandatory = $false,
             Position = 0,
-            HelpMessage = "Array of directory paths to process for image metadata removal. If not specified, uses default system directories."
+            HelpMessage = ("Array of directory paths to process for image " +
+                          "metadata removal. If not specified, uses default " +
+                          "system directories.")
         )]
         [ValidateNotNullOrEmpty()]
         [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
@@ -89,44 +118,9 @@ function Remove-ImageMetaData {
         [Parameter(
             Mandatory = $false,
             Position = 1,
-            HelpMessage = "Recurse directories."
-        )]
-        [switch] $Recurse,
-        #######################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Only remove description.json files " +
-                          "(keywords/descriptions).")
-        )]
-        [switch] $OnlyKeywords,
-        #######################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Only remove people.json files " +
-                          "(face recognition data).")
-        )]
-        [switch] $OnlyPeople,
-        #######################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Only remove objects.json files " +
-                          "(object detection data).")
-        )]
-        [switch] $OnlyObjects,
-        #######################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Only remove scenes.json files " +
-                          "(scene classification data).")
-        )]
-        [switch] $OnlyScenes,
-        #######################################################################        [Parameter(
-        [Parameter(
-                Mandatory = $false,
             HelpMessage = ("The language for removing language-specific " +
                           "metadata files.")
         )]
-        [PSDefaultValue(Value = "English")]
         [ValidateSet(
             "Afrikaans",
             "Akan",
@@ -271,8 +265,50 @@ function Remove-ImageMetaData {
             "Xhosa",
             "Yiddish",
             "Yoruba",
-            "Zulu")]
+            "Zulu"
+        )]
         [string] $Language,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 2,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Recurse directories."
+        )]
+        [switch] $Recurse,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Only remove description.json files " +
+                          "(keywords/descriptions).")
+        )]
+        [switch] $OnlyKeywords,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Only remove people.json files " +
+                          "(face recognition data).")
+        )]
+        [switch] $OnlyPeople,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Only remove objects.json files " +
+                          "(object detection data).")
+        )]
+        [switch] $OnlyObjects,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Only remove scenes.json files " +
+                          "(scene classification data).")
+        )]
+        [switch] $OnlyScenes,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -280,53 +316,66 @@ function Remove-ImageMetaData {
                           "languages.")
         )]
         [switch] $AllLanguages,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for " +
+                          "AI preferences like Language, Image collections, " +
+                          "etc")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for " +
+                          "AI preferences like Language, Image collections, " +
+                          "etc")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Dont use alternative settings stored in session " +
+                          "for AI preferences like Language, Image " +
+                          "collections, etc")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+        #######################################################################
     )
 
     begin {
 
+        # copy identical parameter values for image collection retrieval
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Get-AIImageCollection" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                           -Scope Local `
+                           -ErrorAction SilentlyContinue)
+
+        # get image directories using ai preferences
         $directories = GenXdev.AI\Get-AIImageCollection @params
 
+        # copy identical parameter values for language retrieval
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-        $Language = GenXdev.AI\Get-AIMetaLanguage @params -Language (
-            [String]::IsNullOrWhiteSpace($Language) ?
-            (GenXdev.Helpers\Get-DefaultWebLanguage) :
-            $Language
-        )
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                           -Scope Local `
+                           -ErrorAction SilentlyContinue)
+
+        # get configured language using ai preferences
+        $Language = GenXdev.AI\Get-AIMetaLanguage @params
 
         # output verbose information about directories to process
         Microsoft.PowerShell.Utility\Write-Verbose `
-            ("Processing directories: {0} with language: {1}" -f ($directories -join ', '), $Language)
+            ("Processing directories: {0} with language: {1}" -f `
+             ($directories -join ', '), $Language)
     }
 
     process {
+
         # iterate through each specified directory path
         foreach ($path in $directories) {
 
@@ -338,6 +387,7 @@ function Remove-ImageMetaData {
 
                 Microsoft.PowerShell.Utility\Write-Host `
                     "The directory '$path' does not exist."
+
                 continue
             }
 
@@ -347,7 +397,7 @@ function Remove-ImageMetaData {
 
             # get all supported image files from the specified directory
             Microsoft.PowerShell.Management\Get-ChildItem `
-                -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
+                -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.gif","$path\*.png" `
                 -Recurse:$Recurse `
                 -File `
                 -ErrorAction SilentlyContinue |
@@ -364,6 +414,7 @@ function Remove-ImageMetaData {
 
                 # determine languages to process
                 $languagesToProcess = @()
+
                 if ($AllLanguages) {
 
                     # get all supported languages from the dictionary
@@ -403,7 +454,8 @@ function Remove-ImageMetaData {
 
                             $filesToRemove += "$($image):people.json"
                         }
-                    }                    elseif ($OnlyObjects) {
+                    }
+                    elseif ($OnlyObjects) {
 
                         # objects data is not language-specific, so only add once
                         if ("$($image):objects.json" -notin $filesToRemove) {
@@ -513,4 +565,4 @@ function Remove-ImageMetaData {
     }
 }
 
-################################################################################
+###############################################################################

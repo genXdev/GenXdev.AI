@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Analyzes image content using AI vision capabilities through the LM-Studio API.
@@ -17,14 +17,6 @@ AI's analysis focus and determines what aspects of the image to examine.
 The path to the image file for analysis. Supports both relative and absolute
 paths. The file must exist and be accessible.
 
-.PARAMETER Model
-The LM-Studio model to use for the analysis.
-Defaults to "MiniCPM".
-
-.PARAMETER ModelLMSGetIdentifier
-Identifier used for getting a specific model from LM Studio.
-Defaults to "lmstudio-community/MiniCPM-V-2_6-GGUF/MiniCPM-V-2_6-Q4_K_M.gguf".
-
 .PARAMETER Instructions
 System instructions for the model to follow during the analysis.
 
@@ -36,12 +28,24 @@ Controls the randomness in the AI's response generation. Lower values (closer
 to 0) produce more focused and deterministic responses, while higher values
 increase creativity and variability. Valid range: 0.0 to 1.0.
 
-.PARAMETER MaxToken
-Limits the length of the generated response by specifying the maximum number of
-tokens. Use -1 for an unlimited response length.
+.PARAMETER ImageDetail
+Sets the detail level for image analysis.
+Valid values are "low", "medium", or "high".
 
-.PARAMETER TTLSeconds
-Sets a Time-To-Live (in seconds) for models loaded via API requests.
+.PARAMETER LLMQueryType
+The type of LLM query to perform. Defaults to "Pictures" for image analysis.
+
+.PARAMETER Model
+The model identifier or pattern to use for AI operations.
+
+.PARAMETER HuggingFaceIdentifier
+The LM Studio specific model identifier.
+
+.PARAMETER MaxToken
+The maximum number of tokens to use in AI operations.
+
+.PARAMETER Cpu
+The number of CPU cores to dedicate to AI operations.
 
 .PARAMETER Gpu
 Specifies how much of the model to offload to the GPU.
@@ -51,18 +55,26 @@ Specifies how much of the model to offload to the GPU.
 - -1: Lets LM Studio decide the offload amount.
 - -2: Uses an automatic setting.
 
-.PARAMETER ImageDetail
-Sets the detail level for image analysis.
-Valid values are "low", "medium", or "high".
-
 .PARAMETER ApiEndpoint
-The API endpoint URL. Defaults to "http://localhost:1234/v1/chat/completions".
+The API endpoint URL for AI operations.
 
 .PARAMETER ApiKey
-The API key to use for the request.
+The API key for authenticated AI operations.
 
 .PARAMETER TimeoutSeconds
-The timeout in seconds for the API request. Defaults to 24 hours.
+The timeout in seconds for AI operations.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SkipSession
+Store settings only in persistent preferences without affecting session.
 
 .PARAMETER ShowWindow
 If specified, the LM Studio window will be shown.
@@ -83,10 +95,11 @@ Invoke-QueryImageContent `
 Analyzes an image with specific temperature and token limits.
 
 .EXAMPLE
-Invoke-QueryImageContent "Describe this image" "C:\Images\photo.jpg"
+Query-Image "Describe this image" "C:\Images\photo.jpg"
 
-Simple image analysis using positional parameters.
+Simple image analysis using alias and positional parameters.
 #>
+###############################################################################
 function Invoke-QueryImageContent {
 
     [CmdletBinding()]
@@ -119,21 +132,6 @@ function Invoke-QueryImageContent {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The LM-Studio model to use"
-        )]
-        [SupportsWildcards()]
-        [string] $Model = "MiniCPM",
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Identifier used for getting specific model from " +
-                          "LM Studio")
-        )]
-        [string] $ModelLMSGetIdentifier = ("lmstudio-community/MiniCPM-V-2_6-" +
-                                          "GGUF/MiniCPM-V-2_6-Q4_K_M.gguf"),
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
             HelpMessage = "A JSON schema for the requested output format"
         )]
         [string] $ResponseFormat = $null,
@@ -147,32 +145,6 @@ function Invoke-QueryImageContent {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)"
-        )]
-        [Alias("MaxTokens")]
-        [int] $MaxToken = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Set a TTL (in seconds) for models loaded via " +
-                          "API requests")
-        )]
-        [Alias("ttl")]
-        [int] $TTLSeconds = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
-                          "offloading is disabled. If 'max', all layers are " +
-                          "offloaded to GPU. If a number between 0 and 1, " +
-                          "that fraction of layers will be offloaded to the " +
-                          "GPU. -1 = LM Studio will decide how much to " +
-                          "offload to the GPU. -2 = Auto")
-        )]
-        [int] $Gpu = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
             HelpMessage = "Image detail level"
         )]
         [ValidateSet("low", "medium", "high")]
@@ -180,23 +152,78 @@ function Invoke-QueryImageContent {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Api endpoint url, defaults to " +
-                          "http://localhost:1234/v1/chat/completions")
+            HelpMessage = "The type of LLM query"
         )]
-        [string] $ApiEndpoint = $null,
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string] $LLMQueryType = "Pictures",
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The API key to use for the request"
+            HelpMessage = "The model identifier or pattern to use for AI operations"
         )]
-        [string] $ApiKey = $null,
+        [string] $Model,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Timeout in seconds for the request, defaults to " +
-                          "24 hours")
+            HelpMessage = "The LM Studio specific model identifier"
         )]
-        [int] $TimeoutSeconds = (3600 * 24),
+        [Alias("ModelLMSGetIdentifier")]
+        [string] $HuggingFaceIdentifier,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The maximum number of tokens to use in AI operations"
+        )]
+        [int] $MaxToken,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+        )]
+        [int] $Cpu,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
+                           "offloading is disabled. If 'max', all layers are " +
+                           "offloaded to GPU. If a number between 0 and 1, " +
+                           "that fraction of layers will be offloaded to the " +
+                           "GPU. -1 = LM Studio will decide how much to " +
+                           "offload to the GPU. -2 = Auto")
+        )]
+        [ValidateRange(-2, 1)]
+        [int] $Gpu = -1,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API endpoint URL for AI operations"
+        )]
+        [string] $ApiEndpoint,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key for authenticated AI operations"
+        )]
+        [string] $ApiKey,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The timeout in seconds for AI operations"
+        )]
+        [int] $TimeoutSeconds,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -216,22 +243,24 @@ function Invoke-QueryImageContent {
         )]
         [switch] $IncludeThoughts,
         ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences")
         )]
         [switch] $SessionOnly,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for AI " +
+                "preferences")
         )]
         [switch] $ClearSession,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Store settings only in persistent preferences without " +
+                "affecting session")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
@@ -282,4 +311,4 @@ function Invoke-QueryImageContent {
     end {
     }
 }
-################################################################################
+###############################################################################

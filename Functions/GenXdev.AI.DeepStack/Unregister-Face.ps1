@@ -48,7 +48,7 @@ rface "JohnDoe"
 .NOTES
 DeepStack API Documentation: POST /v1/vision/face/delete endpoint
 This endpoint is used to remove a previously registered face from the system.
-#>
+        ###############################################################################>
 function Unregister-Face {
 
     [CmdletBinding(SupportsShouldProcess)]
@@ -333,4 +333,4 @@ function Unregister-Face {
     end {
     }
 }
-################################################################################
+        ###############################################################################

@@ -1,19 +1,32 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Gets the configured default language for image metadata operations.
 
 .DESCRIPTION
-This function retrieves the default language used by the GenXdev.AI module for image metadata operations. It checks Global variables first (unless SkipSession is specified), then falls back to persistent preferences, and finally uses system defaults.
+This function retrieves the default language used by the GenXdev.AI module
+for image metadata operations. It checks Global variables first (unless
+SkipSession is specified), then falls back to persistent preferences, and
+finally uses system defaults.
 
 .PARAMETER Language
-Optional language override. If specified, this language will be returned instead of retrieving from configuration.
+Optional language override. If specified, this language will be returned
+instead of retrieving from configuration.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
 
 .PARAMETER ClearSession
-When specified, clears the session language setting (Global variable) before retrieving the configuration.
+Clear the session setting (Global variable) before retrieving the
+configuration.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
 
 .PARAMETER SkipSession
-When specified, skips checking the session setting (Global variable) and retrieves only from persistent preferences.
+Dont use alternative settings stored in session for AI preferences like
+Language, Image collections, etc.
 
 .EXAMPLE
 Get-AIMetaLanguage
@@ -23,18 +36,21 @@ Gets the currently configured language from Global variables or preferences.
 .EXAMPLE
 Get-AIMetaLanguage -SkipSession
 
-Gets the configured language only from persistent preferences, ignoring any session setting.
+Gets the configured language only from persistent preferences, ignoring any
+session setting.
 
 .EXAMPLE
 Get-AIMetaLanguage -ClearSession
 
-Clears the session language setting and then gets the language from persistent preferences.
+Clears the session language setting and then gets the language from
+persistent preferences.
 
 .EXAMPLE
 getimgmetalang
 
 Uses alias to get the current language configuration.
 #>
+###############################################################################
 function Get-AIMetaLanguage {
 
     [CmdletBinding()]
@@ -43,6 +59,7 @@ function Get-AIMetaLanguage {
     [Alias("getimgmetalang")]
 
     param(
+        ###########################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
@@ -194,25 +211,31 @@ function Get-AIMetaLanguage {
             "Yoruba",
             "Zulu")]
         [string] $Language,
-        ###############################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Database path for preference data files")
+        )]
+        [string] $PreferencesDatabasePath,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences like Language, Image collections, etc")
         )]
         [switch] $SessionOnly,
-        ###############################################################################
-        # clear the session setting (Global variable) before retrieving
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear the session setting (Global variable) before retrieving"
+            HelpMessage = ("Clear the session setting (Global variable) " +
+                "before retrieving")
         )]
         [switch] $ClearSession,
-        ###############################################################################
-        # Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Dont use alternative settings stored in session " +
+                "for AI preferences like Language, Image collections, etc")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
@@ -222,80 +245,89 @@ function Get-AIMetaLanguage {
 
         # handle clearing session variables first if requested
         if ($ClearSession) {
+
+            # reset the global language variable to null
             $Global:DefaultImagesMetaLanguage = $null
+
+            # output verbose message about clearing session setting
             Microsoft.PowerShell.Utility\Write-Verbose (
                 "Cleared session language setting: DefaultImagesMetaLanguage"
             )
         }
 
-        # initialize result object
-        $result = GenXdev.Helpers\Get-DefaultWebLanguage
     }
 
     process {
 
+        # check if explicit language parameter was provided
         if (-not [string]::IsNullOrWhiteSpace($Language)) {
 
-            # if no language specified, use default web language
+            # return the explicitly specified language parameter
             $result = $Language
+
             return
         }
 
-        # determine language based on priority: Global variable first (unless skipped), then preferences (unless SessionOnly)
+        # determine language based on priority order: global variable first
+        # (unless skipped), then preferences (unless session only)
 
-        # first check global variable for language (unless SkipSession is specified)
-        if ((-not $SkipSession) -and (-not ([string]::IsNullOrWhiteSpace($Global:DefaultImagesMetaLanguage)))) {
+        # check global variable for language unless skip session is specified
+        if ((-not $SkipSession) -and
+            (-not ([string]::IsNullOrWhiteSpace($Global:DefaultImagesMetaLanguage)))) {
 
             # use global variable if available and not empty
             $result = $Global:DefaultImagesMetaLanguage
         }
         elseif (-not $SessionOnly) {
 
-            # fallback to preference storage
-            $LanguagePreference = $null
+            # fallback to preference storage when not session only
+            $languagePreference = $null
 
             try {
 
                 # retrieve language preference from genxdev data storage
-                $json = GenXdev.Data\Get-GenXdevPreference `
+                $languagePreference = GenXdev.Data\Get-GenXdevPreference `
+                    -PreferencesDatabasePath $PreferencesDatabasePath `
                     -Name "ImagesMetaLanguage" `
                     -DefaultValue $null `
                     -ErrorAction SilentlyContinue
 
-                if (-not [string]::IsNullOrEmpty($json)) {
+                # check if json preference data was retrieved successfully
+                if ([string]::IsNullOrEmpty($languagePreference)) {
 
                     # convert json preference to powershell object
-                    $LanguagePreference = $json |
-                        Microsoft.PowerShell.Utility\ConvertFrom-Json
+                    $languagePreference = $null
                 }
             }
             catch {
 
                 # set to null if preference retrieval fails
-                $LanguagePreference = $null
+                $languagePreference = $null
             }
 
-            if (-not ([string]::IsNullOrWhiteSpace(($LanguagePreference)))) {
+            # check if valid preference was retrieved
+            if (-not ([string]::IsNullOrWhiteSpace(($languagePreference)))) {
 
                 # use preference value if available and not empty
-                $result = $LanguagePreference
+                $result = $languagePreference
             }
             else {
 
-                # final fallback to default language
-                $result = "English"
+                # final fallback to english as default language
+                $result = GenXdev.Helpers\Get-DefaultWebLanguage
             }
         }
         else {
-            # SessionOnly is specified but no session variable found, use default language
-            $result = "English"
+
+            # session only is specified but no session variable found, use english
+            $result = GenXdev.Helpers\Get-DefaultWebLanguage
         }
     }
 
     end {
 
-        # return the configured image directories and language
+        # return the determined language setting
         return $result
     }
 }
-################################################################################
+###############################################################################

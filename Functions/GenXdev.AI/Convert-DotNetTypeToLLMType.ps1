@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Converts .NET type names to LLM (Language Model) type names.
@@ -13,12 +13,12 @@ The .NET type name to convert to an LLM type name.
 
 .EXAMPLE
 Convert-DotNetTypeToLLMType -DotNetType "System.String"
-# Returns: "string"
+        ###############################################################################Returns: "string"
 
 .EXAMPLE
 Convert-DotNetTypeToLLMType "System.Collections.Generic.List``1"
-# Returns: "array"
-#>
+        ###############################################################################Returns: "array"
+        ###############################################################################>
 function Convert-DotNetTypeToLLMType {
 
     [CmdletBinding()]
@@ -62,4 +62,4 @@ process {
     end {
     }
 }
-################################################################################
+        ###############################################################################

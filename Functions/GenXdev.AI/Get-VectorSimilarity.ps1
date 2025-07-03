@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Calculates the cosine similarity between two vectors, returning a value between
@@ -21,8 +21,8 @@ the same length as Vector1.
 $v1 = @(0.12, -0.45, 0.89)
 $v2 = @(0.15, -0.40, 0.92)
 Get-VectorSimilarity -Vector1 $v1 -Vector2 $v2
-# Returns approximately 0.998, indicating high similarity
-#>
+        ###############################################################################Returns approximately 0.998, indicating high similarity
+        ###############################################################################>
 function Get-VectorSimilarity {
 
     [CmdletBinding()]
@@ -116,4 +116,4 @@ process {
     end {
     }
 }
-################################################################################
+        ###############################################################################

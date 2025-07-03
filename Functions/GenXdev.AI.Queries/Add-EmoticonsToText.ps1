@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Enhances text by adding contextually appropriate emoticons using AI.
@@ -17,14 +17,60 @@ read from the system clipboard. Multiple lines of text are supported.
 Additional instructions to guide the AI model in selecting and placing emoticons.
 These can help fine-tune the emotional context and style of added emoticons.
 
-.PARAMETER Model
-Specifies which AI model to use for emoticon selection and placement. Different
-models may produce varying results in terms of emoticon selection and context
-understanding. Defaults to "qwen".
+.PARAMETER Temperature
+Temperature for response randomness (0.0-1.0).
 
 .PARAMETER SetClipboard
 When specified, copies the enhanced text back to the system clipboard after
 processing is complete.
+
+.PARAMETER ShowWindow
+Show the LM Studio window.
+
+.PARAMETER Force
+Force stop LM Studio before initialization.
+
+.PARAMETER LLMQueryType
+The type of LLM query.
+
+.PARAMETER Model
+The model identifier or pattern to use for AI operations.
+
+.PARAMETER HuggingFaceIdentifier
+The LM Studio specific model identifier.
+
+.PARAMETER MaxToken
+The maximum number of tokens to use in AI operations.
+
+.PARAMETER Cpu
+The number of CPU cores to dedicate to AI operations.
+
+.PARAMETER Gpu
+How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
+all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
+layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
+offload to the GPU. -2 = Auto.
+
+.PARAMETER ApiEndpoint
+The API endpoint URL for AI operations.
+
+.PARAMETER ApiKey
+The API key for authenticated AI operations.
+
+.PARAMETER TimeoutSeconds
+The timeout in seconds for AI operations.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SkipSession
+Store settings only in persistent preferences without affecting session.
 
 .EXAMPLE
 Add-EmoticonsToText -Text "Hello, how are you today?" -Model "qwen" `
@@ -32,139 +78,193 @@ Add-EmoticonsToText -Text "Hello, how are you today?" -Model "qwen" `
 
 .EXAMPLE
 "Time to celebrate!" | emojify
-#>
+###############################################################################>
 function Add-EmoticonsToText {
 
     [CmdletBinding()]
     [OutputType([System.String])]
     [Alias("emojify")]
+
     param (
-        ########################################################################
+        #######################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
             ValueFromPipeline = $true,
             HelpMessage = "The text to enhance with emoticons"
         )]
-        [string]$Text,
-        ########################################################################
+        [string] $Text,
+        #######################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
             HelpMessage = "Additional instructions for the AI model"
         )]
-        [string]$Instructions = "",
-        ########################################################################
+        [string] $Instructions = "",
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 2,
-            HelpMessage = "The LM-Studio model to use"
+            HelpMessage = "Temperature for response randomness (0.0-1.0)"
         )]
-        [SupportsWildcards()]
-        [string] $Model,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Identifier used for getting specific model from LM Studio"
-        )]
-        [string] $ModelLMSGetIdentifier,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Temperature for response randomness (0.0-1.0)")]
         [ValidateRange(0.0, 1.0)]
         [double] $Temperature = 0.2,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)")]
-        [Alias("MaxTokens")]
-        [int] $MaxToken = -1,
-        ########################################################################
+            HelpMessage = "The type of LLM query"
+        )]
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string] $LLMQueryType = "Knowledge",
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The model identifier or pattern to use for AI operations"
+        )]
+        [string] $Model,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The LM Studio specific model identifier"
+        )]
+        [Alias("ModelLMSGetIdentifier")]
+        [string] $HuggingFaceIdentifier,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The maximum number of tokens to use in AI operations"
+        )]
+        [int] $MaxToken,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+        )]
+        [int] $Cpu,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
+                           "offloading is disabled. If 'max', all layers are " +
+                           "offloaded to GPU. If a number between 0 and 1, " +
+                           "that fraction of layers will be offloaded to the " +
+                           "GPU. -1 = LM Studio will decide how much to " +
+                           "offload to the GPU. -2 = Auto")
+        )]
+        [ValidateRange(-2, 1)]
+        [int] $Gpu = -1,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API endpoint URL for AI operations"
+        )]
+        [string] $ApiEndpoint,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key for authenticated AI operations"
+        )]
+        [string] $ApiKey,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The timeout in seconds for AI operations"
+        )]
+        [int] $TimeoutSeconds,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Copy the enhanced text to clipboard"
         )]
-        [switch]$SetClipboard,
-        ########################################################################
+        [switch] $SetClipboard,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show the LM Studio window")]
-        [switch] $ShowWindow,
-        ########################################################################
-        [Alias("ttl")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests")]
-        [int] $TTLSeconds = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "How much to offload to the GPU. If `"off`", GPU offloading is disabled. If `"max`", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto "
+            HelpMessage = "Show the LM Studio window"
         )]
-        [int]$Gpu = -1,
-        ########################################################################
+        [switch] $ShowWindow,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Force stop LM Studio before initialization"
         )]
-        [switch]$Force,
-        ########################################################################
+        [switch] $Force,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Api endpoint url, defaults to http://localhost:1234/v1/chat/completions")]
-        [string] $ApiEndpoint = $null,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The API key to use for the request")]
-        [string] $ApiKey = $null,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                           "preferences")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for AI " +
+                           "preferences")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Store settings only in persistent preferences without " +
+                           "affecting session")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+        #######################################################################
     )
 
     begin {
-        Microsoft.PowerShell.Utility\Write-Verbose "Initializing emoticon enhancement"
+
+        # output initialization message for verbose logging
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Initializing emoticon enhancement"
+        )
     }
 
     process {
-        # construct instructions for emoticon enhancement
+
+        # construct instructions for emoticon enhancement by combining base prompt
+        # with any additional user instructions
         $emotifyInstructions = (
             "Add funny or expressive emojii to the text provided as content " +
             "of the user-role message. Don't change the text otherwise. " +
-            "$Instructions"        # invoke the language model with emoticon instructions
+            "$Instructions"
         )
 
+        # output verbose information about the processing instructions
         Microsoft.PowerShell.Utility\Write-Verbose (
             "Processing text with instructions: $emotifyInstructions"
         )
 
-        # invoke the language model with emoticon instructions
-        GenXdev.AI\Invoke-LLMTextTransformation @PSBoundParameters `
+        # invoke the language model with emoticon instructions and pass all
+        # bound parameters through to the underlying function
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName "GenXdev.AI\Invoke-LLMTextTransformation" `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        GenXdev.AI\Invoke-LLMTextTransformation @params `
             -Instructions $emotifyInstructions
     }
 
     end {
-        Microsoft.PowerShell.Utility\Write-Verbose "Completed emoticon enhancement"
+
+        # output completion message for verbose logging
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Completed emoticon enhancement"
+        )
     }
 }
-################################################################################
+###############################################################################

@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Batch updates image keywords, faces, objects, and scenes across multiple system
@@ -10,13 +10,13 @@ to update their keywords, face recognition data, object detection data, and
 scene classification data using AI services. It covers media storage, system
 files, downloads, OneDrive, and personal pictures folders.
 
-The function automatically detects output redirection and adjusts its behavior:
-- When run standalone: Uses parallel processing across directories for maximum performance
-- When output is piped: Processes files individually and outputs structured objects
-  compatible with Export-ImageDatabase
+The function processes images by going through each directory and processing files
+individually. DeepStack functions (faces, objects, scenes) are performed first,
+followed by keyword and description generation. This ensures optimal processing
+order and outputs structured objects compatible with Export-ImageDatabase.
 
-This allows for both high-performance batch processing and structured data output
-for pipeline operations like: Update-AllImageMetaData | Export-ImageDatabase
+This allows for structured data output for pipeline operations like:
+Update-AllImageMetaData | Export-ImageDatabase
 
 .PARAMETER ImageDirectories
 Array of directory paths to process for image keyword and face recognition
@@ -48,6 +48,31 @@ confidence below this threshold will be filtered out. Default is 0.5.
 Specifies the language for generated descriptions and keywords. Defaults to
 English.
 
+.PARAMETER Model
+Name or partial path of the model to initialize.
+
+.PARAMETER HuggingFaceIdentifier
+The LM-Studio model to use.
+
+.PARAMETER ApiEndpoint
+Api endpoint url, defaults to http://localhost:1234/v1/chat/completions.
+
+.PARAMETER ApiKey
+The API key to use for the request.
+
+.PARAMETER TimeoutSeconds
+Timeout in seconds for the request, defaults to 24 hours.
+
+.PARAMETER MaxToken
+Maximum tokens in response (-1 for default).
+
+.PARAMETER TTLSeconds
+Set a TTL (in seconds) for models loaded via API.
+
+.PARAMETER FacesDirectory
+The directory containing face images organized by person folders. If not
+specified, uses the configured faces directory preference.
+
 .PARAMETER RetryFailed
 Specifies whether to retry previously failed image keyword updates. When
 enabled, the function will attempt to process images that failed in previous
@@ -67,29 +92,29 @@ And force restart of LMStudio
 .PARAMETER UseGPU
 Use GPU-accelerated version for faster processing (requires NVIDIA GPU).
 
-.PARAMETER Model
-Name or partial path of the model to initialize.
-
-.PARAMETER ModelLMSGetIdentifier
-The LM-Studio model to use.
-
-.PARAMETER ApiEndpoint
-Api endpoint url, defaults to http://localhost:1234/v1/chat/completions.
-
-.PARAMETER ApiKey
-The API key to use for the request.
-
-.PARAMETER TimeoutSeconds
-Timeout in seconds for the request, defaults to 24 hours.
-
-.PARAMETER MaxToken
-Maximum tokens in response (-1 for default).
-
-.PARAMETER TTLSeconds
-Set a TTL (in seconds) for models loaded via API.
-
 .PARAMETER ShowWindow
 Show Docker + LM Studio window during initialization.
+
+.PARAMETER PassThru
+PassThru to return structured objects instead of outputting to console.
+
+.PARAMETER AutoUpdateFaces
+Detects changes in the faces directory and re-registers faces if needed.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SkipSession
+Dont use alternative settings stored in session for AI preferences like
+Language, Image collections, etc.
 
 .EXAMPLE
 Update-AllImageMetaData -ImageDirectories @("C:\Pictures", "D:\Photos") `
@@ -100,7 +125,7 @@ Update-AllImageMetaData -RetryFailed -Force -Language "Spanish"
 
 .EXAMPLE
 updateallimages @("C:\MyImages") -ContainerName "custom_face_recognition"
-#>
+###############################################################################>
 function Update-AllImageMetaData {
 
     [CmdletBinding(SupportsShouldProcess)]
@@ -121,7 +146,6 @@ function Update-AllImageMetaData {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 1,
             HelpMessage = "The name for the Docker container"
         )]
         [ValidateNotNullOrEmpty()]
@@ -129,7 +153,6 @@ function Update-AllImageMetaData {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 2,
             HelpMessage = "The name for the Docker volume for persistent storage"
         )]
         [ValidateNotNullOrEmpty()]
@@ -137,7 +160,6 @@ function Update-AllImageMetaData {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 3,
             HelpMessage = "The port number for the DeepStack service"
         )]
         [ValidateRange(1, 65535)]
@@ -145,23 +167,22 @@ function Update-AllImageMetaData {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 4,
-            HelpMessage = "Maximum time in seconds to wait for service health check"
+            HelpMessage = ("Maximum time in seconds to wait for service " +
+                "health check")
         )]
         [ValidateRange(10, 300)]
         [int] $HealthCheckTimeout = 60,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 5,
-            HelpMessage = "Interval in seconds between health check attempts"
+            HelpMessage = ("Interval in seconds between health check " +
+                "attempts")
         )]
         [ValidateRange(1, 10)]
         [int] $HealthCheckInterval = 3,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 6,
             HelpMessage = "Custom Docker image name to use"
         )]
         [ValidateNotNullOrEmpty()]
@@ -169,16 +190,16 @@ function Update-AllImageMetaData {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 8,
-            HelpMessage = "Minimum confidence threshold (0.0-1.0) for object detection"
+            HelpMessage = ("Minimum confidence threshold (0.0-1.0) for " +
+                "object detection")
         )]
         [ValidateRange(0.0, 1.0)]
-        [double] $ConfidenceThreshold = 0.5,
+        [double] $ConfidenceThreshold = 0.7,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 9,
-            HelpMessage = "The language for generated descriptions and keywords"
+            HelpMessage = ("The language for generated descriptions and " +
+                "keywords")
         )]
         [PSDefaultValue(Value = "English")]
         [ValidateSet(
@@ -330,26 +351,22 @@ function Update-AllImageMetaData {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 10,
             ValueFromPipeline = $true,
             HelpMessage = "Name or partial path of the model to initialize"
         )]
         [ValidateNotNullOrEmpty()]
         [SupportsWildcards()]
-        [string]$Model = "MiniCPM",
+        [string]$Model,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 11,
             HelpMessage = "The LM-Studio model to use"
         )]
         [ValidateNotNullOrEmpty()]
-        [string]$ModelLMSGetIdentifier = ("lmstudio-community/MiniCPM-V-2_6-" +
-        "GGUF/MiniCPM-V-2_6-Q4_K_M.gguf"),
+        [string]$HuggingFaceIdentifier,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 12,
             HelpMessage = ("Api endpoint url, defaults to " +
                 "http://localhost:1234/v1/chat/completions")
         )]
@@ -357,53 +374,64 @@ function Update-AllImageMetaData {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 13,
             HelpMessage = "The API key to use for the request"
         )]
         [string] $ApiKey = $null,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 14,
-            HelpMessage = "Timeout in seconds for the request, defaults to 24 hours"
+            HelpMessage = ("Timeout in seconds for the request, defaults to " +
+                "24 hours")
         )]
-        [int] $TimeoutSeconds = (3600 * 24),
+        [int] $TimeoutSecond,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 15,
             HelpMessage = "Maximum tokens in response (-1 for default)"
         )]
         [Alias("MaxTokens")]
         [ValidateRange(-1, [int]::MaxValue)]
-        [int]$MaxToken = 8192,
+        [int]$MaxToken, # = 8192,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 16,
             HelpMessage = "Set a TTL (in seconds) for models loaded via API"
         )]
         [Alias("ttl")]
         [ValidateRange(-1, [int]::MaxValue)]
-        [int]$TTLSeconds = -1,
+        [int]$TTLSeconds,
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = ("The directory containing face images organized by " +
-                        "person folders. If not specified, uses the " +
-                        "configured faces directory preference.")
+            HelpMessage = ("The directory containing face images organized " +
+                "by person folders. If not specified, uses the configured " +
+                "faces directory preference.")
         )]
         [string] $FacesDirectory,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Will retry previously failed image keyword updates"
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Will retry previously failed image keyword " +
+                "updates")
         )]
         [switch] $RetryFailed,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Redo all images regardless of previous processing"
+            HelpMessage = "Dont't recurse into subdirectories when processing images")
+        ]
+        [switch] $NoRecurse,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Redo all images regardless of previous " +
+                "processing")
         )]
         [switch] $RedoAll,
         #######################################################################
@@ -424,89 +452,134 @@ function Update-AllImageMetaData {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use GPU-accelerated version (requires NVIDIA GPU)"
+            HelpMessage = ("Use GPU-accelerated version (requires NVIDIA " +
+                "GPU)")
         )]
         [switch] $UseGPU,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show Docker + LM Studio window during initialization"
+            HelpMessage = ("Show Docker + LM Studio window during " +
+                "initialization")
         )]
         [switch]$ShowWindow,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "PassThru to return structured objects instead of outputting to console"
+            HelpMessage = ("PassThru to return structured objects instead " +
+                "of outputting to console")
         )]
         [switch] $PassThru,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Detects changes in the faces directory and re-registers faces if needed"
+            HelpMessage = ("Detects changes in the faces directory and " +
+                "re-registers faces if needed")
         )]
         [switch] $AutoUpdateFaces,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for " +
+                "AI preferences like Language, Image collections, etc")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session " +
+                "for AI preferences like Language, Image collections, etc")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Dont use alternative settings stored in " +
+                "session for AI preferences like Language, Image " +
+                "collections, etc")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+        #######################################################################
     )
 
     begin {
 
-        $params = Genxdev.Helpers\Copy-IdenticalParamValues `
+        $OnlyNew = -not $RedoAll
+        $Recurse = -not $NoRecurse
+
+        if (-not $NoDockerInitialize) {
+
+            # copy parameter values for deepstack service initialization
+            $params = Genxdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue)
+
+            # initialize deepstack service with window display
+            $null = GenXdev.AI\EnsureDeepStack @params
+        }
+
+
+        if ($ShowWindow) {
+            try {
+
+                # get docker desktop window handle
+                $a = (GenXDev.Windows\Get-Window -ProcessName "Docker Desktop")
+
+                if ($null -eq $a) { return }
+
+                # show and restore docker desktop window
+                $null = $a.Show()
+
+                $null = $a.Restore()
+
+                # position docker desktop window to right bottom of monitor 0
+                GenXDev.Windows\Set-WindowPosition `
+                    -WindowHelper $a `
+                    -Monitor 0 `
+                    -Right `
+                    -Bottom
+
+                # position current terminal window to left side of monitor 0
+                GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
+            }
+            catch {
+                # ignore window positioning errors
+            }
+        }
+
+        # copy parameter values for faces directory retrieval
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName 'GenXdev.AI\EnsureDeepStack' `
+            -FunctionName "GenXdev.AI\Get-AIKnownFacesRootpath" `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local `
                 -ErrorAction SilentlyContinue)
 
-        $null = GenXdev.AI\EnsureDeepStack @params -ShowWindow
-
-        try {
-            $a = (GenXDev.Windows\Get-Window -ProcessName "Docker Desktop") ;
-            if ($null -eq $a) { return }
-            $null = $a.Show()
-            $null = $a.Restore()
-            GenXDev.Windows\Set-WindowPosition -WindowHelper $a -Monitor 0 -Right -Bottom
-            GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
-        }
-        catch {
-
-        }
-
-
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
-            -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-AIKnownFacesRootpath" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+        # get the configured faces directory path
         $FacesDirectory = GenXdev.AI\Get-AIKnownFacesRootpath @params
+
+        # count total files in faces directory including subdirectories
         $filecount = (
             @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\" -PassThru) +
-            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\*.jpeg" -PassThru) +
-            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\*.png" -PassThru) +
-            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\*.gif" -PassThru)
+            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\*.jpeg" `
+                -PassThru) +
+            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\*.png" `
+                -PassThru) +
+            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\*.gif" `
+                -PassThru)
         ).Count
 
+        # count directories that contain image files for face recognition
         $dirCount = (
-            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*" -Directory -PassThru |
+            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*" `
+                -Directory `
+                -PassThru |
                 Microsoft.PowerShell.Core\Where-Object {
+
                     (
                         @(GenXdev.FileSystem\Find-Item "$_\*.jpg" -PassThru) +
                         @(GenXdev.FileSystem\Find-Item "$_\*.jpeg" -PassThru) +
@@ -517,51 +590,62 @@ function Update-AllImageMetaData {
             ).Count
         )
 
+        # initialize registered faces count
         $count = 0
-        try
-        {
-            # count total number of directories to process
+
+        try {
+
+            # count total number of registered faces in the system
             $count = @(GenXdev.AI\Get-RegisteredFaces).Count
         }
         catch {
+
             # if counting fails, default to 0
             $count = 0
         }
 
+        # determine if face registrations need to be forced
         $ForceFaceRegistrations = $ForceFaceRegistrations -or (
             $AutoUpdateFaces -and
             ($count -ne $dirCount)
         )
 
-        if ((($count -eq 0) -or $ForceFaceRegistrations) -and ($filecount -gt 0)) {
+        # register faces if needed and files exist
+        if ((($count -eq 0) -or $ForceFaceRegistrations) -and
+            ($filecount -gt 0)) {
 
-            try
-            {
-                # count total number of directories to process
+            try {
+
+                # copy parameter values for face unregistration
                 $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\UnRegister-AllFaces' `
                     -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                         -Scope Local `
                         -ErrorAction SilentlyContinue)
+
+                # unregister all existing faces before re-registration
                 $null = GenXdev.AI\UnRegister-AllFaces @params -Confirm:$false
             }
             catch {
-
+                # ignore unregistration errors
             }
-            try
-            {
-                # count total number of directories to process
+
+            try {
+
+                # copy parameter values for face registration
                 $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\Register-AllFaces' `
                     -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                         -Scope Local `
                         -ErrorAction SilentlyContinue)
+
+                # register all faces from the faces directory
                 $null = GenXdev.AI\Register-AllFaces @params -Confirm:$false
             }
             catch {
-
+                # ignore registration errors
             }
         }
 
@@ -571,20 +655,21 @@ function Update-AllImageMetaData {
             "across directories"
         )
 
+        # copy parameter values for language preference retrieval
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-        $Language = GenXdev.AI\Get-AIMetaLanguage @params -Language (
-            [String]::IsNullOrWhiteSpace($Language) ?
-            (GenXdev.Helpers\Get-DefaultWebLanguage) :
-            $Language
-        )
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
+
+        # get the configured language for ai processing
+        $Language = GenXdev.AI\Get-AIMetaLanguage @params
 
         # ensure lm studio is initialized with proper parameters
         try {
 
-            # copy identical parameter values for invoke-queryimagecontent
+            # copy identical parameter values for lm studio initialization
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\EnsureLMStudio' `
@@ -594,335 +679,179 @@ function Update-AllImageMetaData {
 
             # ensure lm studio service is running
             $null = GenXdev.AI\EnsureLMStudio @params
-            try {
-                $a = (GenXDev.Windows\Get-Window -ProcessName "LM Studio") ;
-                if ($null -eq $a) { return }
-                $null = $a.Show()
-                $null = $a.Restore()
-                GenXDev.Windows\Set-WindowPosition -WindowHelper $a -Monitor 0 -Right -Top
-                GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
-            }
-            catch {
+            if ($ShowWindow) {
+                try {
 
-            }
+                    # get lm studio window handle
+                    $a = (GenXDev.Windows\Get-Window -ProcessName "LM Studio")
 
+                    if ($null -eq $a) { return }
+
+                    # show and restore lm studio window
+                    $null = $a.Show()
+
+                    $null = $a.Restore()
+
+                    # position lm studio window to right top of monitor 0
+                    GenXDev.Windows\Set-WindowPosition `
+                        -WindowHelper $a `
+                        -Monitor 0 `
+                        -Right `
+                        -Top
+
+                    # position current terminal window to left side of monitor 0
+                    GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
+                }
+                catch {
+                    # ignore window positioning errors
+                }
+            }
             # wait for services to stabilize
             Microsoft.PowerShell.Utility\Start-Sleep 2
         }
         catch {
-
+            # ignore lm studio initialization errors
         }
 
-        # copy identical parameter values from bound parameters for deepstack setup
-        $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-            -BoundParameters $PSBoundParameters `
-            -FunctionName 'GenXdev.AI\EnsureDeepStack' `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                -Scope Local `
-                -ErrorAction SilentlyContinue)
+        if (-not $NoDockerInitialize) {
 
-        # check if force rebuild is requested and set appropriate flag
-        if ($ForceRebuild) {
+            # copy identical parameter values for deepstack service initialization
+            $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue)
 
-            $ensureParams.Force = $true
-        }
-        else {
+            # ensure deepstack service is running for face recognition
+            $null = GenXdev.AI\EnsureDeepStack @ensureParams
 
-            $ensureParams.Force = $PSBoundParameters.ContainsKey("ForceRebuild") ?
-                $false : $null
-        }
+            # copy identical parameter values from bound parameters for deepstack
+            $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue)
 
-        # ensure deepstack service is running for face recognition
-        $null = GenXdev.AI\EnsureDeepStack @ensureParams
+            # check if force rebuild is requested and set appropriate flag
+            if ($ForceRebuild) {
 
-        # position docker windows appropriately
-        try {
+                $ensureParams.Force = $true
+            }
+            else {
 
-            # find docker processes with main windows
-            Microsoft.PowerShell.Management\Get-Process *docker* |
-            Microsoft.PowerShell.Core\Where-Object `
-                -Property MainWindowHandle `
-                -ne 0 |
-            Microsoft.PowerShell.Core\ForEach-Object {
-
-                # set window position for docker ui
-                $null = GenXdev.Windows\Set-WindowPosition `
-                    -Process $_ `
-                    -top `
-                    -bottom `
-                    -mon 0
+                $ensureParams.Force = $PSBoundParameters.ContainsKey("ForceRebuild") ?
+                    $false : $null
             }
 
-            # position current window to left side
-            $null = GenXdev.Windows\Set-WindowPosition -left -mon 0
+            # ensure deepstack service is running for face recognition
+            $null = GenXdev.AI\EnsureDeepStack @ensureParams
         }
-        catch {
 
-            # fallback positioning if docker window positioning fails
-            $null = GenXdev.Windows\Set-WindowPosition -left -mon 0
+        # position docker windows appropriately
+        if ($ShowWindow) {
+            try {
+
+                # find docker processes with main windows
+                Microsoft.PowerShell.Management\Get-Process *docker* |
+                Microsoft.PowerShell.Core\Where-Object `
+                    -Property MainWindowHandle `
+                    -ne 0 |
+                Microsoft.PowerShell.Core\ForEach-Object {
+
+                    # set window position for docker ui
+                    $null = GenXdev.Windows\Set-WindowPosition `
+                        -Process $_ `
+                        -top `
+                        -bottom `
+                        -mon 0
+                }
+
+                # position current window to left side
+                $null = GenXdev.Windows\Set-WindowPosition -left -mon 0
+            }
+            catch {
+
+                # fallback positioning if docker window positioning fails
+                $null = GenXdev.Windows\Set-WindowPosition -left -mon 0
+            }
         }
     }
 
     process {
-
-        # get configured directories and language using get-imagedirectories
+        # get configured directories using parameter values
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Get-AIImageCollection" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
+
+        # retrieve image directories from configuration
         $directories = GenXdev.AI\Get-AIImageCollection @params
 
-        # detect if output is being redirected/piped by checking MyInvocation
+        # process each directory and file individually for structured output
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Processing files individually for structured output"
+        )
 
-        # we want structured output if we're NOT the last command in the pipeline
-        $isOutputRedirected = $PassThru -or $MyInvocation.PipelinePosition -lt $MyInvocation.PipelineLength
+        # process each directory and stream results immediately
+        $directories | Microsoft.PowerShell.Core\ForEach-Object -ThrottleLimit 20 -Parallel{
 
-        if ($isOutputRedirected) {
-            # output is redirected - process files individually and output structured objects
-            Microsoft.PowerShell.Utility\Write-Verbose "Output redirection detected - processing files individually for structured output"
+            $dir = $_
 
-            # process each directory in parallel and stream results immediately
-            $directories |
-                Microsoft.PowerShell.Core\ForEach-Object -Parallel {
+            $faceParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName (
+                    "GenXdev.AI\Invoke-ImageFacesUpdate"
+                ) `
+                -DefaultValues (
+                    Microsoft.PowerShell.Utility\Get-Variable `
+                        -Scope Local `
+                        -ErrorAction SilentlyContinue
+                )
 
-                    $dir = $_
-                    $redoAll = $using:RedoAll
-                    $retryFailed = $using:RetryFailed
-                    $language = $using:Language
-                    $confidenceThreshold = $using:ConfidenceThreshold
-                    $myBoundParameters = $using:PSBoundParameters
+             $null = GenXdev.AI\Invoke-ImageFacesUpdate @faceParams -ImageDirectories $dir -NoDockerInitialize -Recurse:$using:Recurse -OnlyNew:$using:OnlyNew -RetryFailed:$using:RetryFailed
 
-                    Microsoft.PowerShell.Utility\Write-Verbose "Processing directory: $dir"
+            $objectParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName (
+                    "GenXdev.AI\Invoke-ImageObjectsUpdate"
+                ) `
+                -DefaultValues (
+                    Microsoft.PowerShell.Utility\Get-Variable `
+                        -Scope Local `
+                        -ErrorAction SilentlyContinue
+                )
 
-                    # get image files for this directory and process them one by one
-                    Microsoft.PowerShell.Management\Get-ChildItem -Path $dir -Recurse -File |
-                        Microsoft.PowerShell.Core\Where-Object {
+            $null = GenXdev.AI\Invoke-ImageObjectsUpdate @objectParams -ImageDirectories $dir -NoDockerInitialize -Recurse:$using:Recurse -OnlyNew:$using:OnlyNew -RetryFailed:$using:RetryFailed
 
-                        $_.Extension -match '\.(jpg|jpeg|png)$'
+            $sceneParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName (
+                "GenXdev.AI\Invoke-ImageScenesUpdate"
+            ) `
+            -DefaultValues (
+                Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue
+            )
 
-                    } | Microsoft.PowerShell.Core\ForEach-Object {
+            $null = GenXdev.AI\Invoke-ImageScenesUpdate @sceneParams -ImageDirectories $dir -NoDockerInitialize -Recurse:$using:Recurse -OnlyNew:$using:OnlyNew -RetryFailed:$using:RetryFailed
 
-                        $imageFile = $PSItem
+            $keywordParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName (
+                "GenXdev.AI\Invoke-ImageKeywordUpdate"
+            ) `
+            -DefaultValues (
+                Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue
+            )
 
-                        Microsoft.PowerShell.Utility\Write-Verbose "Processing: $($imageFile.FullName)"
-
-                        try {
-                            # initialize result object with the expected structure
-                            $result = [PSCustomObject]@{
-                                path = $imageFile.FullName
-                                keywords = @()
-                                description = $null
-                                people = $null
-                                objects = $null
-                                scenes = $null
-                            }
-
-                            # check if this is a onedrive folder for special handling
-                            $isOneDriveFolder = $imageFile.FullName -like '*\OneDrive\*' -or
-                                $imageFile.FullName -like '*/OneDrive/*'
-
-                            # determine processing flags
-                            $shouldProcessFile = if ($isOneDriveFolder) {
-                                $true  # always process new for OneDrive
-                            } else {
-                                $redoAll -or $retryFailed
-                            }
-
-                            # process keywords/description
-                            $keywordParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-                                -BoundParameters $myBoundParameters `
-                                -FunctionName "GenXdev.AI\Invoke-ImageKeywordUpdate" `
-                                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-
-                            $keywordParams.ImagePath = $imageFile.FullName
-                            $keywordParams.Verbose = $false
-                            $keywordParams.onlyNew = (-not $shouldProcessFile)
-                            $keywordParams.retryFailed = $retryFailed
-                            $keywordParams.Language = $language
-                            $keywordParams.PassThru = $true
-
-                            $keywordResult = GenXdev.AI\Invoke-ImageKeywordUpdate @keywordParams
-
-                            if ($keywordResult) {
-                                $result.keywords = $keywordResult.keywords
-                                $result.description = $keywordResult.description
-                            }
-
-                            # process face recognition
-                            $faceParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-                                -BoundParameters $myBoundParameters `
-                                -FunctionName "GenXdev.AI\Invoke-ImageFacesUpdate" `
-                                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-
-                            $faceParams.ImagePath = $imageFile.FullName
-                            $faceParams.Verbose = $false
-                            $faceParams.NoDockerInitialize = $true
-                            $faceParams.onlyNew = (-not $shouldProcessFile)
-                            $faceParams.retryFailed = $retryFailed
-                            $faceParams.PassThru = $true
-
-                            $faceResult = GenXdev.AI\Invoke-ImageFacesUpdate @faceParams
-
-                            if ($faceResult) {
-                                $result.people = $faceResult
-                            }
-
-                            # process object detection
-                            $objectParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-                                -BoundParameters $myBoundParameters `
-                                -FunctionName "GenXdev.AI\Invoke-ImageObjectsUpdate" `
-                                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-
-                            $objectParams.ImagePath = $imageFile.FullName
-                            $objectParams.Verbose = $false
-                            $objectParams.NoDockerInitialize = $true
-                            $objectParams.onlyNew = (-not $shouldProcessFile)
-                            $objectParams.retryFailed = $retryFailed
-                            $objectParams.ConfidenceThreshold = $confidenceThreshold
-                            $objectParams.PassThru = $true
-
-                            $objectResult = GenXdev.AI\Invoke-ImageObjectsUpdate @objectParams
-
-                            if ($objectResult) {
-                                $result.objects = $objectResult
-                            }
-
-                            # process scene classification
-                            $sceneParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-                                -BoundParameters $myBoundParameters `
-                                -FunctionName "GenXdev.AI\Invoke-ImageScenesUpdate" `
-                                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-
-                            $sceneParams.ImagePath = $imageFile.FullName
-                            $sceneParams.Verbose = $false
-                            $sceneParams.NoDockerInitialize = $true
-                            $sceneParams.onlyNew = (-not $shouldProcessFile)
-                            $sceneParams.retryFailed = $retryFailed
-                            $sceneParams.PassThru = $true
-
-                            $sceneResult = GenXdev.AI\Invoke-ImageScenesUpdate @sceneParams
-
-                            if ($sceneResult) {
-
-                                $result.scenes = $sceneResult
-                            }
-
-                            # immediately output the structured result for streaming
-                            Microsoft.PowerShell.Utility\Write-Output $result
-                        }
-                        catch {
-                            Microsoft.PowerShell.Utility\Write-Warning "Failed to process $($imageFile.FullName): $($_.Exception.Message)"
-                        }
-                    }
-                } -ThrottleLimit 20
-        }
-        else {
-            # no output redirection - use parallel processing for performance
-            Microsoft.PowerShell.Utility\Write-Verbose "No output redirection detected - using parallel directory processing"
-
-            # process each directory in parallel for maximum efficiency
-            $directories |
-                Microsoft.PowerShell.Core\ForEach-Object -Parallel {
-
-                    $dir = $_
-                    $redoAll = $using:RedoAll
-                    $retryFailed = $using:RetryFailed
-                    $language = $using:Language
-                    $confidenceThreshold = $using:ConfidenceThreshold
-
-                    # check if this is a onedrive folder for special handling
-                    $isOneDriveFolder = $dir -like '*\OneDrive\*' -or
-                        $dir -like '*/OneDrive/*'
-
-                    # log which directory is being processed
-                    Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Processing $dir (keywords, faces & objects)" +
-                        $(if ($isOneDriveFolder) { " [OneDrive - only new]" }
-                            else { "" })
-                    )
-
-                    # initialize job collection for parallel processing
-                    $jobs = @()
-
-                    # start thread job for keyword extraction processing
-                    $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
-
-                        param($dir, $isOneDriveFolder, $redoAll, $retryFailed,
-                            $language)
-
-                        # run image keyword update with appropriate flags
-                        GenXdev.AI\Invoke-ImageKeywordUpdate `
-                            -ImageDirectories $dir `
-                            -recurse `
-                            -Verbose `
-                            -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
-                            -retryFailed:$retryFailed `
-                            -Language $language
-
-                    } -ArgumentList $dir, $isOneDriveFolder, $redoAll,
-                        $retryFailed, $language
-
-                    # start thread job for face recognition processing
-                    $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
-
-                        param($dir, $isOneDriveFolder, $redoAll, $retryFailed)
-
-                        # run image faces update with appropriate flags
-                        GenXdev.AI\Invoke-ImageFacesUpdate `
-                            -ImageDirectories $dir `
-                            -recurse `
-                            -Verbose `
-                            -NoDockerInitialize `
-                            -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
-                            -retryFailed:$retryFailed
-
-                    } -ArgumentList $dir, $isOneDriveFolder, $redoAll, $retryFailed
-
-                    # start thread job for object detection processing
-                    $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
-
-                        param($dir, $isOneDriveFolder, $redoAll, $retryFailed,
-                            $confidenceThreshold)
-
-                        # run image objects update with appropriate flags
-                        GenXdev.AI\Invoke-ImageObjectsUpdate `
-                            -ImageDirectories $dir `
-                            -recurse `
-                            -Verbose `
-                            -NoDockerInitialize `
-                            -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
-                            -retryFailed:$retryFailed `
-                            -ConfidenceThreshold $confidenceThreshold
-
-                    } -ArgumentList $dir, $isOneDriveFolder, $redoAll,
-                        $retryFailed, $confidenceThreshold
-
-                    # start thread job for scene classification processing
-                    $jobs += ThreadJob\Start-ThreadJob -ScriptBlock {
-
-                        param($dir, $isOneDriveFolder, $redoAll, $retryFailed)
-
-                        # run image scenes update with appropriate flags
-                        GenXdev.AI\Invoke-ImageScenesUpdate `
-                            -ImageDirectories $dir `
-                            -recurse `
-                            -Verbose `
-                            -NoDockerInitialize `
-                            -onlyNew:($isOneDriveFolder ? $true : (-not $redoAll)) `
-                            -retryFailed:$retryFailed
-
-                    } -ArgumentList $dir, $isOneDriveFolder, $redoAll, $retryFailed
-
-                    # wait for all jobs to finish and collect results
-                    $jobs |
-                        Microsoft.PowerShell.Core\Wait-Job |
-                        Microsoft.PowerShell.Core\Receive-Job
-
-                    # clean up completed jobs
-                    $jobs |
-                        Microsoft.PowerShell.Core\Remove-Job
-
-                } -ThrottleLimit 10
+            $null = GenXdev.AI\Invoke-ImageKeywordUpdate @keywordParams -ImageDirectories $dir -Recurse:$using:Recurse -OnlyNew:$using:OnlyNew -RetryFailed:$using:RetryFailed
         }
     }
 
@@ -930,9 +859,9 @@ function Update-AllImageMetaData {
 
         # log completion of all directory processing
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Completed image keyword, faces, objects, and scenes updates across " +
-            "all directories"
+            "Completed image processing with DeepStack functions first, " +
+            "then keywords across all directories"
         )
     }
 }
-################################################################################
+###############################################################################

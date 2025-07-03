@@ -1,43 +1,123 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Transforms text using AI-powered processing.
 
 .DESCRIPTION
-This function processes input text using AI models to perform various transformations
-such as spell checking, adding emoticons, or any other text enhancement specified
-through instructions. It can accept input directly through parameters, from the
-pipeline, or from the system clipboard.
+This function processes input text using AI models to perform various
+transformations such as spell checking, adding emoticons, or any other text
+enhancement specified through instructions. It can accept input directly
+through parameters, from the pipeline, or from the system clipboard.
 
 .PARAMETER Text
 The input text to transform. If not provided, the function will read from the
 system clipboard. Multiple lines of text are supported.
 
 .PARAMETER Instructions
-Instructions to guide the AI model in transforming the text. By default, it will
-perform spell checking and grammar correction.
+Instructions to guide the AI model in transforming the text. By default, it
+will perform spell checking and grammar correction.
 
-.PARAMETER Model
-Specifies which AI model to use for the text transformation. Different models
-may produce varying results. Defaults to "qwen".
+.PARAMETER Attachments
+Array of file paths to attach to the AI processing request.
 
 .PARAMETER SetClipboard
 When specified, copies the transformed text back to the system clipboard after
 processing is complete.
 
-.EXAMPLE
-Invoke-LLMTextTransformation -Text "Hello, hwo are you todey?"
+.PARAMETER ShowWindow
+Show the LM Studio window during processing.
+
+.PARAMETER Temperature
+Temperature for response randomness, ranging from 0.0 to 1.0.
+
+.PARAMETER Force
+Force stop LM Studio before initialization.
+
+.PARAMETER ImageDetail
+Image detail level for image processing operations.
+
+.PARAMETER DontAddThoughtsToHistory
+Include model's thoughts in output history.
+
+.PARAMETER ContinueLast
+Continue from last conversation in the AI session.
+
+.PARAMETER Functions
+Array of function definitions for AI tool usage.
+
+.PARAMETER ExposedCmdLets
+Array of PowerShell command definitions to use as tools.
+
+.PARAMETER NoConfirmationToolFunctionNames
+Array of command names that don't require confirmation.
+
+.PARAMETER Speak
+Enable text-to-speech for AI responses.
+
+.PARAMETER SpeakThoughts
+Enable text-to-speech for AI thought responses.
+
+.PARAMETER NoSessionCaching
+Don't store session in session cache.
+
+.PARAMETER AllowDefaultTools
+Allow the use of default AI tools during processing.
+
+.PARAMETER LLMQueryType
+The type of LLM query to perform.
+
+.PARAMETER Model
+The model identifier or pattern to use for AI operations.
+
+.PARAMETER HuggingFaceIdentifier
+The LM Studio specific model identifier.
+
+.PARAMETER Cpu
+The number of CPU cores to dedicate to AI operations.
+
+.PARAMETER Gpu
+How much to offload to the GPU for AI processing.
+
+.PARAMETER ApiEndpoint
+The API endpoint URL for AI operations.
+
+.PARAMETER ApiKey
+The API key for authenticated AI operations.
+
+.PARAMETER TimeoutSeconds
+The timeout in seconds for AI operations.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SkipSession
+Store settings only in persistent preferences without affecting session.
 
 .EXAMPLE
-"Time to celerbate!" | Invoke-LLMTextTransformation -Instructions "Add celebratory emoticons"
-#>
+Invoke-LLMTextTransformation -Text "Hello, hwo are you todey?" `
+    -Instructions "Fix spelling errors" -SetClipboard
+
+.EXAMPLE
+"Time to celerbate!" | Invoke-LLMTextTransformation `
+    -Instructions "Add celebratory emoticons"
+
+.EXAMPLE
+spellcheck "This is a sentance with erors"
+###############################################################################>
+###############################################################################
 function Invoke-LLMTextTransformation {
 
     [CmdletBinding()]
     [OutputType([System.String])]
     [Alias("spellcheck")]
     param (
-        ########################################################################
+        ###########################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
@@ -45,165 +125,216 @@ function Invoke-LLMTextTransformation {
             HelpMessage = "The text to transform"
         )]
         [string]$Text,
-        ########################################################################
+        ###########################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = "Instructions for the AI model on how to transform the text"
+            HelpMessage = ("Instructions for the AI model on how to transform " +
+                "the text")
         )]
-        [string]$Instructions = "Check and correct any spelling or grammar errors in the text. Return the corrected text without any additional comments or explanations.",
-        ########################################################################
+        [string]$Instructions = ("Check and correct any spelling or grammar " +
+            "errors in the text. Return the corrected text without any " +
+            "additional comments or explanations."),
+        ###########################################################################
         [Parameter(
-            Mandatory = $false,
             Position = 2,
-            HelpMessage = "The LM-Studio model to use"
-        )]
-        [SupportsWildcards()]
-        [string] $Model,
-        ########################################################################
-        [Parameter(
             Mandatory = $false,
-            HelpMessage = "Identifier used for getting specific model from LM Studio"
+            HelpMessage = "Array of file paths to attach"
         )]
-        [string] $ModelLMSGetIdentifier,
-        ########################################################################
-        [Parameter(
-            Position = 3,
-            Mandatory = $false,
-            HelpMessage = "Array of file paths to attach")]
         [string[]] $Attachments = @(),
-        ########################################################################
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Copy the enhanced text to clipboard"
+            HelpMessage = "Temperature for response randomness (0.0-1.0)"
         )]
-        [switch]$SetClipboard,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Show the LM Studio window")]
-        [switch] $ShowWindow,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Temperature for response randomness (0.0-1.0)")]
         [ValidateRange(0.0, 1.0)]
         [double] $Temperature = 0.2,
-        ########################################################################
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)")]
-        [Alias("MaxTokens")]
-        [int] $MaxToken = -1,
-        ########################################################################
-        [Alias("ttl")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests")]
-        [int] $TTLSeconds = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "How much to offload to the GPU. If `"off`", GPU offloading is disabled. If `"max`", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto "
+            HelpMessage = "Image detail level"
         )]
-        [int]$Gpu = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Force stop LM Studio before initialization"
-        )]
-        [switch]$Force,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Image detail level")]
         [ValidateSet("low", "medium", "high")]
         [string] $ImageDetail = "low",
-        ########################################################################
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Include model's thoughts in output")]
-        [switch] $DontAddThoughtsToHistory,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Continue from last conversation")]
-        [switch] $ContinueLast,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Array of function definitions")]
+            HelpMessage = "Array of function definitions"
+        )]
         [hashtable[]] $Functions = @(),
-        ########################################################################
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of PowerShell command definitions to use as tools")]
+            HelpMessage = ("Array of PowerShell command definitions to use " +
+                "as tools")
+        )]
         [GenXdev.Helpers.ExposedCmdletDefinition[]]
         $ExposedCmdLets = @(),
-        ########################################################################
-        # Array of command names that don't require confirmation
-        [Parameter(Mandatory = $false)]
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Array of command names that don't require " +
+                "confirmation")
+        )]
         [Alias("NoConfirmationFor")]
         [string[]]
         $NoConfirmationToolFunctionNames = @(),
         ###########################################################################
         [Parameter(
-            HelpMessage = "Enable text-to-speech for AI responses",
-            Mandatory = $false
+            Mandatory = $false,
+            HelpMessage = "The type of LLM query"
+        )]
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string] $LLMQueryType = "SimpleIntelligence",
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("The model identifier or pattern to use for AI " +
+                "operations")
+        )]
+        [string] $Model,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The LM Studio specific model identifier"
+        )]
+        [Alias("ModelLMSGetIdentifier")]
+        [string] $HuggingFaceIdentifier,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("The number of CPU cores to dedicate to AI " +
+                "operations")
+        )]
+        [int] $Cpu,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
+                "offloading is disabled. If 'max', all layers are " +
+                "offloaded to GPU. If a number between 0 and 1, " +
+                "that fraction of layers will be offloaded to the " +
+                "GPU. -1 = LM Studio will decide how much to " +
+                "offload to the GPU. -2 = Auto")
+        )]
+        [ValidateRange(-2, 1)]
+        [int]$Gpu = -1,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API endpoint URL for AI operations"
+        )]
+        [string] $ApiEndpoint,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key for authenticated AI operations"
+        )]
+        [string] $ApiKey,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The timeout in seconds for AI operations"
+        )]
+        [int] $TimeoutSeconds,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Copy the enhanced text to clipboard"
+        )]
+        [switch]$SetClipboard,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Show the LM Studio window"
+        )]
+        [switch] $ShowWindow,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Force stop LM Studio before initialization"
+        )]
+        [switch]$Force,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Include model's thoughts in output"
+        )]
+        [switch] $DontAddThoughtsToHistory,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Continue from last conversation"
+        )]
+        [switch] $ContinueLast,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Enable text-to-speech for AI responses"
         )]
         [switch] $Speak,
         ###########################################################################
         [Parameter(
-            HelpMessage = "Enable text-to-speech for AI thought responses",
-            Mandatory = $false
+            Mandatory = $false,
+            HelpMessage = "Enable text-to-speech for AI thought responses"
         )]
         [switch] $SpeakThoughts,
-        ########################################################################
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Don't store session in session cache")]
+            HelpMessage = "Don't store session in session cache"
+        )]
         [switch] $NoSessionCaching,
-        ########################################################################
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Api endpoint url, defaults to http://localhost:1234/v1/chat/completions")]
-        [string] $ApiEndpoint = $null,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The API key to use for the request")]
-        [string] $ApiKey = $null,
-        ########################################################################
+            HelpMessage = "Allow the use of default AI tools during processing"
+        )]
         [switch] $AllowDefaultTools,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for " +
+                "AI preferences")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Store settings only in persistent preferences " +
+                "without affecting session")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
-    )
+        ###########################################################################
+        )
 
     begin {
 
         # create string builder for efficient text accumulation
         $resultBuilder = [System.Text.StringBuilder]::new()
 
-        # Define response format schema
+        # define response format schema for structured AI output
         $responseSchema = @{
             type        = "json_schema"
             json_schema = @{
@@ -220,68 +351,100 @@ function Invoke-LLMTextTransformation {
                     required   = @("response")
                 }
             }
-        } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
+        } |
+            Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Starting text transformation with model: $Model"
+        # log the start of transformation process with model information
+        Microsoft.PowerShell.Utility\Write-Verbose `
+            "Starting text transformation with model: $Model"
     }
 
 
-process {
+    process {
 
-        # check if we should read from clipboard
+        # check if we should read from clipboard when no text is provided
         $isClipboardSource = [string]::IsNullOrWhiteSpace($Text)
 
         if ($isClipboardSource) {
 
-            Microsoft.PowerShell.Utility\Write-Verbose "No direct text input, reading from clipboard"
+            # log that we are reading from clipboard
+            Microsoft.PowerShell.Utility\Write-Verbose `
+                "No direct text input, reading from clipboard"
+
+            # read text content from system clipboard
             $Text = Microsoft.PowerShell.Management\Get-Clipboard
 
             if ([string]::IsNullOrWhiteSpace($Text)) {
-                Microsoft.PowerShell.Utility\Write-Warning "No text found in the clipboard."
+
+                # warn user when clipboard is empty
+                Microsoft.PowerShell.Utility\Write-Warning `
+                    "No text found in the clipboard."
                 return
             }
         }
 
         try {
-            Microsoft.PowerShell.Utility\Write-Verbose "Processing text block for transformation"
 
+            # log start of text processing
+            Microsoft.PowerShell.Utility\Write-Verbose `
+                "Processing text block for transformation"
+
+            # copy matching parameters to invoke ai query function
             $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\Invoke-LLMQuery"
 
+            # set required parameters for ai query invocation
             $invocationParams.Query = $Text
+
             $invocationParams.Instructions = $Instructions
+
             $invocationParams.IncludeThoughts = $false
+
             $invocationParams.ResponseFormat = $responseSchema
+
             $invocationParams.Temperature = $Temperature
 
             if ($AllowDefaultTools) {
+
+                # configure chat mode for tool usage
                 $invocationParams.ChatMode = "textprompt"
+
                 $invocationParams.ChatOnce = $true
             }
+
+            # invoke ai query and extract response from json
             $enhancedText = (GenXdev.AI\Invoke-LLMQuery @invocationParams |
                 Microsoft.PowerShell.Utility\ConvertFrom-Json).response
 
+            # append enhanced text to result builder with line break
             $null = $resultBuilder.Append("$enhancedText`r`n")
         }
         catch {
 
-            Microsoft.PowerShell.Utility\Write-Error "Failed to process text with AI model: $_"
+            # log error when ai processing fails
+            Microsoft.PowerShell.Utility\Write-Error `
+                "Failed to process text with AI model: $_"
         }
     }
 
     end {
 
-        # get final combined result
+        # get final combined result from string builder
         $finalResult = $resultBuilder.ToString()
 
         if ($SetClipboard) {
-            Microsoft.PowerShell.Utility\Write-Verbose "Copying enhanced text to clipboard"
+
+            # log clipboard operation
+            Microsoft.PowerShell.Utility\Write-Verbose `
+                "Copying enhanced text to clipboard"
+
+            # copy transformed text to system clipboard
             Microsoft.PowerShell.Management\Set-Clipboard -Value $finalResult
         }
 
-        # return enhanced text
+        # return enhanced text to pipeline
         $finalResult
     }
 }
-################################################################################
+###############################################################################

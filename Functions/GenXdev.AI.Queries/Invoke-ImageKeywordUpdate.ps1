@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Updates image metadata with AI-generated descriptions and keywords.
@@ -13,6 +13,13 @@ or update existing metadata, and supports recursive directory scanning.
 Specifies the directory containing images to process. Defaults to current
 directory if not specified.
 
+.PARAMETER Language
+Specifies the language for generated descriptions and keywords. Defaults to
+English.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
 .PARAMETER Recurse
 When specified, searches for images in the specified directory and all
 subdirectories.
@@ -25,8 +32,17 @@ files.
 When specified, reprocesses images where previous metadata generation attempts
 failed.
 
-.PARAMETER Language
-Specifies the language for generated descriptions and keywords. Defaults to English.
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER SkipSession
+Dont use alternative settings stored in session for AI preferences like
+Language, Image collections, etc.
 
 .EXAMPLE
 Invoke-ImageKeywordUpdate -ImageDirectories "C:\Photos" -Recurse -OnlyNew
@@ -34,48 +50,23 @@ Invoke-ImageKeywordUpdate -ImageDirectories "C:\Photos" -Recurse -OnlyNew
 .EXAMPLE
 updateimages -Recurse -RetryFailed -Language "Spanish"
 #>
+###############################################################################
 function Invoke-ImageKeywordUpdate {
 
     [CmdletBinding()]
     [Alias("updateimages")]
 
     param(
-        ###############################################################################
+    ###############################################################################
         [Parameter(
             Mandatory = $false,
             Position = 0,
             HelpMessage = "The image directory path."
         )]
         [string] $ImageDirectories = ".\",
-
-        ###############################################################################
+    ###############################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 1,
-            HelpMessage = "Recurse directories."
-        )]
-        [switch] $Recurse,
-
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            Position = 2,
-            HelpMessage = "Skip if already has meta data."
-        )]
-        [switch] $OnlyNew,
-
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            Position = 3,
-            HelpMessage = "Will retry previously failed images."
-        )]
-        [switch] $RetryFailed,
-
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            Position = 4,
             HelpMessage = "The language for generated descriptions and keywords."
         )]
         [PSDefaultValue(Value = "English")]
@@ -225,40 +216,66 @@ function Invoke-ImageKeywordUpdate {
             "Yoruba",
             "Zulu")]
         [string] $Language,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+    ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+    ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Recurse directories."
+        )]
+        [switch] $Recurse,
+    ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Skip if already has meta data."
+        )]
+        [switch] $OnlyNew,
+    ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Will retry previously failed images."
+        )]
+        [switch] $RetryFailed,
+    ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                          "preferences like Language, Image collections, etc")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+    ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for AI " +
+                          "preferences like Language, Image collections, etc")
         )]
         [switch] $ClearSession,
-        ########################################################################
+    ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Dont use alternative settings stored in session for " +
+                          "AI preferences like Language, Image collections, etc")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+    ###############################################################################
     )
 
     begin {
 
+        # copy identical parameter values for ai meta language function
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-        $Language = GenXdev.AI\Get-AIMetaLanguage @params -Language (
-            [String]::IsNullOrWhiteSpace($Language) ?
-            (GenXdev.Helpers\Get-DefaultWebLanguage) :
-            $Language
-        )
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local -ErrorAction SilentlyContinue)
+
+        # get the resolved language setting from ai meta system
+        $language = GenXdev.AI\Get-AIMetaLanguage @params
 
         # convert relative path to absolute path
         $path = GenXdev.FileSystem\Expand-Path $ImageDirectories
@@ -266,81 +283,58 @@ function Invoke-ImageKeywordUpdate {
         # verify directory exists before proceeding
         if (-not [System.IO.Directory]::Exists($path)) {
 
-            Microsoft.PowerShell.Utility\Write-Host "The directory '$path' does not exist."
+            Microsoft.PowerShell.Utility\Write-Host ("The directory '$path' " +
+                                                     "does not exist.")
             return
         }
     }
 
-
-process {
+    process {
 
         # get all supported image files from the specified directory
-        Microsoft.PowerShell.Management\Get-ChildItem -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
+        Microsoft.PowerShell.Management\Get-ChildItem `
+            -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.gif", "$path\*.png" `
             -Recurse:$Recurse -File -ErrorAction SilentlyContinue |
         Microsoft.PowerShell.Core\ForEach-Object {
 
-            # handle retry logic for previously failed images
-            if ($RetryFailed) {
-                # Try to find any language version first
-                $existingMetadata = $false
-                if ($Language -ne "English") {
-                    $existingMetadata = [System.IO.File]::Exists("$($PSItem):description.$Language.json")
-                }
-
-                # If no language-specific file or English is requested, check standard file
-                if (-not $existingMetadata) {
-                    $existingMetadata = [System.IO.File]::Exists("$($PSItem):description.json")
-                }
-
-                if ($existingMetadata) {
-                    # For language-specific file
-                    if ($Language -ne "English" -and [System.IO.File]::Exists("$($PSItem):description.$Language.json")) {
-                        # delete empty metadata files to force reprocessing
-                        if ("$([System.IO.File]::ReadAllText(`
-                            "$($PSItem):description.$Language.json"))".StartsWith("{}")) {
-
-                            [System.IO.File]::Delete("$($PSItem):description.$Language.json")
-                        }
-                    }
-                    # For standard English file
-                    elseif ([System.IO.File]::Exists("$($PSItem):description.json")) {
-                        # delete empty metadata files to force reprocessing
-                        if ("$([System.IO.File]::ReadAllText(`
-                            "$($PSItem):description.json"))".StartsWith("{}")) {
-
-                            [System.IO.File]::Delete("$($PSItem):description.json")
-                        }
-                    }
-                }
-            }
-
+            # get the full path of the current image file
             $image = $PSItem.FullName
 
             # ensure image is writable by removing read-only flag if present
             if ($PSItem.Attributes -band [System.IO.FileAttributes]::ReadOnly) {
+
                 $PSItem.Attributes = $PSItem.Attributes -bxor `
                     [System.IO.FileAttributes]::ReadOnly
             }
 
-            # Determine which file to check based on language
-            $metadataFile = if ($Language -eq "English") {
+            # determine which metadata file to check based on language preference
+            $metadataFile = if ($language -eq "English") {
                 "$($image):description.json"
             } else {
-                "$($image):description.$Language.json"
+                "$($image):description.$language.json"
             }
 
+            # check if metadata file already exists
             $fileExists = [System.IO.File]::Exists($metadataFile)
 
-            # process image if new or update requested
-            if ((-not $OnlyNew) -or (-not $fileExists)) {
-
-                # create empty metadata file if needed
-                if (-not $fileExists) {
-
-                    [IO.File]::WriteAllText($metadataFile, "{}")
+            # check if we have valid existing content
+            $hasValidContent = $false
+            if ($fileExists) {
+                try {
+                    $content = [System.IO.File]::ReadAllText($metadataFile)
+                    $existingData = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
+                    $hasValidContent = $existingData.short_description -and $existingData.keywords
                 }
+                catch {
+                    # If JSON parsing fails, treat as invalid content
+                    $hasValidContent = $false
+                }
+            }
 
-                # Define response format schema
+            # process image if conditions are met (new files or update requested)
+            if ((-not $OnlyNew) -or (-not $fileExists) -or (-not $hasValidContent)) {
+
+                # define response format schema for ai analysis
                 $responseSchema = @{
                     type        = "json_schema"
                     json_schema = @{
@@ -351,16 +345,19 @@ process {
                             properties = @{
                                 short_description     = @{
                                     type        = "string"
-                                    description = "Brief description of the image (max 80 chars)"
+                                    description = ("Brief description of the " +
+                                                   "image (max 80 chars)")
                                     maxLength   = 80
                                 }
                                 long_description      = @{
                                     type        = "string"
-                                    description = "Detailed description of the image"
+                                    description = ("Detailed description of " +
+                                                   "the image")
                                 }
                                 has_nudity            = @{
                                     type        = "boolean"
-                                    description = "Whether the image contains nudity"
+                                    description = ("Whether the image " +
+                                                   "contains nudity")
                                 }
                                 keywords              = @{
                                     type        = "array"
@@ -371,19 +368,23 @@ process {
                                 }
                                 has_explicit_content  = @{
                                     type        = "boolean"
-                                    description = "Whether the image contains explicit content"
+                                    description = ("Whether the image contains " +
+                                                   "explicit content")
                                 }
                                 overall_mood_of_image = @{
                                     type        = "string"
-                                    description = "The general mood or emotion conveyed by the image"
+                                    description = ("The general mood or emotion " +
+                                                   "conveyed by the image")
                                 }
                                 picture_type          = @{
                                     type        = "string"
-                                    description = "The type or category of the image"
+                                    description = ("The type or category of " +
+                                                   "the image")
                                 }
                                 style_type            = @{
                                     type        = "string"
-                                    description = "The artistic or visual style of the image"
+                                    description = ("The artistic or visual style " +
+                                                   "of the image")
                                 }
                             }
                             required   = @(
@@ -398,53 +399,105 @@ process {
                             )
                         }
                     }
-                } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
+                } |
+                Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
 
-                Microsoft.PowerShell.Utility\Write-Verbose "Analyzing image content: $image with language: $Language"
+                # output verbose information about the image being analyzed
+                Microsoft.PowerShell.Utility\Write-Verbose ("Analyzing image " +
+                    "content: $image with language: $language")
 
+                $Additional = @{metadata=@(
+                  GenXdev.FileSystem\Find-Item "$($image):people.json" -IncludeAlternateFileStreams -PassThru |
+                  Microsoft.PowerShell.Core\ForEach-Object FullName |
+                  Microsoft.PowerShell.Core\ForEach-Object {
+                    try {
+                         $content = [IO.File]::ReadAllText($_)
+                         $obj = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
+                         if (($null -ne $obj) -and ($null -ne $obj.predictions) -and ($obj.predictions.Count -gt 0)) {
+
+                             $obj.predictions | Microsoft.PowerShell.Core\ForEach-Object { $_ }
+                         }
+                    }
+                    catch {
+                        # ignore errors reading existing metadata
+                    }
+                });
+                FileInfo = @{
+                    ImageCollection = [IO.Path]::GetFileName($ImageDirectories)
+                    ImageFilename = $image.Substring($ImageDirectories.Length + 1)
+                }};
+
+                $json = $Additional | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 20
+
+                # construct comprehensive ai query for image analysis
                 $query = (
-                    "Analyze image and return a object with properties: " +
+                    "Analyze image and return a JSON object with properties: " +
                     "'short_description' (max 80 chars), 'long_description', " +
-                    "'has_nudity, keywords' (array of strings with all detected objects, text or anything describing this picture, max 500 keywords), " +
+                    "'has_nudity', 'keywords' (array of strings with all " +
+                    "detected objects, text or anything describing this " +
+                    "picture, max 15 keywords), " +
                     "'has_explicit_content', 'overall_mood_of_image', " +
-                    "'picture_type' and 'style_type'. " +
-                    "Generate all descriptions and keywords in $Language language. " +
-                    "Output only json, no markdown or anything other then json."
+                    "'picture_type' and 'style_type'.`r`n`r`n" +
+                    "Generate all descriptions and keywords in $language " +
+                    "language.`r`n`r`n" +
+                    "Output only JSON, no markdown or anything other than JSON.`r`n`r`n" +
+                    "$(($Additional.metadata.Count -gt 0 ? @"
+Use the metadata below to enrich the descriptions and titles.
+Like mentioning the person's name in the title when high confidence is detected (> 0.8).
+If it the name is that of a famous person, tell about his/her life in the long description
+and mention his name in the title.
+$json`r`n
+"@ : "$json`r`n"))"
                 );
 
-                # get AI-generated image description and metadata
+                # get ai-generated image description and metadata
                 $description = GenXdev.AI\Invoke-QueryImageContent `
                     -ResponseFormat $responseSchema `
-                    -Query $query -ImagePath $image -Temperature 0.01
+                    -Query $query `
+                    -ImagePath $image `
+                    -Temperature 0.01
 
-                Microsoft.PowerShell.Utility\Write-Verbose "Received analysis: $description"
+                # output verbose information about the received analysis
+                Microsoft.PowerShell.Utility\Write-Verbose ("Received " +
+                    "analysis: $description")
 
                 try {
 
-                    # extract just the JSON portion of the response
+                    # extract just the json portion of the response text
                     $description = $description.trim()
+
+                    # find the first opening brace position
                     $i0 = $description.IndexOf("{")
+
+                    # find the last closing brace position
                     $i1 = $description.LastIndexOf("}")
+
+                    # extract only the json content if braces found
                     if ($i0 -ge 0) {
-                        $description = $description.Substring($i0, $i1 - $i0 + 1)
+
+                        $description = $description.Substring(
+                            $i0, $i1 - $i0 + 1)
                     }
 
-                    # save formatted JSON metadata
-                    [System.IO.File]::WriteAllText(
+                    $description = (($description | Microsoft.PowerShell.Utility\ConvertFrom-Json | GenXdev.Helpers\ConvertTo-HashTable) + $Additional.FileInfo) |
+                        Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20  -WarningAction SilentlyContinue
+
+                    # save formatted json metadata to companion file
+                    $null = [System.IO.File]::WriteAllText(
                         $metadataFile,
-                        ($description | Microsoft.PowerShell.Utility\ConvertFrom-Json |
-                        Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 `
-                            -WarningAction SilentlyContinue))
+                        $description
+                    )
                 }
                 catch {
-                    Microsoft.PowerShell.Utility\Write-Warning "$PSItem`r`n$description"
+
+                    # output warning if json processing or file writing fails
+                    Microsoft.PowerShell.Utility\Write-Warning ("$PSItem`r`n" +
+                        "$description")
                 }
-            }
+        }
         }
     }
-
     end {
     }
 }
-
-################################################################################
+###############################################################################

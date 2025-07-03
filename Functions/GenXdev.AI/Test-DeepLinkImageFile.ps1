@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Tests if the specified file path is a valid image file with a supported format.
@@ -17,7 +17,7 @@ Test-DeepLinkImageFile -Path "C:\Images\photo.jpg"
 
 .EXAMPLE
 Test-DeepLinkImageFile "C:\Images\logo.png"
-#>
+        ###############################################################################>
 function Test-DeepLinkImageFile {
 
     [CmdletBinding()]
@@ -66,4 +66,4 @@ function Test-DeepLinkImageFile {
     end {
     }
 }
-################################################################################
+        ###############################################################################

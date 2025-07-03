@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Updates scene classification metadata for image files in a specified directory.
@@ -88,8 +88,7 @@ as 'ImageFile.jpg:scenes.json' files. Each metadata file contains scene
 classification results with confidence scores and scene labels from DeepStack's
 365 scene categories including places like: abbey, airplane_cabin, beach,
 forest, kitchen, office, etc.
-#>
-###############################################################################
+###############################################################################>
 function Invoke-ImageScenesUpdate {
 
     [CmdletBinding()]
@@ -144,7 +143,7 @@ function Invoke-ImageScenesUpdate {
                           "classification. Default is 0.0")
         )]
         [ValidateRange(0.0, 1.0)]
-        [double] $ConfidenceThreshold = 0.0,
+        [double] $ConfidenceThreshold = 0.6,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -237,7 +236,7 @@ function Invoke-ImageScenesUpdate {
         # discover all image files in the specified directory path, selectively
         # applying recursion only if the -Recurse switch was provided
         Microsoft.PowerShell.Management\Get-ChildItem `
-            -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
+            -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.gif","$path\*.png" `
             -Recurse:$Recurse `
             -File `
             -ErrorAction SilentlyContinue |
@@ -245,66 +244,27 @@ function Invoke-ImageScenesUpdate {
 
                 # store the full path to the current image for better readability
                 $image = $PSItem.FullName
-
-                # if retry mode is active, handle previously failed images
-                if ($RetryFailed) {
-
-                    if ([System.IO.File]::Exists("$($image):scenes.json")) {
-
-                        # read existing metadata to check for empty or invalid content
-                        $content = [System.IO.File]::ReadAllText(
-                            "$($image):scenes.json")
-
-                        # check if metadata file contains no scenes or invalid data
-                        if ($content.StartsWith("{}") -or
-                            $content -eq ('{"success":false,"scene":"unknown",' +
-                                         '"confidence":0.0}')) {
-
-                            $content = "{}"
-                        }
+                $metadataFilePath = "$($PSItem.FullName):scenes.json"
+                # check if we have valid existing content
+                $hasValidContent = $false
+                if ($fileExists) {
+                    try {
+                        $content = [System.IO.File]::ReadAllText($metadataFilePath)
+                        $existingData = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
+                        $hasValidContent = $existingData.scene -and $existingData.scene -ne "unknown" -and $existingData.success -eq $true
+                    }
+                    catch {
+                        # If JSON parsing fails, treat as invalid content
+                        $hasValidContent = $false
                     }
                 }
 
-                Microsoft.PowerShell.Utility\Write-Verbose ("Processing image: " +
-                                                            "$image")
-
-                # remove read-only attribute if present to ensure file modification
-                if ($PSItem.Attributes -band [System.IO.FileAttributes]::ReadOnly) {
-
-                    $PSItem.Attributes = $PSItem.Attributes -bxor
-                    [System.IO.FileAttributes]::ReadOnly
-                }
-
-                # check if a metadata file already exists for this image
-                $metadataFilePath = "$($image):scenes.json"
-                $fileExists = [System.IO.File]::Exists($metadataFilePath)
-
-                # read existing content or use empty JSON object as default
-                $content = if ($fileExists) {
-                    [System.IO.File]::ReadAllText($metadataFilePath)
-                } else {
-                    "{}"
-                }
-
                 # determine if image should be processed based on options
-                $shouldProcess = (
-                    (-not $OnlyNew) -or
-                    (-not $fileExists) -or
-                    ($content -eq "{}") -or
-                    (-not $content.Contains("scene"))
-                )
+                $shouldProcess = (-not $OnlyNew) -or (-not $fileExists) -or (-not $hasValidContent)
 
                 if ($shouldProcess) {
 
-                    # create an empty metadata file as placeholder if needed
-                    if (-not $fileExists) {
-
-                        $null = [System.IO.File]::WriteAllText($metadataFilePath,
-                                                               "{}")
-
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Created new metadata file for: $image")
-                    }                    # obtain scene classification data using ai recognition technology
+                    # obtain scene classification data using ai recognition technology
                     $sceneData = GenXdev.AI\Get-ImageDetectedScenes `
                         -ImagePath $image `
                         -ConfidenceThreshold $ConfidenceThreshold `
@@ -372,4 +332,4 @@ function Invoke-ImageScenesUpdate {
     end {
     }
 }
-################################################################################
+        ###############################################################################

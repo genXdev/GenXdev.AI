@@ -1,8 +1,8 @@
-################################################################################
-# Module: GenXdev.AI.LMStudio
-# Purpose: Converts PowerShell function definitions into a format compatible with LMStudio's
-#          function calling interface. This enables seamless integration between PowerShell
-#          commands and LMStudio's AI capabilities.
+        ###############################################################################
+        ###############################################################################Module: GenXdev.AI.LMStudio
+        ###############################################################################Purpose: Converts PowerShell function definitions into a format compatible with LMStudio's
+        ###############################################################################         function calling interface. This enables seamless integration between PowerShell
+        ###############################################################################         commands and LMStudio's AI capabilities.
 <#
 .SYNOPSIS
 Converts PowerShell functions to LMStudio function definitions.
@@ -16,9 +16,9 @@ One or more PowerShell function info objects to convert to LMStudio definitions.
 
 .EXAMPLE
 Get-Command Get-Process | ConvertTo-LMStudioFunctionDefinition
-#>
+        ###############################################################################>
 
-# Main function that handles the conversion process from PowerShell to LMStudio format
+        ###############################################################################Main function that handles the conversion process from PowerShell to LMStudio format
 function ConvertTo-LMStudioFunctionDefinition {
 
     [CmdletBinding()]
@@ -281,4 +281,4 @@ process {
         Microsoft.PowerShell.Utility\Write-Output $result
     }
 }
-################################################################################
+        ###############################################################################

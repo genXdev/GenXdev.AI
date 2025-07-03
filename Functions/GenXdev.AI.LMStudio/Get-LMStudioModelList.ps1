@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Retrieves a list of installed LM Studio models.
@@ -19,7 +19,7 @@ Retrieves all installed LM Studio models and returns them as objects.
 .EXAMPLE
 Get-LMStudioModelList -Verbose
 Retrieves models while showing detailed progress information.
-#>
+        ###############################################################################>
 function Get-LMStudioModelList {
 
     [CmdletBinding()]
@@ -66,4 +66,4 @@ process {
     end {
     }
 }
-################################################################################
+        ###############################################################################

@@ -1,118 +1,250 @@
+################################################################################
+<#
+.SYNOPSIS
+Converts diplomatic or tactful language into direct, clear, and
+straightforward language.
+
+.DESCRIPTION
+This function takes diplomatic speak and translates it to reveal the true
+meaning behind polite or politically correct language. It uses AI language
+models to transform euphemistic expressions into direct statements, making
+communication unambiguous and easy to understand. The function is particularly
+useful for analyzing political statements, business communications, or any text
+where the real meaning might be obscured by diplomatic language.
+
+.PARAMETER Text
+The text to convert from diplomatic speak. This can be provided through the
+pipeline.
+
+.PARAMETER Instructions
+Additional instructions for the AI model to customize the transformation
+process.
+
+.PARAMETER Temperature
+Temperature for response randomness (0.0-1.0). Lower values produce more
+consistent outputs while higher values increase creativity.
+
+.PARAMETER SetClipboard
+Copy the transformed text to clipboard after processing.
+
+.PARAMETER ShowWindow
+Show the LM Studio window during processing for monitoring AI operations.
+
+.PARAMETER Force
+Force stop LM Studio before initialization to ensure clean startup.
+
+.PARAMETER LLMQueryType
+The type of LLM query to use for the transformation process.
+
+.PARAMETER Model
+The model identifier or pattern to use for AI operations.
+
+.PARAMETER HuggingFaceIdentifier
+The LM Studio specific model identifier for Hugging Face models.
+
+.PARAMETER MaxToken
+The maximum number of tokens to use in AI operations.
+
+.PARAMETER Cpu
+The number of CPU cores to dedicate to AI operations.
+
+.PARAMETER Gpu
+How much to offload to the GPU. If 'off', GPU offloading is disabled. If
+'max', all layers are offloaded to GPU. If a number between 0 and 1, that
+fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide
+how much to offload to the GPU. -2 = Auto.
+
+.PARAMETER ApiEndpoint
+The API endpoint URL for AI operations when using external services.
+
+.PARAMETER ApiKey
+The API key for authenticated AI operations with external services.
+
+.PARAMETER TimeoutSeconds
+The timeout in seconds for AI operations to prevent hanging.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files storage.
+
+.PARAMETER SkipSession
+Store settings only in persistent preferences without affecting session.
+
+.EXAMPLE
+ConvertFrom-DiplomaticSpeak -Text "We have some concerns about your approach"
+
+.EXAMPLE
+undiplomatize "Your proposal has merit but requires further consideration"
+
+.EXAMPLE
+"We're putting you on timeout" | ConvertFrom-DiplomaticSpeak `
+    -SetClipboard -Temperature 0.2
+#>
 function ConvertFrom-DiplomaticSpeak {
 
     [CmdletBinding()]
     [OutputType([System.String])]
     [Alias("undiplomatize")]
     param (
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
             ValueFromPipeline = $true,
             HelpMessage = "The text to convert from diplomatic speak"
         )]
-        [string]$Text,
-        ########################################################################
+        [string] $Text,
+        ###############################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
             HelpMessage = "Additional instructions for the AI model"
         )]
-        [string]$Instructions = "",
-        ########################################################################
+        [string] $Instructions = "",
+        ###############################################################################
         [Parameter(
-            Position = 2,
             Mandatory = $false,
-            HelpMessage = "The LM-Studio model to use"
+            HelpMessage = "Temperature for response randomness (0.0-1.0)"
         )]
-        [SupportsWildcards()]
-        [string]$Model,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Identifier used for getting specific model from LM Studio"
-        )]
-        [string]$ModelLMSGetIdentifier,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Temperature for response randomness (0.0-1.0)")]
         [ValidateRange(0.0, 1.0)]
-        [double]$Temperature = 0.0,
-        ########################################################################
+        [double] $Temperature = 0.0,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)")]
-        [Alias("MaxTokens")]
-        [int]$MaxToken = -1,
-        ########################################################################
+            HelpMessage = "The type of LLM query"
+        )]
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string] $LLMQueryType = "Knowledge",
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("The model identifier or pattern to use for AI " +
+                           "operations")
+        )]
+        [string] $Model,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The LM Studio specific model identifier"
+        )]
+        [Alias("ModelLMSGetIdentifier")]
+        [string] $HuggingFaceIdentifier,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("The maximum number of tokens to use in AI " +
+                           "operations")
+        )]
+        [int] $MaxToken,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("The number of CPU cores to dedicate to AI " +
+                           "operations")
+        )]
+        [int] $Cpu,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
+                           "offloading is disabled. If 'max', all layers are " +
+                           "offloaded to GPU. If a number between 0 and 1, " +
+                           "that fraction of layers will be offloaded to the " +
+                           "GPU. -1 = LM Studio will decide how much to " +
+                           "offload to the GPU. -2 = Auto")
+        )]
+        [ValidateRange(-2, 1)]
+        [int] $Gpu = -1,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API endpoint URL for AI operations"
+        )]
+        [string] $ApiEndpoint,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key for authenticated AI operations"
+        )]
+        [string] $ApiKey,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The timeout in seconds for AI operations"
+        )]
+        [int] $TimeoutSeconds,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Copy the transformed text to clipboard"
         )]
-        [switch]$SetClipboard,
-        ########################################################################
+        [switch] $SetClipboard,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show the LM Studio window")]
-        [switch]$ShowWindow,
-        ########################################################################
-        [Alias("ttl")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests")]
-        [int]$TTLSeconds = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "How much to offload to the GPU. If `"off`", GPU offloading is disabled. If `"max`", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto "
+            HelpMessage = "Show the LM Studio window"
         )]
-        [int]$Gpu = -1,
-        ########################################################################
+        [switch] $ShowWindow,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Force stop LM Studio before initialization"
         )]
-        [switch]$Force,
-        ########################################################################
+        [switch] $Force,
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Api endpoint url, defaults to http://localhost:1234/v1/chat/completions")]
-        [string]$ApiEndpoint = $null,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The API key to use for the request")]
-        [string]$ApiKey = $null,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                           "preferences")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for " +
+                           "AI preferences")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Store settings only in persistent preferences " +
+                           "without affecting session")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+        ###############################################################################
     )
 
     begin {
-        Microsoft.PowerShell.Utility\Write-Verbose "Starting diplomatic speak conversion"
+
+        # output verbose information about starting the conversion process
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Starting diplomatic speak conversion process"
+        )
     }
 
     process {
-        # construct instructions for diplomatic speak transformation
+
+        # construct comprehensive instructions for diplomatic speak transformation
         $diplomaticInstructions = @"
 Translate the user's input from diplomatic or tactful language into direct, clear, and straightforward language. The translation should reveal the true and real meaning of the phrase, making it unambiguous and easy to understand.
 
@@ -184,14 +316,22 @@ Direct meaning: 'Your fashion sense is terrible.'
 $Instructions
 "@
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Transforming text with diplomatic speak instructions"
+        # output verbose information about the transformation process
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Transforming text with diplomatic speak instructions"
+        )
 
-        # invoke the language model with diplomatic speak instructions
+        # invoke the language model with diplomatic speak instructions using splatting
         GenXdev.AI\Invoke-LLMTextTransformation @PSBoundParameters `
             -Instructions $diplomaticInstructions
     }
 
     end {
-        Microsoft.PowerShell.Utility\Write-Verbose "Completed diplomatic speak conversion"
+
+        # output verbose information about completion of the conversion process
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Completed diplomatic speak conversion process"
+        )
     }
 }
+################################################################################

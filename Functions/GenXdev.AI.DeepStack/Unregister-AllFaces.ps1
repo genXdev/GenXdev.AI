@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Removes all registered faces from the DeepStack face recognition system.
@@ -58,7 +58,7 @@ Removes all registered faces without confirmation prompt.
 unregall -Force
 
 Uses alias to remove all faces without confirmation.
-#>
+        ###############################################################################>
 function Unregister-AllFaces {
 
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
@@ -584,4 +584,4 @@ function Unregister-AllFaces {
 
     }
 }
-################################################################################
+        ###############################################################################

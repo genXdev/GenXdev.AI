@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Extracts or generates a list of relevant strings from input text using AI
@@ -20,14 +20,6 @@ Optional instructions to guide the AI model in generating the string list. By
 default, it will extract key points, items, or relevant concepts from the
 input text.
 
-.PARAMETER Model
-Specifies which AI model to use for the analysis. Different models may produce
-varying results. Supports wildcard patterns.
-
-.PARAMETER ModelLMSGetIdentifier
-Identifier used for getting specific model from LM Studio. Used for precise
-model selection when multiple models are available.
-
 .PARAMETER Attachments
 Array of file paths to attach to the AI query. These files will be included
 in the context for analysis.
@@ -35,18 +27,6 @@ in the context for analysis.
 .PARAMETER Temperature
 Temperature for response randomness (0.0-1.0). Lower values produce more
 deterministic responses, higher values increase creativity.
-
-.PARAMETER MaxToken
-Maximum tokens in response (-1 for default). Controls the length of the AI
-response.
-
-.PARAMETER TTLSeconds
-Set a TTL (in seconds) for models loaded via API requests. Determines how long
-the model stays loaded in memory.
-
-.PARAMETER Gpu
-How much to offload to the GPU. Options: "off" disables GPU, "max" uses all
-GPU layers, 0-1 sets fraction, -1 lets LM Studio decide, -2 for auto.
 
 .PARAMETER ImageDetail
 Image detail level for image processing. Valid values are "low", "medium",
@@ -63,29 +43,97 @@ invoke.
 .PARAMETER NoConfirmationToolFunctionNames
 Array of command names that don't require confirmation before execution.
 
+.PARAMETER LLMQueryType
+The type of LLM query to perform. Valid values are "SimpleIntelligence",
+"Knowledge", "Pictures", "TextTranslation", "Coding", or "ToolUse".
+
+.PARAMETER Model
+The model identifier or pattern to use for AI operations.
+
+.PARAMETER HuggingFaceIdentifier
+The LM Studio specific model identifier.
+
+.PARAMETER MaxToken
+The maximum number of tokens to use in AI operations.
+
+.PARAMETER Cpu
+The number of CPU cores to dedicate to AI operations.
+
+.PARAMETER Gpu
+How much to offload to the GPU. If 'off', GPU offloading is disabled. If
+'max', all layers are offloaded to GPU. If a number between 0 and 1, that
+fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide
+how much to offload to the GPU. -2 = Auto.
+
 .PARAMETER ApiEndpoint
-API endpoint URL, defaults to http://localhost:1234/v1/chat/completions for
-LM Studio.
+The API endpoint URL for AI operations.
 
 .PARAMETER ApiKey
-The API key to use for the request when connecting to external AI services.
+The API key for authenticated AI operations.
+
+.PARAMETER TimeoutSeconds
+The timeout in seconds for AI operations.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
 
 .PARAMETER SetClipboard
 When specified, copies the resulting string list back to the system clipboard
 after processing.
 
-.EXAMPLE
-PS> Invoke-LLMStringListEvaluation -Text "PowerShell features: object-based pipeline, integrated scripting environment, backwards compatibility, and enterprise management."
-Returns: @("Object-based pipeline", "Integrated scripting environment", "Backwards compatibility", "Enterprise management")
+.PARAMETER ShowWindow
+Show the LM Studio window.
+
+.PARAMETER Force
+Force stop LM Studio before initialization.
+
+.PARAMETER IncludeThoughts
+Include model's thoughts in output.
+
+.PARAMETER DontAddThoughtsToHistory
+Don't add model's thoughts to conversation history.
+
+.PARAMETER ContinueLast
+Continue from last conversation.
+
+.PARAMETER Speak
+Enable text-to-speech for AI responses.
+
+.PARAMETER SpeakThoughts
+Enable text-to-speech for AI thought responses.
+
+.PARAMETER NoSessionCaching
+Don't store session in session cache.
+
+.PARAMETER AllowDefaultTools
+Enable default tools for the AI model.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences.
+
+.PARAMETER SkipSession
+Store settings only in persistent preferences without affecting session.
 
 .EXAMPLE
-PS> "Make a shopping list with: keyboard, mouse, monitor, headset" | Invoke-LLMStringListEvaluation
+PS> Invoke-LLMStringListEvaluation -Text ("PowerShell features: object-based " +
+    "pipeline, integrated scripting environment, backwards compatibility, " +
+    "and enterprise management.")
+Returns: @("Object-based pipeline", "Integrated scripting environment",
+         "Backwards compatibility", "Enterprise management")
+
+.EXAMPLE
+PS> "Make a shopping list with: keyboard, mouse, monitor, headset" |
+    Invoke-LLMStringListEvaluation
 Returns: @("Keyboard", "Mouse", "Monitor", "Headset")
 
 .EXAMPLE
-PS> Invoke-LLMStringListEvaluation -Text "List common PowerShell commands for file operations" -SetClipboard
-Returns and copies to clipboard: @("Get-ChildItem", "Copy-Item", "Move-Item", "Remove-Item", "Set-Content", "Get-Content")
-#>
+PS> getlist "List common PowerShell commands for file operations" -SetClipboard
+Returns and copies to clipboard: @("Get-ChildItem", "Copy-Item", "Move-Item",
+                                  "Remove-Item", "Set-Content", "Get-Content")
+###############################################################################>
 function Invoke-LLMStringListEvaluation {
 
     [CmdletBinding()]
@@ -114,21 +162,6 @@ function Invoke-LLMStringListEvaluation {
         [Parameter(
             Position = 2,
             Mandatory = $false,
-            HelpMessage = "The LM-Studio model to use"
-        )]
-        [SupportsWildcards()]
-        [string] $Model,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Identifier used for getting specific model from " +
-                          "LM Studio")
-        )]
-        [string] $ModelLMSGetIdentifier,
-        ###############################################################################
-        [Parameter(
-            Position = 3,
-            Mandatory = $false,
             HelpMessage = "Array of file paths to attach"
         )]
         [string[]] $Attachments = @(),
@@ -139,32 +172,6 @@ function Invoke-LLMStringListEvaluation {
         )]
         [ValidateRange(0.0, 1.0)]
         [double] $Temperature = 0.2,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)"
-        )]
-        [Alias("MaxTokens")]
-        [int] $MaxToken = -1,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Set a TTL (in seconds) for models loaded via " +
-                          "API requests")
-        )]
-        [Alias("ttl")]
-        [int] $TTLSeconds = -1,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
-                          "offloading is disabled. If 'max', all layers are " +
-                          "offloaded to GPU. If a number between 0 and 1, " +
-                          "that fraction of layers will be offloaded to the " +
-                          "GPU. -1 = LM Studio will decide how much to " +
-                          "offload to the GPU. -2 = Auto")
-        )]
-        [int] $Gpu = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -196,16 +203,78 @@ function Invoke-LLMStringListEvaluation {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("API endpoint URL, defaults to " +
-                          "http://localhost:1234/v1/chat/completions")
+            HelpMessage = "The type of LLM query"
         )]
-        [string] $ApiEndpoint = $null,
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string] $LLMQueryType = "Knowledge",
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The API key to use for the request"
+            HelpMessage = "The model identifier or pattern to use for AI operations"
         )]
-        [string] $ApiKey = $null,
+        [string] $Model,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The LM Studio specific model identifier"
+        )]
+        [Alias("ModelLMSGetIdentifier")]
+        [string] $HuggingFaceIdentifier,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The maximum number of tokens to use in AI operations"
+        )]
+        [int] $MaxToken,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+        )]
+        [int] $Cpu,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
+                           "offloading is disabled. If 'max', all layers are " +
+                           "offloaded to GPU. If a number between 0 and 1, " +
+                           "that fraction of layers will be offloaded to the " +
+                           "GPU. -1 = LM Studio will decide how much to " +
+                           "offload to the GPU. -2 = Auto")
+        )]
+        [ValidateRange(-2, 1)]
+        [int] $Gpu = -1,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API endpoint URL for AI operations"
+        )]
+        [string] $ApiEndpoint,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key for authenticated AI operations"
+        )]
+        [string] $ApiKey,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The timeout in seconds for AI operations"
+        )]
+        [int] $TimeoutSeconds,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -266,33 +335,35 @@ function Invoke-LLMStringListEvaluation {
             HelpMessage = "Enable default tools for the AI model"
         )]
         [switch] $AllowDefaultTools,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for AI " +
+                "preferences")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Store settings only in persistent preferences without " +
+                "affecting session")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
-    )
+        ###############################################################################
+        )
 
     begin {
 
         # construct enhanced instructions for ai model to return structured data
-        $Instructions = @"
+        $instructions = @"
 Analyze the users prompt and return a list of relevant strings.
 Respond with a JSON object containing 'items' (array of strings).
 The returned items should be concise and relevant to the input text.
@@ -329,6 +400,7 @@ $Instructions
 
         # initialize script-scoped variables for storing results
         $script:result = @()
+
         $response = $null
     }
 
@@ -349,9 +421,11 @@ $Instructions
 
             # validate that clipboard contains text data
             if ([string]::IsNullOrWhiteSpace($Text)) {
+
                 Microsoft.PowerShell.Utility\Write-Warning (
                     "No text found in the clipboard."
                 )
+
                 return
             }
         }
@@ -370,14 +444,20 @@ $Instructions
 
             # set specific parameters for the llm query invocation
             $invocationParams.Query = $Text
-            $invocationParams.Instructions = $Instructions
+
+            $invocationParams.Instructions = $instructions
+
             $invocationParams.IncludeThoughts = $false
+
             $invocationParams.ResponseFormat = $responseSchema
+
             $invocationParams.Temperature = $Temperature
 
             # configure chat mode for tools when default tools are allowed
             if ($AllowDefaultTools) {
+
                 $invocationParams.ChatMode = "textprompt"
+
                 $invocationParams.ChatOnce = $true
             }
 
@@ -419,10 +499,12 @@ $Instructions
 
                 # copy summary with thoughts or just results based on preference
                 if ($IncludeThoughts) {
+
                     $null = $summary |
                         Microsoft.PowerShell.Management\Set-Clipboard
                 }
                 else {
+
                     $null = $script:result |
                         Microsoft.PowerShell.Management\Set-Clipboard
                 }
@@ -433,4 +515,4 @@ $Instructions
         $script:result
     }
 }
-################################################################################
+###############################################################################

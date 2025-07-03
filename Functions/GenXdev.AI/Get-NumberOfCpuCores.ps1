@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Calculates and returns the total number of logical CPU cores in the system.
@@ -17,7 +17,7 @@ The calculation process:
 4. Returns the total logical core count
 
 .EXAMPLE
-# Get the total number of logical CPU cores
+        ###############################################################################Get the total number of logical CPU cores
 $cores = Get-NumberOfCpuCores
 Write-Host "System has $cores logical CPU cores available"
 
@@ -25,7 +25,7 @@ Write-Host "System has $cores logical CPU cores available"
 - Assumes all processors support hyperthreading
 - Requires WMI access permissions
 - Works on Windows systems only
-#>
+        ###############################################################################>
 
 function Get-NumberOfCpuCores {
 
@@ -66,4 +66,4 @@ process {
         return $logicalCores
     }
 }
-################################################################################
+        ###############################################################################

@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Updates object detection metadata for image files in a specified directory.
@@ -84,7 +84,7 @@ Invoke-ImageObjectsUpdate -ImageDirectories "C:\Photos" -UseGPU `
 
 This example uses GPU acceleration with higher confidence threshold of 0.7
 for more accurate but fewer object detections.
-#>
+        ###############################################################################>
 function Invoke-ImageObjectsUpdate {
 
     [CmdletBinding()]
@@ -212,7 +212,7 @@ function Invoke-ImageObjectsUpdate {
         # retrieve all supported image files from the specified directory
         # applying recursion only if the recurse switch was provided
         Microsoft.PowerShell.Management\Get-ChildItem `
-            -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
+            -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.gif","$path\*.png" `
             -Recurse:$Recurse `
             -File `
             -ErrorAction SilentlyContinue |
@@ -223,40 +223,10 @@ function Invoke-ImageObjectsUpdate {
                 # store the full path to the current image for better readability
                 $image = $PSItem.FullName
 
-                # handle retry mode for previously failed images
-                if ($RetryFailed) {
-
-                    if ([System.IO.File]::Exists("$($image):objects.json")) {
-
-                        # read existing metadata file content
-                        $content = [System.IO.File]::ReadAllText(
-                            "$($image):objects.json"
-                        )
-
-                        # check if file is empty or contains failure indicators
-                        if ($content.StartsWith("{}") -or
-                            $content -eq (
-                                '{"predictions":null,"count":0,"objects":[]}'
-                            )) {
-
-                            # reset content to empty for reprocessing
-                            $content = "{}"
-                        }
-                    }
-                }
-
                 # output verbose information about current image being processed
                 Microsoft.PowerShell.Utility\Write-Verbose (
                     "Processing image for object detection: $image"
                 )
-
-                # remove read-only attribute if present to ensure file modification
-                if ($PSItem.Attributes -band
-                    [System.IO.FileAttributes]::ReadOnly) {
-
-                    $PSItem.Attributes = $PSItem.Attributes -bxor
-                        [System.IO.FileAttributes]::ReadOnly
-                }
 
                 # construct path for the metadata file
                 $metadataFilePath = "$($image):objects.json"
@@ -264,32 +234,22 @@ function Invoke-ImageObjectsUpdate {
                 # check if a metadata file already exists for this image
                 $fileExists = [System.IO.File]::Exists($metadataFilePath)
 
-                # read existing content or use empty object as default
-                $content = if ($fileExists) {
-                    [System.IO.File]::ReadAllText($metadataFilePath)
-                } else {
-                    "{}"
+                # check if we have valid existing content
+                $hasValidContent = $false
+                if ($fileExists) {
+                    try {
+                        $content = [System.IO.File]::ReadAllText($metadataFilePath)
+                        $existingData = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
+                        $hasValidContent = $existingData.predictions -and $existingData.predictions.Count -gt 0
+                    }
+                    catch {
+                        # If JSON parsing fails, treat as invalid content
+                        $hasValidContent = $false
+                    }
                 }
 
                 # determine if we should process this image based on conditions
-                if ((-not $OnlyNew) -or
-                    (-not $fileExists) -or
-                    ($content -eq "{}") -or
-                    (-not $content.Contains("predictions"))) {
-
-                    # create an empty metadata file as placeholder if missing
-                    if (-not $fileExists) {
-
-                        $null = [System.IO.File]::WriteAllText(
-                            $metadataFilePath,
-                            "{}"
-                        )
-
-                        # output verbose confirmation of metadata file creation
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Created new object metadata file for: $image"
-                        )
-                    }
+                if ((-not $OnlyNew) -or (-not $fileExists) -or (-not $hasValidContent)) {
 
                     # obtain object detection data using ai detection technology
                     $objectData = GenXdev.AI\Get-ImageDetectedObjects `
@@ -408,4 +368,4 @@ function Invoke-ImageObjectsUpdate {
     }    end {
     }
 }
-################################################################################
+        ###############################################################################

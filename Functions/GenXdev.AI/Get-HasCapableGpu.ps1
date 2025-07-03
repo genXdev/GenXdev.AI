@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Determines if a CUDA-capable GPU with sufficient memory is present.
@@ -15,7 +15,7 @@ AI workloads that require significant GPU memory.
 .EXAMPLE
 $hasGpu = Get-HasCapableGpu
 Write-Host "System has capable GPU: $hasGpu"
-#>
+        ###############################################################################>
 function Get-HasCapableGpu {
 
     [CmdletBinding()]
@@ -47,4 +47,4 @@ process {
     end {
     }
 }
-################################################################################
+        ###############################################################################

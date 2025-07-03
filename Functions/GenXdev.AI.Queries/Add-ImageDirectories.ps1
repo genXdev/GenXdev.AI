@@ -16,6 +16,21 @@ An array of directory paths to add to the existing image directories
 configuration. Paths can be relative or absolute and will be expanded
 automatically. Duplicates are filtered out using case-insensitive comparison.
 
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SkipSession
+Dont use alternative settings stored in session for AI preferences like
+Language, Image collections, etc.
+
 .EXAMPLE
 Add-ImageDirectories -ImageDirectories @("C:\NewPhotos", "D:\MoreImages")
 
@@ -28,6 +43,7 @@ addimgdir @("C:\Temp\Photos", "E:\Backup\Images")
 Uses alias to add multiple directories to the configuration with positional
 parameters.
 #>
+################################################################################
 function Add-ImageDirectories {
 
     [CmdletBinding(SupportsShouldProcess)]
@@ -37,7 +53,7 @@ function Add-ImageDirectories {
     [Alias("addimgdir")]
 
     param(
-        ###############################################################################
+        ################################################################################
         [Parameter(
             Mandatory = $true,
             Position = 0,
@@ -47,27 +63,35 @@ function Add-ImageDirectories {
         [ValidateNotNullOrEmpty()]
         [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
         [string[]] $ImageDirectories,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        ################################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                          "preferences like Language, Image collections, etc")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        ################################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for AI " +
+                          "preferences like Language, Image collections, etc")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        ################################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        ################################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Dont use alternative settings stored in session for " +
+                          "AI preferences like Language, Image collections, etc")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+        ################################################################################
     )
 
     begin {
@@ -76,7 +100,10 @@ function Add-ImageDirectories {
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Get-AIImageCollection" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
+
         $currentConfig = GenXdev.AI\Get-AIImageCollection @params
 
         # initialize new collection to store all directories including existing ones
@@ -91,7 +118,7 @@ function Add-ImageDirectories {
         # output current configuration state for debugging purposes
         Microsoft.PowerShell.Utility\Write-Verbose (
             "Current image directories: " +
-            "[$($ImageDirectories -join ', ')]"
+            "[$($currentConfig -join ', ')]"
         )
     }
 
@@ -141,12 +168,18 @@ function Add-ImageDirectories {
             "[$($ImageDirectories -join ', ')]")
         )) {
 
+            # prepare parameters for set operation using identical parameter copying
+            $setParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName "GenXdev.AI\Set-AIImageCollection" `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue)
+
             # update configuration using the dedicated setter function
             GenXdev.AI\Set-AIImageCollection `
                 -ImageDirectories $finalDirectories `
-                -SessionOnly:$SessionOnly `
-                -ClearSession:$ClearSession `
-                -SkipSession:$SkipSession
+                @setParams
 
             # display success confirmation to user with statistics
             Microsoft.PowerShell.Utility\Write-Host (

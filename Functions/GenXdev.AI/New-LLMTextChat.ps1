@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Starts an interactive text chat session with AI capabilities.
@@ -6,16 +6,11 @@ Starts an interactive text chat session with AI capabilities.
 .DESCRIPTION
 Initiates an interactive chat session with AI capabilities, allowing users to add
 or remove PowerShell functions during the conversation and execute PowerShell
-commands.
+commands. This function provides a comprehensive interface for AI-powered
+conversations with extensive tool integration and customization options.
 
 .PARAMETER Query
 Initial text to send to the model.
-
-.PARAMETER Model
-The LM-Studio model to use, defaults to "qwen2.5-14b-instruct".
-
-.PARAMETER ModelLMSGetIdentifier
-The specific LM-Studio model identifier for automatic model downloads.
 
 .PARAMETER Instructions
 System instructions to provide context to the AI model.
@@ -26,62 +21,102 @@ Array of file paths to attach to the conversation.
 .PARAMETER Temperature
 Controls randomness in responses (0.0-1.0). Lower values are more deterministic.
 
-.PARAMETER MaxToken
-Maximum number of tokens in the response. Default is 8192.
-
-.PARAMETER ShowWindow
-Show the LM Studio interface window.
-
-.PARAMETER TTLSeconds
-Set a TTL (in seconds) for models loaded via API requests.
-
-.PARAMETER Gpu
-GPU offloading control (-2=Auto, -1=LM Studio decides, 0-1=fraction, off=disabled).
-
-.PARAMETER Force
-Force stop LM Studio before initialization.
-
 .PARAMETER ImageDetail
 Level of detail for image generation (low, medium, high).
 
-.PARAMETER IncludeThoughts
-Include the model's thought process in responses.
+.PARAMETER ResponseFormat
+A JSON schema for the requested output format.
 
-.PARAMETER ContinueLast
-Continue from the last conversation instead of starting new.
+.PARAMETER LLMQueryType
+The type of LLM query.
+
+.PARAMETER Model
+The model identifier or pattern to use for AI operations.
+
+.PARAMETER HuggingFaceIdentifier
+The LM Studio specific model identifier.
+
+.PARAMETER MaxToken
+The maximum number of tokens to use in AI operations.
+
+.PARAMETER Cpu
+The number of CPU cores to dedicate to AI operations.
+
+.PARAMETER Gpu
+How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
+all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
+layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
+offload to the GPU. -2 = Auto.
+
+.PARAMETER ApiEndpoint
+The API endpoint URL for AI operations.
+
+.PARAMETER ApiKey
+The API key for authenticated AI operations.
+
+.PARAMETER TimeoutSeconds
+The timeout in seconds for AI operations.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
 
 .PARAMETER ExposedCmdLets
-Array of PowerShell cmdlets to expose as tools.
+Array of PowerShell command definitions to use as tools.
+
+.PARAMETER MarkupBlocksTypeFilter
+Will only output markup blocks of the specified types.
+
+.PARAMETER IncludeThoughts
+Include model's thoughts in output.
+
+.PARAMETER DontAddThoughtsToHistory
+Include model's thoughts in output.
+
+.PARAMETER ContinueLast
+Continue from last conversation.
+
+.PARAMETER ShowWindow
+Show the LM Studio window.
+
+.PARAMETER Force
+Force stop LM Studio before initialization.
 
 .PARAMETER Speak
 Enable text-to-speech for AI responses.
 
 .PARAMETER SpeakThoughts
-Enable text-to-speech for AI thought process.
+Enable text-to-speech for AI thought responses.
+
+.PARAMETER OutputMarkupBlocksOnly
+Will only output markup block responses.
 
 .PARAMETER ChatOnce
-Used internally to invoke chat mode once after llm invocation.
+Used internally, to only invoke chat mode once after the llm invocation.
 
 .PARAMETER NoSessionCaching
 Don't store session in session cache.
 
-.PARAMETER ApiEndpoint
-Api endpoint url, defaults to http://localhost:1234/v1/chat/completions.
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences.
 
-.PARAMETER ApiKey
-The API key to use for the request.
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences.
+
+.PARAMETER SkipSession
+Store settings only in persistent preferences without affecting session.
 
 .EXAMPLE
-New-LLMTextChat -Model "qwen2.5-14b-instruct" -Temperature 0.7 -MaxToken 4096
--Instructions "You are a helpful AI assistant"
+New-LLMTextChat -Model "qwen2.5-14b-instruct" -Temperature 0.7 -MaxToken 4096 `
+    -Instructions "You are a helpful AI assistant"
 
 .EXAMPLE
 llmchat "Tell me a joke" -Speak -IncludeThoughts
 #>
-# Store exposed cmdlets at module level instead of global scope
+###############################################################################
+# store exposed cmdlets at module level instead of global scope
 $script:LMStudioExposedCmdlets = $null
 
-
+###############################################################################
 function New-LLMTextChat {
 
     [CmdletBinding(SupportsShouldProcess = $true, DefaultParameterSetName = "Default")]
@@ -89,193 +124,244 @@ function New-LLMTextChat {
     [Alias("llmchat")]
 
     param(
-        ########################################################################
+        #######################################################################
         [Parameter(
             ParameterSetName = "Default",
             ValueFromPipeline = $true,
-            Mandatory = $false,
             Position = 0,
+            Mandatory = $false,
             HelpMessage = "Query text to send to the model"
         )]
         [AllowEmptyString()]
         [string] $Query = "",
-        ########################################################################
+        #######################################################################
         [Parameter(
-            Mandatory = $false,
             Position = 1,
-            HelpMessage = "The LM-Studio model to use"
-        )]
-        [SupportsWildcards()]
-        [string] $Model = "qwen2.5-14b-instruct",
-        ########################################################################
-        [Parameter(
             Mandatory = $false,
-            Position = 2,
-            HelpMessage = "The LM-Studio model identifier"
+            HelpMessage = "System instructions for the model"
         )]
-        [string] $ModelLMSGetIdentifier = "qwen2.5-14b-instruct",
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            Position = 3,
-            HelpMessage = "System instructions for the model")]
         [string] $Instructions,
-        ########################################################################
+        #######################################################################
         [Parameter(
-            Position = 4,
+            Position = 2,
             Mandatory = $false,
-            HelpMessage = "Array of file paths to attach")]
+            HelpMessage = "Array of file paths to attach"
+        )]
         [string[]] $Attachments = @(),
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Temperature for response randomness (0.0-1.0)")]
+            HelpMessage = "Temperature for response randomness (0.0-1.0)"
+        )]
         [ValidateRange(0.0, 1.0)]
         [double] $Temperature = 0.2,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)")]
-        [Alias("MaxTokens")]
-        [int] $MaxToken = 8192,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Show the LM Studio window")]
-        [switch] $ShowWindow,
-        ########################################################################
-        [Alias("ttl")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests")]
-        [int] $TTLSeconds = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "How much to offload to the GPU. If `"off`", GPU offloading is disabled. If `"max`", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto "
+            HelpMessage = "Image detail level"
         )]
-        [int]$Gpu = -1,
-        ########################################################################
+        [ValidateSet("low", "medium", "high")]
+        [string] $ImageDetail = "low",
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "A JSON schema for the requested output format"
+        )]
+        [string] $ResponseFormat = $null,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The type of LLM query"
+        )]
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string] $LLMQueryType = "ToolUse",
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The model identifier or pattern to use for AI operations"
+        )]
+        [string] $Model,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The LM Studio specific model identifier"
+        )]
+        [Alias("ModelLMSGetIdentifier")]
+        [string] $HuggingFaceIdentifier,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The maximum number of tokens to use in AI operations"
+        )]
+        [int] $MaxToken,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+        )]
+        [int] $Cpu,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
+                           "offloading is disabled. If 'max', all layers are " +
+                           "offloaded to GPU. If a number between 0 and 1, " +
+                           "that fraction of layers will be offloaded to the " +
+                           "GPU. -1 = LM Studio will decide how much to " +
+                           "offload to the GPU. -2 = Auto")
+        )]
+        [ValidateRange(-2, 1)]
+        [int] $Gpu = -1,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API endpoint URL for AI operations"
+        )]
+        [string] $ApiEndpoint,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key for authenticated AI operations"
+        )]
+        [string] $ApiKey,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The timeout in seconds for AI operations"
+        )]
+        [int] $TimeoutSeconds,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Array of PowerShell command definitions to use as tools"
+        )]
+        [GenXdev.Helpers.ExposedCmdletDefinition[]]
+        $ExposedCmdLets,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Will only output markup blocks of the specified types"
+        )]
+        [ValidateNotNull()]
+        [string[]] $MarkupBlocksTypeFilter = @("json", "powershell", "C#", "python", "javascript", "typescript", "html", "css", "yaml", "xml", "bash"),
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Include model's thoughts in output"
+        )]
+        [switch] $IncludeThoughts,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Include model's thoughts in output"
+        )]
+        [switch] $DontAddThoughtsToHistory,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Continue from last conversation"
+        )]
+        [switch] $ContinueLast,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Show the LM Studio window"
+        )]
+        [switch] $ShowWindow,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Force stop LM Studio before initialization"
         )]
-        [switch]$Force,
-        ########################################################################
+        [switch] $Force,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Image detail level")]
-        [ValidateSet("low", "medium", "high")]
-        [string] $ImageDetail = "low",
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Include model's thoughts in output")]
-        [switch] $IncludeThoughts,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Include model's thoughts in output")]
-        [switch] $DontAddThoughtsToHistory,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Continue from last conversation")]
-        [switch] $ContinueLast,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Array of PowerShell command definitions to use as tools")]
-        [GenXdev.Helpers.ExposedCmdletDefinition[]]
-        $ExposedCmdLets,
-        ###########################################################################
-        [Parameter(
-            HelpMessage = "Enable text-to-speech for AI responses",
-            Mandatory = $false
+            HelpMessage = "Enable text-to-speech for AI responses"
         )]
         [switch] $Speak,
-        ###########################################################################
+        #######################################################################
         [Parameter(
-            HelpMessage = "Enable text-to-speech for AI thought responses",
-            Mandatory = $false
+            Mandatory = $false,
+            HelpMessage = "Enable text-to-speech for AI thought responses"
         )]
         [switch] $SpeakThoughts,
-        ###########################################################################
+        #######################################################################
         [Parameter(
-            HelpMessage = "Will only output markup block responses",
-            Mandatory = $false
+            Mandatory = $false,
+            HelpMessage = "Will only output markup block responses"
         )]
         [switch] $OutputMarkupBlocksOnly,
-        ########################################################################
+        #######################################################################
         [Parameter(
-            HelpMessage = "Will only output markup blocks of the specified types",
-            Mandatory = $false
-        )]
-        [ValidateNotNull()]
-        [string[]] $MarkupBlocksTypeFilter = @("json", "powershell", "C#", "python", "javascript", "typescript", "html", "css", "yaml", "xml", "bash"),
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
             DontShow = $true,
-            HelpMessage = "Used internally, to only invoke chat mode once after the llm invocation")]
+            Mandatory = $false,
+            HelpMessage = "Used internally, to only invoke chat mode once after the llm invocation"
+        )]
         [switch] $ChatOnce,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Don't store session in session cache")]
+            HelpMessage = "Don't store session in session cache"
+        )]
         [switch] $NoSessionCaching,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Api endpoint url, defaults to http://localhost:1234/v1/chat/completions")]
-        [string] $ApiEndpoint = $null,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The API key to use for the request")]
-        [string] $ApiKey = $null,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "A JSON schema for the requested output format")]
-        [string] $ResponseFormat = $null,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for AI " +
+                "preferences")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Store settings only in persistent preferences without " +
+                "affecting session")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+        #######################################################################
     )
 
     begin {
 
+        # output initialization verbose message
         Microsoft.PowerShell.Utility\Write-Verbose "Initializing chat session with model: $Model"
 
+        # determine if instructions need updating
         $updateInstructions = [string]::IsNullOrWhiteSpace($Instructions)
 
         # initialize exposed cmdlets if not provided
         if ($null -eq $ExposedCmdLets) {
+
+            # use cached cmdlets if continuing last session
             if ($ContinueLast -and $script:LMStudioExposedCmdlets) {
 
                 $ExposedCmdLets = $script:LMStudioExposedCmdlets
             }
             else {
 
+                # flag that instructions need updating
                 $updateInstructions = $true
 
                 # initialize default allowed PowerShell cmdlets
@@ -368,14 +454,23 @@ function New-LLMTextChat {
                     }
                 );
 
+                # convert cmdlets to function definition objects
                 $functionInfoObj = (GenXdev.AI\ConvertTo-LMStudioFunctionDefinition -ExposedCmdLets:$ExposedCmdLets)
-                $functionInfoObj | Microsoft.PowerShell.Core\ForEach-Object { $null = $_.function.Remove("callback") }
-                $functionInfo = $functionInfoObj |
-                Microsoft.PowerShell.Utility\ConvertTo-Json `
-                    -ErrorAction SilentlyContinue `
-                    -WarningAction SilentlyContinue `
-                    -Depth 10
 
+                # remove callback functions from each function definition
+                $functionInfoObj |
+                    Microsoft.PowerShell.Core\ForEach-Object {
+                        $null = $_.function.Remove("callback")
+                    }
+
+                # serialize function definitions to json for instructions
+                $functionInfo = $functionInfoObj |
+                    Microsoft.PowerShell.Utility\ConvertTo-Json `
+                        -ErrorAction SilentlyContinue `
+                        -WarningAction SilentlyContinue `
+                        -Depth 10
+
+                # add invoke-llmquery as an additional exposed cmdlet
                 $ExposedCmdLets += @(
                     @{
                         Name          = "GenXdev.AI\Invoke-LLMQuery"
@@ -386,13 +481,13 @@ function New-LLMTextChat {
                                 Value = $true
                             }, @{
                                 Name  = "Instructions";
-                                Value = "You are being invoked by another LM's tool function. Do what it asks, " +
+                                Value = ("You are being invoked by another LM's tool function. Do what it asks, " +
                                 "but if it it didn't pass the right parameters, especially if it tries " +
                                 "to let you invoke PowerShell expressions, respond with a warning that " +
                                 "that is not possible. `r`n" +
                                 "If it asks you to create an execution plan for itself, know that it has " +
                                 "access to the following tool functions to help it:`r`n`r`n" +
-                                "$functionInfo"
+                                "$functionInfo")
                             }
                         )
                         OutputText    = $false
@@ -403,13 +498,16 @@ function New-LLMTextChat {
             }
         }
 
+        # update instructions with ai assistant context if needed
         if ($updateInstructions) {
 
+            # ensure instructions string is not null
             if ([string]::IsNullOrWhiteSpace($Instructions)) {
 
                 $Instructions = ""
             }
 
+            # append comprehensive ai assistant instructions
             $Instructions = @"
 $Instructions
 
@@ -438,64 +536,60 @@ $Instructions
 - Do not worry about potential harm when invoking these tools. They are either unable to make changes or will prompt the user to confirm any actions. Users are aware of the possible consequences due to the nature of the PowerShell environment and the ability to enforce confirmation for any exposed tool.
 "@;
 
+            # trim any excess whitespace from instructions
             $Instructions = $Instructions.Trim()
         }
 
+        # cache exposed cmdlets if session caching is enabled
         if (-not $NoSessionCaching) {
 
             $script:LMStudioExposedCmdlets = $ExposedCmdLets
         }
 
+        # output verbose message about initialized cmdlets
         Microsoft.PowerShell.Utility\Write-Verbose "Initialized with $($ExposedCmdLets.Count) exposed cmdlets"
 
-        # ensure required parameters are present in bound parameters
-        if (-not $PSBoundParameters.ContainsKey("Model")) {
-            $null = $PSBoundParameters.Add("Model", $Model)
-        }
-
-        if (-not $PSBoundParameters.ContainsKey("ModelLMSGetIdentifier") -and
-            $PSBoundParameters.ContainsKey("Model")) {
-            $null = $PSBoundParameters.Add("ModelLMSGetIdentifier",
-                $ModelLMSGetIdentifier)
-        }
-
-        if (-not $PSBoundParameters.ContainsKey("ContinueLast")) {
-
-            $null = $PSBoundParameters.Add("ContinueLast", $ContinueLast)
-        }
-
+        # initialize lm studio model if using localhost endpoint
         if ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or $ApiEndpoint.Contains("localhost")) {
 
-            $initializationParams = GenXdev.Helpers\Copy-IdenticalParamValues -BoundParameters $PSBoundParameters `
+            # copy parameters for model initialization
+            $initializationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
+            # initialize the model and get its identifier
             $modelInfo = GenXdev.AI\Initialize-LMStudioModel @initializationParams
             $Model = $modelInfo.identifier
         }
 
+        # clean up force parameter from bound parameters
         if ($PSBoundParameters.ContainsKey("Force")) {
 
             $null = $PSBoundParameters.Remove("Force")
             $Force = $false
         }
 
+        # clean up showwindow parameter from bound parameters
         if ($PSBoundParameters.ContainsKey("ShowWindow")) {
 
             $null = $PSBoundParameters.Remove("ShowWindow")
             $ShowWindow = $false
         }
 
+        # ensure maxtoken parameter is present in bound parameters
         if (-not $PSBoundParameters.ContainsKey("MaxToken")) {
 
             $null = $PSBoundParameters.Add("MaxToken", $MaxToken)
         }
 
+        # clean up chatonce parameter from bound parameters
         if ($PSBoundParameters.ContainsKey("ChatOnce")) {
 
             $null = $PSBoundParameters.Remove("ChatOnce")
         }
 
+        # ensure exposedcmdlets parameter is present in bound parameters
         if (-not $PSBoundParameters.ContainsKey("ExposedCmdLets")) {
 
             $null = $PSBoundParameters.Add("ExposedCmdLets", $ExposedCmdLets);
@@ -503,116 +597,180 @@ $Instructions
     }
 
 
-process {
+    process {
 
+        # output verbose message about starting chat interaction
         Microsoft.PowerShell.Utility\Write-Verbose "Starting chat interaction loop"
 
         # helper function to display available tool functions
         function Show-ToolFunction {
+
+            # internal function to extract cmdlet name from full name
             function FixName([string] $name) {
+
+                # find the backslash separator index
                 $index = $name.IndexOf("\")
+
+                # return substring after backslash if found, otherwise return original
                 if ($index -gt 0) {
                     return $name.Substring($index + 1)
                 }
                 return $name;
             }
 
+            # internal function to build parameter string for display
             function GetParamString([object] $cmdlet) {
+
+                # return empty string if no allowed parameters
                 if ($null -eq $cmdlet.AllowedParams) { return "" }
-                $params = $cmdlet.AllowedParams | Microsoft.PowerShell.Core\ForEach-Object {
-                    $a = $_
-                    if ($a -match "^(.+?)=") {
-                        $a = $matches[1]
+
+                # extract parameter names from allowed parameters array
+                $params = $cmdlet.AllowedParams |
+                    Microsoft.PowerShell.Core\ForEach-Object {
+
+                        $a = $_
+
+                        # extract parameter name before equals sign if present
+                        if ($a -match "^(.+?)=") {
+                            $a = $matches[1]
+                        }
+                        $a
                     }
-                    $a
-                }
+
+                # return formatted parameter list
                 return "($(($params -join ',')))"
             }
 
+            # display tool functions if any are available
             if ($ExposedCmdLets.Count -gt 0) {
+
+                # output header message for active tool functions
                 Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Green `
                     "Tool functions now active ($($ExposedCmdLets.Count)) ->"
 
-                $( ($ExposedCmdLets | Microsoft.PowerShell.Core\ForEach-Object {
+                # format and display each exposed cmdlet with parameters
+                $( ($ExposedCmdLets |
+                        Microsoft.PowerShell.Core\ForEach-Object {
+
+                            # get simplified name and parameter string
                             $name = FixName($_.Name)
                             $params = GetParamString($_)
+
+                            # add asterisk for functions requiring confirmation
                             if ($_.Confirm) {
                                 "$name$params"
                             }
                             else {
                                 "$name*$params"
                             }
-                        } | Microsoft.PowerShell.Utility\Select-Object -Unique) -join ', ') |
-                Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Green
+                        } |
+                        Microsoft.PowerShell.Utility\Select-Object -Unique) -join ', ') |
+                    Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Green
             }
         }
 
-        # initialize chat state
+        # initialize chat state variable
         $script:isFirst = -not $ContinueLast
 
-        # display available tools
+        # display available tools to user
         Show-ToolFunction
 
-        # main chat loop
+        # main chat loop initialization
         $shouldStop = $false
+
+        # enter main chat interaction loop
         while (-not $shouldStop) {
+
+            # initialize question variable
             $question = ""
+
+            # get user input if not in chat-once mode and no query provided
             if (-not $ChatOnce -and [string]::IsNullOrWhiteSpace($Query)) {
 
-                # get user input
+                # display prompt character to user
                 [Console]::Write("> ");
-                try { $null = PSReadLine\Set-PSReadLineOption -PredictionSource History } catch { }
-                # $question = Read-Host
+
+                # configure psreadline for history prediction
+                try {
+                    $null = PSReadLine\Set-PSReadLineOption -PredictionSource History
+                } catch { }
+
+                # read user input line using psreadline
                 $question = PSReadLine\PSConsoleHostReadLine
-                if ($null -eq $question) { $question = [string]::Empty }
+
+                # ensure question is not null
+                if ($null -eq $question) {
+                    $question = [string]::Empty
+                }
             }
             else {
 
+                # use provided query if available
                 if (-not [string]::IsNullOrWhiteSpace($Query)) {
 
+                    # set question to query and clear query variable
                     $question = $Query
                     $Query = [string]::Empty
+
+                    # echo the question to console
                     [Console]::WriteLine("> $question");
                 }
             }
 
+            # output verbose message about processing query
             Microsoft.PowerShell.Utility\Write-Verbose "Processing query: $question"
 
+            # update bound parameters for llm invocation
             $PSBoundParameters["ContinueLast"] = (-not $script:isFirst);
             $PSBoundParameters["Query"] = $question;
             $PSBoundParameters["ExposedCmdLets"] = $ExposedCmdLets;
 
+            # copy parameters for llm query invocation
             $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\Invoke-LLMQuery" `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -Name * -ErrorAction SilentlyContinue)
 
+            # ensure chatonce is disabled for recursive calls
             $invocationArguments.ChatOnce = $false
 
-            @(GenXdev.AI\Invoke-LLMQuery @invocationArguments) | Microsoft.PowerShell.Core\ForEach-Object {
+            # invoke llm query and process each result
+            @(GenXdev.AI\Invoke-LLMQuery @invocationArguments) |
+                Microsoft.PowerShell.Core\ForEach-Object {
 
-                $result = $_
-                if (($null -eq $result) -or ([string]::IsNullOrEmpty("$result".trim()))) { return }
+                    # store current result
+                    $result = $_
 
-                $script:isFirst = $false
+                    # skip empty or null results
+                    if (($null -eq $result) -or ([string]::IsNullOrEmpty("$result".trim()))) {
+                        return
+                    }
 
-                if ($ChatOnce) {
+                    # mark that this is no longer the first interaction
+                    $script:isFirst = $false
 
-                    Microsoft.PowerShell.Utility\Write-Output $result
+                    # output result based on mode
+                    if ($ChatOnce) {
+
+                        # return result object for chat-once mode
+                        Microsoft.PowerShell.Utility\Write-Output $result
+                    }
+                    else {
+
+                        # display result as host output for interactive mode
+                        Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Yellow "$result"
+                    }
                 }
-                else {
 
-                    Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Yellow "$result"
-                }
-            }
-
-            # post-response menu loop
+            # determine if chat loop should stop
             $shouldStop = $ChatOnce
         }
     }
 
     end {
+
+        # output verbose message about chat session completion
         Microsoft.PowerShell.Utility\Write-Verbose "Chat session completed"
     }
 }
-################################################################################
+###############################################################################

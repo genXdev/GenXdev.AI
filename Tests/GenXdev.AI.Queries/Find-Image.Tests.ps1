@@ -1,12 +1,12 @@
-################################################################################
+###############################################################################
 Pester\Describe "Find-Image" {
 
     Pester\It "Should pass PSScriptAnalyzer rules" {
 
-        # get the script path for analysis
+# get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Find-Image.ps1"
 
-        # run analyzer with explicit settings
+# run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 
@@ -51,4 +51,4 @@ $message
         $resultsFindImage | Pester\Should -Be $resultsFindIndexedImage -Because "The results of Find-Image and Find-IndexedImage should be the same."
     }
 }
-################################################################################
+###############################################################################

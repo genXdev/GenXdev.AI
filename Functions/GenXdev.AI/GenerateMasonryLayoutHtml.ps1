@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Generates a responsive masonry layout HTML gallery from image data.
@@ -21,7 +21,7 @@ Array of image objects containing metadata. Each object requires:
 Optional output path for the HTML file. If omitted, returns HTML as string.
 
 .EXAMPLE
-# Create gallery from image array and save to file
+        ###############################################################################Create gallery from image array and save to file
 $images = @(
     @{
         path = "C:\photos\sunset.jpg"
@@ -35,9 +35,9 @@ $images = @(
 GenerateMasonryLayoutHtml -Images $images -FilePath "C:\output\gallery.html"
 
 .EXAMPLE
-# Generate HTML string without saving
+        ###############################################################################Generate HTML string without saving
 $html = GenerateMasonryLayoutHtml $images
-#>
+        ###############################################################################>
 function GenerateMasonryLayoutHtml {
 
     [CmdletBinding()]
@@ -128,6 +128,7 @@ function GenerateMasonryLayoutHtml {
                 $extension = [System.IO.Path]::GetExtension($ImagePath).ToLower()
                 $mimeType = switch ($extension) {
                     ".jpg"  { "image/jpeg" }
+                    ".gif"  { "image/gif" }
                     ".jpeg" { "image/jpeg" }
                     ".png"  { "image/png" }
                     default {
@@ -243,4 +244,4 @@ function GenerateMasonryLayoutHtml {
         }
     }
 }
-################################################################################
+        ###############################################################################

@@ -1,38 +1,54 @@
 ################################################################################
 <#
 .SYNOPSIS
-Gets the configured directories and default language for image files used in
-GenXdev.AI operations.
+Gets the configured directories for image files used in GenXdev.AI operations.
 
 .DESCRIPTION
-This function retrieves the global image directories and default language used
-by the GenXdev.AI module for various image processing and AI operations. It
-returns the configuration from both global variables and the module's
-preference storage, with fallback to system defaults.
+This function retrieves the global image directories used by the GenXdev.AI
+module for various image processing and AI operations. It returns the
+configuration from both global variables and the module's preference storage,
+with fallback to system defaults.
+
+The function follows a priority order: first checks global variables (unless
+SkipSession is specified), then falls back to persistent preferences (unless
+SessionOnly is specified), and finally uses system default directories.
 
 .PARAMETER ImageDirectories
-Optional default value to return if no image directories are configured. If not specified, returns the system default directories (Downloads, OneDrive, Pictures).
+Optional default value to return if no image directories are configured. If
+not specified, returns the system default directories (Downloads, OneDrive,
+Pictures).
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
 
 .PARAMETER ClearSession
-When specified, clears the session image directories setting (Global variable) before retrieving the configuration.
+Clear the session setting (Global variable) before retrieving.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
 
 .PARAMETER SkipSession
-When specified, skips checking the session setting (Global variable) and retrieves only from persistent preferences.
+Dont use alternative settings stored in session for AI preferences like
+Language, Image collections, etc.
 
 .EXAMPLE
 Get-AIImageCollection
 
-Gets the currently configured image directories from Global variables or preferences.
+Gets the currently configured image directories from Global variables or
+preferences.
 
 .EXAMPLE
 Get-AIImageCollection -SkipSession
 
-Gets the configured image directories only from persistent preferences, ignoring any session setting.
+Gets the configured image directories only from persistent preferences,
+ignoring any session setting.
 
 .EXAMPLE
 Get-AIImageCollection -ClearSession
 
-Clears the session image directories setting and then gets the directories from persistent preferences.
+Clears the session image directories setting and then gets the directories
+from persistent preferences.
 
 .EXAMPLE
 $config = Get-AIImageCollection -ImageDirectories @("C:\MyImages")
@@ -44,6 +60,7 @@ getimgdirs
 
 Uses alias to get the current image directory configuration.
 #>
+################################################################################
 function Get-AIImageCollection {
 
     [CmdletBinding()]
@@ -52,7 +69,7 @@ function Get-AIImageCollection {
     [Alias("getimgdirs")]
 
     param(
-        ###############################################################################
+        ########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 0,
@@ -60,37 +77,47 @@ function Get-AIImageCollection {
         )]
         [AllowNull()]
         [string[]] $ImageDirectories,
-        ###############################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences like Language, Image collections, etc")
+        )]
+        [string] $PreferencesDatabasePath,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences like Language, Image collections, etc")
         )]
         [switch] $SessionOnly,
-        ###############################################################################
-        # clear the session setting (Global variable) before retrieving
+        ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear the session setting (Global variable) before retrieving"
+            HelpMessage = ("Clear the session setting (Global variable) " +
+                "before retrieving")
         )]
         [switch] $ClearSession,
-        ###############################################################################
-        # Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Dont use alternative settings stored in session " +
+                "for AI preferences like Language, Image collections, etc")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ###############################################################################
+        ########################################################################
     )
 
     begin {
 
-
         # handle clearing session variables first if requested
         if ($ClearSession) {
+
+            # clear the global image directories variable
             $Global:ImageDirectories = $null
+
+            # output verbose message about clearing session setting
             Microsoft.PowerShell.Utility\Write-Verbose (
                 "Cleared session image directories setting: ImageDirectories"
             )
@@ -99,6 +126,7 @@ function Get-AIImageCollection {
 
     process {
 
+        # check if user provided specific directories to use as default
         if ($null -ne $ImageDirectories -and
             $ImageDirectories.Count -gt 0) {
 
@@ -107,27 +135,34 @@ function Get-AIImageCollection {
             return
         }
 
-        # determine which image directories to use based on priority: Global variable first (unless skipped), then preferences (unless SessionOnly)
+        # determine which image directories to use based on priority order
+        # priority: global variable first (unless skipped), then preferences
+        # (unless sessiononly), finally system defaults
 
-        # first check global variable for image directories (unless SkipSession is specified)
-        if ((-not $SkipSession) -and ($Global:ImageDirectories -and $Global:ImageDirectories.Count -gt 0)) {
+        # first check global variable for image directories unless skipsession
+        # is specified
+        if ((-not $SkipSession) -and
+            ($Global:ImageDirectories -and
+             $Global:ImageDirectories.Count -gt 0)) {
 
             # use global variable if available and not empty
             $result = $Global:ImageDirectories
         }
         elseif (-not $SessionOnly) {
 
-            # fallback to preference storage
+            # fallback to preference storage since sessiononly not specified
             $imageDirectoriesPreference = $null
 
             try {
 
                 # retrieve image directories preference from genxdev data storage
                 $json = GenXdev.Data\Get-GenXdevPreference `
+                    -PreferencesDatabasePath $PreferencesDatabasePath `
                     -Name "ImageDirectories" `
                     -DefaultValue $null `
                     -ErrorAction SilentlyContinue
 
+                # check if json preference data was retrieved successfully
                 if (-not [string]::IsNullOrEmpty($json)) {
 
                     # convert json preference to powershell object
@@ -141,6 +176,7 @@ function Get-AIImageCollection {
                 $imageDirectoriesPreference = $null
             }
 
+            # check if preference contains valid directory data
             if ($null -ne $imageDirectoriesPreference -and
                 $imageDirectoriesPreference.Count -gt 0) {
 
@@ -172,7 +208,9 @@ function Get-AIImageCollection {
             }
         }
         else {
-            # SessionOnly is specified but no session variable found, use default directories
+
+            # sessiononly is specified but no session variable found, use
+            # default directories
             $picturesPath = GenXdev.FileSystem\Expand-Path "~\Pictures"
 
             try {
@@ -197,11 +235,16 @@ function Get-AIImageCollection {
 
     end {
 
-        # return the configured image directories and language
-        $result |  Microsoft.PowerShell.Core\ForEach-Object {
+        # return the configured image directories with expanded paths
+        $result |
+            Microsoft.PowerShell.Core\ForEach-Object {
 
-            Microsoft.PowerShell.Utility\Write-Output (GenXdev.FileSystem\Expand-Path $_)
-        } | Microsoft.PowerShell.Utility\Select-Object -Unique
+                # expand each path and output it
+                Microsoft.PowerShell.Utility\Write-Output (
+                    GenXdev.FileSystem\Expand-Path $_
+                )
+            } |
+                Microsoft.PowerShell.Utility\Select-Object -Unique
     }
 }
 ################################################################################

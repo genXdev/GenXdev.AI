@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Ensures Paint.NET is properly installed and accessible on the system.
@@ -14,7 +14,7 @@ The function handles all prerequisites and ensures a working Paint.NET installat
 .EXAMPLE
 EnsurePaintNet
 This will verify and setup Paint.NET if needed.
-#>
+        ###############################################################################>
 function EnsurePaintNet {
 
     [CmdletBinding()]
@@ -148,4 +148,4 @@ function EnsurePaintNet {
 
     end {}
 }
-################################################################################
+        ###############################################################################

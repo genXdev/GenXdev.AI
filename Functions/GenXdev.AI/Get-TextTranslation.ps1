@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Translates text to another language using AI.
@@ -13,60 +13,79 @@ translating.
 The text to translate. Accepts pipeline input. If not provided, reads from system
 clipboard.
 
+.PARAMETER Language
+Target language for translation. Supports 140+ languages including major world
+languages and variants.
+
 .PARAMETER Instructions
 Additional instructions to guide the AI model in translation style and context.
-
-.PARAMETER Model
-Specifies which AI model to use for translation. Supports wildcards.
-
-.PARAMETER ModelLMSGetIdentifier
-Identifier used for getting specific model from LM Studio.
 
 .PARAMETER Temperature
 Controls response randomness (0.0-1.0). Lower values are more deterministic.
 
+.PARAMETER LLMQueryType
+The type of LLM query to perform for AI operations.
+
+.PARAMETER Model
+The model identifier or pattern to use for AI operations.
+
+.PARAMETER HuggingFaceIdentifier
+The LM Studio specific model identifier.
+
 .PARAMETER MaxToken
-Maximum tokens in response. Use -1 for default model limits.
+The maximum number of tokens to use in AI operations.
 
-.PARAMETER SetClipboard
-When specified, copies the translated text to system clipboard after translation.
-
-.PARAMETER ShowWindow
-Shows the LM Studio window during processing.
-
-.PARAMETER TTLSeconds
-Sets a Time-To-Live in seconds for models loaded via API requests.
+.PARAMETER Cpu
+The number of CPU cores to dedicate to AI operations.
 
 .PARAMETER Gpu
-Controls GPU layer offloading: -2=Auto, -1=LM Studio decides, 0-1=fraction of
-layers, "off"=disabled, "max"=all layers.
-
-.PARAMETER Force
-Forces LM Studio to stop before initialization.
+How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
+all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
+layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
+offload to the GPU. -2 = Auto.
 
 .PARAMETER ApiEndpoint
-API endpoint URL. Defaults to http://localhost:1234/v1/chat/completions
+The API endpoint URL for AI operations.
 
 .PARAMETER ApiKey
-API key for authentication with the endpoint.
+The API key for authenticated AI operations.
 
-.PARAMETER Language
-Target language for translation. Supports 140+ languages including major world
-languages and variants.
+.PARAMETER TimeoutSeconds
+The timeout in seconds for AI operations.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SetClipboard
+Copy the translated text to clipboard.
+
+.PARAMETER Force
+Force stop LM Studio before initialization.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences.
+
+.PARAMETER SkipSession
+Store settings only in persistent preferences without affecting session.
 
 .EXAMPLE
 Get-TextTranslation -Text "Hello world" -Language "French" -Model "qwen"
 
 .EXAMPLE
 "Bonjour" | translate -Language "English"
-#>
+###############################################################################>
+###############################################################################
+
 function Get-TextTranslation {
 
     [CmdletBinding()]
     [OutputType([System.String])]
     [Alias("translate")]
     param (
-        ########################################################################
+        #######################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
@@ -74,8 +93,8 @@ function Get-TextTranslation {
             HelpMessage = "The text to translate"
         )]
         [ValidateNotNull()]
-        [string]$Text,
-        ########################################################################
+        [string] $Text,
+        #######################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
@@ -112,121 +131,155 @@ function Get-TextTranslation {
             "Vietnamese", "Welsh", "Wolof", "Xhosa", "Yiddish", "Yoruba", "Zulu"
         )]
         [string] $Language,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Position = 2,
             Mandatory = $false,
             HelpMessage = "Additional instructions for the AI model"
         )]
-        [string]$Instructions = "",
-        ########################################################################
+        [string] $Instructions = "",
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 3,
-            HelpMessage = "The LM-Studio model to use"
+            HelpMessage = "Temperature for response randomness (0.0-1.0)"
         )]
-        [SupportsWildcards()]
-        [string] $Model,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Identifier used for getting specific model from LM Studio"
-        )]
-        [string] $ModelLMSGetIdentifier,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Temperature for response randomness (0.0-1.0)")]
         [ValidateRange(0.0, 1.0)]
         [double] $Temperature = 0.2,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)")]
-        [Alias("MaxTokens")]
-        [int] $MaxToken = -1,
-        ########################################################################
+            HelpMessage = "The type of LLM query"
+        )]
+        [ValidateSet(
+            "SimpleIntelligence",
+            "Knowledge",
+            "Pictures",
+            "TextTranslation",
+            "Coding",
+            "ToolUse"
+        )]
+        [string] $LLMQueryType = "TextTranslation",
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The model identifier or pattern to use for AI operations"
+        )]
+        [string] $Model,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The LM Studio specific model identifier"
+        )]
+        [Alias("ModelLMSGetIdentifier")]
+        [string] $HuggingFaceIdentifier,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The maximum number of tokens to use in AI operations"
+        )]
+        [int] $MaxToken,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+        )]
+        [int] $Cpu,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
+                           "offloading is disabled. If 'max', all layers are " +
+                           "offloaded to GPU. If a number between 0 and 1, " +
+                           "that fraction of layers will be offloaded to the " +
+                           "GPU. -1 = LM Studio will decide how much to " +
+                           "offload to the GPU. -2 = Auto")
+        )]
+        [ValidateRange(-2, 1)]
+        [int] $Gpu = -1,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API endpoint URL for AI operations"
+        )]
+        [string] $ApiEndpoint,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The API key for authenticated AI operations"
+        )]
+        [string] $ApiKey,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "The timeout in seconds for AI operations"
+        )]
+        [int] $TimeoutSeconds,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Copy the translated text to clipboard"
         )]
-        [switch]$SetClipboard,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Show the LM Studio window")]
-        [switch] $ShowWindow,
-        ########################################################################
-        [Alias("ttl")]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API requests")]
-        [int] $TTLSeconds = -1,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "How much to offload to the GPU. If `"off`", GPU offloading is disabled. If `"max`", all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto "
-        )]
-        [int]$Gpu = -1,
-        ########################################################################
+        [switch] $SetClipboard,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Force stop LM Studio before initialization"
         )]
-        [switch]$Force,
-        ########################################################################
+        [switch] $Force,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Api endpoint url, defaults to http://localhost:1234/v1/chat/completions")]
-        [string] $ApiEndpoint = $null,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The API key to use for the request")]
-        [string] $ApiKey = $null,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for AI " +
+                "preferences")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Store settings only in persistent preferences without " +
+                "affecting session")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+        #######################################################################
     )
 
     begin {
 
+        # copy parameters for ai meta language function
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-        $Language = GenXdev.AI\Get-AIMetaLanguage @params -Language (
-            [String]::IsNullOrWhiteSpace($Language) ?
-            (GenXdev.Helpers\Get-DefaultWebLanguage) :
-            $Language
-        )
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
 
+        # determine the target language for translation
+        $language = GenXdev.AI\Get-AIMetaLanguage @params
+
+        # output verbose information about the translation process
         Microsoft.PowerShell.Utility\Write-Verbose ("Starting translation " +
-            "process to target language: $Language")
+            "process to target language: $language")
     }
 
     process {
-# construct translation instructions with smart format preservation
+
+        # construct translation instructions with smart format preservation
         $translationInstructions = (
-            "Translate the following text into $Language. " +
+            "Translate the following text into $language. " +
             "IMPORTANT TRANSLATION RULES:" +
             "`n1. Analyze the input format first - it could be code, markup, " +
             "structured data, or plain text." +
@@ -239,6 +292,7 @@ function Get-TextTranslation {
             "technical keywords." +
             " $Instructions")
 
+        # output verbose information about translation preparation
         Microsoft.PowerShell.Utility\Write-Verbose "Preparing translation request"
 
         # copy matching parameters for invocation
@@ -246,9 +300,10 @@ function Get-TextTranslation {
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Invoke-LLMTextTransformation"
 
+        # output verbose information about llm invocation
         Microsoft.PowerShell.Utility\Write-Verbose "Invoking LLM translation"
 
-        # perform the translation
+        # perform the translation using the llm text transformation function
         GenXdev.AI\Invoke-LLMTextTransformation @invocationParams `
             -Instructions $translationInstructions
     }
@@ -256,4 +311,4 @@ function Get-TextTranslation {
     end {
     }
 }
-################################################################################
+###############################################################################

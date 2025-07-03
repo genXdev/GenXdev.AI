@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Calculates and returns the total number of logical CPU cores in the system.
@@ -9,10 +9,10 @@ determine the total number of logical CPU cores. The function accounts for
 hyperthreading by multiplying the physical core count by 2.
 
 .EXAMPLE
-# Get the total number of logical CPU cores
+        ###############################################################################Get the total number of logical CPU cores
 $cores = Get-CpuCore
 Write-Host "System has $cores logical CPU cores available"
-#>
+        ###############################################################################>
 function Get-CpuCore {
 
     [CmdletBinding(DefaultParameterSetName = "")]
@@ -52,4 +52,4 @@ process {
         return $logicalCores
     }
 }
-################################################################################
+        ###############################################################################

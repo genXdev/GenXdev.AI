@@ -13,7 +13,7 @@ This module provides PowerShell functions to interact with DeepStack's face reco
 
 # manually ensure LMStudio is working
 EnsureLMStudio -ShowWindow -Model "MiniPCM" `
-    -ModelLMSGetIdentifier ("lmstudio-community/MiniCPM-V-2_6-" +
+    -HuggingFaceIdentifier ("lmstudio-community/MiniCPM-V-2_6-" +
                             "GGUF/MiniCPM-V-2_6-Q4_K_M.gguf")
 
 # manually ensure docker desktop is working

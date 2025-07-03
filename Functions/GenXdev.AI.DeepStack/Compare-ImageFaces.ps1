@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Compares faces in two different images and returns their similarity using
@@ -72,7 +72,7 @@ DeepStack API Documentation: POST /v1/vision/face/match endpoint for face
 comparison.
 Example: curl -X POST -F "image1=@person1.jpg" -F "image2=@person2.jpg"
 http://localhost:5000/v1/vision/face/match
-#>
+        ###############################################################################>
 function Compare-ImageFaces {
 
     [CmdletBinding()]
@@ -364,4 +364,4 @@ function Compare-ImageFaces {
 
     }
 }
-################################################################################
+        ###############################################################################

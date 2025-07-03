@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Scans image files for keywords and descriptions using metadata files.
@@ -17,6 +17,48 @@ patterns, filter for specific people, and search for detected objects. By
 default, returns image data objects. Use -ShowInBrowser to display in a web
 browser.
 
+.PARAMETER Any
+Will match any of all the possible meta data types.
+
+.PARAMETER DatabaseFilePath
+The path to the image database file. If not specified, a default path is used.
+
+.PARAMETER ImageDirectories
+Array of directory paths to search for images. Each directory is searched
+recursively for jpg, jpeg, and png files. Relative paths are converted to
+absolute paths automatically.
+
+.PARAMETER PathLike
+Array of directory path-like search strings to filter images by path (SQL LIKE
+patterns, e.g. '%\\2024\\%').
+
+.PARAMETER Language
+The language for retrieving descriptions and keywords. Will try to find metadata
+in the specified language first, then fall back to English if not available.
+This allows you to have metadata in multiple languages for the same images.
+
+.PARAMETER FacesDirectory
+The directory containing face images organized by person folders. If not
+specified, uses the configured faces directory preference.
+
+.PARAMETER EmbedImages
+Switch to embed images as base64 data URLs instead of file:// URLs. This makes
+the generated HTML file completely self-contained and portable, but results in
+larger file sizes. Useful when the HTML needs to be shared or viewed on
+different systems where the original image files may not be accessible.
+
+.PARAMETER ForceIndexRebuild
+Force rebuild of the image index database.
+
+.PARAMETER NoFallback
+Switch to disable fallback behavior.
+
+.PARAMETER NeverRebuild
+Switch to skip database initialization and rebuilding.
+
+.PARAMETER DescriptionSearch
+The description text to look for, wildcards allowed.
+
 .PARAMETER Keywords
 Array of keywords to search for in image metadata. Supports wildcards. If empty,
 returns all images with any metadata. Keywords are matched against both the
@@ -34,11 +76,6 @@ to filter images based on object detection metadata stored in objects.json files
 Array of scene categories to search for in image metadata. Supports wildcards.
 Used to filter images based on scene classification metadata stored in
 scenes.json files.
-
-.PARAMETER ImageDirectories
-Array of directory paths to search for images. Each directory is searched
-recursively for jpg, jpeg, and png files. Relative paths are converted to
-absolute paths automatically.
 
 .PARAMETER InputObject
 Accepts search results from a previous -PassThru call to regenerate the view.
@@ -62,11 +99,6 @@ The title to display at the top of the image gallery.
 
 .PARAMETER Description
 The description text to display in the image gallery.
-
-.PARAMETER Language
-The language for retrieving descriptions and keywords. Will try to find metadata
-in the specified language first, then fall back to English if not available.
-This allows you to have metadata in multiple languages for the same images.
 
 .PARAMETER AcceptLang
 Set the browser accept-lang http header.
@@ -174,11 +206,23 @@ Don't re-use existing browser window, instead, create a new one.
 .PARAMETER OnlyReturnHtml
 Only return the generated HTML instead of displaying it in a browser.
 
-.PARAMETER EmbedImages
-Switch to embed images as base64 data URLs instead of file:// URLs. This makes
-the generated HTML file completely self-contained and portable, but results in
-larger file sizes. Useful when the HTML needs to be shared or viewed on
-different systems where the original image files may not be accessible.
+.PARAMETER ShowOnlyPictures
+Show only pictures in a rounded rectangle, no text below.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SkipSession
+Dont use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
 
 .EXAMPLE
 Find-Image -Keywords "cat","dog" -ImageDirectories "C:\Photos"
@@ -220,10 +264,10 @@ Searches for daylight photos with a calm/peaceful mood and returns the image obj
 findimages -StyleType "casual" -HasNudity -ImageDirectories "C:\Art"
 Searches for casual style images that contain nudity and returns the data objects.
 #>
-
-
-
 ###############################################################################
+
+
+
 function Find-Image {
 
     [CmdletBinding()]
@@ -240,9 +284,10 @@ function Find-Image {
         [string[]] $Any = @(),
         ###############################################################################
         [Parameter(
-            Position = 0,
+            Position = 1,
             Mandatory = $false,
-            HelpMessage = "The path to the image database file. If not specified, a default path is used."
+            HelpMessage = ("The path to the image database file. If not " +
+                "specified, a default path is used.")
         )]
         [string] $DatabaseFilePath,
         ###############################################################################
@@ -256,10 +301,8 @@ function Find-Image {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = (
-                "Array of directory path-like search strings to filter images by " +
-                "path (SQL LIKE patterns, e.g. '%\\2024\\%')"
-            )
+            HelpMessage = ("Array of directory path-like search strings to " +
+                "filter images by path (SQL LIKE patterns, e.g. '%\\2024\\%')")
         )]
         [string[]] $PathLike = @(),
         ###############################################################################
@@ -298,42 +341,19 @@ function Find-Image {
             "Vietnamese", "Welsh", "Wolof", "Xhosa", "Yiddish", "Yoruba", "Zulu"
         )]
         [string] $Language,
-        #######################################################################
-        [parameter(
+        ###############################################################################
+        [Parameter(
             Mandatory = $false,
             HelpMessage = ("The directory containing face images organized by " +
-                        "person folders. If not specified, uses the " +
-                        "configured faces directory preference.")
+                "person folders. If not specified, uses the configured faces " +
+                "directory preference.")
         )]
         [string] $FacesDirectory,
-        #######################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Embed images as base64."
-        )]
-        [switch] $EmbedImages,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Force rebuild of the image index database."
-        )]
-        [switch] $ForceIndexRebuild,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Switch to disable fallback behavior."
-        )]
-        [switch] $NoFallback,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Switch to skip database initialization and rebuilding."
-        )]
-        [switch] $NeverRebuild,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "The description text to look for, wildcards allowed."
+            HelpMessage = ("The description text to look for, wildcards " +
+                "allowed.")
         )]
         [string[]] $DescriptionSearch = @(),
         ###############################################################################
@@ -367,7 +387,7 @@ function Find-Image {
             HelpMessage = ("Accepts search results from a previous -PassThru " +
                 "call to regenerate the view.")
         )]
-        [object[]] $InputObject,
+        [System.Object[]] $InputObject,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -385,8 +405,8 @@ function Find-Image {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Overall mood to filter by (e.g., 'calm', 'cheerful', " +
-                "'sad', etc). Supports wildcards.")
+            HelpMessage = ("Overall mood to filter by (e.g., 'calm', " +
+                "'cheerful', 'sad', etc). Supports wildcards.")
         )]
         [string[]] $OverallMood = @(),
         ###############################################################################
@@ -403,20 +423,20 @@ function Find-Image {
         [string] $Description = ("Hover over images to see face recognition " +
             "and object detection data"),
         ###############################################################################
-        [Alias("lang", "locale")]
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Set the browser accept-lang http header"
         )]
+        [Alias("lang", "locale")]
         [string] $AcceptLang = $null,
         ###############################################################################
-        [Alias("m", "mon")]
         [Parameter(
             Mandatory = $false,
             HelpMessage = ("The monitor to use, 0 = default, -1 is discard, " +
                 "-2 = Configured secondary monitor, defaults to " +
                 "`Global:DefaultSecondaryMonitor or 2 if not found")
         )]
+        [Alias("m", "mon")]
         [int] $Monitor = -2,
         ###############################################################################
         [Parameter(
@@ -442,6 +462,36 @@ function Find-Image {
             HelpMessage = "The initial Y position of the webbrowser window"
         )]
         [int] $Y = -999999,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Database path for preference data files"
+        )]
+        [string] $PreferencesDatabasePath,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Embed images as base64."
+        )]
+        [switch] $EmbedImages,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Force rebuild of the image index database."
+        )]
+        [switch] $ForceIndexRebuild,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Switch to disable fallback behavior."
+        )]
+        [switch] $NoFallback,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Switch to skip database initialization and rebuilding."
+        )]
+        [switch] $NeverRebuild,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -485,18 +535,18 @@ function Find-Image {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Will connect to browser and adds additional buttons " +
-                "like Edit and Delete. Only effective when used with " +
+            HelpMessage = ("Will connect to browser and adds additional " +
+                "buttons like Edit and Delete. Only effective when used with " +
                 "-ShowInBrowser.")
         )]
         [Alias("i", "editimages")]
         [switch] $Interactive,
         ###############################################################################
-        [Alias("incognito", "inprivate")]
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Opens in incognito/private browsing mode"
         )]
+        [Alias("incognito", "inprivate")]
         [switch] $Private,
         ###############################################################################
         [Parameter(
@@ -506,33 +556,33 @@ function Find-Image {
         )]
         [switch] $Force,
         ###############################################################################
-        [Alias("e")]
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Opens in Microsoft Edge"
         )]
+        [Alias("e")]
         [switch] $Edge,
         ###############################################################################
-        [Alias("ch")]
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Opens in Google Chrome"
         )]
+        [Alias("ch")]
         [switch] $Chrome,
         ###############################################################################
-        [Alias("c")]
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Opens in Microsoft Edge or Google Chrome, depending " +
-                "on what the default browser is")
+            HelpMessage = ("Opens in Microsoft Edge or Google Chrome, " +
+                "depending on what the default browser is")
         )]
+        [Alias("c")]
         [switch] $Chromium,
         ###############################################################################
-        [Alias("ff")]
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Opens in Firefox"
         )]
+        [Alias("ff")]
         [switch] $Firefox,
         ###############################################################################
         [Parameter(
@@ -541,11 +591,11 @@ function Find-Image {
         )]
         [switch] $All,
         ###############################################################################
-        [Alias("fs", "f")]
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Opens in fullscreen mode"
         )]
+        [Alias("fs", "f")]
         [switch] $FullScreen,
         ###############################################################################
         [Parameter(
@@ -578,40 +628,40 @@ function Find-Image {
         )]
         [switch] $Centered,
         ###############################################################################
-        [Alias("a", "app", "appmode")]
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Hide the browser controls"
         )]
+        [Alias("a", "app", "appmode")]
         [switch] $ApplicationMode,
         ###############################################################################
-        [Alias("de", "ne", "NoExtensions")]
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Prevent loading of browser extensions"
         )]
+        [Alias("de", "ne", "NoExtensions")]
         [switch] $NoBrowserExtensions,
         ###############################################################################
-        [Alias("allowpopups")]
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Disable the popup blocker"
         )]
+        [Alias("allowpopups")]
         [switch] $DisablePopupBlocker,
         ###############################################################################
-        [Alias("bg")]
         [Parameter(
             Mandatory = $false,
             HelpMessage = "Restore PowerShell window focus"
         )]
+        [Alias("bg")]
         [switch] $RestoreFocus,
         ###############################################################################
-        [Alias("nw", "new")]
         [Parameter(
             Mandatory = $false,
             HelpMessage = ("Don't re-use existing browser window, instead, " +
                 "create a new one")
         )]
+        [Alias("nw", "new")]
         [switch] $NewWindow,
         ###############################################################################
         [Parameter(
@@ -623,43 +673,55 @@ function Find-Image {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show only pictures in a rounded rectangle, no text below."
+            HelpMessage = ("Show only pictures in a rounded rectangle, no " +
+                "text below.")
         )]
         [Alias("NoMetadata", "OnlyPictures")]
         [switch] $ShowOnlyPictures,
-        ########################################################################
-        # Use alternative settings stored in session for AI preferences like Language, Image collections, etc
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Use alternative settings stored in session for AI " +
+                "preferences like Language, Image collections, etc")
         )]
         [switch] $SessionOnly,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Clear alternative settings stored in session for " +
+                "AI preferences like Language, Image collections, etc")
         )]
         [switch] $ClearSession,
-        ########################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Dont use alternative settings stored in session for AI preferences like Language, Image collections, etc"
+            HelpMessage = ("Dont use alternative settings stored in session " +
+                "for AI preferences like Language, Image collections, etc")
         )]
         [Alias("FromPreferences")]
         [switch] $SkipSession
-        ########################################################################
+        ###############################################################################
     )
+
     begin {
 
+        # configure html return mode if requested
+        if ($OnlyReturnHtml) {
+
+            $Interactive = $false
+
+            $ShowInBrowser = $true
+        }
+
+        # get language preference using helper function with parameter copying
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-        $Language = GenXdev.AI\Get-AIMetaLanguage @params -Language (
-            [String]::IsNullOrWhiteSpace($Language) ?
-            (GenXdev.Helpers\Get-DefaultWebLanguage) :
-            $Language
-        )
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
+
+        $language = GenXdev.AI\Get-AIMetaLanguage @params
 
         # enable interactive mode when interactive switch is used
         if ($Interactive) {
@@ -674,13 +736,17 @@ function Find-Image {
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\Get-AIImageCollection" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
+
         $directories = GenXdev.AI\Get-AIImageCollection @params
 
-        if ($null -ne $Any -and
-            $Any.Length -gt 0) {
+        # process any parameter to expand search criteria across all metadata types
+        if ($null -ne $Any -and $Any.Length -gt 0) {
 
-            $Any = @($Any | Microsoft.PowerShell.Core\ForEach-Object {
+            # add wildcards to entries that don't already have them
+            $any = @($Any | Microsoft.PowerShell.Core\ForEach-Object {
 
                 $entry = $_.Trim()
 
@@ -689,34 +755,30 @@ function Find-Image {
                     "*$entry*"
                 }
                 else {
+
                     $_
                 }
             })
 
-            # if Any parameter is used, treat it as a set of keywords
-            $DescriptionSearch = $null -ne $DescriptionSearch ? ($DescriptionSearch + $Any) :
-                $Any
+            # if any parameter is used, treat it as a set of keywords
+            $DescriptionSearch = $null -ne $DescriptionSearch ? `
+                ($DescriptionSearch + $any) : $any
 
-            $Keywords = $null -ne $Keywords ? ($Keywords + $Any) :
-                $Any
+            $Keywords = $null -ne $Keywords ? ($Keywords + $any) : $any
 
-            $People = $null -ne $People ? ($People + $Any) :
-                $Any
+            $People = $null -ne $People ? ($People + $any) : $any
 
-            $Objects = $null -ne $Objects ? ($Objects + $Any) :
-                $Any
+            $Objects = $null -ne $Objects ? ($Objects + $any) : $any
 
-            $Scenes = $null -ne $Scenes ? ($Scenes + $Any) :
-                $Any
+            $Scenes = $null -ne $Scenes ? ($Scenes + $any) : $any
 
-            $PictureType = $null -ne $PictureType ? ($PictureType + $Any) :
-                $Any
+            $PictureType = $null -ne $PictureType ? `
+                ($PictureType + $any) : $any
 
-            $StyleType = $null -ne $StyleType ? ($StyleType + $Any) :
-                $Any
+            $StyleType = $null -ne $StyleType ? ($StyleType + $any) : $any
 
-            $OverallMood = $null -ne $OverallMood ? ($OverallMood + $Any) :
-                $Any
+            $OverallMood = $null -ne $OverallMood ? `
+                ($OverallMood + $any) : $any
         }
     }
 
@@ -742,14 +804,14 @@ function Find-Image {
             $metadataFile = $null
 
             # try to load description metadata in requested language if not english
-            if ($Language -ne "English" -and
+            if ($language -ne "English" -and
                 [System.IO.File]::Exists(
-                    "$($image):description.$Language.json")) {
+                    "$($image):description.$language.json")) {
 
                 Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Found $Language metadata for $image")
+                    "Found $language metadata for $image")
 
-                $metadataFile = "$($image):description.$Language.json"
+                $metadataFile = "$($image):description.$language.json"
             }
             # fallback to english if language-specific file doesn't exist
             elseif ([System.IO.File]::Exists("$($image):description.json")) {
@@ -898,10 +960,14 @@ function Find-Image {
 
             # assume match if no keyword search criteria specified
             $found = (-not $hasSearchCriteria) -or
-                     ($HasNudity -and ($null -ne $descriptionFound) -and ($descriptionFound.has_nudity -eq $true)) -or
-                     ($NoNudity -and ($null -ne $descriptionFound)  -and ($descriptionFound.has_nudity -ne $true)) -or
-                     ($HasExplicitContent -and ($null -ne $descriptionFound) -and ($descriptionFound.has_explicit_content -eq $true)) -or
-                     ($NoExplicitContent -and ($null -ne $descriptionFound) -and ($null -ne$descriptionFound.has_explicit_content -ne $true));
+                ($HasNudity -and ($null -ne $descriptionFound) -and
+                    ($descriptionFound.has_nudity -eq $true)) -or
+                ($NoNudity -and ($null -ne $descriptionFound) -and
+                    ($descriptionFound.has_nudity -ne $true)) -or
+                ($HasExplicitContent -and ($null -ne $descriptionFound) -and
+                    ($descriptionFound.has_explicit_content -eq $true)) -or
+                ($NoExplicitContent -and ($null -ne $descriptionFound) -and
+                    ($null -ne $descriptionFound.has_explicit_content -ne $true))
 
             # check each required keyword against available metadata
             if ((-not $found) -and
@@ -918,13 +984,16 @@ function Find-Image {
                 foreach ($requiredDescriptionPhrase in $DescriptionSearch) {
 
                     # use wildcard matching for flexible description search
-                    if ($descriptionFound.description.long_description -like $requiredDescriptionPhrase) {
+                    if ($descriptionFound.description.long_description -like
+                        $requiredDescriptionPhrase) {
 
                         $found = $true
 
                         break
                     }
-                    if ($descriptionFound.description.short_description -like $requiredDescriptionPhrase) {
+
+                    if ($descriptionFound.description.short_description -like
+                        $requiredDescriptionPhrase) {
 
                         $found = $true
 
@@ -936,28 +1005,31 @@ function Find-Image {
             # perform keyword matching if keywords were specified for search
             if ((-not $found) -and
                 ($null -ne $descriptionFound) -and
-                    ($null -ne $descriptionFound.description) -and
-                    ($null -ne $DescriptionSearch) -and
-                    ($DescriptionSearch.Count -gt 0)
+                ($null -ne $descriptionFound.description) -and
+                ($null -ne $DescriptionSearch) -and
+                ($DescriptionSearch.Count -gt 0)
             ) {
 
-                    # check each required keyword against description content
-                    foreach ($requiredDescriptionPhrase in $DescriptionSearch) {
+                # check each required keyword against description content
+                foreach ($requiredDescriptionPhrase in $DescriptionSearch) {
 
-                        # use wildcard matching for flexible description search
-                        if ($descriptionFound.description.long_description -like $requiredDescriptionPhrase) {
+                    # use wildcard matching for flexible description search
+                    if ($descriptionFound.description.long_description -like
+                        $requiredDescriptionPhrase) {
 
-                            $found = $true
+                        $found = $true
 
-                            break
-                        }
-                        if ($descriptionFound.description.short_description -like $requiredDescriptionPhrase) {
-
-                            $found = $true
-
-                            break
-                        }
+                        break
                     }
+
+                    if ($descriptionFound.description.short_description -like
+                        $requiredDescriptionPhrase) {
+
+                        $found = $true
+
+                        break
+                    }
+                }
             }
 
             # picture type filtering
@@ -986,6 +1058,7 @@ function Find-Image {
                         $requiredStyleType) {
 
                         $found = $true
+
                         break
                     }
                 }
@@ -1001,13 +1074,15 @@ function Find-Image {
                         $requiredMood) {
 
                         $found = $true
+
                         break
                     }
                 }
             }
 
             # perform additional keywords filtering if keywords criteria specified
-            if ((-not $found) -and ($null -ne $Keywords) -and ($Keywords.Length -gt 0)) {
+            if ((-not $found) -and ($null -ne $Keywords) -and
+                ($Keywords.Length -gt 0)) {
 
                 # reset found flag to require keywords match
                 $found = $false
@@ -1033,7 +1108,8 @@ function Find-Image {
             }
 
             # perform additional people filtering if people criteria specified
-            if ((-not $found) -and ($null -ne $People) -and ($People.Length -gt 0)) {
+            if ((-not $found) -and ($null -ne $People) -and
+                ($People.Length -gt 0)) {
 
                 # reset found flag to require people match
                 $found = $false
@@ -1059,7 +1135,8 @@ function Find-Image {
             }
 
             # perform additional objects filtering if objects criteria specified
-            if ((-not $found) -and ($null -ne $Objects) -and ($Objects.Length -gt 0)) {
+            if ((-not $found) -and ($null -ne $Objects) -and
+                ($Objects.Length -gt 0)) {
 
                 # reset found flag to require objects match
                 $found = $false
@@ -1085,7 +1162,8 @@ function Find-Image {
             }
 
             # perform additional scenes filtering if scenes criteria specified
-            if ((-not $found) -and ($null -ne $Scenes) -and ($Scenes.Count -gt 0)) {
+            if ((-not $found) -and ($null -ne $Scenes) -and
+                ($Scenes.Count -gt 0)) {
 
                 # reset found flag to require scene match
                 $found = $false
@@ -1133,7 +1211,6 @@ function Find-Image {
                 }
             }
 
-
             # return image data if all criteria matched
             if ($found) {
 
@@ -1153,8 +1230,8 @@ function Find-Image {
             }
         }
 
-        # handle input object processing from 4
-        if ($PSBoundParameters.ContainsKey('InputObject')) {
+        # handle input object processing from pipeline
+        if ($null -ne $InputObject) {
 
             $InputObject |
                 Microsoft.PowerShell.Core\ForEach-Object {
@@ -1164,9 +1241,10 @@ function Find-Image {
 
                 if ($null -eq $path) {
 
-                    return;
+                    return
                 }
 
+                # normalize file uri to local path
                 if ($path.StartsWith("file://")) {
 
                     $path = $path.Substring(7).Replace('/', '\')
@@ -1180,12 +1258,11 @@ function Find-Image {
                     Microsoft.PowerShell.Utility\Write-Host (
                         "The file '$path' does not exist.")
 
-                    return;
+                    return
                 }
 
-                # filter on PathLike
-                if ($null -ne $PathLike -and
-                    $PathLike.Count -gt 0) {
+                # filter on pathlike patterns if specified
+                if ($null -ne $PathLike -and $PathLike.Count -gt 0) {
 
                     $found = $false
 
@@ -1207,10 +1284,12 @@ function Find-Image {
                     }
 
                     if (-not $found) {
-                        return;
+
+                        return
                     }
                 }
 
+                # process the image file and handle output appropriately
                 processImageFile $path |
                     Microsoft.PowerShell.Core\ForEach-Object {
 
@@ -1225,10 +1304,12 @@ function Find-Image {
                 }
             }
 
-            return;
+            return
         }
 
-        $directories = $directories | Microsoft.PowerShell.Utility\Select-Object -Unique
+        # remove duplicate directories from search list
+        $directories = $directories |
+            Microsoft.PowerShell.Utility\Select-Object -Unique
 
         # iterate through each specified image directory
         foreach ($imageDirectory in $directories) {
@@ -1250,16 +1331,16 @@ function Find-Image {
 
             # search for jpg/jpeg/png files and process each one found
             Microsoft.PowerShell.Management\Get-ChildItem `
-                -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.png" `
+                -Path "$path\*.jpg", "$path\*.jpeg","$path\*.gif", "$path\*.png" `
                 -Recurse `
                 -File `
                 -ErrorAction SilentlyContinue |
             Microsoft.PowerShell.Core\ForEach-Object {
 
-                if ($null -ne $PathLike -and (
-                    $PathLike.Count -gt 0)) {
+                # filter on pathlike patterns if specified
+                if ($null -ne $PathLike -and ($PathLike.Count -gt 0)) {
 
-                    # filter on PathLike patterns
+                    # filter on pathlike patterns
                     $found = $false
 
                     foreach ($pattern in $PathLike) {
@@ -1280,10 +1361,12 @@ function Find-Image {
                     }
 
                     if (-not $found) {
-                        return;
+
+                        return
                     }
                 }
 
+                # process the image file and handle output appropriately
                 processImageFile $_ |
                     Microsoft.PowerShell.Core\ForEach-Object {
 
@@ -1302,28 +1385,31 @@ function Find-Image {
 
     end {
 
-        # if ShowInBrowser is requested, display the gallery
+        # if showinbrowser is requested, display the gallery
         if ($ShowInBrowser) {
 
             # check if any results were found
             if ((-not $results) -or ($null -eq $results) -or
                 ($results.Length -eq 0)) {
 
-                    Microsoft.PowerShell.Utility\Write-Host ("No images found")
+                Microsoft.PowerShell.Utility\Write-Host ("No images found")
 
                 return
             }
 
+            # set default title if empty
             if ([String]::IsNullOrWhiteSpace($Title)) {
 
                 $Title = "Image Search Results"
             }
 
+            # set default description if empty
             if ([String]::IsNullOrWhiteSpace($Description)) {
 
                 $Description = $MyInvocation.Statement
             }
 
+            # copy parameters for show function call
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\Show-FoundImagesInBrowser" `
@@ -1331,9 +1417,10 @@ function Find-Image {
                     -Scope Local `
                     -ErrorAction SilentlyContinue)
 
-            # pass the results to Show-FoundImagesInBrowser
-            $null = GenXdev.AI\Show-FoundImagesInBrowser @params -InputObject $results
+            # pass the results to show-foundimagesinbrowser
+            GenXdev.AI\Show-FoundImagesInBrowser @params -InputObject $results
 
+            # return results if passthru is requested
             if ($PassThru) {
 
                 $results | Microsoft.PowerShell.Core\ForEach-Object {
@@ -1344,4 +1431,4 @@ function Find-Image {
         }
     }
 }
-################################################################################
+###############################################################################

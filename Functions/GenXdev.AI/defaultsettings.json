@@ -1,0 +1,106 @@
+{
+    "SimpleIntelligence": [
+        {
+            "Model": "*deepseek*8b*",
+            "HuggingFaceIdentifier": "deepseek/deepseek-r1-0528-qwen3-8b",
+            "MaxToken": null,
+            "TTLSeconds": null,
+            "ApiEndpoint": null,
+            "ApiKey": null,
+            "Cpu": null,
+            "Gpu": null,
+            "TimeoutSeconds": 86400
+        }
+    ],
+    "Knowledge": [
+        {
+            "Model": "*deepseek*8b*",
+            "HuggingFaceIdentifier": "deepseek/deepseek-r1-0528-qwen3-8b",
+            "MaxToken": null,
+            "TTLSeconds": null,
+            "ApiEndpoint": null,
+            "ApiKey": null,
+            "Cpu": null,
+            "Gpu": null,
+            "TimeoutSeconds": 86400
+        }
+    ],
+    "Pictures": [
+        {
+            "Model": "MiniCPM",
+            "HuggingFaceIdentifier": "lmstudio-community/MiniCPM-V-2_6-GGUF/MiniCPM-V-2_6-Q4_K_M.gguf",
+            "MaxToken": -1,
+            "TTLSeconds": null,
+            "ApiEndpoint": null,
+            "ApiKey": null,
+            "Cpu": null,
+            "Gpu": null,
+            "TimeoutSeconds": 86400
+        },
+        {
+            "Model": "*gemma*3*27b*",
+            "HuggingFaceIdentifier": "lmstudio-community/gemma-3-27B-it-qat-GGUF",
+            "RequiredMemoryGB": 19,
+            "MaxToken": -1,
+            "TTLSeconds": null,
+            "ApiEndpoint": null,
+            "ApiKey": null,
+            "Cpu": null,
+            "Gpu": null,
+            "TimeoutSeconds": 86400
+        }
+    ],
+    "TextTranslation": [
+        {
+            "Model": "*deepseek*8b*",
+            "HuggingFaceIdentifier": "deepseek/deepseek-r1-0528-qwen3-8b",
+            "MaxToken": null,
+            "TTLSeconds": null,
+            "ApiEndpoint": null,
+            "ApiKey": null,
+            "Cpu": null,
+            "Gpu": null,
+            "TimeoutSeconds": 86400
+        }
+    ],
+    "Coding": [
+        {
+            "Model": "*Qwen*14B*Instruct*",
+            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-GGUF",
+            "MaxToken": 32768,
+            "RequiredMemoryGB": 18,
+            "TTLSeconds": null,
+            "ApiEndpoint": null,
+            "ApiKey": null,
+            "Cpu": null,
+            "Gpu": null,
+            "TimeoutSeconds": 86400
+        },
+        {
+            "Model": "*deepseek*70b*",
+            "HuggingFaceIdentifier": "lmstudio-community/Llama-3.3-70B-Instruct-GGUF",
+            "MaxToken": 32358,
+            "RequiredMemoryGB": 100,
+            "TTLSeconds": null,
+            "ApiEndpoint": null,
+            "ApiKey": null,
+            "Cpu": null,
+            "Gpu": null,
+            "TimeoutSeconds": 86400
+        }
+    ],
+    "ToolUse": [
+        {
+            "Model": "*Qwen*14B*Instruct*",
+            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-GGUF",
+            "MaxToken": 32768,
+            "RequiredMemoryGB": 18,
+            "TTLSeconds": null,
+            "ApiEndpoint": null,
+            "ApiKey": null,
+            "Cpu": null,
+            "Gpu": null,
+            "TimeoutSeconds": 86400
+        }
+    ]
+}
