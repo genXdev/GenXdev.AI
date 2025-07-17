@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Recognizes faces in an uploaded image by comparing to known faces using
@@ -81,7 +81,7 @@ http://localhost:5000/v1/vision/face/recognize
 function Get-ImageDetectedFaces {
 
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
 
     param(
         ###########################################################################
@@ -90,90 +90,91 @@ function Get-ImageDetectedFaces {
             Mandatory = $true,
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true,
-            HelpMessage = "The local path to the image file to analyze"
+            HelpMessage = 'The local path to the image file to analyze'
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImagePath,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Minimum confidence threshold (0.0-1.0). " +
-                          "Default is 0.5")
+            HelpMessage = ('Minimum confidence threshold (0.0-1.0). ' +
+                'Default is 0.5')
         )]
         [ValidateRange(0.0, 1.0)]
         [double] $ConfidenceThreshold = 0.5,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The name for the Docker container"
+            HelpMessage = 'The name for the Docker container'
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ContainerName = "deepstack_face_recognition",
+        [string] $ContainerName = 'deepstack_face_recognition',
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The name for the Docker volume for persistent " +
-                          "storage")
+            HelpMessage = ('The name for the Docker volume for persistent ' +
+                'storage')
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $VolumeName = "deepstack_face_data",
+        [string] $VolumeName = 'deepstack_face_data',
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The port number for the DeepStack service"
+            HelpMessage = 'The port number for the DeepStack service'
         )]
         [ValidateRange(1, 65535)]
         [int] $ServicePort = 5000,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Maximum time in seconds to wait for service " +
-                          "health check")
+            HelpMessage = ('Maximum time in seconds to wait for service ' +
+                'health check')
         )]
         [ValidateRange(10, 300)]
         [int] $HealthCheckTimeout = 60,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Interval in seconds between health check " +
-                          "attempts")
+            HelpMessage = ('Interval in seconds between health check ' +
+                'attempts')
         )]
         [ValidateRange(1, 10)]
         [int] $HealthCheckInterval = 3,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Custom Docker image name to use"
+            HelpMessage = 'Custom Docker image name to use'
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImageName,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Skip Docker initialization (used when already " +
-                          "called by parent function)")
+            HelpMessage = ('Skip Docker initialization (used when already ' +
+                'called by parent function)')
         )]
         [switch] $NoDockerInitialize,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Force rebuild of Docker container and remove " +
-                          "existing data")
+            HelpMessage = ('Force rebuild of Docker container and remove ' +
+                'existing data')
         )]
-        [Alias("ForceRebuild")]
+        [Alias('ForceRebuild')]
         [switch] $Force,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use GPU-accelerated version (requires NVIDIA " +
-                          "GPU)")
+            HelpMessage = ('Use GPU-accelerated version (requires NVIDIA ' +
+                'GPU)')
         )]
         [switch] $UseGPU,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show Docker Desktop window during initialization"
+            HelpMessage = 'Show Docker Desktop window during initialization'
         )]
+        [Alias('sw')]
         [switch]$ShowWindow
         ###################################################################
     )
@@ -192,22 +193,22 @@ function Get-ImageDetectedFaces {
         # ensure that the DeepStack face recognition service is running
         if (-not $NoDockerInitialize) {
             Microsoft.PowerShell.Utility\Write-Verbose `
-                ("Ensuring DeepStack face recognition service is " +
-                 "available")
+            ('Ensuring DeepStack face recognition service is ' +
+                'available')
 
             # copy parameter values for the EnsureDeepStack function call
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-              -BoundParameters $PSBoundParameters `
-              -FunctionName 'GenXdev.AI\EnsureDeepStack' `
-              -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                             -Scope Local `
-                             -ErrorAction SilentlyContinue)
+                -BoundParameters $PSBoundParameters `
+                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue)
 
             # initialize deepstack docker container if needed
-            $null = GenXdev.AI\EnsureDeepStack @ensureParams
+            $null = EnsureDeepStack @ensureParams
         } else {
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Skipping Docker initialization as requested"        }
+                'Skipping Docker initialization as requested'        }
 
         Microsoft.PowerShell.Utility\Write-Verbose `
             "Using DeepStack face recognition API at: $script:ApiBaseUrl"
@@ -239,7 +240,7 @@ function Get-ImageDetectedFaces {
 
             # send the request to the DeepStack face recognition API
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Sending image data to DeepStack face recognition API"
+                'Sending image data to DeepStack face recognition API'
 
             $response = Microsoft.PowerShell.Utility\Invoke-RestMethod `
                 -Uri $uri `
@@ -252,14 +253,14 @@ function Get-ImageDetectedFaces {
                 $originalPredictionCount = $response.predictions.Count
 
                 $filteredPredictions = @($response.predictions |
-                    Microsoft.PowerShell.Core\Where-Object {
-                        $_.confidence -gt $script:ConfidenceThreshold
-                    })
+                        Microsoft.PowerShell.Core\Where-Object {
+                            $_.confidence -gt $script:ConfidenceThreshold
+                        })
 
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    ("Found $($filteredPredictions.Count) recognized " +
-                     "face(s) out of $originalPredictionCount with " +
-                     "confidence > $script:ConfidenceThreshold")
+                ("Found $($filteredPredictions.Count) recognized " +
+                    "face(s) out of $originalPredictionCount with " +
+                    "confidence > $script:ConfidenceThreshold")
 
                 $response.predictions = $filteredPredictions
             }
@@ -268,13 +269,13 @@ function Get-ImageDetectedFaces {
         }
         catch [System.Net.WebException] {
             Microsoft.PowerShell.Utility\Write-Error `
-                ("Network error while contacting DeepStack face recognition " +
-                 "service: $_")
+            ('Network error while contacting DeepStack face recognition ' +
+                "service: $_")
         }
         catch [System.TimeoutException] {
             Microsoft.PowerShell.Utility\Write-Error `
-                ("Timeout while waiting for DeepStack face recognition " +
-                 "response: $_")
+            ('Timeout while waiting for DeepStack face recognition ' +
+                "response: $_")
         }
         catch {
             Microsoft.PowerShell.Utility\Write-Error `
@@ -286,4 +287,3 @@ function Get-ImageDetectedFaces {
 
     }
 }
-        ###############################################################################

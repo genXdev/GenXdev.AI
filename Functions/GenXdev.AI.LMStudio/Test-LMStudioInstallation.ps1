@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Tests if LMStudio is installed and accessible on the system.
@@ -15,7 +15,7 @@ Returns $true if LMStudio is properly installed, $false otherwise.
 .EXAMPLE
 tlms
 Uses the alias to check LMStudio installation status.
-        ###############################################################################>
+#>
 function Test-LMStudioInstallation {
 
     [CmdletBinding()]
@@ -25,12 +25,12 @@ function Test-LMStudioInstallation {
     begin {
 
         # retrieve the lmstudio installation paths using helper function
-        Microsoft.PowerShell.Utility\Write-Verbose "Retrieving LMStudio installation paths..."
-        $paths = GenXdev.AI\Get-LMStudioPaths
+        Microsoft.PowerShell.Utility\Write-Verbose 'Retrieving LMStudio installation paths...'
+        $paths = Get-LMStudioPaths
     }
 
 
-process {
+    process {
 
         # check if the exe exists and return result
         Microsoft.PowerShell.Utility\Write-Verbose "Verifying LMStudio executable at: $($paths.LMSExe)"
@@ -44,4 +44,3 @@ process {
 
     end {}
 }
-        ###############################################################################

@@ -1,4 +1,4 @@
-        ###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Returns the path to the image database, initializing or rebuilding it if needed.
@@ -75,22 +75,21 @@ function Get-ImageDatabasePath {
         [Parameter(
             Position = 0,
             Mandatory = $false,
-            HelpMessage = "The path to the image database file. If not specified, a default path is used."
+            HelpMessage = 'The path to the image database file. If not specified, a default path is used.'
         )]
         [string] $DatabaseFilePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of directory paths to search for images"
+            HelpMessage = 'Array of directory paths to search for images'
         )]
-        [ValidateNotNullOrEmpty()]
-        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
+        [Alias('imagespath', 'directories', 'imgdirs', 'imagedirectory')]
         [string[]] $ImageDirectories,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = (
-                "Array of directory path-like search strings to filter images by " +
+                'Array of directory path-like search strings to filter images by ' +
                 "path (SQL LIKE patterns, e.g. '%\\2024\\%')"
             )
         )]
@@ -98,102 +97,103 @@ function Get-ImageDatabasePath {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Language for descriptions and keywords."
+            HelpMessage = 'Language for descriptions and keywords.'
         )]
         [ValidateSet(
-            "Afrikaans", "Akan", "Albanian", "Amharic", "Arabic", "Armenian",
-            "Azerbaijani", "Basque", "Belarusian", "Bemba", "Bengali", "Bihari",
-            "Bork, bork, bork!", "Bosnian", "Breton", "Bulgarian", "Cambodian",
-            "Catalan", "Cherokee", "Chichewa", "Chinese (Simplified)",
-            "Chinese (Traditional)", "Corsican", "Croatian", "Czech", "Danish",
-            "Dutch", "Elmer Fudd", "English", "Esperanto", "Estonian", "Ewe",
-            "Faroese", "Filipino", "Finnish", "French", "Frisian", "Ga",
-            "Galician", "Georgian", "German", "Greek", "Guarani", "Gujarati",
-            "Hacker", "Haitian Creole", "Hausa", "Hawaiian", "Hebrew", "Hindi",
-            "Hungarian", "Icelandic", "Igbo", "Indonesian", "Interlingua",
-            "Irish", "Italian", "Japanese", "Javanese", "Kannada", "Kazakh",
-            "Kinyarwanda", "Kirundi", "Klingon", "Kongo", "Korean",
-            "Krio (Sierra Leone)", "Kurdish", "Kurdish (Soranî)", "Kyrgyz",
-            "Laothian", "Latin", "Latvian", "Lingala", "Lithuanian", "Lozi",
-            "Luganda", "Luo", "Macedonian", "Malagasy", "Malay", "Malayalam",
-            "Maltese", "Maori", "Marathi", "Mauritian Creole", "Moldavian",
-            "Mongolian", "Montenegrin", "Nepali", "Nigerian Pidgin",
-            "Northern Sotho", "Norwegian", "Norwegian (Nynorsk)", "Occitan",
-            "Oriya", "Oromo", "Pashto", "Persian", "Pirate", "Polish",
-            "Portuguese (Brazil)", "Portuguese (Portugal)", "Punjabi", "Quechua",
-            "Romanian", "Romansh", "Runyakitara", "Russian", "Scots Gaelic",
-            "Serbian", "Serbo-Croatian", "Sesotho", "Setswana",
-            "Seychellois Creole", "Shona", "Sindhi", "Sinhalese", "Slovak",
-            "Slovenian", "Somali", "Spanish", "Spanish (Latin American)",
-            "Sundanese", "Swahili", "Swedish", "Tajik", "Tamil", "Tatar",
-            "Telugu", "Thai", "Tigrinya", "Tonga", "Tshiluba", "Tumbuka",
-            "Turkish", "Turkmen", "Twi", "Uighur", "Ukrainian", "Urdu", "Uzbek",
-            "Vietnamese", "Welsh", "Wolof", "Xhosa", "Yiddish", "Yoruba", "Zulu"
+            'Afrikaans', 'Akan', 'Albanian', 'Amharic', 'Arabic', 'Armenian',
+            'Azerbaijani', 'Basque', 'Belarusian', 'Bemba', 'Bengali', 'Bihari',
+            'Bork, bork, bork!', 'Bosnian', 'Breton', 'Bulgarian', 'Cambodian',
+            'Catalan', 'Cherokee', 'Chichewa', 'Chinese (Simplified)',
+            'Chinese (Traditional)', 'Corsican', 'Croatian', 'Czech', 'Danish',
+            'Dutch', 'Elmer Fudd', 'English', 'Esperanto', 'Estonian', 'Ewe',
+            'Faroese', 'Filipino', 'Finnish', 'French', 'Frisian', 'Ga',
+            'Galician', 'Georgian', 'German', 'Greek', 'Guarani', 'Gujarati',
+            'Hacker', 'Haitian Creole', 'Hausa', 'Hawaiian', 'Hebrew', 'Hindi',
+            'Hungarian', 'Icelandic', 'Igbo', 'Indonesian', 'Interlingua',
+            'Irish', 'Italian', 'Japanese', 'Javanese', 'Kannada', 'Kazakh',
+            'Kinyarwanda', 'Kirundi', 'Klingon', 'Kongo', 'Korean',
+            'Krio (Sierra Leone)', 'Kurdish', 'Kurdish (Soranî)', 'Kyrgyz',
+            'Laothian', 'Latin', 'Latvian', 'Lingala', 'Lithuanian', 'Lozi',
+            'Luganda', 'Luo', 'Macedonian', 'Malagasy', 'Malay', 'Malayalam',
+            'Maltese', 'Maori', 'Marathi', 'Mauritian Creole', 'Moldavian',
+            'Mongolian', 'Montenegrin', 'Nepali', 'Nigerian Pidgin',
+            'Northern Sotho', 'Norwegian', 'Norwegian (Nynorsk)', 'Occitan',
+            'Oriya', 'Oromo', 'Pashto', 'Persian', 'Pirate', 'Polish',
+            'Portuguese (Brazil)', 'Portuguese (Portugal)', 'Punjabi', 'Quechua',
+            'Romanian', 'Romansh', 'Runyakitara', 'Russian', 'Scots Gaelic',
+            'Serbian', 'Serbo-Croatian', 'Sesotho', 'Setswana',
+            'Seychellois Creole', 'Shona', 'Sindhi', 'Sinhalese', 'Slovak',
+            'Slovenian', 'Somali', 'Spanish', 'Spanish (Latin American)',
+            'Sundanese', 'Swahili', 'Swedish', 'Tajik', 'Tamil', 'Tatar',
+            'Telugu', 'Thai', 'Tigrinya', 'Tonga', 'Tshiluba', 'Tumbuka',
+            'Turkish', 'Turkmen', 'Twi', 'Uighur', 'Ukrainian', 'Urdu', 'Uzbek',
+            'Vietnamese', 'Welsh', 'Wolof', 'Xhosa', 'Yiddish', 'Yoruba', 'Zulu'
         )]
         [string] $Language,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = (
-                "The directory containing face images organized by " +
-                "person folders. If not specified, uses the " +
-                "configured faces directory preference.")
+                'The directory containing face images organized by ' +
+                'person folders. If not specified, uses the ' +
+                'configured faces directory preference.')
         )]
         [string] $FacesDirectory,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Embed images as base64."
+            HelpMessage = 'Embed images as base64.'
         )]
         [switch] $EmbedImages,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Force rebuild of the image index database."
+            HelpMessage = 'Force rebuild of the image index database.'
         )]
         [switch] $ForceIndexRebuild,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Switch to disable fallback behavior."
+            HelpMessage = 'Switch to disable fallback behavior.'
         )]
         [switch] $NoFallback,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Switch to skip database initialization and rebuilding."
+            HelpMessage = 'Switch to skip database initialization and rebuilding.'
         )]
         [switch] $NeverRebuild,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = (
-                "Use alternative settings stored in session for AI preferences " +
-                "like Language, Image collections, etc")
+                'Use alternative settings stored in session for AI preferences ' +
+                'like Language, Image collections, etc')
         )]
         [switch] $SessionOnly,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = (
-                "Clear alternative settings stored in session for AI " +
-                "preferences like Language, Image collections, etc")
+                'Clear alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
         [switch] $ClearSession,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = (
-                "Dont use alternative settings stored in session for AI " +
-                "preferences like Language, Image collections, etc")
+                'Dont use alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
-        [Alias("FromPreferences")]
+        [Alias('FromPreferences')]
         [switch] $SkipSession
         ###############################################################################
     )
@@ -201,18 +201,18 @@ function Get-ImageDatabasePath {
     begin {
 
         # define required schema version constant
-        $SCHEMA_VERSION = "1.0.0.3"
+        $SCHEMA_VERSION = '1.0.0.3'
 
         # copy identical parameters for Get-AIMetaLanguage
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
+            -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local `
                 -ErrorAction SilentlyContinue)
 
         # get the language setting for AI operations
-        $Language = GenXdev.AI\Get-AIMetaLanguage @params
+        $Language = Get-AIMetaLanguage @params
     }
 
     process {
@@ -238,9 +238,9 @@ function Get-ImageDatabasePath {
                 # fallback to preference storage
                 try {
                     # retrieve database path from preferences
-                    $preferencePath = GenXdev.Data\Get-GenXdevPreference `
+                    $preferencePath = Get-GenXdevPreference `
                         -PreferencesDatabasePath $PreferencesDatabasePath `
-                        -Name "ImageDatabasePath" `
+                        -Name 'ImageDatabasePath' `
                         -DefaultValue $null `
                         -ErrorAction SilentlyContinue
 
@@ -250,7 +250,7 @@ function Get-ImageDatabasePath {
                         $DatabaseFilePath = $preferencePath
 
                         Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Using preference image database path: " +
+                            'Using preference image database path: ' +
                             "$DatabaseFilePath"
                         )
                     }
@@ -258,8 +258,8 @@ function Get-ImageDatabasePath {
                 catch {
                     # ignore preference retrieval errors and use default
                     Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Failed to retrieve database path preference, " +
-                        "using default"
+                        'Failed to retrieve database path preference, ' +
+                        'using default'
                     )
                 }
             }
@@ -290,7 +290,7 @@ function Get-ImageDatabasePath {
         if ($NeverRebuild) {
 
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Skipping database initialization due to NeverRebuild parameter."
+                'Skipping database initialization due to NeverRebuild parameter.'
             )
 
             return $DatabaseFilePath
@@ -303,7 +303,7 @@ function Get-ImageDatabasePath {
         if (-not (Microsoft.PowerShell.Management\Test-Path $DatabaseFilePath)) {
 
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Database file not found, initialization required."
+                'Database file not found, initialization required.'
             )
 
             $needsInitialization = $true
@@ -314,9 +314,9 @@ function Get-ImageDatabasePath {
 
             try {
                 # query the schema version from the database
-                $versionResult = GenXdev.Data\Invoke-SQLiteQuery `
+                $versionResult = Invoke-SQLiteQuery `
                     -DatabaseFilePath $DatabaseFilePath `
-                    -Queries "SELECT version FROM ImageSchemaVersion WHERE id = 1" `
+                    -Queries 'SELECT version FROM ImageSchemaVersion WHERE id = 1' `
                     -ErrorAction SilentlyContinue
 
                 # if version is missing or does not match, initialization is
@@ -354,22 +354,22 @@ function Get-ImageDatabasePath {
                 # copy parameter values for Export-ImageDatabase
                 $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
-                    -FunctionName "GenXdev.AI\Export-ImageDatabase" `
+                    -FunctionName 'GenXdev.AI\Export-ImageDatabase' `
                     -DefaultValues (
-                        Microsoft.PowerShell.Utility\Get-Variable `
-                            -Scope Local `
-                            -ErrorAction SilentlyContinue
-                    )
+                    Microsoft.PowerShell.Utility\Get-Variable `
+                        -Scope Local `
+                        -ErrorAction SilentlyContinue
+                )
 
                 # call Export-ImageDatabase to initialize or rebuild the database
-                $null = GenXdev.AI\Export-ImageDatabase @params
+                $null = Export-ImageDatabase @params
 
                 return $DatabaseFilePath
             }
             catch {
                 # if initialization fails, write error and return null
                 Microsoft.PowerShell.Utility\Write-Error (
-                    "Failed to initialize image database: " +
+                    'Failed to initialize image database: ' +
                     "$($_.Exception.Message)"
                 )
 

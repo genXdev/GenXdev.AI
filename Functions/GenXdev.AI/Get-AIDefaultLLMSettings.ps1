@@ -1,4 +1,4 @@
-################################################################################
+﻿################################################################################
 <#
 .SYNOPSIS
 Gets all available default LLM settings configurations for AI operations in GenXdev.AI.
@@ -115,115 +115,116 @@ function Get-AIDefaultLLMSettings {
         [Parameter(
             Position = 0,
             Mandatory = $false,
-            HelpMessage = "The type of LLM query to get settings for"
+            HelpMessage = 'The type of LLM query to get settings for'
         )]
         [ValidateSet(
-            "SimpleIntelligence",
-            "Knowledge",
-            "Pictures",
-            "TextTranslation",
-            "Coding",
-            "ToolUse"
+            'SimpleIntelligence',
+            'Knowledge',
+            'Pictures',
+            'TextTranslation',
+            'Coding',
+            'ToolUse'
         )]
-        [string] $LLMQueryType = "SimpleIntelligence",
+        [string] $LLMQueryType = 'SimpleIntelligence',
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter configurations by model identifier or pattern"
+            HelpMessage = 'Filter configurations by model identifier or pattern'
         )]
         [string] $Model,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter configurations by LM Studio specific model identifier"
+            HelpMessage = 'Filter configurations by LM Studio specific model identifier'
         )]
-        [Alias("ModelLMSGetIdentifier")]
+        [Alias('ModelLMSGetIdentifier')]
         [string] $HuggingFaceIdentifier,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter configurations by maximum number of tokens"
+            HelpMessage = 'Filter configurations by maximum number of tokens'
         )]
         [int] $MaxToken,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The number of CPU cores to dedicate to AI operations (for memory strategy)"
+            HelpMessage = 'The number of CPU cores to dedicate to AI operations (for memory strategy)'
         )]
         [int] $Cpu,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = ("GPU offload level for memory strategy. If 'off', GPU " +
-            "offloading is disabled. If 'max', all layers are " +
-            "offloaded to GPU. If a number between 0 and 1, " +
-            "that fraction of layers will be offloaded to the " +
-            "GPU. -1 = LM Studio will decide how much to " +
-            "offload to the GPU. -2 = Auto"))]
+                "offloading is disabled. If 'max', all layers are " +
+                'offloaded to GPU. If a number between 0 and 1, ' +
+                'that fraction of layers will be offloaded to the ' +
+                'GPU. -1 = LM Studio will decide how much to ' +
+                'offload to the GPU. -2 = Auto'))]
         [int] $Gpu,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter configurations by time-to-live in seconds"
+            HelpMessage = 'Filter configurations by time-to-live in seconds'
         )]
         [int] $TTLSeconds,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter configurations by API endpoint URL"
+            HelpMessage = 'Filter configurations by API endpoint URL'
         )]
         [string] $ApiEndpoint,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter configurations by API key"
+            HelpMessage = 'Filter configurations by API key'
         )]
         [string] $ApiKey,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter configurations by timeout in seconds"
+            HelpMessage = 'Filter configurations by timeout in seconds'
         )]
         [int] $TimeoutSeconds,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Apply memory-based auto-selection and return only the best configuration"
+            HelpMessage = 'Apply memory-based auto-selection and return only the best configuration'
         )]
         [switch] $AutoSelect,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for AI " +
-                "preferences like Language, Image collections, etc")
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
         [switch] $SessionOnly,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear the session setting (Global variable) before retrieving"
+            HelpMessage = 'Clear the session setting (Global variable) before retrieving'
         )]
         [switch] $ClearSession,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Skip session settings and get from preferences " +
-                "or defaults only")
+            HelpMessage = ('Skip session settings and get from preferences ' +
+                'or defaults only')
         )]
-        [Alias("FromPreferences")]
+        [Alias('FromPreferences')]
         [switch] $SkipSession
         ###############################################################################
     )
 
     begin {
 
-        Microsoft.PowerShell.Utility\Write-Verbose "=== Get-AIDefaultLLMSettings Started ==="
+        Microsoft.PowerShell.Utility\Write-Verbose '=== Get-AIDefaultLLMSettings Started ==='
         Microsoft.PowerShell.Utility\Write-Verbose "LLMQueryType: $LLMQueryType"
         Microsoft.PowerShell.Utility\Write-Verbose "AutoSelect: $AutoSelect"
         Microsoft.PowerShell.Utility\Write-Verbose "SessionOnly: $SessionOnly"
@@ -239,13 +240,13 @@ function Get-AIDefaultLLMSettings {
         if ($PSBoundParameters.ContainsKey('Gpu')) { $filterParams += "Gpu=$Gpu" }
         if ($PSBoundParameters.ContainsKey('TTLSeconds')) { $filterParams += "TTLSeconds=$TTLSeconds" }
         if ($PSBoundParameters.ContainsKey('ApiEndpoint')) { $filterParams += "ApiEndpoint=$ApiEndpoint" }
-        if ($PSBoundParameters.ContainsKey('ApiKey')) { $filterParams += "ApiKey=(redacted)" }
+        if ($PSBoundParameters.ContainsKey('ApiKey')) { $filterParams += 'ApiKey=(redacted)' }
         if ($PSBoundParameters.ContainsKey('TimeoutSeconds')) { $filterParams += "TimeoutSeconds=$TimeoutSeconds" }
 
         if ($filterParams.Count -gt 0) {
             Microsoft.PowerShell.Utility\Write-Verbose "Filter parameters: $($filterParams -join ', ')"
         } else {
-            Microsoft.PowerShell.Utility\Write-Verbose "No filter parameters provided"
+            Microsoft.PowerShell.Utility\Write-Verbose 'No filter parameters provided'
         }
 
         # determine memory selection strategy based on Gpu and Cpu parameters (only if AutoSelect is enabled)
@@ -254,38 +255,38 @@ function Get-AIDefaultLLMSettings {
         $selectByCombinedMemory = $false
 
         if ($AutoSelect) {
-            Microsoft.PowerShell.Utility\Write-Verbose "=== Memory Selection Strategy Analysis (AutoSelect enabled) ==="
+            Microsoft.PowerShell.Utility\Write-Verbose '=== Memory Selection Strategy Analysis (AutoSelect enabled) ==='
             Microsoft.PowerShell.Utility\Write-Verbose "Gpu parameter provided: $($PSBoundParameters.ContainsKey('Gpu'))"
             Microsoft.PowerShell.Utility\Write-Verbose "Cpu parameter provided: $($PSBoundParameters.ContainsKey('Cpu'))"
 
             if ($PSBoundParameters.ContainsKey('Gpu') -and $PSBoundParameters.ContainsKey('Cpu')) {
                 # both specified, use combined memory
                 $selectByCombinedMemory = $true
-                Microsoft.PowerShell.Utility\Write-Verbose "Strategy: COMBINED MEMORY (both Gpu and Cpu parameters specified)"
-                Microsoft.PowerShell.Utility\Write-Verbose "Will use: System RAM + GPU RAM for configuration selection"
+                Microsoft.PowerShell.Utility\Write-Verbose 'Strategy: COMBINED MEMORY (both Gpu and Cpu parameters specified)'
+                Microsoft.PowerShell.Utility\Write-Verbose 'Will use: System RAM + GPU RAM for configuration selection'
             } elseif ($PSBoundParameters.ContainsKey('Gpu')) {
                 # only GPU specified, prefer GPU memory
                 $selectByFreeGpuRam = $true
-                Microsoft.PowerShell.Utility\Write-Verbose "Strategy: GPU MEMORY (only Gpu parameter specified)"
-                Microsoft.PowerShell.Utility\Write-Verbose "Will use: GPU RAM with system RAM fallback for configuration selection"
+                Microsoft.PowerShell.Utility\Write-Verbose 'Strategy: GPU MEMORY (only Gpu parameter specified)'
+                Microsoft.PowerShell.Utility\Write-Verbose 'Will use: GPU RAM with system RAM fallback for configuration selection'
             } elseif ($PSBoundParameters.ContainsKey('Cpu')) {
                 # only CPU specified, use system RAM
                 $selectByFreeRam = $true
-                Microsoft.PowerShell.Utility\Write-Verbose "Strategy: SYSTEM RAM (only Cpu parameter specified)"
-                Microsoft.PowerShell.Utility\Write-Verbose "Will use: System RAM only for configuration selection"
+                Microsoft.PowerShell.Utility\Write-Verbose 'Strategy: SYSTEM RAM (only Cpu parameter specified)'
+                Microsoft.PowerShell.Utility\Write-Verbose 'Will use: System RAM only for configuration selection'
             } else {
                 # neither specified, use combined memory as default
                 $selectByCombinedMemory = $true
-                Microsoft.PowerShell.Utility\Write-Verbose "Strategy: COMBINED MEMORY (default - no Gpu/Cpu parameters specified)"
-                Microsoft.PowerShell.Utility\Write-Verbose "Will use: System RAM + GPU RAM for configuration selection"
+                Microsoft.PowerShell.Utility\Write-Verbose 'Strategy: COMBINED MEMORY (default - no Gpu/Cpu parameters specified)'
+                Microsoft.PowerShell.Utility\Write-Verbose 'Will use: System RAM + GPU RAM for configuration selection'
             }
         } else {
-            Microsoft.PowerShell.Utility\Write-Verbose "AutoSelect disabled - will return all matching configurations"
+            Microsoft.PowerShell.Utility\Write-Verbose 'AutoSelect disabled - will return all matching configurations'
         }
 
         # handle clearing session variables first if requested
         if ($ClearSession) {
-            Microsoft.PowerShell.Utility\Write-Verbose "Clearing session variables (ClearSession=true)"
+            Microsoft.PowerShell.Utility\Write-Verbose 'Clearing session variables (ClearSession=true)'
             # Note: Session clearing logic would be similar to Get-AILLMSettings if needed
         }
     }
@@ -293,11 +294,11 @@ function Get-AIDefaultLLMSettings {
     process {
 
         try {
-            Microsoft.PowerShell.Utility\Write-Verbose "Loading defaults from JSON configuration..."
+            Microsoft.PowerShell.Utility\Write-Verbose 'Loading defaults from JSON configuration...'
 
             # construct path to default settings JSON file
             $defaultsPath = Microsoft.PowerShell.Management\Join-Path `
-                $PSScriptRoot "defaultsettings.json"
+                $PSScriptRoot 'defaultsettings.json'
 
             Microsoft.PowerShell.Utility\Write-Verbose "JSON path: $defaultsPath"
 
@@ -309,10 +310,10 @@ function Get-AIDefaultLLMSettings {
 
             # convert JSON to PowerShell object
             $defaultsJson = $jsonContent | `
-                Microsoft.PowerShell.Utility\ConvertFrom-Json `
-                -ErrorAction Stop
+                    Microsoft.PowerShell.Utility\ConvertFrom-Json `
+                    -ErrorAction Stop
 
-            Microsoft.PowerShell.Utility\Write-Verbose "JSON loaded successfully"
+            Microsoft.PowerShell.Utility\Write-Verbose 'JSON loaded successfully'
 
             # extract configurations for the specified query type
             $defaultConfigs = $null
@@ -326,7 +327,7 @@ function Get-AIDefaultLLMSettings {
 
             # return empty array if no configurations found
             if ($null -eq $defaultConfigs -or $defaultConfigs.Count -eq 0) {
-                Microsoft.PowerShell.Utility\Write-Verbose "No default configurations available"
+                Microsoft.PowerShell.Utility\Write-Verbose 'No default configurations available'
                 return [hashtable[]]@()
             }
 
@@ -340,40 +341,40 @@ function Get-AIDefaultLLMSettings {
                     $configHash[$property.Name] = $property.Value
                 }
 
-                # apply filters if specified
+                # apply filters if specified - only filter if parameter has a non-null, non-empty value
                 $includeConfig = $true
 
-                if ($PSBoundParameters.ContainsKey('Model') -and $configHash.Model -notlike $Model) {
+                if ($PSBoundParameters.ContainsKey('Model') -and -not [String]::IsNullOrWhiteSpace($Model) -and $configHash.Model -notlike $Model) {
                     $includeConfig = $false
                     Microsoft.PowerShell.Utility\Write-Verbose "Config filtered out: Model '$($configHash.Model)' does not match filter '$Model'"
                 }
 
-                if ($includeConfig -and $PSBoundParameters.ContainsKey('HuggingFaceIdentifier') -and $configHash.HuggingFaceIdentifier -ne $HuggingFaceIdentifier) {
+                if ($includeConfig -and $PSBoundParameters.ContainsKey('HuggingFaceIdentifier') -and -not [String]::IsNullOrWhiteSpace($HuggingFaceIdentifier) -and $configHash.HuggingFaceIdentifier -ne $HuggingFaceIdentifier) {
                     $includeConfig = $false
                     Microsoft.PowerShell.Utility\Write-Verbose "Config filtered out: HuggingFaceIdentifier '$($configHash.HuggingFaceIdentifier)' does not match filter '$HuggingFaceIdentifier'"
                 }
 
-                if ($includeConfig -and $PSBoundParameters.ContainsKey('MaxToken') -and $configHash.MaxToken -ne $MaxToken) {
+                if ($includeConfig -and $PSBoundParameters.ContainsKey('MaxToken') -and $null -ne $MaxToken -and $MaxToken -ne 0 -and $configHash.MaxToken -ne $MaxToken) {
                     $includeConfig = $false
                     Microsoft.PowerShell.Utility\Write-Verbose "Config filtered out: MaxToken '$($configHash.MaxToken)' does not match filter '$MaxToken'"
                 }
 
-                if ($includeConfig -and $PSBoundParameters.ContainsKey('TTLSeconds') -and $configHash.TTLSeconds -ne $TTLSeconds) {
+                if ($includeConfig -and $PSBoundParameters.ContainsKey('TTLSeconds') -and $null -ne $TTLSeconds -and $TTLSeconds -ne 0 -and $configHash.TTLSeconds -ne $TTLSeconds) {
                     $includeConfig = $false
                     Microsoft.PowerShell.Utility\Write-Verbose "Config filtered out: TTLSeconds '$($configHash.TTLSeconds)' does not match filter '$TTLSeconds'"
                 }
 
-                if ($includeConfig -and $PSBoundParameters.ContainsKey('ApiEndpoint') -and $configHash.ApiEndpoint -ne $ApiEndpoint) {
+                if ($includeConfig -and $PSBoundParameters.ContainsKey('ApiEndpoint') -and -not [String]::IsNullOrWhiteSpace($ApiEndpoint) -and $configHash.ApiEndpoint -ne $ApiEndpoint) {
                     $includeConfig = $false
                     Microsoft.PowerShell.Utility\Write-Verbose "Config filtered out: ApiEndpoint '$($configHash.ApiEndpoint)' does not match filter '$ApiEndpoint'"
                 }
 
-                if ($includeConfig -and $PSBoundParameters.ContainsKey('ApiKey') -and $configHash.ApiKey -ne $ApiKey) {
+                if ($includeConfig -and $PSBoundParameters.ContainsKey('ApiKey') -and -not [String]::IsNullOrWhiteSpace($ApiKey) -and $configHash.ApiKey -ne $ApiKey) {
                     $includeConfig = $false
-                    Microsoft.PowerShell.Utility\Write-Verbose "Config filtered out: ApiKey does not match filter"
+                    Microsoft.PowerShell.Utility\Write-Verbose 'Config filtered out: ApiKey does not match filter'
                 }
 
-                if ($includeConfig -and $PSBoundParameters.ContainsKey('TimeoutSeconds') -and $configHash.TimeoutSeconds -ne $TimeoutSeconds) {
+                if ($includeConfig -and $PSBoundParameters.ContainsKey('TimeoutSeconds') -and $null -ne $TimeoutSeconds -and $TimeoutSeconds -ne 0 -and $configHash.TimeoutSeconds -ne $TimeoutSeconds) {
                     $includeConfig = $false
                     Microsoft.PowerShell.Utility\Write-Verbose "Config filtered out: TimeoutSeconds '$($configHash.TimeoutSeconds)' does not match filter '$TimeoutSeconds'"
                 }
@@ -389,31 +390,31 @@ function Get-AIDefaultLLMSettings {
             # apply auto-selection if requested
             if ($AutoSelect -and $results.Count -gt 0) {
 
-                Microsoft.PowerShell.Utility\Write-Verbose "=== Applying AutoSelect Memory-Based Selection ==="
+                Microsoft.PowerShell.Utility\Write-Verbose '=== Applying AutoSelect Memory-Based Selection ==='
 
                 $memoryToCheck = 0
 
                 # determine memory to check based on selection type
                 if ($selectByFreeGpuRam) {
 
-                    Microsoft.PowerShell.Utility\Write-Verbose "Checking GPU memory..."
+                    Microsoft.PowerShell.Utility\Write-Verbose 'Checking GPU memory...'
 
                     try {
                         # query for NVIDIA CUDA-compatible GPUs
                         $cudaGpus = CimCmdlets\Get-CimInstance `
                             -Class Win32_VideoController | `
-                            Microsoft.PowerShell.Core\Where-Object {
+                                Microsoft.PowerShell.Core\Where-Object {
                                 $_.AdapterRAM -gt 0 -and
-                                ($_.Name -like "*NVIDIA*" -or $_.Description -like "*NVIDIA*")
+                                ($_.Name -like '*NVIDIA*' -or $_.Description -like '*NVIDIA*')
                             }
 
                         # calculate total GPU memory if CUDA GPUs found
                         if ($cudaGpus) {
                             $memoryToCheck = [math]::Round(
                                 ($cudaGpus | `
-                                    Microsoft.PowerShell.Utility\Measure-Object `
-                                    -Property AdapterRAM `
-                                    -Sum).Sum / 1024 / 1024 / 1024, 2
+                                        Microsoft.PowerShell.Utility\Measure-Object `
+                                        -Property AdapterRAM `
+                                        -Sum).Sum / 1024 / 1024 / 1024, 2
                             )
                             Microsoft.PowerShell.Utility\Write-Verbose "Found $($cudaGpus.Count) CUDA GPU(s), total memory: $memoryToCheck GB"
                         } else {
@@ -435,7 +436,7 @@ function Get-AIDefaultLLMSettings {
                     }
                 } elseif ($selectByCombinedMemory) {
 
-                    Microsoft.PowerShell.Utility\Write-Verbose "Checking combined CPU + GPU memory..."
+                    Microsoft.PowerShell.Utility\Write-Verbose 'Checking combined CPU + GPU memory...'
 
                     try {
                         # get system RAM
@@ -449,21 +450,21 @@ function Get-AIDefaultLLMSettings {
                         $gpuRam = 0
                         $cudaGpus = CimCmdlets\Get-CimInstance `
                             -Class Win32_VideoController | `
-                            Microsoft.PowerShell.Core\Where-Object {
+                                Microsoft.PowerShell.Core\Where-Object {
                                 $_.AdapterRAM -gt 0 -and
-                                ($_.Name -like "*NVIDIA*" -or $_.Description -like "*NVIDIA*")
+                                ($_.Name -like '*NVIDIA*' -or $_.Description -like '*NVIDIA*')
                             }
 
                         if ($cudaGpus) {
                             $gpuRam = [math]::Round(
                                 ($cudaGpus | `
-                                    Microsoft.PowerShell.Utility\Measure-Object `
-                                    -Property AdapterRAM `
-                                    -Sum).Sum / 1024 / 1024 / 1024, 2
+                                        Microsoft.PowerShell.Utility\Measure-Object `
+                                        -Property AdapterRAM `
+                                        -Sum).Sum / 1024 / 1024 / 1024, 2
                             )
                             Microsoft.PowerShell.Utility\Write-Verbose "GPU RAM available: $gpuRam GB from $($cudaGpus.Count) CUDA GPU(s)"
                         } else {
-                            Microsoft.PowerShell.Utility\Write-Verbose "No CUDA GPUs found, GPU RAM: 0 GB"
+                            Microsoft.PowerShell.Utility\Write-Verbose 'No CUDA GPUs found, GPU RAM: 0 GB'
                         }
 
                         # combine both memory types
@@ -482,7 +483,7 @@ function Get-AIDefaultLLMSettings {
                     # use system RAM for memory checking
                     $memoryToCheck = [math]::Round(
                         (CimCmdlets\Get-CimInstance `
-                            -Class Win32_OperatingSystem).TotalPhysicalMemory / 1024 / 1024 / 1024, 2
+                            -Class Win32_OperatingSystem).TotalVisibleMemorySize / 1024 / 1024, 2
                     )
                     Microsoft.PowerShell.Utility\Write-Verbose "Using system RAM only: $memoryToCheck GB"
                 }
@@ -490,18 +491,18 @@ function Get-AIDefaultLLMSettings {
                 Microsoft.PowerShell.Utility\Write-Verbose "Total memory to check against requirements: $memoryToCheck GB"
 
                 # find best configuration based on available memory
-                Microsoft.PowerShell.Utility\Write-Verbose "Evaluating configurations (checking from highest to lowest requirements)..."
+                Microsoft.PowerShell.Utility\Write-Verbose 'Evaluating configurations (checking from highest to lowest requirements)...'
                 $selectedConfig = $null
 
                 for ($i = $results.Count - 1; $i -ge 0; $i--) {
 
                     $config = $results[$i]
-                    $configMemReq = if ($null -eq $config.RequiredMemoryGB) { "None" } else { "$($config.RequiredMemoryGB) GB" }
+                    $configMemReq = if ($null -eq $config.RequiredMemoryGB) { 'None' } else { "$($config.RequiredMemoryGB) GB" }
                     Microsoft.PowerShell.Utility\Write-Verbose "Config $i - RequiredMemoryGB: $configMemReq"
 
                     # select config if no memory requirement or requirement is met
                     if ($null -eq $config.RequiredMemoryGB -or `
-                        $config.RequiredMemoryGB -le $memoryToCheck) {
+                            $config.RequiredMemoryGB -le $memoryToCheck) {
 
                         $selectedConfig = $config
                         Microsoft.PowerShell.Utility\Write-Verbose "SELECTED Config $i - Memory requirement met ($configMemReq is acceptable with $memoryToCheck GB available)"
@@ -512,10 +513,10 @@ function Get-AIDefaultLLMSettings {
                 }
 
                 if ($null -ne $selectedConfig) {
-                    Microsoft.PowerShell.Utility\Write-Verbose "AutoSelect result: 1 configuration selected"
+                    Microsoft.PowerShell.Utility\Write-Verbose 'AutoSelect result: 1 configuration selected'
                     return [hashtable[]]@($selectedConfig)
                 } else {
-                    Microsoft.PowerShell.Utility\Write-Verbose "AutoSelect result: No configuration meets memory requirements"
+                    Microsoft.PowerShell.Utility\Write-Verbose 'AutoSelect result: No configuration meets memory requirements'
                     return [hashtable[]]@()
                 }
             }
@@ -532,7 +533,7 @@ function Get-AIDefaultLLMSettings {
     }
 
     end {
-        Microsoft.PowerShell.Utility\Write-Verbose "=== Get-AIDefaultLLMSettings Completed ==="
+        Microsoft.PowerShell.Utility\Write-Verbose '=== Get-AIDefaultLLMSettings Completed ==='
     }
 }
 ################################################################################

@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Updates scene classification metadata for image files in a specified directory.
@@ -92,108 +92,379 @@ forest, kitchen, office, etc.
 function Invoke-ImageScenesUpdate {
 
     [CmdletBinding()]
-    [Alias("scenerecognition")]
+    [Alias('scenerecognition')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
 
     param(
         #######################################################################
         [Parameter(
-            HelpMessage = "The directory path containing images to process"
+            Position = 0,
+            Mandatory = $false,
+            HelpMessage = 'The directory path containing images to process'
         )]
-        [string] $ImageDirectories = ".\",
-        #######################################################################
-        [Parameter(
-            HelpMessage = "Custom Docker image name to use instead of default"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $ImageName,
-        #######################################################################
-        [Parameter(
-            HelpMessage = "The name for the Docker container"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $ContainerName = "deepstack_face_recognition",
-        #######################################################################
-        [Parameter(
-            HelpMessage = "The name for the Docker volume for persistent storage"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $VolumeName = "deepstack_face_data",
-        #######################################################################
-        [Parameter(
-            HelpMessage = "The port number for the DeepStack service"
-        )]
-        [ValidateRange(1, 65535)]
-        [int] $ServicePort = 5000,
-        #######################################################################
-        [Parameter(
-            HelpMessage = ("Maximum time in seconds to wait for service " +
-                          "health check")
-        )]
-        [ValidateRange(10, 300)]
-        [int] $HealthCheckTimeout = 60,
-        #######################################################################
-        [Parameter(
-            HelpMessage = "Interval in seconds between health check attempts"
-        )]        [ValidateRange(1, 10)]
-        [int] $HealthCheckInterval = 3,
+        [string] $ImageDirectories = '.\',
+
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Minimum confidence threshold (0.0-1.0) for scene " +
-                          "classification. Default is 0.0")
-        )]
-        [ValidateRange(0.0, 1.0)]
-        [double] $ConfidenceThreshold = 0.6,
-        #######################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = ("Process images in specified directory and all " +
-                          "subdirectories")
+            HelpMessage = ('Process images in specified directory and all ' +
+                'subdirectories')
         )]
         [switch] $Recurse,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Only process images that don't already have scene " +
-                          "metadata files")
+            HelpMessage = ("Only process images that don't already have face " +
+                'metadata files')
         )]
         [switch] $OnlyNew,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Retry processing previously failed images that " +
-                          "have empty metadata files")
+            HelpMessage = ('Will retry previously failed image keyword ' +
+                'updates')
         )]
         [switch] $RetryFailed,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Skip Docker initialization (used when already " +
-                          "called by parent function)")
+            HelpMessage = 'The name for the Docker container'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $ContainerName = 'deepstack_face_recognition',
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The name for the Docker volume for persistent storage'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $VolumeName = 'deepstack_face_data',
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The port number for the DeepStack service'
+        )]
+        [ValidateRange(1, 65535)]
+        [int] $ServicePort = 5000,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Maximum time in seconds to wait for service ' +
+                'health check')
+        )]
+        [ValidateRange(10, 300)]
+        [int] $HealthCheckTimeout = 60,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Interval in seconds between health check ' +
+                'attempts')
+        )]
+        [ValidateRange(1, 10)]
+        [int] $HealthCheckInterval = 3,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Custom Docker image name to use'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $ImageName,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Minimum confidence threshold (0.0-1.0) for ' +
+                'object detection')
+        )]
+        [ValidateRange(0.0, 1.0)]
+        [double] $ConfidenceThreshold = 0.7,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('The language for generated descriptions and ' +
+                'keywords')
+        )]
+        [PSDefaultValue(Value = 'English')]
+        [ValidateSet(
+            'Afrikaans',
+            'Akan',
+            'Albanian',
+            'Amharic',
+            'Arabic',
+            'Armenian',
+            'Azerbaijani',
+            'Basque',
+            'Belarusian',
+            'Bemba',
+            'Bengali',
+            'Bihari',
+            'Bosnian',
+            'Breton',
+            'Bulgarian',
+            'Cambodian',
+            'Catalan',
+            'Cherokee',
+            'Chichewa',
+            'Chinese (Simplified)',
+            'Chinese (Traditional)',
+            'Corsican',
+            'Croatian',
+            'Czech',
+            'Danish',
+            'Dutch',
+            'English',
+            'Esperanto',
+            'Estonian',
+            'Ewe',
+            'Faroese',
+            'Filipino',
+            'Finnish',
+            'French',
+            'Frisian',
+            'Ga',
+            'Galician',
+            'Georgian',
+            'German',
+            'Greek',
+            'Guarani',
+            'Gujarati',
+            'Haitian Creole',
+            'Hausa',
+            'Hawaiian',
+            'Hebrew',
+            'Hindi',
+            'Hungarian',
+            'Icelandic',
+            'Igbo',
+            'Indonesian',
+            'Interlingua',
+            'Irish',
+            'Italian',
+            'Japanese',
+            'Javanese',
+            'Kannada',
+            'Kazakh',
+            'Kinyarwanda',
+            'Kirundi',
+            'Kongo',
+            'Korean',
+            'Krio (Sierra Leone)',
+            'Kurdish',
+            'Kurdish (Soranî)',
+            'Kyrgyz',
+            'Laothian',
+            'Latin',
+            'Latvian',
+            'Lingala',
+            'Lithuanian',
+            'Lozi',
+            'Luganda',
+            'Luo',
+            'Macedonian',
+            'Malagasy',
+            'Malay',
+            'Malayalam',
+            'Maltese',
+            'Maori',
+            'Marathi',
+            'Mauritian Creole',
+            'Moldavian',
+            'Mongolian',
+            'Montenegrin',
+            'Nepali',
+            'Nigerian Pidgin',
+            'Northern Sotho',
+            'Norwegian',
+            'Norwegian (Nynorsk)',
+            'Occitan',
+            'Oriya',
+            'Oromo',
+            'Pashto',
+            'Persian',
+            'Polish',
+            'Portuguese (Brazil)',
+            'Portuguese (Portugal)',
+            'Punjabi',
+            'Quechua',
+            'Romanian',
+            'Romansh',
+            'Runyakitara',
+            'Russian',
+            'Scots Gaelic',
+            'Serbian',
+            'Serbo-Croatian',
+            'Sesotho',
+            'Setswana',
+            'Seychellois Creole',
+            'Shona',
+            'Sindhi',
+            'Sinhalese',
+            'Slovak',
+            'Slovenian',
+            'Somali',
+            'Spanish',
+            'Spanish (Latin American)',
+            'Sundanese',
+            'Swahili',
+            'Swedish',
+            'Tajik',
+            'Tamil',
+            'Tatar',
+            'Telugu',
+            'Thai',
+            'Tigrinya',
+            'Tonga',
+            'Tshiluba',
+            'Tumbuka',
+            'Turkish',
+            'Turkmen',
+            'Twi',
+            'Uighur',
+            'Ukrainian',
+            'Urdu',
+            'Uzbek',
+            'Vietnamese',
+            'Welsh',
+            'Wolof',
+            'Xhosa',
+            'Yiddish',
+            'Yoruba',
+            'Zulu')]
+        [string] $Language,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipeline = $true,
+            HelpMessage = 'Name or partial path of the model to initialize'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
+        [string]$Model,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The LM-Studio model to use'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string]$HuggingFaceIdentifier,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Api endpoint url, defaults to ' +
+                'http://localhost:1234/v1/chat/completions')
+        )]
+        [string] $ApiEndpoint = $null,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The API key to use for the request'
+        )]
+        [string] $ApiKey = $null,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Timeout in seconds for the request, defaults to ' +
+                '24 hours')
+        )]
+        [int] $TimeoutSecond,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Maximum tokens in response (-1 for default)'
+        )]
+        [Alias('MaxTokens')]
+        [ValidateRange(-1, [int]::MaxValue)]
+        [int]$MaxToken, # = 8192,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Set a TTL (in seconds) for models loaded via API'
+        )]
+        [Alias('ttl')]
+        [ValidateRange(-1, [int]::MaxValue)]
+        [int]$TTLSeconds,
+        #######################################################################
+        [parameter(
+            Mandatory = $false,
+            HelpMessage = ('The directory containing face images organized ' +
+                'by person folders. If not specified, uses the configured ' +
+                'faces directory preference.')
+        )]
+        [string] $FacesDirectory,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Database path for preference data files'
+        )]
+        [string] $PreferencesDatabasePath,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Skip Docker initialization (used when already ' +
+                'called by parent function)')
         )]
         [switch] $NoDockerInitialize,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Force rebuild of Docker container and remove " +
-                          "existing data")
+            HelpMessage = ('Force rebuild of Docker container and remove ' +
+                'existing data')
         )]
-        [Alias("ForceRebuild")]
+        [Alias('ForceRebuild')]
         [switch] $Force,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use GPU-accelerated version (requires NVIDIA " +
-                          "GPU)")
+            HelpMessage = ('Use GPU-accelerated version (requires NVIDIA ' +
+                'GPU)')
         )]
         [switch] $UseGPU,
-        ###################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show Docker Desktop window during initialization"
+            HelpMessage = ('Show Docker + LM Studio window during ' +
+                'initialization')
         )]
-        [switch]$ShowWindow
-        ###################################################################
+        [switch]$ShowWindow,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('PassThru to return structured objects instead ' +
+                'of outputting to console')
+        )]
+        [Alias('pt')]
+        [switch]$PassThru,
+
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Detects changes in the faces directory and ' +
+                're-registers faces if needed')
+        )]
+        [switch] $AutoUpdateFaces,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Use alternative settings stored in session for ' +
+                'AI preferences like Language, Image collections, etc')
+        )]
+        [switch] $SessionOnly,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Clear alternative settings stored in session ' +
+                'for AI preferences like Language, Image collections, etc')
+        )]
+        [switch] $ClearSession,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Dont use alternative settings stored in ' +
+                'session for AI preferences like Language, Image ' +
+                'collections, etc')
+        )]
+        [Alias('FromPreferences')]
+        [switch] $SkipSession
+        #######################################################################
     )
 
     begin {
@@ -210,25 +481,6 @@ function Invoke-ImageScenesUpdate {
         Microsoft.PowerShell.Utility\Write-Verbose (
             "Processing images in directory: $path"
         )
-
-        # ensure that the DeepStack scene classification service is available
-        if (-not $NoDockerInitialize) {
-
-            Microsoft.PowerShell.Utility\Write-Verbose (
-                "Ensuring DeepStack scene classification service is available"
-            )
-
-            # copy parameter values for the EnsureDeepStack function call
-            $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-                -BoundParameters $PSBoundParameters `
-                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
-                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                    -Scope Local `
-                    -ErrorAction SilentlyContinue)
-
-            # initialize deepstack docker container if needed
-            $null = GenXdev.AI\EnsureDeepStack @ensureParams
-        }
     }
 
     process {
@@ -245,13 +497,15 @@ function Invoke-ImageScenesUpdate {
                 # store the full path to the current image for better readability
                 $image = $PSItem.FullName
                 $metadataFilePath = "$($PSItem.FullName):scenes.json"
+                # check if metadata file exists
+                $fileExists = [System.IO.File]::Exists($metadataFilePath)
                 # check if we have valid existing content
                 $hasValidContent = $false
                 if ($fileExists) {
                     try {
                         $content = [System.IO.File]::ReadAllText($metadataFilePath)
                         $existingData = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
-                        $hasValidContent = $existingData.scene -and $existingData.scene -ne "unknown" -and $existingData.success -eq $true
+                        $hasValidContent = $existingData.success -eq $true -or $existingData.scene -eq 'unknown'
                     }
                     catch {
                         # If JSON parsing fails, treat as invalid content
@@ -265,37 +519,43 @@ function Invoke-ImageScenesUpdate {
                 if ($shouldProcess) {
 
                     # obtain scene classification data using ai recognition technology
-                    $sceneData = GenXdev.AI\Get-ImageDetectedScenes `
-                        -ImagePath $image `
-                        -ConfidenceThreshold $ConfidenceThreshold `
-                        -NoDockerInitialize:$NoDockerInitialize
+                    $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                        -FunctionName 'GenXdev.AI\Get-ImageDetectedScenes' `
+                        -BoundParameters $PSBoundParameters `
+                        -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+
+                    $sceneData = Get-ImageDetectedScenes `
+                        @params `
+                        -ImagePath $image
+
+                    $NoDockerInitialize = $true;
 
                     # process the returned scene data into standardized format
                     $processedData = if ($sceneData -and
-                                         $sceneData.success -and
-                                         $sceneData.scene) {
+                        $sceneData.success -and
+                        $sceneData.scene) {
 
                         # create standardized data structure for scene metadata
                         @{
-                            success = $sceneData.success
-                            scene = $sceneData.scene
-                            label = $sceneData.label
-                            confidence = $sceneData.confidence
+                            success               = $sceneData.success
+                            scene                 = $sceneData.scene
+                            label                 = $sceneData.label
+                            confidence            = $sceneData.confidence
                             confidence_percentage = $sceneData.confidence_percentage
-                            processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+                            processed_at          = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                         }
 
                     } else {
 
                         # create error data structure when scene detection fails
                         @{
-                            success = $false
-                            scene = "unknown"
-                            label = "unknown"
-                            confidence = 0.0
+                            success               = $false
+                            scene                 = 'unknown'
+                            label                 = 'unknown'
+                            confidence            = 0.0
                             confidence_percentage = 0.0
-                            processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
-                            error = "Scene classification failed"
+                            processed_at          = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+                            error                 = 'Scene classification failed'
                         }
                     }
 
@@ -303,33 +563,32 @@ function Invoke-ImageScenesUpdate {
                     $jsonData = $processedData |
                         Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress
 
-                    # save the scene metadata to the alternative data stream
-                    $null = [System.IO.File]::WriteAllText($metadataFilePath,
-                                                           $jsonData)
+                        # save the scene metadata to the alternative data stream
+                        $null = [System.IO.File]::WriteAllText($metadataFilePath,
+                            $jsonData)
 
-                    # provide feedback on processing completion
-                    if ($processedData.success) {
+                        # provide feedback on processing completion
+                        if ($processedData.success) {
 
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Scene classification completed for: $image - " +
-                            "Scene: $($processedData.scene) " +
-                            "(Confidence: $($processedData.confidence_percentage)%)")
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                "Scene classification completed for: $image - " +
+                                "Scene: $($processedData.scene) " +
+                                "(Confidence: $($processedData.confidence_percentage)%)")
+
+                        } else {
+
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                "Scene classification failed for: $image")
+                        }
 
                     } else {
 
-                        Microsoft.PowerShell.Utility\Write-Warning (
-                            "Scene classification failed for: $image")
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Skipping already processed image: $image")
                     }
-
-                } else {
-
-                    Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Skipping already processed image: $image")
                 }
-            }
     }
 
     end {
     }
 }
-        ###############################################################################

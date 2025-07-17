@@ -1,15 +1,15 @@
-Pester\Describe "Get-LMStudioPaths basic integration tests" {
+﻿Pester\Describe 'Get-LMStudioPaths basic integration tests' {
 
-    Pester\It "Should pass PSScriptAnalyzer rules" {
+    Pester\It 'Should pass PSScriptAnalyzer rules' {
 
-# get the script path for analysis
+        # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Get-LMStudioPaths.ps1"
 
-# run analyzer with explicit settings
+        # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 
-        [string] $message = ""
+        [string] $message = ''
         $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
@@ -27,9 +27,9 @@ $message
 "@;
     }
 
-    Pester\It "Returns valid default paths that exist on the system" {
+    Pester\It 'Returns valid default paths that exist on the system' {
 
-        $result = GenXdev.AI\Get-LMStudioPaths
+        $result = Get-LMStudioPaths
 
         $result | Pester\Should -Not -BeNull
         [IO.File]::Exists($result.LMStudioExe) | Pester\Should -BeTrue

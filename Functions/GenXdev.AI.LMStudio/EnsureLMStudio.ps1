@@ -1,4 +1,4 @@
-################################################################################
+﻿################################################################################
 <#
 .SYNOPSIS
 Ensures LM Studio is properly initialized with the specified model.
@@ -32,6 +32,62 @@ The type of LLM query.
 .PARAMETER PreferencesDatabasePath
 Database path for preference data files.
 
+.PARAMETER Monitor
+The monitor to use, 0 = default, -1 is discard.
+
+.PARAMETER NoBorders
+Removes the borders of the window.
+
+.PARAMETER Width
+The initial width of the window.
+
+.PARAMETER Height
+The initial height of the window.
+
+.PARAMETER X
+The initial X position of the window.
+
+.PARAMETER Y
+The initial Y position of the window.
+
+.PARAMETER Left
+Place window on the left side of the screen.
+
+.PARAMETER Right
+Place window on the right side of the screen.
+
+.PARAMETER Top
+Place window on the top side of the screen.
+
+.PARAMETER Bottom
+Place window on the bottom side of the screen.
+
+.PARAMETER Centered
+Place window in the center of the screen.
+
+.PARAMETER Fullscreen
+Maximize the window.
+
+.PARAMETER RestoreFocus
+Restore PowerShell window focus.
+
+.PARAMETER SideBySide
+Will either set the window fullscreen on a different monitor than Powershell, or
+side by side with Powershell on the same monitor.
+
+.PARAMETER FocusWindow
+Focus the window after opening.
+
+.PARAMETER SetForeground
+Set the window to foreground after opening.
+
+.PARAMETER Maximize
+Maximize the window after positioning.
+
+.PARAMETER KeysToSend
+Keystrokes to send to the Window, see documentation for cmdlet
+GenXdev.Windows\Send-Key.
+
 .PARAMETER ShowWindow
 Show LM Studio window during initialization.
 
@@ -50,8 +106,11 @@ Clear alternative settings stored in session for AI preferences.
 .PARAMETER SkipSession
 Store settings only in persistent preferences without affecting session.
 
+.PARAMETER NoLMStudioInitialize
+Switch to skip LM-Studio initialization (used when already called by parent function).
+
 .EXAMPLE
-EnsureLMStudio -LMSQueryType "TextTranslate" -MaxToken 8192 -ShowWindow
+EnsureLMStudio -LLMQueryType "TextTranslation" -MaxToken 8192 -ShowWindow
 
 .EXAMPLE
 EnsureLMStudio -Model "mistral-7b" -TTLSeconds 3600 -Force
@@ -63,127 +122,273 @@ function EnsureLMStudio {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The model identifier or pattern to use for AI operations"
+            Position = 0,
+            HelpMessage = 'The model identifier or pattern to use for AI operations'
         )]
         [string] $Model,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The LM Studio specific model identifier"
+            HelpMessage = 'The LM Studio specific model identifier'
         )]
-        [Alias("ModelLMSGetIdentifier")]
+        [Alias('ModelLMSGetIdentifier')]
         [string] $HuggingFaceIdentifier,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The maximum number of tokens to use in AI operations"
+            HelpMessage = 'The maximum number of tokens to use in AI operations'
         )]
         [int] $MaxToken,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+            HelpMessage = 'The number of CPU cores to dedicate to AI operations'
         )]
         [int] $Cpu,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The time-to-live in seconds for cached AI responses"
+            HelpMessage = 'The time-to-live in seconds for cached AI responses'
         )]
         [int] $TTLSeconds,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The timeout in seconds for AI operations"
+            HelpMessage = 'The timeout in seconds for AI operations'
         )]
         [int] $TimeoutSeconds,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The type of LLM query"
+            HelpMessage = 'The type of LLM query'
         )]
         [ValidateSet(
-            "SimpleIntelligence",
-            "Knowledge",
-            "Pictures",
-            "TextTranslation",
-            "Coding",
-            "ToolUse"
+            'SimpleIntelligence',
+            'Knowledge',
+            'Pictures',
+            'TextTranslation',
+            'Coding',
+            'ToolUse'
         )]
-        [string] $LLMQueryType = "SimpleIntelligence",
+        [string] $LLMQueryType = 'SimpleIntelligence',
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show LM Studio window during initialization"
+            HelpMessage = 'The monitor to use, 0 = default, -1 is discard'
+        )]
+        [Alias('m', 'mon')]
+        [int] $Monitor,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'API key for authentication with LM Studio or model provider'
+        )]
+        [string] $ApiKey,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Removes the borders of the window'
+        )]
+        [Alias('nb')]
+        [switch] $NoBorders,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The initial width of the window'
+        )]
+        [int] $Width,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The initial height of the window'
+        )]
+        [int] $Height,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The initial X position of the window'
+        )]
+        [int] $X,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The initial Y position of the window'
+        )]
+        [int] $Y,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place window on the left side of the screen'
+        )]
+        [switch] $Left,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place window on the right side of the screen'
+        )]
+        [switch] $Right,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place window on the top side of the screen'
+        )]
+        [switch] $Top,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place window on the bottom side of the screen'
+        )]
+        [switch] $Bottom,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place window in the center of the screen'
+        )]
+        [switch] $Centered,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Sends F11 to the window'
+        )]
+        [Alias('fs')]
+        [switch]$FullScreen,
+
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Restore PowerShell window focus'
+        )]
+        [Alias('rf', 'bg')]
+        [switch] $RestoreFocus,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Will either set the window fullscreen on a different ' +
+                'monitor than Powershell, or side by side with Powershell on the ' +
+                'same monitor')
+        )]
+        [Alias('sbs')]
+        [switch]$SideBySide,
+
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Focus the window after opening'
+        )]
+        [Alias('fw','focus')]
+        [switch] $FocusWindow,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Set the window to foreground after opening'
+        )]
+        [Alias('fg')]
+        [switch] $SetForeground,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Maximize the window after positioning'
+        )]
+        [switch] $Maximize,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Keystrokes to send to the Window, see documentation ' +
+                'for cmdlet GenXdev.Windows\Send-Key')
+        )]
+        [string[]] $KeysToSend,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Escape control characters and modifiers when sending keys'
+        )]
+        [Alias('Escape')]
+        [switch] $SendKeyEscape,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Hold keyboard focus on target window when sending keys'
+        )]
+        [Alias('HoldKeyboardFocus')]
+        [switch] $SendKeyHoldKeyboardFocus,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Use Shift+Enter instead of Enter when sending keys'
+        )]
+        [Alias('UseShiftEnter')]
+        [switch] $SendKeyUseShiftEnter,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Delay between different input strings in ' +
+                'milliseconds when sending keys')
+        )]
+        [Alias('DelayMilliSeconds')]
+        [int] $SendKeyDelayMilliSeconds,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Show LM Studio window during initialization'
         )]
         [switch] $ShowWindow,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Force stop LM Studio before initialization"
+            HelpMessage = 'Force stop LM Studio before initialization'
         )]
         [switch] $Force,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Unloads the specified model instead of loading it"
+            HelpMessage = 'Unloads the specified model instead of loading it'
         )]
         [switch] $Unload,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for AI " +
-                "preferences")
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences')
         )]
         [switch] $SessionOnly,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Clear alternative settings stored in session for AI " +
-                "preferences")
+            HelpMessage = ('Clear alternative settings stored in session for AI ' +
+                'preferences')
         )]
         [switch] $ClearSession,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Store settings only in persistent preferences without " +
-                "affecting session")
+            HelpMessage = ('Store settings only in persistent preferences without ' +
+                'affecting session')
         )]
-        [Alias("FromPreferences")]
-        [switch] $SkipSession
-        ###############################################################################
+        [Alias('FromPreferences')]
+        [switch] $SkipSession,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Skip LM-Studio initialization (used when ' +
+                'already called by parent function)')
+        )]
+        [switch] $NoLMStudioInitialize
+        ###################################################################
     )
 
     begin {
 
-        # output verbose startup message with model information
-        Microsoft.PowerShell.Utility\Write-Verbose ("Starting EnsureLMStudio " +
-            "with Model: $Model")
-
-        # ensure default model parameter is set if not provided
-        if (-not $PSBoundParameters.ContainsKey("Model")) {
-
-            $null = $PSBoundParameters.Add("Model", "qwen2.5-14b-instruct")
-        }
-
-        # ensure default model identifier is set if not provided
-        if (-not $PSBoundParameters.ContainsKey("HuggingFaceIdentifier")) {
-
-            $null = $PSBoundParameters.Add("HuggingFaceIdentifier",
-                "qwen2.5-14b-instruct")
-        }
-
-        # ensure default max token value is set if not provided
-        if (-not $PSBoundParameters.ContainsKey("MaxToken")) {
-
-            $null = $PSBoundParameters.Add("MaxToken", 8192)
-        }
+        # validate that lm studio is accessible before proceeding
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            'Validating LM Studio accessibility before initialization'
+        )
     }
 
     process {
@@ -191,50 +396,25 @@ function EnsureLMStudio {
         # prepare parameters for model initialization by copying identical values
         $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Initialize-LMStudioModel" `
+            -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local -Name * -ErrorAction SilentlyContinue)
 
         # output verbose message before initializing the model
-        Microsoft.PowerShell.Utility\Write-Verbose ("Initializing LM Studio " +
-            "model with parameters")
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            'Initializing LM Studio model with parameters'
+        )
 
         # initialize the model with the prepared parameter arguments
-        $null = GenXdev.AI\Initialize-LMStudioModel @invocationArguments
+        $null = Initialize-LMStudioModel @invocationArguments
     }
 
     end {
 
-        # show window if requested by the user
-        if ($ShowWindow) {
-
-            try {
-
-                # get the lm studio window handle by process name
-                $windowHandle = (GenXDev.Windows\Get-Window `
-                    -ProcessName "LM Studio")
-
-                # exit if no window was found
-                if ($null -eq $windowHandle) { return }
-
-                # show the window if it was hidden
-                $null = $windowHandle.Show()
-
-                # restore the window if it was minimized
-                $null = $windowHandle.Restore()
-
-                # position the window on the right side of the primary monitor
-                GenXDev.Windows\Set-WindowPosition -WindowHelper $windowHandle `
-                    -Monitor 0 -Right
-
-                # position another window on the left side of the primary monitor
-                GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
-            }
-            catch {
-
-                # silently ignore any window positioning errors
-            }
-        }
+        # confirm successful completion of model initialization
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            'LM Studio model initialization completed successfully'
+        )
     }
 }
 ################################################################################

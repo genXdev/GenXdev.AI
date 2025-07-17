@@ -1,4 +1,4 @@
-################################################################################
+﻿################################################################################
 <#
 .SYNOPSIS
 Adds directories to the configured image directories for GenXdev.AI operations.
@@ -50,48 +50,47 @@ function Add-ImageDirectories {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
 
-    [Alias("addimgdir")]
+    [Alias('addimgdir')]
 
     param(
-        ################################################################################
+        #
         [Parameter(
             Mandatory = $true,
             Position = 0,
             ValueFromPipeline = $true,
-            HelpMessage = "Array of directory paths to add to image directories"
+            HelpMessage = 'Array of directory paths to add to image directories'
         )]
-        [ValidateNotNullOrEmpty()]
-        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
-        [string[]] $ImageDirectories,
-        ################################################################################
+        [Alias('imagespath', 'directories', 'imgdirs', 'imagedirectory')]
+        [string[]] $ImageDirectories,        ################################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for AI " +
-                          "preferences like Language, Image collections, etc")
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
         [switch] $SessionOnly,
-        ################################################################################
+        #
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Clear alternative settings stored in session for AI " +
-                          "preferences like Language, Image collections, etc")
+            HelpMessage = ('Clear alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
         [switch] $ClearSession,
-        ################################################################################
+        #
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
-        ################################################################################
+        #
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Dont use alternative settings stored in session for " +
-                          "AI preferences like Language, Image collections, etc")
+            HelpMessage = ('Dont use alternative settings stored in session for ' +
+                'AI preferences like Language, Image collections, etc')
         )]
-        [Alias("FromPreferences")]
+        [Alias('FromPreferences')]
         [switch] $SkipSession
-        ################################################################################
+        #
     )
 
     begin {
@@ -99,12 +98,12 @@ function Add-ImageDirectories {
         # retrieve current image directories configuration
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-AIImageCollection" `
+            -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local `
                 -ErrorAction SilentlyContinue)
 
-        $currentConfig = GenXdev.AI\Get-AIImageCollection @params
+        $currentConfig = Get-AIImageCollection @params
 
         # initialize new collection to store all directories including existing ones
         $newDirectories = [System.Collections.Generic.List[string]]::new()
@@ -117,7 +116,7 @@ function Add-ImageDirectories {
 
         # output current configuration state for debugging purposes
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Current image directories: " +
+            'Current image directories: ' +
             "[$($currentConfig -join ', ')]"
         )
     }
@@ -163,28 +162,28 @@ function Add-ImageDirectories {
 
         # request user confirmation before modifying configuration
         if ($PSCmdlet.ShouldProcess(
-            "GenXdev.AI Module Configuration",
-            ("Add directories to image directories: " +
-            "[$($ImageDirectories -join ', ')]")
-        )) {
+                'GenXdev.AI Module Configuration',
+            ('Add directories to image directories: ' +
+                "[$($ImageDirectories -join ', ')]")
+            )) {
 
             # prepare parameters for set operation using identical parameter copying
             $setParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "GenXdev.AI\Set-AIImageCollection" `
+                -FunctionName 'GenXdev.AI\Set-AIImageCollection' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue)
 
             # update configuration using the dedicated setter function
-            GenXdev.AI\Set-AIImageCollection `
+            Set-AIImageCollection `
                 -ImageDirectories $finalDirectories `
                 @setParams
 
             # display success confirmation to user with statistics
             Microsoft.PowerShell.Utility\Write-Host (
                 "Added $($ImageDirectories.Count) directories to image " +
-                "directories configuration. Total directories: " +
+                'directories configuration. Total directories: ' +
                 "$($finalDirectories.Count)"
             ) -ForegroundColor Green
         }

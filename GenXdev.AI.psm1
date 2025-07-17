@@ -23,4 +23,5 @@
 . "$PSScriptRoot\Functions\GenXdev.AI\Set-AILLMSettings.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Set-ClipboardFiles.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Set-GenXdevAICommandNotFoundAction.ps1"
+. "$PSScriptRoot\Functions\GenXdev.AI\Start-GenXdevMCPServer.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Test-DeepLinkImageFile.ps1"

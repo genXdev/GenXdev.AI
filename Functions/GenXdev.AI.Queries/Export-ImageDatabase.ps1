@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Initializes and populates the SQLite database by discovering images directly.
@@ -71,7 +71,7 @@ indexcachedimages
 function Export-ImageDatabase {
 
     [CmdletBinding()]
-    [Alias("indexcachedimages", "Inititalize-ImageDatabase", "Recreate-ImageIndex")]
+    [Alias('indexcachedimages', 'Inititalize-ImageDatabase', 'Recreate-ImageIndex')]
 
     param(
         ###############################################################################
@@ -79,31 +79,30 @@ function Export-ImageDatabase {
             Position = 0,
             Mandatory = $false,
             ValueFromPipeline = $true,
-            HelpMessage = ("Accepts search results from a Find-Image " +
-                "call to regenerate the view.")
+            HelpMessage = ('Accepts search results from a Find-Image ' +
+                'call to regenerate the view.')
         )]
         [System.Object[]] $InputObject,
         ###############################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = ("The path to the image database file. If not " +
-                "specified, a default path is used.")
+            HelpMessage = ('The path to the image database file. If not ' +
+                'specified, a default path is used.')
         )]
         [string] $DatabaseFilePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of directory paths to search for images"
+            HelpMessage = 'Array of directory paths to search for images'
         )]
-        [ValidateNotNullOrEmpty()]
-        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
-        [string[]] $ImageDirectories,
+        [Alias('imagespath', 'directories', 'imgdirs', 'imagedirectory')]
+        [string[]] $ImageDirectories,        
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = (
-                "Array of directory path-like search strings to filter images by " +
+                'Array of directory path-like search strings to filter images by ' +
                 "path (SQL LIKE patterns, e.g. '%\\2024\\%')"
             )
         )]
@@ -111,105 +110,107 @@ function Export-ImageDatabase {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Language for descriptions and keywords."
+            HelpMessage = 'Language for descriptions and keywords.'
         )]
         [ValidateSet(
-            "Afrikaans", "Akan", "Albanian", "Amharic", "Arabic", "Armenian",
-            "Azerbaijani", "Basque", "Belarusian", "Bemba", "Bengali", "Bihari",
-            "Bork, bork, bork!", "Bosnian", "Breton", "Bulgarian", "Cambodian",
-            "Catalan", "Cherokee", "Chichewa", "Chinese (Simplified)",
-            "Chinese (Traditional)", "Corsican", "Croatian", "Czech", "Danish",
-            "Dutch", "Elmer Fudd", "English", "Esperanto", "Estonian", "Ewe",
-            "Faroese", "Filipino", "Finnish", "French", "Frisian", "Ga",
-            "Galician", "Georgian", "German", "Greek", "Guarani", "Gujarati",
-            "Hacker", "Haitian Creole", "Hausa", "Hawaiian", "Hebrew", "Hindi",
-            "Hungarian", "Icelandic", "Igbo", "Indonesian", "Interlingua",
-            "Irish", "Italian", "Japanese", "Javanese", "Kannada", "Kazakh",
-            "Kinyarwanda", "Kirundi", "Klingon", "Kongo", "Korean",
-            "Krio (Sierra Leone)", "Kurdish", "Kurdish (Soranî)", "Kyrgyz",
-            "Laothian", "Latin", "Latvian", "Lingala", "Lithuanian", "Lozi",
-            "Luganda", "Luo", "Macedonian", "Malagasy", "Malay", "Malayalam",
-            "Maltese", "Maori", "Marathi", "Mauritian Creole", "Moldavian",
-            "Mongolian", "Montenegrin", "Nepali", "Nigerian Pidgin",
-            "Northern Sotho", "Norwegian", "Norwegian (Nynorsk)", "Occitan",
-            "Oriya", "Oromo", "Pashto", "Persian", "Pirate", "Polish",
-            "Portuguese (Brazil)", "Portuguese (Portugal)", "Punjabi", "Quechua",
-            "Romanian", "Romansh", "Runyakitara", "Russian", "Scots Gaelic",
-            "Serbian", "Serbo-Croatian", "Sesotho", "Setswana",
-            "Seychellois Creole", "Shona", "Sindhi", "Sinhalese", "Slovak",
-            "Slovenian", "Somali", "Spanish", "Spanish (Latin American)",
-            "Sundanese", "Swahili", "Swedish", "Tajik", "Tamil", "Tatar",
-            "Telugu", "Thai", "Tigrinya", "Tonga", "Tshiluba", "Tumbuka",
-            "Turkish", "Turkmen", "Twi", "Uighur", "Ukrainian", "Urdu", "Uzbek",
-            "Vietnamese", "Welsh", "Wolof", "Xhosa", "Yiddish", "Yoruba", "Zulu"
+            'Afrikaans', 'Akan', 'Albanian', 'Amharic', 'Arabic', 'Armenian',
+            'Azerbaijani', 'Basque', 'Belarusian', 'Bemba', 'Bengali', 'Bihari',
+            'Bork, bork, bork!', 'Bosnian', 'Breton', 'Bulgarian', 'Cambodian',
+            'Catalan', 'Cherokee', 'Chichewa', 'Chinese (Simplified)',
+            'Chinese (Traditional)', 'Corsican', 'Croatian', 'Czech', 'Danish',
+            'Dutch', 'Elmer Fudd', 'English', 'Esperanto', 'Estonian', 'Ewe',
+            'Faroese', 'Filipino', 'Finnish', 'French', 'Frisian', 'Ga',
+            'Galician', 'Georgian', 'German', 'Greek', 'Guarani', 'Gujarati',
+            'Hacker', 'Haitian Creole', 'Hausa', 'Hawaiian', 'Hebrew', 'Hindi',
+            'Hungarian', 'Icelandic', 'Igbo', 'Indonesian', 'Interlingua',
+            'Irish', 'Italian', 'Japanese', 'Javanese', 'Kannada', 'Kazakh',
+            'Kinyarwanda', 'Kirundi', 'Klingon', 'Kongo', 'Korean',
+            'Krio (Sierra Leone)', 'Kurdish', 'Kurdish (Soranî)', 'Kyrgyz',
+            'Laothian', 'Latin', 'Latvian', 'Lingala', 'Lithuanian', 'Lozi',
+            'Luganda', 'Luo', 'Macedonian', 'Malagasy', 'Malay', 'Malayalam',
+            'Maltese', 'Maori', 'Marathi', 'Mauritian Creole', 'Moldavian',
+            'Mongolian', 'Montenegrin', 'Nepali', 'Nigerian Pidgin',
+            'Northern Sotho', 'Norwegian', 'Norwegian (Nynorsk)', 'Occitan',
+            'Oriya', 'Oromo', 'Pashto', 'Persian', 'Pirate', 'Polish',
+            'Portuguese (Brazil)', 'Portuguese (Portugal)', 'Punjabi', 'Quechua',
+            'Romanian', 'Romansh', 'Runyakitara', 'Russian', 'Scots Gaelic',
+            'Serbian', 'Serbo-Croatian', 'Sesotho', 'Setswana',
+            'Seychellois Creole', 'Shona', 'Sindhi', 'Sinhalese', 'Slovak',
+            'Slovenian', 'Somali', 'Spanish', 'Spanish (Latin American)',
+            'Sundanese', 'Swahili', 'Swedish', 'Tajik', 'Tamil', 'Tatar',
+            'Telugu', 'Thai', 'Tigrinya', 'Tonga', 'Tshiluba', 'Tumbuka',
+            'Turkish', 'Turkmen', 'Twi', 'Uighur', 'Ukrainian', 'Urdu', 'Uzbek',
+            'Vietnamese', 'Welsh', 'Wolof', 'Xhosa', 'Yiddish', 'Yoruba', 'Zulu'
         )]
         [string] $Language,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The directory containing face images organized by " +
-                        "person folders. If not specified, uses the " +
-                        "configured faces directory preference.")
+            HelpMessage = ('The directory containing face images organized by ' +
+                'person folders. If not specified, uses the ' +
+                'configured faces directory preference.')
         )]
         [string] $FacesDirectory,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Embed images as base64."
+            HelpMessage = 'Embed images as base64.'
         )]
         [switch] $EmbedImages,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Force rebuild of the image index database."
+            HelpMessage = 'Force rebuild of the image index database.'
         )]
         [switch] $ForceIndexRebuild,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Switch to disable fallback behavior."
+            HelpMessage = 'Switch to disable fallback behavior.'
         )]
         [switch] $NoFallback,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Switch to skip database initialization and rebuilding."
+            HelpMessage = 'Switch to skip database initialization and rebuilding.'
         )]
         [switch] $NeverRebuild,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for AI " +
-                "preferences like Language, Image collections, etc")
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
         [switch] $SessionOnly,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Clear alternative settings stored in session for AI " +
-                "preferences like Language, Image collections, etc")
+            HelpMessage = ('Clear alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
         [switch] $ClearSession,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Dont use alternative settings stored in session for " +
-                "AI preferences like Language, Image collections, etc")
+            HelpMessage = ('Dont use alternative settings stored in session for ' +
+                'AI preferences like Language, Image collections, etc')
         )]
-        [Alias("FromPreferences")]
+        [Alias('FromPreferences')]
         [switch] $SkipSession,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("LM Studio window during " +
-                "initialization")
+            HelpMessage = ('LM Studio window during ' +
+                'initialization')
         )]
+        [Alias('sw')]
         [switch]$ShowWindow
     )
 
@@ -218,30 +219,30 @@ function Export-ImageDatabase {
         # determine database file path if not provided
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-ImageDatabasePath" `
+            -FunctionName 'GenXdev.AI\Get-ImageDatabasePath' `
             -DefaultValues (
-                Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
-                    -ErrorAction SilentlyContinue
+            Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
+                -ErrorAction SilentlyContinue
         )
 
-        $DatabaseFilePath = GenXdev.AI\Get-ImageDatabasePath @params -NeverRebuild
+        $DatabaseFilePath = Get-ImageDatabasePath @params -NeverRebuild
 
         # retrieve configured image directories if not provided
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-AIImageCollection" `
+            -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
             -DefaultValues (
-                Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
-                    -ErrorAction SilentlyContinue
-            )
+            Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
+                -ErrorAction SilentlyContinue
+        )
 
-        $ImageDirectories = GenXdev.AI\Get-AIImageCollection @params
+        $ImageDirectories = Get-AIImageCollection @params
 
         # output that the image index database is being recreated
         Microsoft.PowerShell.Utility\Write-Host (
             "Recreating image index database`r`n" +
             "Path = $DatabaseFilePath`r`n" +
-            "Image directories = $(($ImageDirectories -join ", "))`r`n"
+            "Image directories = $(($ImageDirectories -join ', '))`r`n"
         ) -ForegroundColor Cyan
 
         # output the directories being used for image discovery
@@ -254,30 +255,30 @@ function Export-ImageDatabase {
         if ($EmbedImages) {
 
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Image embedding: ENABLED - Images will be stored as binary " +
-                "data in database"
+                'Image embedding: ENABLED - Images will be stored as binary ' +
+                'data in database'
             )
         } else {
 
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Image embedding: DISABLED - Only file paths will be stored"
+                'Image embedding: DISABLED - Only file paths will be stored'
             )
         }
 
         # define schema version constant
-        $SCHEMA_VERSION = "1.0.0.3"
+        $SCHEMA_VERSION = '1.0.0.3'
 
         # initialize info object for tracking found results
         $Info = @{
             FoundResults = $false
-            TotalImages = 0
+            TotalImages  = 0
         }
 
         # verify database file path is not empty
         if ([String]::IsNullOrWhiteSpace($DatabaseFilePath)) {
 
             Microsoft.PowerShell.Utility\Write-Error (
-                "Failed to retrieve database file path."
+                'Failed to retrieve database file path.'
             )
             return
         }
@@ -324,21 +325,21 @@ function Export-ImageDatabase {
                     # attempt to move journal file to backup location
                     if (-not (GenXdev.FileSystem\Move-ItemWithTracking $journalFilePath "$DatabaseBackupFilePath-journal" -Force)) {
 
-                        Microsoft.PowerShell.Utility\Write-Warning (
+                        Microsoft.PowerShell.Utility\Write-Verbose (
                             "Failed to move journal file: $journalFilePath"
                         )
 
                         # move renamed file back if journal move failed
                         if (-not (GenXdev.FileSystem\Move-ItemWithTracking -Path $DatabaseBackupFilePath -Destination $DatabaseFilePath -Force -ErrorAction SilentlyContinue)) {
 
-                            Microsoft.PowerShell.Utility\Write-Warning (
-                                "Failed to restore original database file: " +
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                'Failed to restore original database file: ' +
                                 "$DatabaseFilePath"
                             )
                         } else {
 
                             Microsoft.PowerShell.Utility\Write-Verbose (
-                                "Restored original database file: " +
+                                'Restored original database file: ' +
                                 "$DatabaseFilePath"
                             )
                         }
@@ -358,12 +359,12 @@ function Export-ImageDatabase {
         )
 
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Metadata path: " +
+            'Metadata path: ' +
             "$(($ImageDirectories | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10))"
         )
 
         # define table creation script for main images table
-        $createImagesTable = @"
+        $createImagesTable = @'
 CREATE TABLE IF NOT EXISTS Images (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     path TEXT UNIQUE NOT NULL,
@@ -390,30 +391,30 @@ CREATE TABLE IF NOT EXISTS Images (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-"@
+'@
 
         # create keywords lookup table for fast searching
-        $createKeywordsTable = @"
+        $createKeywordsTable = @'
 CREATE TABLE IF NOT EXISTS ImageKeywords (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     image_id INTEGER NOT NULL,
     keyword TEXT NOT NULL,
     FOREIGN KEY (image_id) REFERENCES Images(id) ON DELETE CASCADE
 );
-"@
+'@
 
         # create people lookup table for face recognition data
-        $createPeopleTable = @"
+        $createPeopleTable = @'
 CREATE TABLE IF NOT EXISTS ImagePeople (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     image_id INTEGER NOT NULL,
     person_name TEXT NOT NULL,
     FOREIGN KEY (image_id) REFERENCES Images(id) ON DELETE CASCADE
 );
-"@
+'@
 
         # create objects lookup table for detected objects
-        $createObjectsTable = @"
+        $createObjectsTable = @'
 CREATE TABLE IF NOT EXISTS ImageObjects (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     image_id INTEGER NOT NULL,
@@ -421,10 +422,10 @@ CREATE TABLE IF NOT EXISTS ImageObjects (
     object_count INTEGER DEFAULT 1,
     FOREIGN KEY (image_id) REFERENCES Images(id) ON DELETE CASCADE
 );
-"@
+'@
 
         # create scenes lookup table for scene detection data
-        $createScenesTable = @"
+        $createScenesTable = @'
 CREATE TABLE IF NOT EXISTS ImageScenes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     image_id INTEGER NOT NULL,
@@ -432,18 +433,18 @@ CREATE TABLE IF NOT EXISTS ImageScenes (
     confidence REAL,
     FOREIGN KEY (image_id) REFERENCES Images(id) ON DELETE CASCADE
 );
-"@
+'@
 
         # create schema version table for database versioning
-        $createSchemaVersionTable = @"
+        $createSchemaVersionTable = @'
 CREATE TABLE IF NOT EXISTS ImageSchemaVersion (
     id INTEGER PRIMARY KEY CHECK (id = 1),
     version TEXT NOT NULL
 );
-"@
+'@
 
         # create comprehensive indexes for super fast searching with no table scans
-        $createIndexes = @"
+        $createIndexes = @'
 -- ===================================================================
 -- PRIMARY SINGLE-COLUMN INDEXES (Most frequently used filters)
 -- ===================================================================
@@ -596,7 +597,7 @@ CREATE INDEX IF NOT EXISTS idx_images_join_optimize ON Images(
 -- Range queries on confidence scores
 CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_confidence, scene_label, path)
     WHERE scene_confidence > 0;
-"@
+'@
     }
 
     process {
@@ -608,19 +609,19 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
         if (Microsoft.PowerShell.Management\Test-Path $DatabaseFilePath) {
 
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Deleting existing database file for clean rebuild..."
+                'Deleting existing database file for clean rebuild...'
             )
 
             Microsoft.PowerShell.Management\Remove-Item $DatabaseFilePath -Force
         }
 
         # create new database using specialized function
-        Microsoft.PowerShell.Utility\Write-Verbose "Creating new database..."
+        Microsoft.PowerShell.Utility\Write-Verbose 'Creating new database...'
 
-        GenXdev.Data\New-SQLiteDatabase -DatabaseFilePath $DatabaseFilePath
+        New-SQLiteDatabase -DatabaseFilePath $DatabaseFilePath
 
         # create tables without indexes initially for faster inserts
-        Microsoft.PowerShell.Utility\Write-Verbose "Creating database tables..."
+        Microsoft.PowerShell.Utility\Write-Verbose 'Creating database tables...'
 
         $createTablesQueries = @(
             $createImagesTable,
@@ -631,54 +632,54 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             $createSchemaVersionTable
         )
 
-        GenXdev.Data\Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath `
+        Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath `
             -Queries $createTablesQueries
 
         # get images using Find-Image for direct integration
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Discovering images using Find-Image..."
+            'Discovering images using Find-Image...'
         )
 
         # create transaction for batch operations to improve performance
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.Data\Get-SQLiteTransaction" `
+            -FunctionName 'GenXdev.Data\Get-SQLiteTransaction' `
             -DefaultValues (
-                Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
-                    -ErrorAction SilentlyContinue
-            )
+            Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
+                -ErrorAction SilentlyContinue
+        )
 
-        $transaction = GenXdev.Data\Get-SQLiteTransaction @params
+        $transaction = Get-SQLiteTransaction @params
 
         # prepare image insertion query based on whether embedding is enabled
         $insertQuery = if ($EmbedImages) {
 
-            "INSERT INTO Images (path, image_data, has_explicit_content, " +
-            "has_nudity, short_description, long_description, picture_type, " +
-            "overall_mood_of_image, style_type, description_keywords, " +
-            "people_count, people_faces, people_json, objects_count, " +
-            "objects_list, objects_json, object_counts, scene_label, " +
-            "scene_confidence, scene_confidence_percentage, " +
-            "scene_processed_at) VALUES (@path, @image_data, @explicit, " +
-            "@nudity, @short_desc, @long_desc, @pic_type, @mood, @style, " +
-            "@desc_keywords, @people_count, @people_faces, @people_json, " +
-            "@objects_count, @objects_list, @objects_json, @object_counts, " +
-            "@scene_label, @scene_confidence, @scene_conf_pct, " +
-            "@scene_processed)"
+            'INSERT INTO Images (path, image_data, has_explicit_content, ' +
+            'has_nudity, short_description, long_description, picture_type, ' +
+            'overall_mood_of_image, style_type, description_keywords, ' +
+            'people_count, people_faces, people_json, objects_count, ' +
+            'objects_list, objects_json, object_counts, scene_label, ' +
+            'scene_confidence, scene_confidence_percentage, ' +
+            'scene_processed_at) VALUES (@path, @image_data, @explicit, ' +
+            '@nudity, @short_desc, @long_desc, @pic_type, @mood, @style, ' +
+            '@desc_keywords, @people_count, @people_faces, @people_json, ' +
+            '@objects_count, @objects_list, @objects_json, @object_counts, ' +
+            '@scene_label, @scene_confidence, @scene_conf_pct, ' +
+            '@scene_processed)'
         } else {
 
-            "INSERT INTO Images (path, has_explicit_content, has_nudity, " +
-            "short_description, long_description, picture_type, " +
-            "overall_mood_of_image, style_type, description_keywords, " +
-            "people_count, people_faces, people_json, objects_count, " +
-            "objects_list, objects_json, object_counts, scene_label, " +
-            "scene_confidence, scene_confidence_percentage, " +
-            "scene_processed_at) VALUES (@path, @explicit, @nudity, " +
-            "@short_desc, @long_desc, @pic_type, @mood, @style, " +
-            "@desc_keywords, @people_count, @people_faces, @people_json, " +
-            "@objects_count, @objects_list, @objects_json, @object_counts, " +
-            "@scene_label, @scene_confidence, @scene_conf_pct, " +
-            "@scene_processed)"
+            'INSERT INTO Images (path, has_explicit_content, has_nudity, ' +
+            'short_description, long_description, picture_type, ' +
+            'overall_mood_of_image, style_type, description_keywords, ' +
+            'people_count, people_faces, people_json, objects_count, ' +
+            'objects_list, objects_json, object_counts, scene_label, ' +
+            'scene_confidence, scene_confidence_percentage, ' +
+            'scene_processed_at) VALUES (@path, @explicit, @nudity, ' +
+            '@short_desc, @long_desc, @pic_type, @mood, @style, ' +
+            '@desc_keywords, @people_count, @people_faces, @people_json, ' +
+            '@objects_count, @objects_list, @objects_json, @object_counts, ' +
+            '@scene_label, @scene_confidence, @scene_conf_pct, ' +
+            '@scene_processed)'
         }
 
         # define internal function to import images from various sources
@@ -691,22 +692,22 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             # copy identical parameter values for Find-Image function call
             $findImageParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "GenXdev.AI\Find-Image" `
+                -FunctionName 'GenXdev.AI\Find-Image' `
                 -DefaultValues (
-                    Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
-                        -ErrorAction SilentlyContinue
-                )
+                Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
+                    -ErrorAction SilentlyContinue
+            )
 
             # set image directories for Find-Image from configured sources
             $imageCollectionParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "GenXdev.AI\Get-AIImageCollection" `
+                -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
                 -DefaultValues (
-                    Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
-                        -ErrorAction SilentlyContinue
-                )
+                Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
+                    -ErrorAction SilentlyContinue
+            )
 
-            $findImageParams.ImageDirectories = GenXdev.AI\Get-AIImageCollection @imageCollectionParams
+            $findImageParams.ImageDirectories = Get-AIImageCollection @imageCollectionParams
 
             # prepare lookup table inserts using strongly typed collections
             [System.Collections.Generic.List[String]] $lookupQueries = [System.Collections.Generic.List[String]]::new()
@@ -728,47 +729,47 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
 
                         # convert image object to json and back for deep copy to prevent modification
                         $image = $image |
-                            Microsoft.PowerShell.Utility\ConvertTo-Json -depth 20 |
+                            Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 20 |
                             Microsoft.PowerShell.Utility\ConvertFrom-Json
 
                         $Info.TotalImages++
 
                         # build parameters for main image record insert with null checks
                         $imageParams = @{
-                            "path"            = $image.path
-                            "explicit"        = if ($image.description -and $image.description.has_explicit_content) { 1 } else { 0 }
-                            "nudity"          = if ($image.description -and $image.description.has_nudity) { 1 } else { 0 }
-                            "short_desc"      = if ($image.description) { $image.description.short_description } else { "" }
-                            "long_desc"       = if ($image.description) { $image.description.long_description } else { "" }
-                            "pic_type"        = if ($image.description) { $image.description.picture_type } else { "" }
-                            "mood"            = if ($image.description) { $image.description.overall_mood_of_image } else { "" }
-                            "style"           = if ($image.description) { $image.description.style_type } else { "" }
-                            "desc_keywords"   = if ($image.description -and $image.description.keywords) {
+                            'path'             = $image.path
+                            'explicit'         = if ($image.description -and $image.description.has_explicit_content) { 1 } else { 0 }
+                            'nudity'           = if ($image.description -and $image.description.has_nudity) { 1 } else { 0 }
+                            'short_desc'       = if ($image.description) { $image.description.short_description } else { '' }
+                            'long_desc'        = if ($image.description) { $image.description.long_description } else { '' }
+                            'pic_type'         = if ($image.description) { $image.description.picture_type } else { '' }
+                            'mood'             = if ($image.description) { $image.description.overall_mood_of_image } else { '' }
+                            'style'            = if ($image.description) { $image.description.style_type } else { '' }
+                            'desc_keywords'    = if ($image.description -and $image.description.keywords) {
                                 if ($image.description.keywords.Count -gt 0) {
                                     $image.description.keywords | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20
-                                } else { "[]" }
-                            } else { "[]" }
-                            "people_count"    = if ($image.people) { $image.people.count } else { 0 }
-                            "people_faces"    = if ($image.people -and $image.people.faces) {
+                                } else { '[]' }
+                            } else { '[]' }
+                            'people_count'     = if ($image.people) { $image.people.count } else { 0 }
+                            'people_faces'     = if ($image.people -and $image.people.faces) {
                                 if ($image.people.faces.Count -gt 0) {
                                     $image.people.faces | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20
-                                } else { "[]" }
-                            } else { "[]" }
-                            "people_json"     = if ($image.people) { $image.people | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 } else { '{}' }
-                            "objects_count"   = if ($image.objects) { $image.objects.count } else { 0 }
-                            "objects_list"    = if ($image.objects -and $image.objects.objects) {
+                                } else { '[]' }
+                            } else { '[]' }
+                            'people_json'      = if ($image.people) { $image.people | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 } else { '{}' }
+                            'objects_count'    = if ($image.objects) { $image.objects.count } else { 0 }
+                            'objects_list'     = if ($image.objects -and $image.objects.objects) {
                                 if ($image.objects.objects.Count -gt 0) {
                                     $image.objects.objects | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20
-                                } else { "[]" }
-                            } else { "[]" }
-                            "objects_json"    = if ($image.objects) { $image.objects | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 } else { '{}' }
-                            "object_counts"   = if ($image.objects -and $image.objects.object_counts) {
+                                } else { '[]' }
+                            } else { '[]' }
+                            'objects_json'     = if ($image.objects) { $image.objects | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 } else { '{}' }
+                            'object_counts'    = if ($image.objects -and $image.objects.object_counts) {
                                 $image.objects.object_counts | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20
-                            } else { "{}" }
-                            "scene_label"     = if ($image.scenes) { $image.scenes.label } else { "" }
-                            "scene_confidence" = if ($image.scenes) { $image.scenes.confidence } else { 0 }
-                            "scene_conf_pct"   = if ($image.scenes) { $image.scenes.confidence_percentage } else { 0 }
-                            "scene_processed"  = if ($image.scenes) { $image.scenes.processed_at } else { "" }
+                            } else { '{}' }
+                            'scene_label'      = if ($image.scenes) { $image.scenes.label } else { '' }
+                            'scene_confidence' = if ($image.scenes) { $image.scenes.confidence } else { 0 }
+                            'scene_conf_pct'   = if ($image.scenes) { $image.scenes.confidence_percentage } else { 0 }
+                            'scene_processed'  = if ($image.scenes) { $image.scenes.processed_at } else { '' }
                         }
 
                         # add image data if embedding is enabled for binary storage
@@ -784,7 +785,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                                     )
 
                                     $imageBytes = [System.IO.File]::ReadAllBytes($image.path)
-                                    $imageParams["image_data"] = $imageBytes
+                                    $imageParams['image_data'] = $imageBytes
 
                                     Microsoft.PowerShell.Utility\Write-Verbose (
                                         "Embedded $($imageBytes.Length) bytes for " +
@@ -792,28 +793,28 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                                     )
                                 } else {
 
-                                    Microsoft.PowerShell.Utility\Write-Warning (
-                                        "Image file not found for embedding: " +
+                                    Microsoft.PowerShell.Utility\Write-Verbose (
+                                        'Image file not found for embedding: ' +
                                         "$($image.path)"
                                     )
 
-                                    $imageParams["image_data"] = $null
+                                    $imageParams['image_data'] = $null
                                 }
                             } catch {
 
-                                Microsoft.PowerShell.Utility\Write-Warning (
-                                    "Failed to read image data for embedding: " +
+                                Microsoft.PowerShell.Utility\Write-Verbose (
+                                    'Failed to read image data for embedding: ' +
                                     "$($image.path) - $($_.Exception.Message)"
                                 )
 
-                                $imageParams["image_data"] = $null
+                                $imageParams['image_data'] = $null
                             }
                         }
 
                         # execute the insert and get the new ID for foreign key references
-                        $queries = @($insertQuery, "SELECT last_insert_rowid() AS newId;")
+                        $queries = @($insertQuery, 'SELECT last_insert_rowid() AS newId;')
 
-                        $result = GenXdev.Data\Invoke-SQLiteQuery -Transaction $transaction `
+                        $result = Invoke-SQLiteQuery -Transaction $transaction `
                             -Queries $queries -SqlParameters @($imageParams)
 
                         $imageId = $result |
@@ -828,18 +829,18 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
 
                             foreach ($keyword in $image.keywords) {
 
-                                $lookupQueries.Add("INSERT INTO ImageKeywords " +
-                                    "(image_id, keyword) VALUES (@image_id, @keyword)")
+                                $lookupQueries.Add('INSERT INTO ImageKeywords ' +
+                                    '(image_id, keyword) VALUES (@image_id, @keyword)')
 
                                 $lookupParams.Add(@{
-                                    "image_id" = $imageId;
-                                    "keyword" = $keyword
-                                })
+                                        'image_id' = $imageId;
+                                        'keyword'  = $keyword
+                                    })
                             }
                         }
 
                         # insert people data by parsing faces string if needed
-                        if ($image.people -and $image.people.faces -and $image.people.faces -ne "" -and $image.people.faces.Count -gt 0) {
+                        if ($image.people -and $image.people.faces -and $image.people.faces -ne '' -and $image.people.faces.Count -gt 0) {
 
                             # handle both array and comma-separated string formats
                             $people = if ($image.people.faces -is [array]) {
@@ -847,23 +848,23 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                             } else {
                                 $image.people.faces -split ',' |
                                     Microsoft.PowerShell.Core\ForEach-Object { $_.Trim() } |
-                                    Microsoft.PowerShell.Core\Where-Object { $_ -ne "" }
+                                    Microsoft.PowerShell.Core\Where-Object { $_ -ne '' }
                             }
 
                             foreach ($person in $people) {
 
-                                $lookupQueries.Add("INSERT INTO ImagePeople " +
-                                    "(image_id, person_name) VALUES (@image_id, @person_name)")
+                                $lookupQueries.Add('INSERT INTO ImagePeople ' +
+                                    '(image_id, person_name) VALUES (@image_id, @person_name)')
 
                                 $lookupParams.Add(@{
-                                    "image_id" = $imageId;
-                                    "person_name" = $person
-                                })
+                                        'image_id'    = $imageId;
+                                        'person_name' = $person
+                                    })
                             }
                         }
 
                         # insert objects data by parsing objects string if needed
-                        if ($image.objects -and $image.objects.objects -and $image.objects.objects -ne "" -and $image.objects.objects.Count -gt 0) {
+                        if ($image.objects -and $image.objects.objects -and $image.objects.objects -ne '' -and $image.objects.objects.Count -gt 0) {
 
                             # handle both array and comma-separated string formats
                             $objects = if ($image.objects.objects -is [array]) {
@@ -871,39 +872,39 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                             } else {
                                 $image.objects.objects -split ',' |
                                     Microsoft.PowerShell.Core\ForEach-Object { $_.Trim() } |
-                                    Microsoft.PowerShell.Core\Where-Object { $_ -ne "" }
+                                    Microsoft.PowerShell.Core\Where-Object { $_ -ne '' }
                             }
 
                             foreach ($obj in $objects) {
 
-                                $lookupQueries.Add("INSERT INTO ImageObjects " +
-                                    "(image_id, object_name) VALUES (@image_id, @object_name)")
+                                $lookupQueries.Add('INSERT INTO ImageObjects ' +
+                                    '(image_id, object_name) VALUES (@image_id, @object_name)')
 
                                 $lookupParams.Add(@{
-                                    "image_id" = $imageId;
-                                    "object_name" = $obj
-                                })
+                                        'image_id'    = $imageId;
+                                        'object_name' = $obj
+                                    })
                             }
                         }
 
                         # insert scenes if present with confidence data
                         if ($image.scenes -and (-not [string]::IsNullOrWhiteSpace($image.scenes.label))) {
 
-                            $lookupQueries.Add("INSERT INTO ImageScenes " +
-                                "(image_id, scene_name, confidence) VALUES " +
-                                "(@image_id, @scene_name, @confidence)")
+                            $lookupQueries.Add('INSERT INTO ImageScenes ' +
+                                '(image_id, scene_name, confidence) VALUES ' +
+                                '(@image_id, @scene_name, @confidence)')
 
                             $lookupParams.Add(@{
-                                "image_id" = $imageId;
-                                "scene_name" = $image.scenes.label;
-                                "confidence" = $image.scenes.confidence
-                            })
+                                    'image_id'   = $imageId;
+                                    'scene_name' = $image.scenes.label;
+                                    'confidence' = $image.scenes.confidence
+                                })
                         }
 
                         # execute all lookup inserts in a single batch for performance
                         if ($lookupQueries.Count -gt 0) {
 
-                            GenXdev.Data\Invoke-SQLiteQuery -Transaction $transaction `
+                            Invoke-SQLiteQuery -Transaction $transaction `
                                 -Queries $lookupQueries -SqlParameters $lookupParams
 
                             Microsoft.PowerShell.Utility\Write-Verbose (
@@ -933,7 +934,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                     }
                     catch {
 
-                        Microsoft.PowerShell.Utility\Write-Warning (
+                        Microsoft.PowerShell.Utility\Write-Verbose (
                             "Failed to insert image data for $($image.path): " +
                             "$($_.Exception.Message)"
                         )
@@ -958,7 +959,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             else {
 
                 # discover images using Find-Image and process each one
-                GenXdev.AI\Find-Image @findImageParams |
+                Find-Image @findImageParams |
                     Microsoft.PowerShell.Core\ForEach-Object {
 
                         $Info.FoundResults = $true
@@ -979,13 +980,13 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
 
                     $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
-                        -FunctionName "GenXdev.AI\Update-AllImageMetaData" `
+                        -FunctionName 'GenXdev.AI\Update-AllImageMetaData' `
                         -DefaultValues (
-                            Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
-                                -ErrorAction SilentlyContinue
-                        )
+                        Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
+                            -ErrorAction SilentlyContinue
+                    )
 
-                    $null = GenXdev.AI\Update-AllImageMetaData @params
+                    $null = Update-AllImageMetaData @params
 
                     ImportImages $Info
                 }
@@ -994,7 +995,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                 $transaction.Commit()
 
                 Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Transaction committed successfully with " +
+                    'Transaction committed successfully with ' +
                     "$($Info.TotalImages) images"
                 )
 
@@ -1004,8 +1005,8 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                 # rollback on error to maintain database integrity
                 $transaction.Rollback()
 
-                Microsoft.PowerShell.Utility\Write-Warning (
-                    "Transaction rolled back due to error: " +
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    'Transaction rolled back due to error: ' +
                     "$($_.Exception.Message)"
                 )
 
@@ -1014,36 +1015,36 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
 
             # create indexes for optimal performance outside transaction
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Creating indexes for optimal performance..."
+                'Creating indexes for optimal performance...'
             )
 
-            GenXdev.Data\Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath `
+            Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath `
                 -Queries $createIndexes
 
             # run ANALYZE to update query optimizer statistics for best performance
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Running ANALYZE to optimize query planning..."
+                'Running ANALYZE to optimize query planning...'
             )
 
-            GenXdev.Data\Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath `
-                -Queries "ANALYZE;"
+            Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath `
+                -Queries 'ANALYZE;'
 
             # insert schema version for database versioning
             Microsoft.PowerShell.Utility\Write-Verbose (
                 "Setting schema version to $SCHEMA_VERSION..."
             )
 
-            GenXdev.Data\Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath `
-                -Queries ("INSERT OR REPLACE INTO ImageSchemaVersion " +
-                "(id, version) VALUES (1, @version)") `
-                -SqlParameters @{ "version" = $SCHEMA_VERSION }
+            Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath `
+                -Queries ('INSERT OR REPLACE INTO ImageSchemaVersion ' +
+                '(id, version) VALUES (1, @version)') `
+                -SqlParameters @{ 'version' = $SCHEMA_VERSION }
 
 
             # stop the stopwatch and output completion message with timing
             $totalTime.Stop()
 
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Image database initialization completed successfully with " +
+                'Image database initialization completed successfully with ' +
                 "$($Info.TotalImages) records in " +
                 "$($totalTime.Elapsed.ToString('mm\:ss'))"
             )
@@ -1061,13 +1062,13 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
 
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "GenXdev.AI\Get-ImageDatabaseStats" `
+                -FunctionName 'GenXdev.AI\Get-ImageDatabaseStats' `
                 -DefaultValues (
-                    Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
-                        -ErrorAction SilentlyContinue
-                )
+                Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
+                    -ErrorAction SilentlyContinue
+            )
 
-            GenXdev.AI\Get-ImageDatabaseStats @params |
+            Get-ImageDatabaseStats @params |
                 Microsoft.PowerShell.Utility\Write-Output
         }
     }

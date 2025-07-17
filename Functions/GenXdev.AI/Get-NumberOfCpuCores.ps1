@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Calculates and returns the total number of logical CPU cores in the system.
@@ -17,7 +17,7 @@ The calculation process:
 4. Returns the total logical core count
 
 .EXAMPLE
-        ###############################################################################Get the total number of logical CPU cores
+Get the total number of logical CPU cores
 $cores = Get-NumberOfCpuCores
 Write-Host "System has $cores logical CPU cores available"
 
@@ -25,23 +25,24 @@ Write-Host "System has $cores logical CPU cores available"
 - Assumes all processors support hyperthreading
 - Requires WMI access permissions
 - Works on Windows systems only
-        ###############################################################################>
+##############################################################################
+#>
 
 function Get-NumberOfCpuCores {
 
     [CmdletBinding()]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
     param()
 
     begin {
 
         # initialize counter for tracking total physical cores across all CPUs
         $totalPhysicalCores = 0
-        Microsoft.PowerShell.Utility\Write-Verbose "Starting CPU core count calculation"
+        Microsoft.PowerShell.Utility\Write-Verbose 'Starting CPU core count calculation'
     }
 
 
-process {
+    process {
 
         # query all physical processors through WMI
         $processors = CimCmdlets\Get-CimInstance -Class Win32_Processor
@@ -49,12 +50,12 @@ process {
 
         # sum up the number of cores from each physical processor
         $processors |
-        Microsoft.PowerShell.Utility\Select-Object -Property NumberOfCores |
-        Microsoft.PowerShell.Core\ForEach-Object {
+            Microsoft.PowerShell.Utility\Select-Object -Property NumberOfCores |
+            Microsoft.PowerShell.Core\ForEach-Object {
 
-            $totalPhysicalCores += $_.NumberOfCores
-            Microsoft.PowerShell.Utility\Write-Verbose "Added $($_.NumberOfCores) cores from processor"
-        }
+                $totalPhysicalCores += $_.NumberOfCores
+                Microsoft.PowerShell.Utility\Write-Verbose "Added $($_.NumberOfCores) cores from processor"
+            }
 
         # calculate logical cores (assuming hyperthreading doubles the count)
         $logicalCores = $totalPhysicalCores * 2
@@ -66,4 +67,3 @@ process {
         return $logicalCores
     }
 }
-        ###############################################################################

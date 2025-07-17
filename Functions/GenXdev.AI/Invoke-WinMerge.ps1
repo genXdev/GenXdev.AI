@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Launches WinMerge to compare two files side by side.
@@ -28,7 +28,7 @@ Invoke-WinMerge -SourcecodeFilePath "C:\source\file1.txt" `
 
 .EXAMPLE
 merge "C:\source\file1.txt" "C:\target\file2.txt"
-        ###############################################################################>
+#>
 function Invoke-WinMerge {
 
     [CmdletBinding()]
@@ -37,7 +37,7 @@ function Invoke-WinMerge {
         [Parameter(
             Mandatory = $true,
             Position = 0,
-            HelpMessage = "Path to the source file to compare"
+            HelpMessage = 'Path to the source file to compare'
         )]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Microsoft.PowerShell.Management\Test-Path $_ -PathType Leaf })]
@@ -46,7 +46,7 @@ function Invoke-WinMerge {
         [Parameter(
             Mandatory = $true,
             Position = 1,
-            HelpMessage = "Path to the target file to compare against"
+            HelpMessage = 'Path to the target file to compare against'
         )]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ Microsoft.PowerShell.Management\Test-Path $_ -PathType Leaf })]
@@ -55,7 +55,7 @@ function Invoke-WinMerge {
         [Parameter(
             Mandatory = $false,
             Position = 2,
-            HelpMessage = "Wait for WinMerge to close before continuing"
+            HelpMessage = 'Wait for WinMerge to close before continuing'
         )]
         [switch]$Wait
         ########################################################################
@@ -65,7 +65,7 @@ function Invoke-WinMerge {
     begin {
 
         # verify that winmerge is installed and accessible
-        Microsoft.PowerShell.Utility\Write-Verbose "Verifying WinMerge installation status..."
+        Microsoft.PowerShell.Utility\Write-Verbose 'Verifying WinMerge installation status...'
         GenXdev.AI\EnsureWinMergeInstalled
 
 
@@ -81,7 +81,7 @@ function Invoke-WinMerge {
 
 
 
-process {
+    process {
 
         # prepare the process start parameters including executable and files
         $processArgs = @{
@@ -93,12 +93,12 @@ process {
         # add wait parameter if specified to block until winmerge closes
         if ($Wait) {
             $processArgs['Wait'] = $true
-            Microsoft.PowerShell.Utility\Write-Verbose "Will wait for WinMerge process to exit"
+            Microsoft.PowerShell.Utility\Write-Verbose 'Will wait for WinMerge process to exit'
         }
 
 
         # launch winmerge with the configured parameters
-        Microsoft.PowerShell.Utility\Write-Verbose "Launching WinMerge application..."
+        Microsoft.PowerShell.Utility\Write-Verbose 'Launching WinMerge application...'
         Microsoft.PowerShell.Management\Start-Process @processArgs
     }
 
@@ -106,4 +106,3 @@ process {
     end {
     }
 }
-        ###############################################################################

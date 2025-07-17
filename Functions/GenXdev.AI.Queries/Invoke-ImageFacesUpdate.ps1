@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Updates face recognition metadata for image files in a specified directory.
@@ -61,108 +61,379 @@ facerecognition "C:\Photos" -RetryFailed -OnlyNew
 function Invoke-ImageFacesUpdate {
 
     [CmdletBinding()]
-    [Alias("facerecognition")]
+    [Alias('facerecognition')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
 
     param(
         #######################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
-            HelpMessage = "The directory path containing images to process"
+            HelpMessage = 'The directory path containing images to process'
         )]
-        [string] $ImageDirectories = ".\",
-        #######################################################################
-        [Parameter(
-            Position = 1,
-            Mandatory = $false,
-            HelpMessage = "Custom Docker image name to use instead of default"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $ImageName,
-        #######################################################################
-        [Parameter(
-            Position = 2,
-            Mandatory = $false,
-            HelpMessage = "The name for the Docker container"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $ContainerName = "deepstack_face_recognition",
-        #######################################################################
-        [Parameter(
-            Position = 3,
-            Mandatory = $false,
-            HelpMessage = "The name for the Docker volume for persistent storage"
-        )]
-        [ValidateNotNullOrEmpty()]
-        [string] $VolumeName = "deepstack_face_data",
-        #######################################################################
-        [Parameter(
-            Position = 5,
-            Mandatory = $false,
-            HelpMessage = "The port number for the DeepStack service"
-        )]
-        [ValidateRange(1, 65535)]
-        [int] $ServicePort = 5000,
-        #######################################################################
-        [Parameter(
-            Position = 6,
-            Mandatory = $false,
-            HelpMessage = ("Maximum time in seconds to wait for service " +
-                          "health check")
-        )]
-        [ValidateRange(10, 300)]
-        [int] $HealthCheckTimeout = 60,
-        #######################################################################
-        [Parameter(
-            Position = 7,
-            Mandatory = $false,
-            HelpMessage = "Interval in seconds between health check attempts"
-        )]
-        [ValidateRange(1, 10)]
-        [int] $HealthCheckInterval = 3,
+        [string] $ImageDirectories = '.\',
+
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Process images in specified directory and all " +
-                          "subdirectories")
+            HelpMessage = ('Process images in specified directory and all ' +
+                'subdirectories')
         )]
         [switch] $Recurse,
         #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = ("Only process images that don't already have face " +
-                          "metadata files")
+                'metadata files')
         )]
         [switch] $OnlyNew,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Retry processing previously failed images with " +
-                          "empty metadata files")
+            HelpMessage = ('Will retry previously failed image keyword ' +
+                'updates')
         )]
         [switch] $RetryFailed,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Skip Docker initialization when already called by " +
-                          "parent function")
+            HelpMessage = 'The name for the Docker container'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $ContainerName = 'deepstack_face_recognition',
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The name for the Docker volume for persistent storage'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $VolumeName = 'deepstack_face_data',
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The port number for the DeepStack service'
+        )]
+        [ValidateRange(1, 65535)]
+        [int] $ServicePort = 5000,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Maximum time in seconds to wait for service ' +
+                'health check')
+        )]
+        [ValidateRange(10, 300)]
+        [int] $HealthCheckTimeout = 60,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Interval in seconds between health check ' +
+                'attempts')
+        )]
+        [ValidateRange(1, 10)]
+        [int] $HealthCheckInterval = 3,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Custom Docker image name to use'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string] $ImageName,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Minimum confidence threshold (0.0-1.0) for ' +
+                'object detection')
+        )]
+        [ValidateRange(0.0, 1.0)]
+        [double] $ConfidenceThreshold = 0.7,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('The language for generated descriptions and ' +
+                'keywords')
+        )]
+        [PSDefaultValue(Value = 'English')]
+        [ValidateSet(
+            'Afrikaans',
+            'Akan',
+            'Albanian',
+            'Amharic',
+            'Arabic',
+            'Armenian',
+            'Azerbaijani',
+            'Basque',
+            'Belarusian',
+            'Bemba',
+            'Bengali',
+            'Bihari',
+            'Bosnian',
+            'Breton',
+            'Bulgarian',
+            'Cambodian',
+            'Catalan',
+            'Cherokee',
+            'Chichewa',
+            'Chinese (Simplified)',
+            'Chinese (Traditional)',
+            'Corsican',
+            'Croatian',
+            'Czech',
+            'Danish',
+            'Dutch',
+            'English',
+            'Esperanto',
+            'Estonian',
+            'Ewe',
+            'Faroese',
+            'Filipino',
+            'Finnish',
+            'French',
+            'Frisian',
+            'Ga',
+            'Galician',
+            'Georgian',
+            'German',
+            'Greek',
+            'Guarani',
+            'Gujarati',
+            'Haitian Creole',
+            'Hausa',
+            'Hawaiian',
+            'Hebrew',
+            'Hindi',
+            'Hungarian',
+            'Icelandic',
+            'Igbo',
+            'Indonesian',
+            'Interlingua',
+            'Irish',
+            'Italian',
+            'Japanese',
+            'Javanese',
+            'Kannada',
+            'Kazakh',
+            'Kinyarwanda',
+            'Kirundi',
+            'Kongo',
+            'Korean',
+            'Krio (Sierra Leone)',
+            'Kurdish',
+            'Kurdish (Soranî)',
+            'Kyrgyz',
+            'Laothian',
+            'Latin',
+            'Latvian',
+            'Lingala',
+            'Lithuanian',
+            'Lozi',
+            'Luganda',
+            'Luo',
+            'Macedonian',
+            'Malagasy',
+            'Malay',
+            'Malayalam',
+            'Maltese',
+            'Maori',
+            'Marathi',
+            'Mauritian Creole',
+            'Moldavian',
+            'Mongolian',
+            'Montenegrin',
+            'Nepali',
+            'Nigerian Pidgin',
+            'Northern Sotho',
+            'Norwegian',
+            'Norwegian (Nynorsk)',
+            'Occitan',
+            'Oriya',
+            'Oromo',
+            'Pashto',
+            'Persian',
+            'Polish',
+            'Portuguese (Brazil)',
+            'Portuguese (Portugal)',
+            'Punjabi',
+            'Quechua',
+            'Romanian',
+            'Romansh',
+            'Runyakitara',
+            'Russian',
+            'Scots Gaelic',
+            'Serbian',
+            'Serbo-Croatian',
+            'Sesotho',
+            'Setswana',
+            'Seychellois Creole',
+            'Shona',
+            'Sindhi',
+            'Sinhalese',
+            'Slovak',
+            'Slovenian',
+            'Somali',
+            'Spanish',
+            'Spanish (Latin American)',
+            'Sundanese',
+            'Swahili',
+            'Swedish',
+            'Tajik',
+            'Tamil',
+            'Tatar',
+            'Telugu',
+            'Thai',
+            'Tigrinya',
+            'Tonga',
+            'Tshiluba',
+            'Tumbuka',
+            'Turkish',
+            'Turkmen',
+            'Twi',
+            'Uighur',
+            'Ukrainian',
+            'Urdu',
+            'Uzbek',
+            'Vietnamese',
+            'Welsh',
+            'Wolof',
+            'Xhosa',
+            'Yiddish',
+            'Yoruba',
+            'Zulu')]
+        [string] $Language,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipeline = $true,
+            HelpMessage = 'Name or partial path of the model to initialize'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
+        [string]$Model,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The LM-Studio model to use'
+        )]
+        [ValidateNotNullOrEmpty()]
+        [string]$HuggingFaceIdentifier,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Api endpoint url, defaults to ' +
+                'http://localhost:1234/v1/chat/completions')
+        )]
+        [string] $ApiEndpoint = $null,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The API key to use for the request'
+        )]
+        [string] $ApiKey = $null,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Timeout in seconds for the request, defaults to ' +
+                '24 hours')
+        )]
+        [int] $TimeoutSecond,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Maximum tokens in response (-1 for default)'
+        )]
+        [Alias('MaxTokens')]
+        [ValidateRange(-1, [int]::MaxValue)]
+        [int]$MaxToken, # = 8192,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Set a TTL (in seconds) for models loaded via API'
+        )]
+        [Alias('ttl')]
+        [ValidateRange(-1, [int]::MaxValue)]
+        [int]$TTLSeconds,
+        #######################################################################
+        [parameter(
+            Mandatory = $false,
+            HelpMessage = ('The directory containing face images organized ' +
+                'by person folders. If not specified, uses the configured ' +
+                'faces directory preference.')
+        )]
+        [string] $FacesDirectory,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Database path for preference data files'
+        )]
+        [Alias('DatabasePath')]
+        [string] $PreferencesDatabasePath,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Skip Docker initialization (used when already ' +
+                'called by parent function)')
         )]
         [switch] $NoDockerInitialize,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Force rebuild of Docker container and remove " +
-                          "existing data")
+            HelpMessage = ('Force rebuild of Docker container and remove ' +
+                'existing data')
         )]
-        [Alias("ForceRebuild")]
+        [Alias('ForceRebuild')]
         [switch] $Force,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use GPU-accelerated version which requires an " +
-                          "NVIDIA GPU")
+            HelpMessage = ('Use GPU-accelerated version (requires NVIDIA ' +
+                'GPU)')
         )]
-        [switch] $UseGPU
+        [switch] $UseGPU,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Show Docker + LM Studio window during ' +
+                'initialization')
+        )]
+        [switch]$ShowWindow,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('PassThru to return structured objects instead ' +
+                'of outputting to console')
+        )]
+        [Alias('pt')]
+        [switch]$PassThru,
+
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Detects changes in the faces directory and ' +
+                're-registers faces if needed')
+        )]
+        [switch] $AutoUpdateFaces,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Use alternative settings stored in session for ' +
+                'AI preferences like Language, Image collections, etc')
+        )]
+        [switch] $SessionOnly,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Clear alternative settings stored in session ' +
+                'for AI preferences like Language, Image collections, etc')
+        )]
+        [switch] $ClearSession,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Dont use alternative settings stored in ' +
+                'session for AI preferences like Language, Image ' +
+                'collections, etc')
+        )]
+        [Alias('FromPreferences')]
+        [switch] $SkipSession
         #######################################################################
     )
     begin {
@@ -174,12 +445,12 @@ function Invoke-ImageFacesUpdate {
         if (-not [System.IO.Directory]::Exists($path)) {
 
             Microsoft.PowerShell.Utility\Write-Host ("The directory '$path' " +
-                                                     "does not exist.")
+                'does not exist.')
             return
         }
 
-        Microsoft.PowerShell.Utility\Write-Verbose ("Processing images in " +
-                                                    "directory: $path")
+        Microsoft.PowerShell.Utility\Write-Verbose ('Processing images in ' +
+            "directory: $path")
     }
 
     process {
@@ -206,7 +477,7 @@ function Invoke-ImageFacesUpdate {
                     try {
                         $content = [System.IO.File]::ReadAllText($metadataFilePath)
                         $existingData = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
-                        $hasValidContent = $existingData.predictions -and $existingData.predictions.Count -gt 0
+                        $hasValidContent = $existingData.success
                     }
                     catch {
                         # If JSON parsing fails, treat as invalid content
@@ -216,8 +487,8 @@ function Invoke-ImageFacesUpdate {
 
                 # determine if image should be processed based on options
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    ("OnlyNew: $OnlyNew, FileExists: $fileExists, " +
-                     "HasValidContent: $hasValidContent")
+                ("OnlyNew: $OnlyNew, FileExists: $fileExists, " +
+                    "HasValidContent: $hasValidContent")
 
                 $shouldProcess = (-not $OnlyNew) -or (-not $fileExists) -or (-not $hasValidContent)
 
@@ -227,15 +498,23 @@ function Invoke-ImageFacesUpdate {
                 if ($shouldProcess) {
 
                     # obtain face recognition data using ai recognition technology
-                    $faceData = GenXdev.AI\Get-ImageDetectedFaces `
-                        -ImagePath $image `
-                        -NoDockerInitialize:$NoDockerInitialize `
-                        -ConfidenceThreshold 0.6
+                    $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                        -FunctionName 'GenXdev.AI\Get-ImageDetectedFaces' `
+                        -BoundParameters $PSBoundParameters `
+                        -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+
+                    # Set NoDockerInitialize for the first image,
+                    # then pass it as a parameter for subsequent images
+                    $faceData = Get-ImageDetectedFaces `
+                        @params `
+                        -ImagePath $image
+
+                    $NoDockerInitialize = $true;
 
                     # process the returned face data into standardized format
                     $processedData = if ($faceData -and
-                                         $faceData.success -and
-                                         $faceData.predictions) {
+                        $faceData.success -and
+                        $faceData.predictions) {
 
                         $predictions = $faceData.predictions
 
@@ -244,7 +523,7 @@ function Invoke-ImageFacesUpdate {
                             Microsoft.PowerShell.Core\ForEach-Object {
 
                                 $name = $_.userid
-                                $lastUnderscoreIndex = $name.LastIndexOf("_")
+                                $lastUnderscoreIndex = $name.LastIndexOf('_')
 
                                 # remove timestamp suffix if present in face name
                                 if ($lastUnderscoreIndex -gt 0) {
@@ -255,61 +534,60 @@ function Invoke-ImageFacesUpdate {
                             } |
                             Microsoft.PowerShell.Utility\Sort-Object -Unique
 
-                        # create standardized data structure for face metadata
-                        @{
-                            success     = $true
-                            count       = $faceNames.Count
-                            faces       = $faceNames
-                            predictions = $predictions
+                            # create standardized data structure for face metadata
+                            @{
+                                success     = $true
+                                count       = $faceNames.Count
+                                faces       = $faceNames
+                                predictions = $predictions
+                            }
+                        } else {
+
+                            # create empty structure when no faces are detected
+                            @{
+                                success     = $true
+                                count       = 0
+                                faces       = @()
+                                predictions = @()
+                            }
                         }
-                    } else {
 
-                        # create empty structure when no faces are detected
-                        @{
-                            success = $true
-                            count = 0
-                            faces = @()
-                            predictions = @()
-                        }
-                    }
-
-                    # convert processed data to json format for storage
-                    $faces = $processedData |
-                        Microsoft.PowerShell.Utility\ConvertTo-Json `
-                            -Depth 20 `
-                            -WarningAction SilentlyContinue
-
-                    Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Received face analysis for: $image")
-
-                    try {
-
-                        # reformat json to ensure consistent compressed format
-                        $newContent = ($faces |
-                            Microsoft.PowerShell.Utility\ConvertFrom-Json |
+                        # convert processed data to json format for storage
+                        $faces = $processedData |
                             Microsoft.PowerShell.Utility\ConvertTo-Json `
-                                -Compress `
                                 -Depth 20 `
-                                -WarningAction SilentlyContinue)
+                                -WarningAction SilentlyContinue
 
-                        # save the processed face data to metadata file
-                        [System.IO.File]::WriteAllText($metadataFilePath,
-                                                       $newContent)
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                "Received face analysis for: $image")
 
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Successfully saved face metadata for: $image")
-                    }
-                    catch {
+                            try {
 
-                        # log any errors that occur during metadata processing
-                        Microsoft.PowerShell.Utility\Write-Warning (
-                            "$PSItem`r`n$faces")
-                    }
-                }
-            }
+                                # reformat json to ensure consistent compressed format
+                                $newContent = ($faces |
+                                        Microsoft.PowerShell.Utility\ConvertFrom-Json |
+                                        Microsoft.PowerShell.Utility\ConvertTo-Json `
+                                            -Compress `
+                                            -Depth 20 `
+                                            -WarningAction SilentlyContinue)
+
+                                    # save the processed face data to metadata file
+                                    [System.IO.File]::WriteAllText($metadataFilePath,
+                                        $newContent)
+
+                                    Microsoft.PowerShell.Utility\Write-Verbose (
+                                        "Successfully saved face metadata for: $image")
+                                }
+                                catch {
+
+                                    # log any errors that occur during metadata processing
+                                    Microsoft.PowerShell.Utility\Write-Verbose (
+                                        "$PSItem`r`n$faces")
+                                }
+                            }
+                        }
     }
 
     end {
     }
 }
-        ###############################################################################

@@ -89,148 +89,411 @@ function ConvertFrom-DiplomaticSpeak {
 
     [CmdletBinding()]
     [OutputType([System.String])]
-    [Alias("undiplomatize")]
+    [Alias('undiplomatize')]
     param (
         ###############################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
             ValueFromPipeline = $true,
-            HelpMessage = "The text to convert from diplomatic speak"
+            HelpMessage = 'The text to convert from diplomatic speak'
         )]
         [string] $Text,
         ###############################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = "Additional instructions for the AI model"
+            HelpMessage = 'Additional instructions for the AI model'
         )]
-        [string] $Instructions = "",
+        [string] $Instructions = '',
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Temperature for response randomness (0.0-1.0)"
+            HelpMessage = 'Temperature for response randomness (0.0-1.0)'
         )]
         [ValidateRange(0.0, 1.0)]
         [double] $Temperature = 0.0,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The type of LLM query"
+            HelpMessage = 'The type of LLM query'
         )]
         [ValidateSet(
-            "SimpleIntelligence",
-            "Knowledge",
-            "Pictures",
-            "TextTranslation",
-            "Coding",
-            "ToolUse"
+            'SimpleIntelligence',
+            'Knowledge',
+            'Pictures',
+            'TextTranslation',
+            'Coding',
+            'ToolUse'
         )]
-        [string] $LLMQueryType = "Knowledge",
+        [string] $LLMQueryType = 'Knowledge',
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The model identifier or pattern to use for AI " +
-                           "operations")
+            HelpMessage = ('The model identifier or pattern to use for AI ' +
+                'operations')
         )]
         [string] $Model,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The LM Studio specific model identifier"
+            HelpMessage = 'The LM Studio specific model identifier'
         )]
-        [Alias("ModelLMSGetIdentifier")]
+        [Alias('ModelLMSGetIdentifier')]
         [string] $HuggingFaceIdentifier,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The maximum number of tokens to use in AI " +
-                           "operations")
+            HelpMessage = ('The maximum number of tokens to use in AI ' +
+                'operations')
         )]
         [int] $MaxToken,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The number of CPU cores to dedicate to AI " +
-                           "operations")
+            HelpMessage = ('The number of CPU cores to dedicate to AI ' +
+                'operations')
         )]
         [int] $Cpu,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
-                           "offloading is disabled. If 'max', all layers are " +
-                           "offloaded to GPU. If a number between 0 and 1, " +
-                           "that fraction of layers will be offloaded to the " +
-                           "GPU. -1 = LM Studio will decide how much to " +
-                           "offload to the GPU. -2 = Auto")
+                "offloading is disabled. If 'max', all layers are " +
+                'offloaded to GPU. If a number between 0 and 1, ' +
+                'that fraction of layers will be offloaded to the ' +
+                'GPU. -1 = LM Studio will decide how much to ' +
+                'offload to the GPU. -2 = Auto')
         )]
         [ValidateRange(-2, 1)]
         [int] $Gpu = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The API endpoint URL for AI operations"
+            HelpMessage = 'The API endpoint URL for AI operations'
         )]
         [string] $ApiEndpoint,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The API key for authenticated AI operations"
+            HelpMessage = 'The API key for authenticated AI operations'
         )]
         [string] $ApiKey,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The timeout in seconds for AI operations"
+            HelpMessage = 'The timeout in seconds for AI operations'
         )]
         [int] $TimeoutSeconds,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Copy the transformed text to clipboard"
+            HelpMessage = 'Copy the transformed text to clipboard'
         )]
         [switch] $SetClipboard,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show the LM Studio window"
+            HelpMessage = 'Show the LM Studio window'
         )]
         [switch] $ShowWindow,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Force stop LM Studio before initialization"
+            HelpMessage = 'Force stop LM Studio before initialization'
         )]
         [switch] $Force,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for AI " +
-                           "preferences")
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences')
         )]
         [switch] $SessionOnly,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Clear alternative settings stored in session for " +
-                           "AI preferences")
+            HelpMessage = ('Clear alternative settings stored in session for ' +
+                'AI preferences')
         )]
         [switch] $ClearSession,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Store settings only in persistent preferences " +
-                           "without affecting session")
+            HelpMessage = ('Store settings only in persistent preferences ' +
+                'without affecting session')
         )]
-        [Alias("FromPreferences")]
-        [switch] $SkipSession
+        [Alias('FromPreferences')]
+        [switch] $SkipSession,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Attachments to include in the AI operation.'
+        )]
+        [object[]] $Attachments,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Level of image detail for AI processing.'
+        )]
+        [string] $ImageDetail,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Functions to expose to the AI model.'
+        )]
+        [object[]] $Functions,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Cmdlets to expose to the AI model.'
+        )]
+        [object[]] $ExposedCmdLets,
+        ###############################################################################
+        [Alias('NoConfirmationFor')]
+        [Parameter(
+            HelpMessage = 'Tool function names that do not require confirmation.'
+        )]
+        [string[]] $NoConfirmationToolFunctionNames,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Do not add thoughts to the AI history.'
+        )]
+        [switch] $DontAddThoughtsToHistory,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Continue from the last AI operation.'
+        )]
+        [switch] $ContinueLast,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Speak thoughts aloud during AI processing.'
+        )]
+        [switch] $SpeakThoughts,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Disable session caching for this operation.'
+        )]
+        [switch] $NoSessionCaching,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Allow use of default tools in AI operation.'
+        )]
+        [switch] $AllowDefaultTools,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Time-to-live in seconds for the AI operation.'
+        )]
+        [int] $TTLSeconds,
+        ###############################################################################
+        [Alias('m','mon')]
+        [Parameter(
+            HelpMessage = 'Monitor the AI operation.'
+        )]
+        [switch] $Monitor,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Width for AI output or window.'
+        )]
+        [int] $Width,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Height for AI output or window.'
+        )]
+        [int] $Height,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Audio temperature for AI audio generation.'
+        )]
+        [double] $AudioTemperature,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Temperature for AI response generation.'
+        )]
+        [double] $TemperatureResponse,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Number of CPU threads to use for AI operation.'
+        )]
+        [int] $CpuThreads,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Regex to suppress in AI output.'
+        )]
+        [string[]] $SuppressRegex,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Audio context size for AI audio processing.'
+        )]
+        [int] $AudioContextSize,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Silence threshold for AI audio processing.'
+        )]
+        [double] $SilenceThreshold,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Length penalty for AI sequence generation.'
+        )]
+        [double] $LengthPenalty,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Entropy threshold for AI output.'
+        )]
+        [double] $EntropyThreshold,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Log probability threshold for AI output.'
+        )]
+        [double] $LogProbThreshold,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'No speech threshold for AI audio processing.'
+        )]
+        [double] $NoSpeechThreshold,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Do not speak the AI output.'
+        )]
+        [switch] $DontSpeak,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Do not speak AI thoughts.'
+        )]
+        [switch] $DontSpeakThoughts,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Disable VOX for AI audio output.'
+        )]
+        [switch] $NoVOX,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Use desktop audio capture for AI audio.'
+        )]
+        [switch] $UseDesktopAudioCapture,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Do not use context for AI operation.'
+        )]
+        [switch] $NoContext,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Use beam search sampling strategy for AI.'
+        )]
+        [switch] $WithBeamSearchSamplingStrategy,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Return only responses from AI.'
+        )]
+        [switch] $OnlyResponses,
+        ###############################################################################
+        [Alias('DelayMilliSeconds')]
+        [Parameter(
+            HelpMessage = 'Delay in milliseconds between sending keys.'
+        )]
+        [int] $SendKeyDelayMilliSeconds,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Output only markup blocks from AI.'
+        )]
+        [switch] $OutputMarkdownBlocksOnly,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Filter for markup block types in AI output.'
+        )]
+        [string[]] $MarkupBlocksTypeFilter,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Do not initialize LM Studio for this operation.'
+        )]
+        [switch] $NoLMStudioInitialize,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Unload resources after AI operation.'
+        )]
+        [switch] $Unload,
+        ###############################################################################
+        [Alias('nb')]
+        [Parameter(
+            HelpMessage = 'Do not use borders in AI output.'
+        )]
+        [switch] $NoBorders,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Left position for AI output window.'
+        )]
+        [int] $Left,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Bottom position for AI output window.'
+        )]
+        [int] $Bottom,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Center the AI output window.'
+        )]
+        [switch] $Centered,
+        ###############################################################################
+        [Alias('fs')]
+        [Parameter(
+            HelpMessage = 'Use full screen for AI output window.'
+        )]
+        [switch] $FullScreen,
+        ###############################################################################
+        [Alias('rf','bg')]
+        [Parameter(
+            HelpMessage = 'Restore focus to previous window after AI operation.'
+        )]
+        [switch] $RestoreFocus,
+        ###############################################################################
+        [Alias('sbs')]
+        [Parameter(
+            HelpMessage = 'Show AI output side by side.'
+        )]
+        [switch] $SideBySide,
+        ###############################################################################
+        [Alias('fw','focus')]
+        [Parameter(
+            HelpMessage = 'Focus the AI output window.'
+        )]
+        [switch] $FocusWindow,
+        ###############################################################################
+        [Alias('fg')]
+        [Parameter(
+            HelpMessage = 'Set AI output window to foreground.'
+        )]
+        [switch] $SetForeground,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Maximize the AI output window.'
+        )]
+        [switch] $Maximize,
+        ###############################################################################
+        [Alias('Escape')]
+        [Parameter(
+            HelpMessage = 'Send Escape key to AI output window.'
+        )]
+        [switch] $SendKeyEscape,
+        ###############################################################################
+        [Alias('HoldKeyboardFocus')]
+        [Parameter(
+            HelpMessage = 'Hold keyboard focus when sending keys.'
+        )]
+        [switch] $SendKeyHoldKeyboardFocus,
+        ###############################################################################
+        [Alias('UseShiftEnter')]
+        [Parameter(
+            HelpMessage = 'Use Shift+Enter when sending keys.'
+        )]
+        [switch] $SendKeyUseShiftEnter,
+        ###############################################################################
+        [Parameter(
+            HelpMessage = 'Maximum callback length for tool calls.'
+        )]
+        [int] $MaxToolcallBackLength
         ###############################################################################
     )
 
@@ -238,7 +501,7 @@ function ConvertFrom-DiplomaticSpeak {
 
         # output verbose information about starting the conversion process
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Starting diplomatic speak conversion process"
+            'Starting diplomatic speak conversion process'
         )
     }
 
@@ -318,7 +581,7 @@ $Instructions
 
         # output verbose information about the transformation process
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Transforming text with diplomatic speak instructions"
+            'Transforming text with diplomatic speak instructions'
         )
 
         # invoke the language model with diplomatic speak instructions using splatting
@@ -330,7 +593,7 @@ $Instructions
 
         # output verbose information about completion of the conversion process
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Completed diplomatic speak conversion process"
+            'Completed diplomatic speak conversion process'
         )
     }
 }

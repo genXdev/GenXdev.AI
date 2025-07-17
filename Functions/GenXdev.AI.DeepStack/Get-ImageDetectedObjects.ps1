@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Detects and classifies objects in an uploaded image using DeepStack.
@@ -81,11 +81,11 @@ sandwich, orange, broccoli, carrot, hot dog, pizza, donut, cake, chair, couch,
 potted plant, bed, dining table, toilet, tv, laptop, mouse, remote, keyboard,
 cell phone, microwave, oven, toaster, sink, refrigerator, book, clock, vase,
 scissors, teddy bear, hair drier, toothbrush.
-        ###############################################################################>
+#>
 function Get-ImageDetectedObjects {
 
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
 
     param(
         #######################################################################
@@ -94,7 +94,7 @@ function Get-ImageDetectedObjects {
             Mandatory = $true,
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true,
-            HelpMessage = "The local path to the image file to analyze"
+            HelpMessage = 'The local path to the image file to analyze'
         )]
         [ValidateNotNullOrEmpty()]
         [string]
@@ -103,8 +103,8 @@ function Get-ImageDetectedObjects {
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = ("Minimum confidence threshold (0.0-1.0). " +
-                "Default is 0.5")
+            HelpMessage = ('Minimum confidence threshold (0.0-1.0). ' +
+                'Default is 0.5')
         )]
         [ValidateRange(0.0, 1.0)]
         [double]
@@ -113,26 +113,26 @@ function Get-ImageDetectedObjects {
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = "The name for the Docker container"
+            HelpMessage = 'The name for the Docker container'
         )]
         [ValidateNotNullOrEmpty()]
         [string]
-        $ContainerName = "deepstack_face_recognition",
+        $ContainerName = 'deepstack_face_recognition',
 
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = ("The name for the Docker volume for persistent " +
-                "storage")
+            HelpMessage = ('The name for the Docker volume for persistent ' +
+                'storage')
         )]
         [ValidateNotNullOrEmpty()]
         [string]
-        $VolumeName = "deepstack_face_data",
+        $VolumeName = 'deepstack_face_data',
 
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = "The port number for the DeepStack service"
+            HelpMessage = 'The port number for the DeepStack service'
         )]
         [ValidateRange(1, 65535)]
         [int]
@@ -141,8 +141,8 @@ function Get-ImageDetectedObjects {
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = ("Maximum time in seconds to wait for service " +
-                "health check")
+            HelpMessage = ('Maximum time in seconds to wait for service ' +
+                'health check')
         )]
         [ValidateRange(10, 300)]
         [int]
@@ -151,8 +151,8 @@ function Get-ImageDetectedObjects {
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = ("Interval in seconds between health check " +
-                "attempts")
+            HelpMessage = ('Interval in seconds between health check ' +
+                'attempts')
         )]
         [ValidateRange(1, 10)]
         [int]
@@ -161,7 +161,7 @@ function Get-ImageDetectedObjects {
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = "Custom Docker image name to use"
+            HelpMessage = 'Custom Docker image name to use'
         )]
         [ValidateNotNullOrEmpty()]
         [string]
@@ -170,8 +170,8 @@ function Get-ImageDetectedObjects {
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = ("Skip Docker initialization (used when already " +
-                "called by parent function)")
+            HelpMessage = ('Skip Docker initialization (used when already ' +
+                'called by parent function)')
         )]
         [switch]
         $NoDockerInitialize,
@@ -179,29 +179,30 @@ function Get-ImageDetectedObjects {
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = ("Force rebuild of Docker container and remove " +
-                "existing data")
+            HelpMessage = ('Force rebuild of Docker container and remove ' +
+                'existing data')
         )]
-        [Alias("ForceRebuild")]
+        [Alias('ForceRebuild')]
         [switch]
         $Force,
 
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = ("Use GPU-accelerated version (requires NVIDIA " +
-                "GPU)")
+            HelpMessage = ('Use GPU-accelerated version (requires NVIDIA ' +
+                'GPU)')
         )]
         [switch]
         $UseGPU,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show Docker Desktop window during initialization"
+            HelpMessage = 'Show Docker Desktop window during initialization'
         )]
+        [Alias('sw')]
         [switch]$ShowWindow
         ###################################################################
-      )
+    )
 
     begin {
 
@@ -219,31 +220,31 @@ function Get-ImageDetectedObjects {
         if (-not $NoDockerInitialize) {
 
             Microsoft.PowerShell.Utility\Write-Verbose `
-                ("Ensuring DeepStack object detection service is " +
-                    "available")
+            ('Ensuring DeepStack object detection service is ' +
+                'available')
 
             # copy parameter values for the ensuredeepstack function call
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                 -DefaultValues (
-                    Microsoft.PowerShell.Utility\Get-Variable `
-                        -Scope Local `
-                        -ErrorAction SilentlyContinue
-                )
+                Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue
+            )
 
             # initialize deepstack docker container if needed
-            $null = GenXdev.AI\EnsureDeepStack @ensureParams
+            $null = EnsureDeepStack @ensureParams
         }
         else {
 
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Skipping Docker initialization as requested"
+                'Skipping Docker initialization as requested'
         }
 
         Microsoft.PowerShell.Utility\Write-Verbose `
-            ("Using DeepStack object detection API at: " +
-                "$script:ApiBaseUrl")        #######################################################################
+        ('Using DeepStack object detection API at: ' +
+            "$script:ApiBaseUrl")        #######################################################################
         <#
         .SYNOPSIS
         Filters object detection results based on confidence threshold.
@@ -272,11 +273,11 @@ function Get-ImageDetectedObjects {
             if (-not $ObjectData -or -not $ObjectData.success) {
 
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "No successful object data received"
+                    'No successful object data received'
 
                 return @{
-                    objects = @()
-                    count = 0
+                    objects     = @()
+                    count       = 0
                     predictions = @()
                 }
             }
@@ -285,11 +286,11 @@ function Get-ImageDetectedObjects {
             if (-not $ObjectData.predictions) {
 
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "No object predictions received"
+                    'No object predictions received'
 
                 return @{
-                    objects = @()
-                    count = 0
+                    objects     = @()
+                    count       = 0
                     predictions = @()
                 }
             }
@@ -297,9 +298,9 @@ function Get-ImageDetectedObjects {
             # filter objects based on confidence threshold
             $filteredPredictions = @(
                 $ObjectData.predictions |
-                Microsoft.PowerShell.Core\Where-Object {
-                    $_.confidence -gt $script:ConfidenceThreshold
-                }
+                    Microsoft.PowerShell.Core\Where-Object {
+                        $_.confidence -gt $script:ConfidenceThreshold
+                    }
             )
 
             # group objects by label for summary
@@ -318,15 +319,15 @@ function Get-ImageDetectedObjects {
             }
 
             Microsoft.PowerShell.Utility\Write-Verbose `
-                ("Found $($filteredPredictions.Count) objects above " +
-                    "confidence threshold $script:ConfidenceThreshold")
+            ("Found $($filteredPredictions.Count) objects above " +
+                "confidence threshold $script:ConfidenceThreshold")
 
             return @{
-                objects = $filteredPredictions
-                count = $filteredPredictions.Count
-                predictions = $filteredPredictions
+                objects       = $filteredPredictions
+                count         = $filteredPredictions.Count
+                predictions   = $filteredPredictions
                 object_counts = $objectCounts
-                success = $true
+                success       = $true
             }
         }
     }
@@ -353,13 +354,13 @@ function Get-ImageDetectedObjects {
             # create form data for deepstack api
             # the 'min_confidence' parameter expects a value between 0.0 and 1.0
             $form = @{
-                image = Microsoft.PowerShell.Management\Get-Item $imagePath
+                image          = Microsoft.PowerShell.Management\Get-Item $imagePath
                 min_confidence = $ConfidenceThreshold
             }
 
             # send the request to the deepstack object detection api
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Sending image data to DeepStack object detection API"
+                'Sending image data to DeepStack object detection API'
 
             $response = Microsoft.PowerShell.Utility\Invoke-RestMethod `
                 -Uri $uri `
@@ -369,11 +370,11 @@ function Get-ImageDetectedObjects {
                 -ErrorAction Stop
 
             Microsoft.PowerShell.Utility\Write-Verbose `
-                ("API Response: " +
-                    (
-                        $response |
+            ('API Response: ' +
+                (
+                    $response |
                         Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 3
-                    ))
+                ))
 
             # process the response from deepstack
             $filteredResults = Select-ObjectDetection -ObjectData $response
@@ -400,4 +401,3 @@ function Get-ImageDetectedObjects {
     end {
     }
 }
-        ###############################################################################

@@ -1,14 +1,14 @@
-Pester\Describe "Get-TextTranslation" {
-    Pester\It "Should pass PSScriptAnalyzer rules" {
+﻿Pester\Describe 'Get-TextTranslation' {
+    Pester\It 'Should pass PSScriptAnalyzer rules' {
 
-# get the script path for analysis
+        # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI\Get-TextTranslation.ps1"
 
-# run analyzer with explicit settings
+        # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 
-        [string] $message = ""
+        [string] $message = ''
         $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
@@ -26,14 +26,14 @@ $message
 "@;
     }
 
-    Pester\It "Should translate English to Spanish correctly" -Skip:(-not ($Global:AllowLongRunningTests -eq $true)) {
-        Microsoft.PowerShell.Utility\Write-Verbose "Testing English to Spanish translation"
-        $result = GenXdev.AI\Get-TextTranslation -Text "Hello" -Language "Spanish"
-        $result | Pester\Should -BeLike "*Hola*"
+    Pester\It 'Should translate English to Spanish correctly' -Skip:(-not ($Global:AllowLongRunningTests -eq $true)) {
+        Microsoft.PowerShell.Utility\Write-Verbose 'Testing English to Spanish translation'
+        $result = GenXdev.AI\Get-TextTranslation -Text 'Hello' -Language 'Spanish'
+        $result | Pester\Should -BeLike '*Hola*'
     }
-    Pester\It "Should translate English to Dutch correctly" -Skip:(-not ($Global:AllowLongRunningTests -eq $true)) {
-        Microsoft.PowerShell.Utility\Write-Verbose "Testing English to Dutch translation"
-        $result = GenXdev.AI\Get-TextTranslation -Text "How are you doing?" -Language "Dutch"
-        $result | Pester\Should -BeLike "*Hoe gaat het met je*"
+    Pester\It 'Should translate English to Dutch correctly' -Skip:(-not ($Global:AllowLongRunningTests -eq $true)) {
+        Microsoft.PowerShell.Utility\Write-Verbose 'Testing English to Dutch translation'
+        $result = GenXdev.AI\Get-TextTranslation -Text 'How are you doing?' -Language 'Dutch'
+        $result | Pester\Should -BeLike '*Hoe gaat het met je*'
     }
 }

@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Executes a script block and analyzes errors using AI to generate fixes in IDE.
@@ -88,6 +88,18 @@ Clear alternative settings stored in session for AI preferences.
 .PARAMETER SkipSession
 Store settings only in persistent preferences without affecting session.
 
+.PARAMETER SendKeyEscape
+Escape control characters and modifiers when sending keys.
+
+.PARAMETER SendKeyHoldKeyboardFocus
+Hold keyboard focus on target window when sending keys.
+
+.PARAMETER SendKeyUseShiftEnter
+Use Shift+Enter instead of Enter when sending keys.
+
+.PARAMETER SendKeyDelayMilliSeconds
+Delay between different input strings in milliseconds when sending keys.
+
 .EXAMPLE
 Show-GenXdevScriptErrorFixInIde -Script { Get-ChildItem -Path "NonExistentPath" }
 
@@ -97,7 +109,7 @@ letsfixthis { Import-Module "NonExistentModule" }
 function Show-GenXdevScriptErrorFixInIde {
 
     [CmdletBinding()]
-    [Alias("letsfixthis")]
+    [Alias('letsfixthis')]
 
     param(
         ###############################################################################
@@ -105,13 +117,13 @@ function Show-GenXdevScriptErrorFixInIde {
             Position = 0,
             Mandatory = $true,
             ValueFromPipeline = $true,
-            HelpMessage = "The script to execute and analyze for errors"
+            HelpMessage = 'The script to execute and analyze for errors'
         )]
         [ScriptBlock] $Script,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Temperature for response randomness (0.0-1.0)"
+            HelpMessage = 'Temperature for response randomness (0.0-1.0)'
         )]
         [ValidateRange(0.0, 1.0)]
         [double] $Temperature = 0.2,
@@ -119,108 +131,109 @@ function Show-GenXdevScriptErrorFixInIde {
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = "The type of LLM query"
+            HelpMessage = 'The type of LLM query'
         )]
         [ValidateSet(
-            "SimpleIntelligence",
-            "Knowledge",
-            "Pictures",
-            "TextTranslation",
-            "Coding",
-            "ToolUse"
+            'SimpleIntelligence',
+            'Knowledge',
+            'Pictures',
+            'TextTranslation',
+            'Coding',
+            'ToolUse'
         )]
-        [string] $LLMQueryType = "Coding",
+        [string] $LLMQueryType = 'Coding',
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The model identifier or pattern to use for AI " +
-                          "operations")
+            HelpMessage = ('The model identifier or pattern to use for AI ' +
+                'operations')
         )]
         [string] $Model,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The LM Studio specific model identifier"
+            HelpMessage = 'The LM Studio specific model identifier'
         )]
-        [Alias("ModelLMSGetIdentifier")]
+        [Alias('ModelLMSGetIdentifier')]
         [string] $HuggingFaceIdentifier,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The maximum number of tokens to use in AI operations"
+            HelpMessage = 'The maximum number of tokens to use in AI operations'
         )]
         [int] $MaxToken,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+            HelpMessage = 'The number of CPU cores to dedicate to AI operations'
         )]
         [int] $Cpu,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
-                           "offloading is disabled. If 'max', all layers are " +
-                           "offloaded to GPU. If a number between 0 and 1, " +
-                           "that fraction of layers will be offloaded to the " +
-                           "GPU. -1 = LM Studio will decide how much to " +
-                           "offload to the GPU. -2 = Auto")
+                "offloading is disabled. If 'max', all layers are " +
+                'offloaded to GPU. If a number between 0 and 1, ' +
+                'that fraction of layers will be offloaded to the ' +
+                'GPU. -1 = LM Studio will decide how much to ' +
+                'offload to the GPU. -2 = Auto')
         )]
         [ValidateRange(-2, 1)]
         [int] $Gpu = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The API endpoint URL for AI operations"
+            HelpMessage = 'The API endpoint URL for AI operations'
         )]
         [string] $ApiEndpoint,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The API key for authenticated AI operations"
+            HelpMessage = 'The API key for authenticated AI operations'
         )]
         [string] $ApiKey,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The timeout in seconds for AI operations"
+            HelpMessage = 'The timeout in seconds for AI operations'
         )]
         [int] $TimeoutSeconds,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of function definitions"
+            HelpMessage = 'Array of function definitions'
         )]
         [hashtable[]] $Functions = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Array of PowerShell command definitions to use as " +
-                          "tools")
+            HelpMessage = ('Array of PowerShell command definitions to use as ' +
+                'tools')
         )]
         [GenXdev.Helpers.ExposedCmdletDefinition[]] $ExposedCmdLets = $null,
         ###############################################################################
         [Parameter(
             Mandatory = $false
         )]
-        [Alias("NoConfirmationFor")]
+        [Alias('NoConfirmationFor')]
         [string[]] $NoConfirmationToolFunctionNames = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show the LM Studio window"
+            HelpMessage = 'Show the LM Studio window'
         )]
         [switch] $ShowWindow,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Force stop LM Studio before initialization"
+            HelpMessage = 'Force stop LM Studio before initialization'
         )]
         [switch] $Force,
         ###############################################################################
@@ -232,19 +245,19 @@ function Show-GenXdevScriptErrorFixInIde {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Continue from last conversation"
+            HelpMessage = 'Continue from last conversation'
         )]
         [switch] $ContinueLast,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Enable text-to-speech for AI responses"
+            HelpMessage = 'Enable text-to-speech for AI responses'
         )]
         [switch] $Speak,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Enable text-to-speech for AI thought responses"
+            HelpMessage = 'Enable text-to-speech for AI thought responses'
         )]
         [switch] $SpeakThoughts,
         ###############################################################################
@@ -256,32 +269,65 @@ function Show-GenXdevScriptErrorFixInIde {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for AI " +
-                          "preferences")
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences')
         )]
         [switch] $SessionOnly,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Clear alternative settings stored in session for AI " +
-                          "preferences")
+            HelpMessage = ('Clear alternative settings stored in session for AI ' +
+                'preferences')
         )]
         [switch] $ClearSession,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Store settings only in persistent preferences " +
-                          "without affecting session")
+            HelpMessage = ('Store settings only in persistent preferences ' +
+                'without affecting session')
         )]
-        [Alias("FromPreferences")]
-        [switch] $SkipSession
+        [Alias('FromPreferences')]
+        [switch] $SkipSession,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Escape control characters and modifiers when sending keys'
+        )]
+        [Alias('Escape')]
+        [switch] $SendKeyEscape,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Hold keyboard focus on target window when sending keys'
+        )]
+        [Alias('HoldKeyboardFocus')]
+        [switch] $SendKeyHoldKeyboardFocus,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Use Shift+Enter instead of Enter when sending keys'
+        )]
+        [Alias('UseShiftEnter')]
+        [switch] $SendKeyUseShiftEnter,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Delay between different input strings in ' +
+                'milliseconds when sending keys')
+        )]
+        [Alias('DelayMilliSeconds')]
+        [int] $SendKeyDelayMilliSeconds
         ###############################################################################
     )
 
     begin {
 
         # get ai prompt information for script execution error analysis
-        $llmPromptInfo = GenXdev.AI\Get-ScriptExecutionErrorFixPrompt `
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            'Retrieving AI prompt information for script error analysis'
+        )
+
+        $llmPromptInfo = Get-ScriptExecutionErrorFixPrompt `
             @PSBoundParameters
     }
 
@@ -291,142 +337,263 @@ function Show-GenXdevScriptErrorFixInIde {
         function processIssue($issue) {
 
             # copy parameters from this function to the llm prompt function
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                'Copying parameters for LLM prompt function'
+            )
+
             $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "GenXdev.AI\Get-ScriptExecutionErrorFixPrompt"
+                -FunctionName 'GenXdev.AI\Get-ScriptExecutionErrorFixPrompt'
 
             # ensure visual studio code is installed before proceeding
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                'Ensuring Visual Studio Code installation'
+            )
+
             $null = GenXdev.Coding\EnsureVSCodeInstallation
 
             # open vscode with the root module directory
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                'Opening Visual Studio Code with root module directory'
+            )
+
             code (GenXdev.FileSystem\Expand-Path `
-                "$PSScriptRoot\..\..\..\..\..\")
+                    "$PSScriptRoot\..\..\..\..\..\")
 
             # wait for vscode to fully load and become responsive
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                'Waiting for Visual Studio Code to fully load'
+            )
+
             Microsoft.PowerShell.Utility\Start-Sleep 2
 
+            # copy identical parameters between functions
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                'Copying identical parameters for Send-Key function'
+            )
+
+            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -FunctionName 'GenXdev.Windows\Send-Key' `
+                -BoundParameters $PSBoundParameters `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local -ErrorAction SilentlyContinue)
+
             # send keystrokes to open copilot chat and clear any existing content
-            GenXdev.Windows\Send-Key -KeysToSend @(
-                "^``", "^``", "^+i", "^l", "^a", "{DELETE}"
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                'Sending keystrokes to open Copilot chat and clear content'
+            )
+
+            GenXdev.Windows\Send-Key @params -KeysToSend @(
+                "^``", "^``", '^+i', '^l', '^a', '{DELETE}'
             )
 
             # check if issue has specific files to open or general error handling
             if ((-not $issue.Files) -or ($issue.Files.Count -eq 0)) {
 
                 # preserve current clipboard content to restore later
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    'Preserving current clipboard content'
+                )
+
                 $oldClipboard = Microsoft.PowerShell.Management\Get-Clipboard
 
                 try {
 
                     # copy the ai-generated prompt to system clipboard
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Copying AI-generated prompt to system clipboard'
+                    )
+
                     $issue.Prompt | `
-                        Microsoft.PowerShell.Management\Set-Clipboard
+                            Microsoft.PowerShell.Management\Set-Clipboard
+
+                    # copy identical parameters between functions
+                    $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                        -FunctionName 'GenXdev.Windows\Send-Key' `
+                        -BoundParameters $PSBoundParameters `
+                        -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                            -Scope Local -ErrorAction SilentlyContinue)
 
                     # paste prompt into copilot chat and execute
-                    GenXdev.Windows\Send-Key -KeysToSend @(
-                        "^v", "{ENTER}", "^{ENTER}","^``"
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Pasting prompt into Copilot chat and executing'
+                    )
+
+                    GenXdev.Windows\Send-Key @params -KeysToSend @(
+                        '^v', '{ENTER}', '^{ENTER}',"^``"
                     )
 
                     # allow time for copilot to process the request
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Waiting for Copilot to process the request'
+                    )
+
                     Microsoft.PowerShell.Utility\Start-Sleep 2
                 }
                 finally {
 
                     # restore the original clipboard content
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Restoring original clipboard content'
+                    )
+
                     $oldClipboard | `
-                        Microsoft.PowerShell.Management\Set-Clipboard
+                            Microsoft.PowerShell.Management\Set-Clipboard
                 }
             }
             else {
 
                 # iterate through each file mentioned in the issue
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    "Processing $($issue.Files.Count) files mentioned in issue"
+                )
+
                 $issue.Files | `
-                    Microsoft.PowerShell.Core\ForEach-Object {
+                        Microsoft.PowerShell.Core\ForEach-Object {
 
-                    # copy parameters for opening files in ide
-                    $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
-                        -BoundParameters $PSBoundParameters `
-                        -FunctionName "GenXdev.Coding\Open-SourceFileInIde"
+                        # copy parameters for opening files in ide
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Copying parameters for opening file: $($PSItem.Path)"
+                        )
 
-                    # set the path to the current problematic file
-                    $invocationArgs.Path = $PSItem.Path
+                        $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
+                            -BoundParameters $PSBoundParameters `
+                            -FunctionName 'GenXdev.Coding\Open-SourceFileInIde'
 
-                    # if line number is provided include it in arguments
-                    if ($PSItem.LineNumber -is [int]) {
+                        # set the path to the current problematic file
+                        $invocationArgs.Path = $PSItem.Path
 
-                        $invocationArgs.LineNo = $PSItem.LineNumber
+                        # if line number is provided include it in arguments
+                        if ($PSItem.LineNumber -is [int]) {
+
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                "Setting line number: $($PSItem.LineNumber)"
+                            )
+
+                            $invocationArgs.LineNo = $PSItem.LineNumber
+                        }
+
+                        # enable code mode for ide integration
+                        $invocationArgs.Code = $true
+
+                        # prepare key sequences for opening files in vscode
+                        $invocationArgs.KeysToSend = @(
+                            @('{ESCAPE}', '^+%{F12}')
+                        )
+
+                        # open the source file in the ide with specified parameters
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            'Opening source file in IDE'
+                        )
+
+                        GenXdev.Coding\Open-SourceFileInIde @invocationArgs
                     }
 
-                    # enable code mode for ide integration
-                    $invocationArgs.Code = $true
-
-                    # prepare key sequences for opening files in vscode
-                    $invocationArgs.KeysToSend = @(
-                        @("{ESCAPE}", "^+%{F12}")
-                    )
-
-                    # open the source file in the ide with specified parameters
-                    GenXdev.Coding\Open-SourceFileInIde @invocationArgs
-                }
-
                 # preserve current clipboard content to restore later
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    'Preserving current clipboard content'
+                )
+
                 $oldClipboard = Microsoft.PowerShell.Management\Get-Clipboard
 
                 try {
 
                     # copy the ai-generated prompt to system clipboard
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Copying AI-generated prompt to system clipboard'
+                    )
+
                     $issue.Prompt | `
-                        Microsoft.PowerShell.Management\Set-Clipboard
+                            Microsoft.PowerShell.Management\Set-Clipboard
+
+                    # copy identical parameters between functions
+                    $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                        -FunctionName 'GenXdev.Windows\Send-Key' `
+                        -BoundParameters $PSBoundParameters `
+                        -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                            -Scope Local -ErrorAction SilentlyContinue)
 
                     # paste prompt into copilot chat and execute
-                    GenXdev.Windows\Send-Key -KeysToSend @(
-                        "^v", "{ENTER}", "^{ENTER}","^``"
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Pasting prompt into Copilot chat and executing'
+                    )
+
+                    GenXdev.Windows\Send-Key @params -KeysToSend @(
+                        '^v', '{ENTER}', '^{ENTER}',"^``"
                     )
 
                     # allow time for copilot to process the request
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Waiting for Copilot to process the request'
+                    )
+
                     Microsoft.PowerShell.Utility\Start-Sleep 2
                 }
                 finally {
 
                     # restore the original clipboard content
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Restoring original clipboard content'
+                    )
+
                     $oldClipboard | `
-                        Microsoft.PowerShell.Management\Set-Clipboard
+                            Microsoft.PowerShell.Management\Set-Clipboard
                 }
             }
         }
 
         # process each issue identified by the ai language model
-        $null = $llmpromptInfo | `
-            Microsoft.PowerShell.Core\ForEach-Object {
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            'Processing issues identified by AI language model'
+        )
 
-            # check if there is standard output to return immediately
-            if ($PSItem.StandardOutput -and
+        $null = $llmpromptInfo | `
+                Microsoft.PowerShell.Core\ForEach-Object {
+
+                # check if there is standard output to return immediately
+                if ($PSItem.StandardOutput -and
                 ($PSItem.StandardOutput.Count -gt 0)) {
 
-                return $PSItem.StandardOutput
-            }
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Returning standard output immediately'
+                    )
 
-            # loop until user chooses to stop processing issues
-            while ($true) {
+                    return $PSItem.StandardOutput
+                }
 
-                # process the current issue with ai assistance
-                processIssue -issue $PSItem
+                # loop until user chooses to stop processing issues
+                while ($true) {
 
-                # prompt user for next action using choice dialog
-                switch ($host.ui.PromptForChoice(
-                        "Make a choice",
-                        "What to do next?",
-                        @("&Stop", "Redo &Last"),
-                        0)) {
+                    # process the current issue with ai assistance
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Processing current issue with AI assistance'
+                    )
 
-                    # user chose to stop processing
-                    0 {
-                        throw "Stopped"
-                        return
+                    processIssue -issue $PSItem
+
+                    # prompt user for next action using choice dialog
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Prompting user for next action'
+                    )
+
+                    switch ($host.ui.PromptForChoice(
+                            'Make a choice',
+                            'What to do next?',
+                            @('&Stop', 'Redo &Last'),
+                            0)) {
+
+                        # user chose to stop processing
+                        0 {
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                'User chose to stop processing'
+                            )
+
+                            throw 'Stopped'
+                            return
+                        }
                     }
                 }
             }
-        }
     }
 
     end {

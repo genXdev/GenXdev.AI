@@ -1,17 +1,17 @@
-###############################################################################
-Pester\Describe "Set-GenXdevAICommandNotFoundAction Set-GenXdevAICommandNotFoundAction" {
+﻿###############################################################################
+Pester\Describe 'Set-GenXdevAICommandNotFoundAction Set-GenXdevAICommandNotFoundAction' {
 
     Pester\BeforeAll {
         $script:scriptPath = GenXdev.FileSystem\Expand-Path `
             "$PSScriptRoot\..\..\Functions\GenXdev.AI\Set-GenXdevAICommandNotFoundAction.ps1"
     }
 
-    Pester\It "Should pass PSScriptAnalyzer rules" {
+    Pester\It 'Should pass PSScriptAnalyzer rules' {
 
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $script:scriptPath
 
-        [string] $message = ""
+        [string] $message = ''
         $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"

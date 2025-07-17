@@ -67,6 +67,28 @@
             .masonry { column-count: 4; }
         }
 
+        /* Single column mode (JS toggled) */
+        .single-column-mode .gallery-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 33vw;
+            width: 100%;
+        }
+        .single-column-mode .masonry {
+            column-count: 1 !important;
+        }
+
+        /* In single column mode and portrait orientation, gallery is full width */
+        @media (orientation: portrait) {
+            .single-column-mode .gallery-container {
+                max-width: 100vw;
+            }
+        }
+
         .gallery-item {
             break-inside: avoid;
             margin-bottom: 20px;
@@ -585,8 +607,380 @@
             description: "Hover over images to see face recognition data",
             actions: [],
             canEdit: false,
-            canDelete: false
+            canDelete: false,
+            // --- injected below ---
+            AutoScrollPixelsPerSecond: null,
+            AutoAnimateRectangles: false,
+            SingleColumnMode: false
         };
+        // first randomize mydata.images
+        mydata.images = mydata.images.sort(() => Math.random() - 0.5);
+
+        // Toggle single column mode layout if enabled
+        function updateSingleColumnMode() {
+            const root = document.documentElement;
+            if (mydata.SingleColumnMode) {
+                root.classList.add('single-column-mode');
+            } else {
+                root.classList.remove('single-column-mode');
+            }
+        }
+        updateSingleColumnMode();
+
+        // Remove and collect all .gif images from MyData.images collection
+        let removedImages = [];
+        if (Array.isArray(mydata.images)) {
+            mydata.images = mydata.images.filter(image => {
+                if (image.path && image.path.endsWith('.gif')) {
+                    removedImages.push(image);
+                    return false; // Remove this image
+                }
+                return true; // Keep this image
+            });
+        }
+
+        // Reinsert them with a random distribution
+        if (removedImages.length > 0) {
+            const insertCount = removedImages.length;
+            for (let i = 0; i < insertCount; i++) {
+                const randomIndex = Math.floor(Math.random() * mydata.images.length);
+                mydata.images.splice(randomIndex, 0, removedImages[i]);
+            }
+        }
+                // --- AutoScrollPixelsPerSecond functionality ---
+        if (typeof mydata.AutoScrollPixelsPerSecond === 'number' && mydata.AutoScrollPixelsPerSecond > 0) {
+            let lastTimestamp = null;
+            let autoScrollActive = false;
+            let userInteracting = false;
+            let interactionTimeout = null;
+
+            function autoScrollStep(timestamp) {
+                if (!autoScrollActive || userInteracting) return;
+                requestAnimationFrame(autoScrollStep);
+                if (lastTimestamp === null) lastTimestamp = timestamp;
+                const elapsed = (timestamp - lastTimestamp) / 1000; // seconds
+                lastTimestamp = timestamp;
+                const scrollAmount = mydata.AutoScrollPixelsPerSecond * elapsed;
+                window.scrollBy({ top: scrollAmount, behavior: 'auto' });
+                // Stop if at bottom
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 2) {
+                    // start from the top again
+                    window.scrollTo({ top: 0, behavior: 'auto' });
+                }
+            }
+
+            function startAutoScroll() {
+                if (autoScrollActive) return;
+                autoScrollActive = true;
+                lastTimestamp = null;
+                requestAnimationFrame(autoScrollStep);
+            }
+
+            function resumeAutoScroll() {
+                if (!autoScrollActive) return;
+                if (!userInteracting) return;
+                userInteracting = false;
+                lastTimestamp = null;
+                requestAnimationFrame(autoScrollStep);
+            }
+
+            function onUserScrollOrInput() {
+                userInteracting = true;
+                if (interactionTimeout) clearTimeout(interactionTimeout);
+                interactionTimeout = setTimeout(resumeAutoScroll, 10000); // 2s after last interaction
+            }
+
+            window.addEventListener('wheel', onUserScrollOrInput, { passive: true });
+            window.addEventListener('touchstart', onUserScrollOrInput, { passive: true });
+            window.addEventListener('keydown', onUserScrollOrInput, { passive: true });
+
+            window.addEventListener('DOMContentLoaded', startAutoScroll);
+        }
+
+        // --- AutoAnimateRectangles functionality ---
+        if (mydata.AutoAnimateRectangles) {
+            // Animation state for overlays
+            let lastOverlayUpdate;
+            // Minimal, robust rectangle animation: overlays match detected bounding boxes
+            const pastelColors = [
+                'lavender', 'thistle', 'plum', 'lightpink', 'mistyrose', 'honeydew', 'azure', 'aliceblue',
+                'lightcyan', 'palegreen', 'lightyellow', 'lemonchiffon', 'mintcream', 'beige', 'seashell',
+                'lightgoldenrodyellow', 'powderblue', 'paleturquoise', 'lightblue', 'lightsteelblue',
+                'wheat', 'cornsilk', 'oldlace', 'linen', 'blanchedalmond', 'papayawhip', 'peachpuff',
+                'moccasin', 'navajowhite', 'lavenderblush', 'floralwhite', 'ghostwhite', 'gainsboro',
+                'whitesmoke', 'snow', 'ivory', 'antiquewhite', 'khaki', 'lightgreen', 'aquamarine',
+                'palegoldenrod', 'palevioletred', 'lightcoral', 'lightsalmon', 'lightseagreen', 'mediumaquamarine'
+            ];
+            let overlays = [];
+            let idx = 0;
+            let lastCycle = 0;
+            let running = false;
+            // Overlay management: create overlays for each face/object in visible images, clean up old ones
+            let prevOverlayElements = [];
+            function getOrCreateOverlays() {
+                const overlays = [];
+                const visibleImages = Array.from(document.querySelectorAll('.gallery-item img'))
+                    .filter(img => {
+                        const rect = img.getBoundingClientRect();
+                        let bottomIsBelowViewportTop = rect.bottom > 0;
+                        let topIsAboveViewportBottom = rect.top < (window.innerHeight || document.documentElement.clientHeight);
+                        return bottomIsBelowViewportTop && topIsAboveViewportBottom;
+                    });
+                visibleImages.forEach((img, i) => {
+                    const container = img.parentElement;
+                    // Ensure container is relative and overlays are above the image
+                    container.style.position = 'relative';
+                    img.style.position = 'relative';
+                    img.style.zIndex = 0; // Lower z-index so overlays are above
+                    // Find face/object data for this image
+                    let imageIndex = -1;
+                    const m = /image-(\d+)/.exec(container.parentElement?.id || container.id || '');
+                    if (m) imageIndex = parseInt(m[1], 10);
+                    let faces = [], objects = [];
+                    // Use naturalWidth/naturalHeight from data if available, fallback to DOM, fallback to offsetWidth/offsetHeight
+                    let imageData = (window.imageGallery && imageIndex >= 0) ? window.imageGallery.images?.[imageIndex] : null;
+                    let imageNaturalWidth = (imageData && imageData.naturalWidth) ? imageData.naturalWidth : ((typeof img.naturalWidth === 'number' && img.naturalWidth > 0) ? img.naturalWidth : (img.width || img.offsetWidth));
+                    let imageNaturalHeight = (imageData && imageData.naturalHeight) ? imageData.naturalHeight : ((typeof img.naturalHeight === 'number' && img.naturalHeight > 0) ? img.naturalHeight : (img.height || img.offsetHeight));
+                    let imageDisplayWidth = img.offsetWidth;
+                    let imageDisplayHeight = img.offsetHeight;
+                    let scaleX = imageDisplayWidth / imageNaturalWidth;
+                    let scaleY = imageDisplayHeight / imageNaturalHeight;
+                    if (window.imageGallery && imageIndex >= 0) {
+                        const image = window.imageGallery.images?.[imageIndex];
+                        if (image) {
+                            faces = Array.isArray(image.people?.predictions) ? image.people.predictions : parsePsObjectArray(image.people?.predictions);
+                            objects = Array.isArray(image.objects?.objects) ? image.objects.objects : [];
+                        }
+                    }
+                    // If no faces/objects, just make one overlay for the image
+                    if ((!faces || faces.length === 0) && (!objects || objects.length === 0)) {
+                        let overlay = container.querySelector('.face-overlay[data-anim="true"]');
+                        if (!overlay) {
+                            overlay = document.createElement('div');
+                            overlay.className = 'face-overlay';
+                            overlay.setAttribute('data-anim', 'true');
+                            overlay.style.position = 'absolute';
+                            overlay.style.zIndex = 2;
+                            overlay.style.left = 0;
+                            overlay.style.top = 0;
+                            overlay.style.width = imageDisplayWidth + 'px';
+                            overlay.style.height = imageDisplayHeight + 'px';
+                            overlay.style.pointerEvents = 'none';
+                            container.style.position = 'relative';
+                            container.appendChild(overlay);
+                        }
+                        overlay.style.display = '';
+                        overlays.push(overlay);
+                    } else {
+                        // For each face, create overlay using bounding box if available
+                        faces.forEach((face, j) => {
+                            // Expect face to have bounding box: {x_min, y_min, x_max, y_max} in pixels or relative [0,1]
+                            let overlay = container.querySelector('.face-overlay[data-face-idx="' + j + '"][data-anim="true"]');
+                            if (!overlay) {
+                                overlay = document.createElement('div');
+                                overlay.className = 'face-overlay';
+                                overlay.setAttribute('data-face-idx', j);
+                                overlay.setAttribute('data-anim', 'true');
+                                overlay.style.position = 'absolute';
+                                overlay.style.zIndex = 2;
+                                container.style.position = 'relative';
+                                container.appendChild(overlay);
+                            }
+                            // Use bounding box if present (x_min, y_min, x_max, y_max)
+                            let l = 0, t = 0, w = imageDisplayWidth, h = imageDisplayHeight;
+                            if (face && typeof face === 'object' && 'x_min' in face && 'y_min' in face && 'x_max' in face && 'y_max' in face) {
+                                let x_min = face.x_min, y_min = face.y_min, x_max = face.x_max, y_max = face.y_max;
+                                // If values are 0-1, treat as relative
+                                if (x_min < 1 && y_min < 1 && x_max <= 1 && y_max <= 1) {
+                                    l = x_min * imageDisplayWidth;
+                                    t = y_min * imageDisplayHeight;
+                                    w = (x_max - x_min) * imageDisplayWidth;
+                                    h = (y_max - y_min) * imageDisplayHeight;
+                                } else {
+                                    l = x_min * scaleX;
+                                    t = y_min * scaleY;
+                                    w = (x_max - x_min) * scaleX;
+                                    h = (y_max - y_min) * scaleY;
+                                }
+                            }
+                            overlay.style.left = l + 'px';
+                            overlay.style.top = t + 'px';
+                            overlay.style.width = w + 'px';
+                            overlay.style.height = h + 'px';
+                            overlay.style.pointerEvents = 'none';
+                            overlay.style.display = '';
+                            overlays.push(overlay);
+                        });
+                        // For each object, create overlay using bounding box if available
+                        objects.forEach((obj, k) => {
+                            let overlay = container.querySelector('.object-overlay[data-object-idx="' + k + '"][data-anim="true"]');
+                            if (!overlay) {
+                                overlay = document.createElement('div');
+                                overlay.className = 'object-overlay';
+                                overlay.setAttribute('data-object-idx', k);
+                                overlay.setAttribute('data-anim', 'true');
+                                overlay.style.position = 'absolute';
+                                overlay.style.zIndex = 2;
+                                container.style.position = 'relative';
+                                container.appendChild(overlay);
+                            }
+                            let l = 0, t = 0, w = imageDisplayWidth, h = imageDisplayHeight;
+                            if (obj && typeof obj === 'object' && 'x_min' in obj && 'y_min' in obj && 'x_max' in obj && 'y_max' in obj) {
+                                let x_min = obj.x_min, y_min = obj.y_min, x_max = obj.x_max, y_max = obj.y_max;
+                                if (x_min < 1 && y_min < 1 && x_max <= 1 && y_max <= 1) {
+                                    l = x_min * imageDisplayWidth;
+                                    t = y_min * imageDisplayHeight;
+                                    w = (x_max - x_min) * imageDisplayWidth;
+                                    h = (y_max - y_min) * imageDisplayHeight;
+                                } else {
+                                    l = x_min * scaleX;
+                                    t = y_min * scaleY;
+                                    w = (x_max - x_min) * scaleX;
+                                    h = (y_max - y_min) * scaleY;
+                                }
+                            }
+                            overlay.style.left = l + 'px';
+                            overlay.style.top = t + 'px';
+                            overlay.style.width = w + 'px';
+                            overlay.style.height = h + 'px';
+                            overlay.style.pointerEvents = 'none';
+                            overlay.style.display = '';
+                            overlays.push(overlay);
+                        });
+                    }
+                });
+                // Clean up overlays that are no longer needed (only those created by animation)
+                prevOverlayElements.forEach(el => {
+                    if (el.getAttribute && el.getAttribute('data-anim') === 'true' && !overlays.includes(el)) {
+                        if (el.parentElement) el.parentElement.removeChild(el);
+                    }
+                });
+                prevOverlayElements = overlays;
+                return overlays;
+            }
+            function animateOverlaysRAF(ts) {
+                if (!running) return;
+                requestAnimationFrame(animateOverlaysRAF);
+                // Repopulate overlays every 2 seconds, but only if changed
+                if (typeof lastOverlayUpdate === 'undefined') lastOverlayUpdate = ts;
+                let overlaysChanged = false;
+                if (ts - lastOverlayUpdate > 1400) {
+                    const newOverlays = getOrCreateOverlays();
+                    if (newOverlays.length !== overlays.length || newOverlays.some((el, i) => el !== overlays[i])) {
+                        overlays = newOverlays;
+                        idx = 0; // Reset idx so animation always starts with a visible overlay
+                        overlaysChanged = true;
+                    }
+                    lastOverlayUpdate = ts;
+                }
+                if (overlays.length === 0) {
+                    idx = 0;
+                    lastCycle = ts;
+                    return;
+                }
+                if (!lastCycle) lastCycle = ts;
+                if (ts - lastCycle > 1500 || overlaysChanged) {
+                    overlays.forEach((el, i) => {
+                        el.style.transition = 'opacity 0.2s, border-color 0.2s, background-color 0.2s, color 0.2s';
+                        if (i === idx) {
+                            const color = pastelColors[i % pastelColors.length];
+                            el.style.opacity = '1';
+                            el.style.borderColor = color;
+                            el.style.backgroundColor = color;
+                            el.style.color = 'black';
+                            el.style.backgroundColor = color;
+                            el.style.mixBlendMode = 'normal';
+                            el.style.zIndex = 2;
+                            el.style.display = '';
+                            el.style.pointerEvents = 'none';
+                            el.style.backgroundColor = color;
+                            el.style.opacity = '0.5';
+                            // Add label if not present
+                            let label = el.querySelector('.overlay-label');
+                            if (!label) {
+                                label = document.createElement('div');
+                                label.className = 'overlay-label';
+                                label.style.position = 'absolute';
+                                label.style.left = '0';
+                                label.style.top = '0';
+                                label.style.width = '100%';
+                                label.style.textAlign = 'center';
+                                label.style.fontWeight = 'bold';
+                                label.style.fontSize = '13px';
+                                label.style.color = 'black';
+                                label.style.background = 'rgba(255,255,255,0.7)';
+                                label.style.pointerEvents = 'none';
+                                label.style.zIndex = 3;
+                                el.appendChild(label);
+                            }
+                            // Set label text
+                            let labelText = '';
+                            if (el.classList.contains('face-overlay') && el.hasAttribute('data-face-idx')) {
+                                const faceIdx = parseInt(el.getAttribute('data-face-idx'), 10);
+                                const container = el.parentElement;
+                                const m = /image-(\d+)/.exec(container.parentElement?.id || container.id || '');
+                                if (m && window.imageGallery) {
+                                    const imageIndex = parseInt(m[1], 10);
+                                    const image = window.imageGallery.images?.[imageIndex];
+                                    if (image && Array.isArray(image.people?.faces) && image.people.faces[faceIdx]) {
+                                        labelText = image.people.faces[faceIdx];
+                                    }
+                                }
+                                if (!labelText) labelText = 'Face';
+                            } else if (el.classList.contains('object-overlay') && el.hasAttribute('data-object-idx')) {
+                                const objIdx = parseInt(el.getAttribute('data-object-idx'), 10);
+                                const container = el.parentElement;
+                                const m = /image-(\d+)/.exec(container.parentElement?.id || container.id || '');
+                                if (m && window.imageGallery) {
+                                    const imageIndex = parseInt(m[1], 10);
+                                    const image = window.imageGallery.images?.[imageIndex];
+                                    if (image && Array.isArray(image.objects?.objects) && image.objects.objects[objIdx] && image.objects.objects[objIdx].label) {
+                                        labelText = image.objects.objects[objIdx].label;
+                                    }
+                                }
+                                if (!labelText) labelText = 'Object';
+                            }
+                            label.textContent = labelText;
+                        } else {
+                            el.style.opacity = '0';
+                            el.style.borderColor = '';
+                            el.style.backgroundColor = '';
+                            el.style.color = '';
+                            el.style.display = '';
+                            // Hide label if present
+                            let label = el.querySelector('.overlay-label');
+                            if (label) label.textContent = '';
+                        }
+                    });
+                    idx = overlays.length ? (idx + 1) % overlays.length : 0;
+                    lastCycle = ts;
+                }
+            }
+            function startOverlayAnimation() {
+                if (running) return;
+                running = true;
+                overlays = getOrCreateOverlays();
+                overlays.forEach(el => {
+                    el.style.transition = 'opacity 0.2s, border-color 0.2s, background-color 0.2s, color 0.2s';
+                    el.style.opacity = '0';
+                    el.style.borderColor = '';
+                    el.style.backgroundColor = '';
+                    el.style.color = '';
+                });
+                idx = 0;
+                lastCycle = 0;
+                lastOverlayUpdate = undefined;
+                requestAnimationFrame(animateOverlaysRAF);
+            }
+            function stopOverlayAnimation() {
+                running = false;
+            }
+            window.addEventListener('DOMContentLoaded', startOverlayAnimation);
+            window.addEventListener('visibilitychange', () => {
+                if (document.hidden) stopOverlayAnimation();
+                else startOverlayAnimation();
+            });
+        }
 
         function parsePsObject(str) {
             if (!str || typeof str !== 'string' || !str.startsWith('@{')) return null;
@@ -628,7 +1022,7 @@
             await new Promise(resolve => setTimeout(resolve, 1000));
             const images = [];
             const startIndex = (page - 1) * pageSize;
-            for (let i = Math.min(mydata.images, startIndex); i < Math.min(mydata.images.length, startIndex + pageSize); i++) {
+            for (let i = Math.max(0, Math.min(mydata.images, startIndex)); i < Math.min(mydata.images.length, startIndex + pageSize); i++) {
 
                 images.push(mydata.images[i]);
 
@@ -636,7 +1030,7 @@
             return images;
         }
         // Mock API to fetch all images for print
-        async function fetchAllImages(maxImages = 50) {
+        async function fetchAllImages(maxImages = 25) {
 
             return mydata.images.slice(0, maxImages);
         }
@@ -714,8 +1108,8 @@
                 this.showLoading();
 
                 try {
-                    // Fetch all images (up to a reasonable limit, e.g., 50)
-                    const allImages = await fetchAllImages(50);
+                    // Fetch all images (up to a reasonable limit, e.g., 25)
+                    const allImages = await fetchAllImages(25);
                     this.images = allImages;
                     this.hasMore = false;
                     this.renderGallery();
@@ -759,6 +1153,7 @@
                         newImages.forEach((image, index) => {
                             const globalIndex = this.images.length - newImages.length + index;
                             const galleryItem = this.createGalleryItem(image, globalIndex);
+                            this.setupHandlers(image, galleryItem);
                             this.galleryElement.appendChild(galleryItem);
                         });
                     }
@@ -799,8 +1194,41 @@
 
                 this.images.forEach((image, index) => {
                     const galleryItem = this.createGalleryItem(image, index);
+                    this.setupHandlers(image, galleryItem)
                     this.galleryElement.appendChild(galleryItem);
                 });
+            }
+
+            setupHandlers(image, item) {
+                return;
+                const imgEl = item.querySelector('img');
+                if (imgEl) {
+                    imgEl.style.cursor = 'pointer';
+                    let touchMoved = false;
+                    let touchStartY = 0;
+                    imgEl.addEventListener('touchstart', (e) => {
+                        if (e.touches && e.touches.length === 1) {
+                            touchMoved = false;
+                            touchStartY = e.touches[0].clientY;
+                        }
+                    });
+                    imgEl.addEventListener('touchmove', (e) => {
+                        if (e.touches && e.touches.length === 1) {
+                            if (Math.abs(e.touches[0].clientY - touchStartY) > 10) {
+                                touchMoved = true;
+                            }
+                        }
+                    });
+                    imgEl.addEventListener('touchend', (e) => {
+                        if (!touchMoved) {
+                            window.open(image.path, '_blank');
+                        }
+                    });
+                    imgEl.addEventListener('click', (e) => {
+                        // Only open if not a drag (mouse move is not handled here, so always open)
+                        window.open(image.path, '_blank');
+                    });
+                }
             }
 
             createGalleryItem(image, index) {
@@ -833,10 +1261,18 @@
                 const sceneConfidencePercentage = Math.round((sceneConfidence * 100)) || 0;
                 const sceneSuccess = image.scenes?.success || false;
 
+                // Determine alt/title for showOnlyPictures mode
+                let altTitle = '';
+                if (mydata.showOnlyPictures) {
+                    if (image.description && typeof image.description === 'object') {
+                        altTitle = image.description.long_description || image.description.title || image.description.short_description || '';
+                    }
+                }
                 item.innerHTML = `
                     <div class="image-container">
                         <img src="${this.escapeHtml(image.path)}"
-                             alt="${this.escapeHtml(image.description?.short_description || 'Image')}"
+                             alt="${this.escapeHtml(mydata.showOnlyPictures ? altTitle : (image.description?.short_description || 'Image'))}"
+                             title="${this.escapeHtml(mydata.showOnlyPictures ? altTitle : '')}"
                              loading="lazy"
                              onload="imageGallery.onImageLoad(this, ${index})"
                              onerror="imageGallery.onImageError(this)" />
@@ -1404,7 +1840,11 @@
             }
 
             escapeHtml(text) {
+
                 if (!text) return '';
+                if (text.indexOf('data:') === 0) {
+                    return text;
+                }
                 const div = document.createElement('div');
                 div.textContent = text;
                 return div.innerHTML;

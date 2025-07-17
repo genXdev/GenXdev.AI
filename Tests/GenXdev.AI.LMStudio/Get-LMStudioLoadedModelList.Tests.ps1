@@ -1,17 +1,17 @@
-###############################################################################
+﻿###############################################################################
 
-Pester\Describe "Get-LMStudioLoadedModelList basic functionality test" {
+Pester\Describe 'Get-LMStudioLoadedModelList basic functionality test' {
 
-    Pester\It "Should pass PSScriptAnalyzer rules" {
+    Pester\It 'Should pass PSScriptAnalyzer rules' {
 
-# get the script path for analysis
+        # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Get-LMStudioLoadedModelList.ps1"
 
-# run analyzer with explicit settings
+        # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 
-        [string] $message = ""
+        [string] $message = ''
         $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
@@ -29,13 +29,13 @@ $message
 "@;
     }
 
-    Pester\It "Should return loaded models from LM Studio" {
+    Pester\It 'Should return loaded models from LM Studio' {
 
-        GenXdev.AI\EnsureLMStudio
+        EnsureLMStudio
 
-        $result = GenXdev.AI\Get-LMStudioLoadedModelList
+        $result = Get-LMStudioLoadedModelList
 
-# verify we get valid response
+        # verify we get valid response
         $result | Pester\Should -Not -BeNullOrEmpty
     }
 

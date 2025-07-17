@@ -1,4 +1,4 @@
-################################################################################
+﻿################################################################################
 <#
 .SYNOPSIS
 Sets the default database file path for image operations in GenXdev.AI.
@@ -62,46 +62,47 @@ function Set-ImageDatabasePath {
     )]
 
     param(
-    ########################################################################
+        ########################################################################
         # specifies the path to the image database file
         [Parameter(
             Position = 0,
             Mandatory = $false,
-            HelpMessage = "The path to the image database file"
+            HelpMessage = 'The path to the image database file'
         )]
         [ValidateNotNullOrEmpty()]
-        [Alias("dbpath", "database")]
+        [Alias('dbpath', 'database')]
         [string] $DatabaseFilePath,
-    ########################################################################
+        ########################################################################
         # specify database path for preference data files
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
-    ########################################################################
+        ########################################################################
         # use alternative settings stored in session for AI preferences
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use alternative settings stored in session for AI preferences"
+            HelpMessage = 'Use alternative settings stored in session for AI preferences'
         )]
         [switch] $SessionOnly,
-    ########################################################################
+        ########################################################################
         # clear alternative settings stored in session for AI preferences
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear alternative settings stored in session for AI preferences"
+            HelpMessage = 'Clear alternative settings stored in session for AI preferences'
         )]
         [switch] $ClearSession,
-    ########################################################################
+        ########################################################################
         # store setting only in persistent preferences without affecting session
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Store setting only in persistent preferences without affecting session"
+            HelpMessage = 'Store setting only in persistent preferences without affecting session'
         )]
-        [Alias("FromPreferences")]
+        [Alias('FromPreferences')]
         [switch] $SkipSession
-    ########################################################################
+        ########################################################################
     )
 
     begin {
@@ -110,8 +111,8 @@ function Set-ImageDatabasePath {
         if ((-not $ClearSession) -and
             ([String]::IsNullOrWhiteSpace($DatabaseFilePath))) {
 
-            throw ("DatabaseFilePath parameter is required when not using " +
-                   "-ClearSession")
+            throw ('DatabaseFilePath parameter is required when not using ' +
+                '-ClearSession')
         }
 
         # expand and validate the database file path if provided
@@ -126,8 +127,8 @@ function Set-ImageDatabasePath {
 
             }
             catch {
-                throw ("Failed to expand database file path " +
-                       "'$DatabaseFilePath': $($_.Exception.Message)")
+                throw ('Failed to expand database file path ' +
+                    "'$DatabaseFilePath': $($_.Exception.Message)")
             }
 
             # get parent directory for validation
@@ -152,8 +153,8 @@ function Set-ImageDatabasePath {
                     )
                 }
                 catch {
-                    throw ("Failed to create parent directory " +
-                           "'$parentDir': $($_.Exception.Message)")
+                    throw ('Failed to create parent directory ' +
+                        "'$parentDir': $($_.Exception.Message)")
                 }
             }
         }
@@ -165,20 +166,20 @@ function Set-ImageDatabasePath {
         if ($ClearSession) {
 
             # prepare confirmation message for clearing session
-            $clearMessage = ("Clear session image database path setting " +
-                           "(Global variable)")
+            $clearMessage = ('Clear session image database path setting ' +
+                '(Global variable)')
 
             # confirm the operation with the user before proceeding
             if ($PSCmdlet.ShouldProcess(
-                "GenXdev.AI Module Configuration",
-                $clearMessage
-            )) {
+                    'GenXdev.AI Module Configuration',
+                    $clearMessage
+                )) {
 
                 # clear the global variable
                 $Global:ImageDatabasePath = $null
 
                 Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Cleared session setting: ImageDatabasePath"
+                    'Cleared session setting: ImageDatabasePath'
                 )
             }
             return
@@ -188,14 +189,14 @@ function Set-ImageDatabasePath {
         if ($SessionOnly) {
 
             # prepare confirmation message for session-only storage
-            $sessionMessage = ("Set session-only image database path to: " +
-                             "$DatabaseFilePath")
+            $sessionMessage = ('Set session-only image database path to: ' +
+                "$DatabaseFilePath")
 
             # confirm the operation with the user before proceeding
             if ($PSCmdlet.ShouldProcess(
-                "GenXdev.AI Module Configuration",
-                $sessionMessage
-            )) {
+                    'GenXdev.AI Module Configuration',
+                    $sessionMessage
+                )) {
 
                 # set global variable for session-only storage
                 $Global:ImageDatabasePath = $DatabaseFilePath
@@ -213,9 +214,9 @@ function Set-ImageDatabasePath {
 
         # confirm the operation with the user before proceeding
         if ($PSCmdlet.ShouldProcess(
-            "GenXdev.AI Module Configuration",
-            $persistentMessage
-        )) {
+                'GenXdev.AI Module Configuration',
+                $persistentMessage
+            )) {
 
             # output verbose message about setting database path
             Microsoft.PowerShell.Utility\Write-Verbose (
@@ -223,9 +224,9 @@ function Set-ImageDatabasePath {
             )
 
             # store the configuration in module preferences for persistence
-            $null = GenXdev.Data\Set-GenXdevPreference `
+            $null = Set-GenXdevPreference `
                 -PreferencesDatabasePath $PreferencesDatabasePath `
-                -Name "ImageDatabasePath" `
+                -Name 'ImageDatabasePath' `
                 -Value $DatabaseFilePath
         }
     }

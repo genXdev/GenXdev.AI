@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Retrieves a list of all registered face identifiers from DeepStack.
@@ -70,80 +70,81 @@ This example retrieves all faces and filters for those starting with "John".
 
 .NOTES
 DeepStack API Documentation: POST /v1/vision/face/list endpoint
-        ###############################################################################>
+#>
 function Get-RegisteredFaces {
 
     [CmdletBinding()]
     [Alias()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
 
     param (
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Skip Docker initialization (used when already called by parent function)"
+            HelpMessage = 'Skip Docker initialization (used when already called by parent function)'
         )]
         [switch] $NoDockerInitialize,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Force rebuild of Docker container and remove existing data"
+            HelpMessage = 'Force rebuild of Docker container and remove existing data'
         )]
-        [Alias("ForceRebuild")]
+        [Alias('ForceRebuild')]
         [switch] $Force,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use GPU-accelerated version (requires NVIDIA GPU)"
+            HelpMessage = 'Use GPU-accelerated version (requires NVIDIA GPU)'
         )]
         [switch] $UseGPU,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The name for the Docker container"
+            HelpMessage = 'The name for the Docker container'
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ContainerName = "deepstack_face_recognition",
+        [string] $ContainerName = 'deepstack_face_recognition',
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The name for the Docker volume for persistent storage"
+            HelpMessage = 'The name for the Docker volume for persistent storage'
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $VolumeName = "deepstack_face_data",
+        [string] $VolumeName = 'deepstack_face_data',
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The port number for the DeepStack service"
+            HelpMessage = 'The port number for the DeepStack service'
         )]
         [ValidateRange(1, 65535)]
         [int] $ServicePort = 5000,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Maximum time in seconds to wait for service health check"
+            HelpMessage = 'Maximum time in seconds to wait for service health check'
         )]
         [ValidateRange(10, 300)]
         [int] $HealthCheckTimeout = 60,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Interval in seconds between health check attempts"
+            HelpMessage = 'Interval in seconds between health check attempts'
         )]
         [ValidateRange(1, 10)]
         [int] $HealthCheckInterval = 3,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Custom Docker image name to use"
+            HelpMessage = 'Custom Docker image name to use'
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImageName,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show Docker Desktop window during initialization"
+            HelpMessage = 'Show Docker Desktop window during initialization'
         )]
+        [Alias('sw')]
         [switch]$ShowWindow
         ###################################################################
 
@@ -168,13 +169,13 @@ function Get-RegisteredFaces {
                     -ErrorAction SilentlyContinue)
 
             # initialize deepstack service with provided parameters
-            $null = GenXdev.AI\EnsureDeepStack @ensureParams
+            $null = EnsureDeepStack @ensureParams
 
         } else {
 
             # output verbose message when skipping docker initialization
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Skipping Docker initialization as requested"
+                'Skipping Docker initialization as requested'
             )
         }
 
@@ -193,7 +194,7 @@ function Get-RegisteredFaces {
 
                 # output verbose message when no face data received
                 Microsoft.PowerShell.Utility\Write-Verbose (
-                    "No face data received from API"
+                    'No face data received from API'
                 )
 
                 return @()
@@ -228,7 +229,7 @@ function Get-RegisteredFaces {
 
                 # output verbose message for unexpected response format
                 Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Unexpected response format or no faces found"
+                    'Unexpected response format or no faces found'
                 )
 
                 return @()
@@ -252,8 +253,8 @@ function Get-RegisteredFaces {
             $response = Microsoft.PowerShell.Utility\Invoke-RestMethod `
                 -Uri $uri `
                 -Method Post `
-                -ContentType "application/json" `
-                -Body "{}" `
+                -ContentType 'application/json' `
+                -Body '{}' `
                 -TimeoutSec 30 `
                 -ErrorAction Stop
 
@@ -273,8 +274,8 @@ function Get-RegisteredFaces {
             if ($statusCode -eq 404) {
 
                 # output warning for service not found
-                Microsoft.PowerShell.Utility\Write-Warning (
-                    "DeepStack face recognition endpoint not found - service may not be running"
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    'DeepStack face recognition endpoint not found - service may not be running'
                 )
 
             }
@@ -290,7 +291,7 @@ function Get-RegisteredFaces {
 
             # output error for timeout scenarios
             Microsoft.PowerShell.Utility\Write-Error (
-                "Timeout while retrieving registered faces from DeepStack API"
+                'Timeout while retrieving registered faces from DeepStack API'
             )
         }
         catch {
@@ -305,4 +306,3 @@ function Get-RegisteredFaces {
     end {
     }
 }
-        ###############################################################################

@@ -21,8 +21,8 @@ the same length as Vector1.
 $v1 = @(0.12, -0.45, 0.89)
 $v2 = @(0.15, -0.40, 0.92)
 Get-VectorSimilarity -Vector1 $v1 -Vector2 $v2
-        ###############################################################################Returns approximately 0.998, indicating high similarity
-        ###############################################################################>
+Returns approximately 0.998, indicating high similarity
+#>
 function Get-VectorSimilarity {
 
     [CmdletBinding()]
@@ -32,14 +32,14 @@ function Get-VectorSimilarity {
         [Parameter(
             Mandatory = $true,
             Position = 0,
-            HelpMessage = "First vector array of numbers"
+            HelpMessage = 'First vector array of numbers'
         )]
         [double[]]$Vector1,
         ########################################################################
         [Parameter(
             Mandatory = $true,
             Position = 1,
-            HelpMessage = "Second vector array of numbers"
+            HelpMessage = 'Second vector array of numbers'
         )]
         [double[]]$Vector2
         ########################################################################
@@ -47,32 +47,32 @@ function Get-VectorSimilarity {
 
     begin {
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Validating input vectors..."
+        Microsoft.PowerShell.Utility\Write-Verbose 'Validating input vectors...'
 
         # check for null vectors
         if (-not $Vector1 -or -not $Vector2) {
-            Microsoft.PowerShell.Utility\Write-Error "Both Vector1 and Vector2 must contain values."
+            Microsoft.PowerShell.Utility\Write-Error 'Both Vector1 and Vector2 must contain values.'
             return $null
         }
 
         # verify vectors have matching lengths
         if ($Vector1.Length -ne $Vector2.Length) {
-            Microsoft.PowerShell.Utility\Write-Error "Vector1 and Vector2 must have the same length."
+            Microsoft.PowerShell.Utility\Write-Error 'Vector1 and Vector2 must have the same length.'
             return $null
         }
 
         # ensure vectors are not empty
         if ($Vector1.Length -eq 0) {
-            Microsoft.PowerShell.Utility\Write-Error "Vectors cannot be empty."
+            Microsoft.PowerShell.Utility\Write-Error 'Vectors cannot be empty.'
             return $null
         }
     }
 
 
-process {
+    process {
 
         try {
-            Microsoft.PowerShell.Utility\Write-Verbose "Calculating vector similarity..."
+            Microsoft.PowerShell.Utility\Write-Verbose 'Calculating vector similarity...'
 
             # compute the dot product of the two vectors
             $dotProduct = 0.0
@@ -92,8 +92,8 @@ process {
 
             # prevent division by zero for zero-magnitude vectors
             if ($magnitude1 -eq 0 -or $magnitude2 -eq 0) {
-                Microsoft.PowerShell.Utility\Write-Warning ("One or both vectors have zero magnitude. " +
-                    "Similarity is undefined.")
+                Microsoft.PowerShell.Utility\Write-Verbose ('One or both vectors have zero magnitude. ' +
+                    'Similarity is undefined.')
                 return 0.0
             }
 
@@ -104,7 +104,7 @@ process {
             $normalizedSimilarity = [Math]::Min([Math]::Max($similarity, -1), 1)
             $normalizedSimilarity = ($normalizedSimilarity + 1) / 2
 
-            Microsoft.PowerShell.Utility\Write-Verbose "Similarity calculation complete"
+            Microsoft.PowerShell.Utility\Write-Verbose 'Similarity calculation complete'
             return [math]::Round($normalizedSimilarity, 6)
         }
         catch {
@@ -116,4 +116,3 @@ process {
     end {
     }
 }
-        ###############################################################################

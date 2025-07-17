@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Determines if a CUDA-capable GPU with sufficient memory is present.
@@ -15,7 +15,7 @@ AI workloads that require significant GPU memory.
 .EXAMPLE
 $hasGpu = Get-HasCapableGpu
 Write-Host "System has capable GPU: $hasGpu"
-        ###############################################################################>
+#>
 function Get-HasCapableGpu {
 
     [CmdletBinding()]
@@ -24,18 +24,18 @@ function Get-HasCapableGpu {
 
     begin {
         # inform user that gpu check is starting
-        Microsoft.PowerShell.Utility\Write-Verbose "Starting GPU capability verification"
+        Microsoft.PowerShell.Utility\Write-Verbose 'Starting GPU capability verification'
     }
 
 
-process {
+    process {
         # define minimum required gpu memory (4GB in bytes)
         $requiredMemory = 1024 * 1024 * 1024 * 4
 
         # query system for video controllers meeting memory requirement
         $videoControllers = CimCmdlets\Get-CimInstance `
             -Class Win32_VideoController |
-        Microsoft.PowerShell.Core\Where-Object { $_.AdapterRAM -ge $requiredMemory }
+            Microsoft.PowerShell.Core\Where-Object { $_.AdapterRAM -ge $requiredMemory }
 
         # output number of capable gpus found for debugging
         Microsoft.PowerShell.Utility\Write-Verbose "Detected $($videoControllers.Count) GPUs with 4GB+ RAM"
@@ -47,4 +47,3 @@ process {
     end {
     }
 }
-        ###############################################################################

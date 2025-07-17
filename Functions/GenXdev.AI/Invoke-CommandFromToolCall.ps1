@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Executes a tool call function with validation and parameter filtering.
@@ -29,7 +29,7 @@ Invoke-CommandFromToolCall -ToolCall $toolCall -Functions $functions `
 
 .EXAMPLE
 $result = Invoke-CommandFromToolCall $toolCall $functions -ForceAsText
-        ###############################################################################>
+#>
 function Invoke-CommandFromToolCall {
 
     [CmdletBinding()]
@@ -38,7 +38,7 @@ function Invoke-CommandFromToolCall {
         [Parameter(
             Mandatory = $true,
             Position = 0,
-            HelpMessage = "Tool call object containing function details and args"
+            HelpMessage = 'Tool call object containing function details and args'
         )]
         [ValidateNotNull()]
         [hashtable]
@@ -46,14 +46,14 @@ function Invoke-CommandFromToolCall {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of function definitions"
+            HelpMessage = 'Array of function definitions'
         )]
         [hashtable[]]
         $Functions = @(),
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of PowerShell command definitions to use as tools"
+            HelpMessage = 'Array of PowerShell command definitions to use as tools'
         )]
         [GenXdev.Helpers.ExposedCmdletDefinition[]]
         $ExposedCmdLets = @(),
@@ -62,13 +62,13 @@ function Invoke-CommandFromToolCall {
             Mandatory = $false,
             HelpMessage = "Array of command names that don't require confirmation"
         )]
-        [Alias("NoConfirmationFor")]
+        [Alias('NoConfirmationFor')]
         [string[]]
         $NoConfirmationToolFunctionNames = @(),
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Force output as text"
+            HelpMessage = 'Force output as text'
         )]
         [switch]
         $ForceAsText
@@ -78,16 +78,16 @@ function Invoke-CommandFromToolCall {
         # initialize the result object with default values
         $result = [GenXdev.Helpers.ExposedToolCallInvocationResult] @{}
         $result.CommandExposed = $false
-        $result.Reason = "Function not found, check spelling and availability"
+        $result.Reason = 'Function not found, check spelling and availability'
         $result.Output = $null
         $result.OutputType = $null
         $result.FullName = $null
 
         # extract and convert arguments from the tool call
         $result.UnfilteredArguments = $ToolCall.function.arguments |
-        Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue |
-        GenXdev.Helpers\ConvertTo-HashTable |
-        Microsoft.PowerShell.Utility\Select-Object -First 1
+            Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue |
+            GenXdev.Helpers\ConvertTo-HashTable |
+            Microsoft.PowerShell.Utility\Select-Object -First 1
 
         Microsoft.PowerShell.Utility\Write-Verbose "Processing tool call: $($ToolCall.function.name)"
         Microsoft.PowerShell.Utility\Write-Verbose "Unfiltered arguments: $($result.UnfilteredArguments |
@@ -99,17 +99,17 @@ function Invoke-CommandFromToolCall {
     }
 
 
-process {
+    process {
 
         $fullToolFunction = $ToolCall.function.name
-        $toolFunction = $fullToolFunction.Split("\")[1];
+        $toolFunction = $fullToolFunction.Split('\')[1];
 
         # find all exising predefined function definitions that match the tool call
         $matchedFunctions = @(
             $Functions.function | Microsoft.PowerShell.Core\ForEach-Object {
 
                 $fullFunction = $PSItem.Name
-                $function = $fullFunction.Split("\")[1];
+                $function = $fullFunction.Split('\')[1];
                 if ([string]::IsNullOrWhiteSpace($function) -or [string]::IsNullOrWhiteSpace($toolFunction)) {
 
                     if ([string]::IsNullOrWhiteSpace($function) -and [string]::IsNullOrWhiteSpace($toolFunction)) {
@@ -226,19 +226,19 @@ process {
             # check if there are any forced parameters
             $foundCmdlets = @(
                 $ExposedCmdLets |
-                Microsoft.PowerShell.Utility\Sort-Object -Property Name -Descending |
-                Microsoft.PowerShell.Core\ForEach-Object {
-                    if (
+                    Microsoft.PowerShell.Utility\Sort-Object -Property Name -Descending |
+                    Microsoft.PowerShell.Core\ForEach-Object {
+                        if (
                         ($_.Name -EQ ($matchedFunction.name)) -or
                         ($_.Name -like "*\$($matchedFunction.name)") -or
                         ($matchedFunction.name -like "*\$($_.Name)")
-                    ) { $_ }
-                }
+                        ) { $_ }
+                    }
             );
 
             foreach ($exposedCmdLet in $foundCmdlets) {
 
-                $exposedCmdLetParamNames = @($exposedCmdLet.AllowedParams | Microsoft.PowerShell.Core\ForEach-Object { "$_".Split("=")[0] }) + @($exposedCmdLet.ForcedParams)
+                $exposedCmdLetParamNames = @($exposedCmdLet.AllowedParams | Microsoft.PowerShell.Core\ForEach-Object { "$_".Split('=')[0] }) + @($exposedCmdLet.ForcedParams)
 
                 $foundUnmatchingParam = $false;
                 foreach ($filteredArgument in $result.FilteredArguments.GetEnumerator()) {
@@ -336,16 +336,16 @@ process {
                         }
                     } | Microsoft.PowerShell.Core\ForEach-Object {
 
-                        $_ -join " "
+                        $_ -join ' '
                     }
 
                     # Add confirmation prompt for tool functions that require it
                     switch ($host.ui.PromptForChoice(
-                            "Confirm",
+                            'Confirm',
                             "Are you sure you want to ALLOW the LLM to execute: `r`nPS $location> $functionName $parametersLine",
                             @(
-                                "&Allow",
-                                "&Disallow, reject"), 0)) {
+                                '&Allow',
+                                '&Disallow, reject'), 0)) {
                         0 {
                             # Create a string builder to capture verbose output (warnings)
                             $verboseOutput = [System.Text.StringBuilder]::new()
@@ -371,9 +371,9 @@ process {
                             $oldErrorActionPreference = $ErrorActionPreference
                             $oldWarningPreference = $WarningPreference
                             $VerbosePreference = 'Continue'
-                            $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier "Verbose" -Action $verboseScriptBlock
-                            $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier "Error" -Action $errorScriptBlock
-                            $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier "Warning" -Action $warningScriptBlock
+                            $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier 'Verbose' -Action $verboseScriptBlock
+                            $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier 'Error' -Action $errorScriptBlock
+                            $null = Microsoft.PowerShell.Utility\Register-EngineEvent -SourceIdentifier 'Warning' -Action $warningScriptBlock
 
                             try {
                                 $tmpResult = &$cb @filteredArguments
@@ -383,9 +383,9 @@ process {
                                 $tmpResult = $null
                             }
                             finally {
-                                $null = Microsoft.PowerShell.Utility\Unregister-Event -SourceIdentifier "Verbose" -ErrorAction SilentlyContinue
-                                $null = Microsoft.PowerShell.Utility\Unregister-Event -SourceIdentifier "Error" -ErrorAction SilentlyContinue
-                                $null = Microsoft.PowerShell.Utility\Unregister-Event -SourceIdentifier "Warning" -ErrorAction SilentlyContinue
+                                $null = Microsoft.PowerShell.Utility\Unregister-Event -SourceIdentifier 'Verbose' -ErrorAction SilentlyContinue
+                                $null = Microsoft.PowerShell.Utility\Unregister-Event -SourceIdentifier 'Error' -ErrorAction SilentlyContinue
+                                $null = Microsoft.PowerShell.Utility\Unregister-Event -SourceIdentifier 'Warning' -ErrorAction SilentlyContinue
                                 $VerbosePreference = $oldVerbosePreference
                                 $ErrorActionPreference = $oldErrorActionPreference
                                 $WarningPreference = $oldWarningPreference
@@ -416,7 +416,7 @@ process {
                         }
 
                         1 {
-                            throw "User cancelled execution"
+                            throw 'User cancelled execution'
                             break;
                         }
                     }
@@ -434,7 +434,7 @@ process {
                         }
                     }
                     else {
-                        $tmpResult = "null # No output (success, void return)"
+                        $tmpResult = 'null # No output (success, void return)'
                     }
                 }
                 else {
@@ -445,10 +445,10 @@ process {
                     try {
                         if ($tmpResult -is [string]) {
                             $jsonTest = $tmpResult |
-                            Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction Stop
+                                Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction Stop
                             if ($jsonTest) {
                                 $isAlreadyJson = $true
-                                $result.OutputType = "application/json"
+                                $result.OutputType = 'application/json'
                             }
                         }
                     }
@@ -463,11 +463,11 @@ process {
                     }
                     else {
                         # handle non-JSON output
-                        $result.OutputType = "string"
+                        $result.OutputType = 'string'
 
                         if ($tmpResult -isnot [string]) {
 
-                            $result.OutputType = "application/json"
+                            $result.OutputType = 'application/json'
                             $jsonDepth = 2;
                             if ($result.ExposedCmdLet -and $result.ExposedCmdLet.JsonDepth) {
 
@@ -479,9 +479,9 @@ process {
                             if ($asText) {
 
                                 $tmpResult = (@($tmpResult) |
-                                    Microsoft.PowerShell.Core\ForEach-Object { $_ | Microsoft.PowerShell.Utility\Out-String }) |
-                                Microsoft.PowerShell.Utility\ConvertTo-Json -Depth $jsonDepth `
-                                    -WarningAction SilentlyContinue
+                                        Microsoft.PowerShell.Core\ForEach-Object { $_ | Microsoft.PowerShell.Utility\Out-String }) |
+                                        Microsoft.PowerShell.Utility\ConvertTo-Json -Depth $jsonDepth `
+                                            -WarningAction SilentlyContinue
                             }
                             else {
 
@@ -489,9 +489,9 @@ process {
                                     $tmpResult -is [string]) {
 
                                     $tmpResult = $tmpResult |
-                                    Microsoft.PowerShell.Utility\ConvertTo-Json -Depth $jsonDepth `
-                                        -ErrorAction SilentlyContinue `
-                                        -WarningAction SilentlyContinue
+                                        Microsoft.PowerShell.Utility\ConvertTo-Json -Depth $jsonDepth `
+                                            -ErrorAction SilentlyContinue `
+                                            -WarningAction SilentlyContinue
                                 }
                                 else {
 
@@ -500,13 +500,13 @@ process {
                                             -ErrorAction SilentlyContinue `
                                             -WarningAction SilentlyContinue `
                                             -Depth ($jsonDepth - 1) |
-                                        Microsoft.PowerShell.Utility\ConvertFrom-Json `
+                                            Microsoft.PowerShell.Utility\ConvertFrom-Json `
+                                                -ErrorAction SilentlyContinue `
+                                                -WarningAction SilentlyContinue |
+                                            GenXdev.Helpers\ConvertTo-HashTable
+                                        } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth $jsonDepth `
                                             -ErrorAction SilentlyContinue `
-                                            -WarningAction SilentlyContinue |
-                                        GenXdev.Helpers\ConvertTo-HashTable
-                                    } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth $jsonDepth `
-                                        -ErrorAction SilentlyContinue `
-                                        -WarningAction SilentlyContinue
+                                            -WarningAction SilentlyContinue
                                 }
                             }
                         }
@@ -533,4 +533,3 @@ process {
         Microsoft.PowerShell.Utility\Write-Output $result
     }
 }
-        ###############################################################################

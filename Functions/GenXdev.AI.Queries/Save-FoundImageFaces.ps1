@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Saves cropped face images from indexed image search results.
@@ -98,226 +98,226 @@ function Save-FoundImageFaces {
     [CmdletBinding()]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
     [OutputType([Object[]], [System.Collections.Generic.List[Object]], [string])]
-    [Alias("saveimagefaces")]
+    [Alias('saveimagefaces')]
 
     param(
         ###############################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
-            HelpMessage = "Will match any of all the possible meta data types."
+            HelpMessage = 'Will match any of all the possible meta data types.'
         )]
         [string[]] $Any = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The description text to look for, wildcards allowed."
+            HelpMessage = 'The description text to look for, wildcards allowed.'
         )]
         [string[]] $DescriptionSearch = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The keywords to look for, wildcards allowed."
+            HelpMessage = 'The keywords to look for, wildcards allowed.'
         )]
         [string[]] $Keywords = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "People to look for, wildcards allowed."
+            HelpMessage = 'People to look for, wildcards allowed.'
         )]
         [string[]] $People = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Objects to look for, wildcards allowed."
+            HelpMessage = 'Objects to look for, wildcards allowed.'
         )]
         [string[]] $Objects = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Scenes to look for, wildcards allowed."
+            HelpMessage = 'Scenes to look for, wildcards allowed.'
         )]
         [string[]] $Scenes = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Picture types to filter by, wildcards allowed."
+            HelpMessage = 'Picture types to filter by, wildcards allowed.'
         )]
         [string[]] $PictureType = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Style types to filter by, wildcards allowed."
+            HelpMessage = 'Style types to filter by, wildcards allowed.'
         )]
         [string[]] $StyleType = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Overall moods to filter by, wildcards allowed."
+            HelpMessage = 'Overall moods to filter by, wildcards allowed.'
         )]
         [string[]] $OverallMood = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Path to the SQLite database file."
+            HelpMessage = 'Path to the SQLite database file.'
         )]
         [string] $DatabaseFilePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Language for descriptions and keywords."
+            HelpMessage = 'Language for descriptions and keywords.'
         )]
         [ValidateSet(
-            "Afrikaans",
-            "Akan",
-            "Albanian",
-            "Amharic",
-            "Arabic",
-            "Armenian",
-            "Azerbaijani",
-            "Basque",
-            "Belarusian",
-            "Bemba",
-            "Bengali",
-            "Bihari",
-            "Bosnian",
-            "Breton",
-            "Bulgarian",
-            "Cambodian",
-            "Catalan",
-            "Cherokee",
-            "Chichewa",
-            "Chinese (Simplified)",
-            "Chinese (Traditional)",
-            "Corsican",
-            "Croatian",
-            "Czech",
-            "Danish",
-            "Dutch",
-            "English",
-            "Esperanto",
-            "Estonian",
-            "Ewe",
-            "Faroese",
-            "Filipino",
-            "Finnish",
-            "French",
-            "Frisian",
-            "Ga",
-            "Galician",
-            "Georgian",
-            "German",
-            "Greek",
-            "Guarani",
-            "Gujarati",
-            "Haitian Creole",
-            "Hausa",
-            "Hawaiian",
-            "Hebrew",
-            "Hindi",
-            "Hungarian",
-            "Icelandic",
-            "Igbo",
-            "Indonesian",
-            "Interlingua",
-            "Irish",
-            "Italian",
-            "Japanese",
-            "Javanese",
-            "Kannada",
-            "Kazakh",
-            "Kinyarwanda",
-            "Kirundi",
-            "Kongo",
-            "Korean",
-            "Krio (Sierra Leone)",
-            "Kurdish",
-            "Kurdish (Soranî)",
-            "Kyrgyz",
-            "Laothian",
-            "Latin",
-            "Latvian",
-            "Lingala",
-            "Lithuanian",
-            "Lozi",
-            "Luganda",
-            "Luo",
-            "Macedonian",
-            "Malagasy",
-            "Malay",
-            "Malayalam",
-            "Maltese",
-            "Maori",
-            "Marathi",
-            "Mauritian Creole",
-            "Moldavian",
-            "Mongolian",
-            "Montenegrin",
-            "Nepali",
-            "Nigerian Pidgin",
-            "Northern Sotho",
-            "Norwegian",
-            "Norwegian (Nynorsk)",
-            "Occitan",
-            "Oriya",
-            "Oromo",
-            "Pashto",
-            "Persian",
-            "Polish",
-            "Portuguese (Brazil)",
-            "Portuguese (Portugal)",
-            "Punjabi",
-            "Quechua",
-            "Romanian",
-            "Romansh",
-            "Runyakitara",
-            "Russian",
-            "Scots Gaelic",
-            "Serbian",
-            "Serbo-Croatian",
-            "Sesotho",
-            "Setswana",
-            "Seychellois Creole",
-            "Shona",
-            "Sindhi",
-            "Sinhalese",
-            "Slovak",
-            "Slovenian",
-            "Somali",
-            "Spanish",
-            "Spanish (Latin American)",
-            "Sundanese",
-            "Swahili",
-            "Swedish",
-            "Tajik",
-            "Tamil",
-            "Tatar",
-            "Telugu",
-            "Thai",
-            "Tigrinya",
-            "Tonga",
-            "Tshiluba",
-            "Tumbuka",
-            "Turkish",
-            "Turkmen",
-            "Twi",
-            "Uighur",
-            "Ukrainian",
-            "Urdu",
-            "Uzbek",
-            "Vietnamese",
-            "Welsh",
-            "Wolof",
-            "Xhosa",
-            "Yiddish",
-            "Yoruba",
-            "Zulu")]
+            'Afrikaans',
+            'Akan',
+            'Albanian',
+            'Amharic',
+            'Arabic',
+            'Armenian',
+            'Azerbaijani',
+            'Basque',
+            'Belarusian',
+            'Bemba',
+            'Bengali',
+            'Bihari',
+            'Bosnian',
+            'Breton',
+            'Bulgarian',
+            'Cambodian',
+            'Catalan',
+            'Cherokee',
+            'Chichewa',
+            'Chinese (Simplified)',
+            'Chinese (Traditional)',
+            'Corsican',
+            'Croatian',
+            'Czech',
+            'Danish',
+            'Dutch',
+            'English',
+            'Esperanto',
+            'Estonian',
+            'Ewe',
+            'Faroese',
+            'Filipino',
+            'Finnish',
+            'French',
+            'Frisian',
+            'Ga',
+            'Galician',
+            'Georgian',
+            'German',
+            'Greek',
+            'Guarani',
+            'Gujarati',
+            'Haitian Creole',
+            'Hausa',
+            'Hawaiian',
+            'Hebrew',
+            'Hindi',
+            'Hungarian',
+            'Icelandic',
+            'Igbo',
+            'Indonesian',
+            'Interlingua',
+            'Irish',
+            'Italian',
+            'Japanese',
+            'Javanese',
+            'Kannada',
+            'Kazakh',
+            'Kinyarwanda',
+            'Kirundi',
+            'Kongo',
+            'Korean',
+            'Krio (Sierra Leone)',
+            'Kurdish',
+            'Kurdish (Soranî)',
+            'Kyrgyz',
+            'Laothian',
+            'Latin',
+            'Latvian',
+            'Lingala',
+            'Lithuanian',
+            'Lozi',
+            'Luganda',
+            'Luo',
+            'Macedonian',
+            'Malagasy',
+            'Malay',
+            'Malayalam',
+            'Maltese',
+            'Maori',
+            'Marathi',
+            'Mauritian Creole',
+            'Moldavian',
+            'Mongolian',
+            'Montenegrin',
+            'Nepali',
+            'Nigerian Pidgin',
+            'Northern Sotho',
+            'Norwegian',
+            'Norwegian (Nynorsk)',
+            'Occitan',
+            'Oriya',
+            'Oromo',
+            'Pashto',
+            'Persian',
+            'Polish',
+            'Portuguese (Brazil)',
+            'Portuguese (Portugal)',
+            'Punjabi',
+            'Quechua',
+            'Romanian',
+            'Romansh',
+            'Runyakitara',
+            'Russian',
+            'Scots Gaelic',
+            'Serbian',
+            'Serbo-Croatian',
+            'Sesotho',
+            'Setswana',
+            'Seychellois Creole',
+            'Shona',
+            'Sindhi',
+            'Sinhalese',
+            'Slovak',
+            'Slovenian',
+            'Somali',
+            'Spanish',
+            'Spanish (Latin American)',
+            'Sundanese',
+            'Swahili',
+            'Swedish',
+            'Tajik',
+            'Tamil',
+            'Tatar',
+            'Telugu',
+            'Thai',
+            'Tigrinya',
+            'Tonga',
+            'Tshiluba',
+            'Tumbuka',
+            'Turkish',
+            'Turkmen',
+            'Twi',
+            'Uighur',
+            'Ukrainian',
+            'Urdu',
+            'Uzbek',
+            'Vietnamese',
+            'Welsh',
+            'Wolof',
+            'Xhosa',
+            'Yiddish',
+            'Yoruba',
+            'Zulu')]
         [string] $Language,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = (
-                "Array of directory path-like search strings to filter images by " +
+                'Array of directory path-like search strings to filter images by ' +
                 "path (SQL LIKE patterns, e.g. '%\\2024\\%')"
             )
         )]
@@ -326,79 +326,80 @@ function Save-FoundImageFaces {
         [Parameter(
             Mandatory = $false,
             ValueFromPipeline = $true,
-            HelpMessage = ("Accepts search results from a previous -PassThru " +
-                "call to regenerate the view.")
+            HelpMessage = ('Accepts search results from a previous -PassThru ' +
+                'call to regenerate the view.')
         )]
         [System.Object[]] $InputObject,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Directory to save cropped face images."
+            HelpMessage = 'Directory to save cropped face images.'
         )]
-        [string] $OutputDirectory = ".\",
+        [string] $OutputDirectory = '.\',
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter images that contain nudity."
+            HelpMessage = 'Filter images that contain nudity.'
         )]
         [switch] $HasNudity,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter images that do NOT contain nudity."
+            HelpMessage = 'Filter images that do NOT contain nudity.'
         )]
         [switch] $NoNudity,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter images that contain explicit content."
+            HelpMessage = 'Filter images that contain explicit content.'
         )]
         [switch] $HasExplicitContent,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter images that do NOT contain explicit content."
+            HelpMessage = 'Filter images that do NOT contain explicit content.'
         )]
         [switch] $NoExplicitContent,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Force rebuild of the image index database."
+            HelpMessage = 'Force rebuild of the image index database.'
         )]
         [switch] $ForceIndexRebuild,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Also save unknown persons detected as objects."
+            HelpMessage = 'Also save unknown persons detected as objects.'
         )]
         [switch] $SaveUnknownPersons,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for AI " +
-                "preferences like Language, Image collections, etc")
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
         [switch] $SessionOnly,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Clear alternative settings stored in session for AI " +
-                "preferences like Language, Image collections, etc")
+            HelpMessage = ('Clear alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
         [switch] $ClearSession,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Dont use alternative settings stored in session for " +
-                "AI preferences like Language, Image collections, etc")
+            HelpMessage = ('Dont use alternative settings stored in session for ' +
+                'AI preferences like Language, Image collections, etc')
         )]
-        [Alias("FromPreferences")]
+        [Alias('FromPreferences')]
         [switch] $SkipSession
         ###############################################################################
     )
@@ -409,13 +410,13 @@ function Save-FoundImageFaces {
         # copy identical parameter values for ai meta language function
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
+            -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local `
                 -ErrorAction SilentlyContinue)
 
         # get ai meta language with fallback to default web language
-        $language = GenXdev.AI\Get-AIMetaLanguage @params
+        $language = Get-AIMetaLanguage @params
 
         Microsoft.PowerShell.Utility\Write-Verbose ("Using language: $language")
 
@@ -433,51 +434,51 @@ function Save-FoundImageFaces {
             # add wildcards to any entries without them for better matching
             $any = @($Any | Microsoft.PowerShell.Core\ForEach-Object {
 
-                # trim whitespace from entry to normalize input
-                $entry = $_.Trim()
+                    # trim whitespace from entry to normalize input
+                    $entry = $_.Trim()
 
-                # add wildcards if none exist to enable partial matching
-                if ($entry.IndexOfAny([char[]]@('*', '?')) -lt 0) {
+                    # add wildcards if none exist to enable partial matching
+                    if ($entry.IndexOfAny([char[]]@('*', '?')) -lt 0) {
 
-                    "*$entry*"
-                }
-                else {
-                    $_
-                }
-            })
+                        "*$entry*"
+                    }
+                    else {
+                        $_
+                    }
+                })
 
             # merge any parameter with all search parameters for comprehensive search
             $descriptionSearch = $null -ne $DescriptionSearch ?
                 ($DescriptionSearch + $any) :
-                $any
+            $any
 
             $keywords = $null -ne $Keywords ?
                 ($Keywords + $any) :
-                $any
+            $any
 
             $people = $null -ne $People ?
                 ($People + $any) :
-                $any
+            $any
 
             $objects = $null -ne $Objects ?
                 ($Objects + $any) :
-                $any
+            $any
 
             $scenes = $null -ne $Scenes ?
                 ($Scenes + $any) :
-                $any
+            $any
 
             $pictureType = $null -ne $PictureType ?
                 ($PictureType + $any) :
-                $any
+            $any
 
             $styleType = $null -ne $StyleType ?
                 ($StyleType + $any) :
-                $any
+            $any
 
             $overallMood = $null -ne $OverallMood ?
                 ($OverallMood + $any) :
-                $any
+            $any
         }
     }
     ###############################################################################
@@ -487,7 +488,7 @@ function Save-FoundImageFaces {
         $outputDirectory = GenXdev.FileSystem\Expand-Path $OutputDirectory `
             -CreateDirectory
 
-        Microsoft.PowerShell.Utility\Write-Verbose ("Using output directory: " +
+        Microsoft.PowerShell.Utility\Write-Verbose ('Using output directory: ' +
             "$outputDirectory")
 
         # define internal function to save image faces from processed images
@@ -504,15 +505,15 @@ function Save-FoundImageFaces {
                 # skip if image is null or has no path for processing
                 if ($null -eq $image -or -not $image.path) {
 
-                    Microsoft.PowerShell.Utility\Write-Verbose ("Skipping image " +
-                        "with null or missing path")
+                    Microsoft.PowerShell.Utility\Write-Verbose ('Skipping image ' +
+                        'with null or missing path')
                     return
                 }
 
                 # get image path for loading
                 $imgPath = $image.path
 
-                Microsoft.PowerShell.Utility\Write-Verbose ("Processing image: " +
+                Microsoft.PowerShell.Utility\Write-Verbose ('Processing image: ' +
                     "$imgPath")
 
                 # handle face/people recognition data from different sources
@@ -532,7 +533,7 @@ function Save-FoundImageFaces {
                 # process people/faces if found in image
                 if ($people) {
 
-                    Microsoft.PowerShell.Utility\Write-Verbose ("Found " +
+                    Microsoft.PowerShell.Utility\Write-Verbose ('Found ' +
                         "$($people.Count) faces/people in image")
 
                     try {
@@ -571,7 +572,7 @@ function Save-FoundImageFaces {
                                 if ($width -le 0 -or $height -le 0) {
 
                                     Microsoft.PowerShell.Utility\Write-Verbose (
-                                        "Skipping face with invalid dimensions")
+                                        'Skipping face with invalid dimensions')
                                     continue
                                 }
 
@@ -613,7 +614,7 @@ function Save-FoundImageFaces {
                                 # create output filename with descriptive naming
                                 $outFile = Microsoft.PowerShell.Management\Join-Path `
                                     $outputDirectory `
-                                    ("${imgBase}_${faceLabel}_${faceIdx}.png")
+                                ("${imgBase}_${faceLabel}_${faceIdx}.png")
 
                                 # save cropped face as png file
                                 $croppedBitmap.Save($outFile,
@@ -642,7 +643,7 @@ function Save-FoundImageFaces {
                                 $image.objects.objects) {
 
                                 Microsoft.PowerShell.Utility\Write-Verbose (
-                                    "Processing unknown persons from objects")
+                                    'Processing unknown persons from objects')
 
                                 # initialize object index counter for unique naming
                                 $objIdx = 0
@@ -717,7 +718,7 @@ function Save-FoundImageFaces {
                                             # create output filename for unknown person
                                             $outFile = Microsoft.PowerShell.Management\Join-Path `
                                                 $outputDirectory `
-                                                ("${imgBase}_unknownperson_${objIdx}.png")
+                                            ("${imgBase}_unknownperson_${objIdx}.png")
 
                                             # save cropped person as png
                                             $croppedBitmap.Save($outFile,
@@ -734,8 +735,8 @@ function Save-FoundImageFaces {
                                         }
                                         catch {
                                             # warn about failed unknown person cropping
-                                            Microsoft.PowerShell.Utility\Write-Warning `
-                                                ("Failed to crop/save unknown person " +
+                                            Microsoft.PowerShell.Utility\Write-Verbose `
+                                            ('Failed to crop/save unknown person ' +
                                                 "for $($imgPath): $_")
                                         }
                                     }
@@ -751,7 +752,7 @@ function Save-FoundImageFaces {
                     }
                     catch {
                         # warn about failed face cropping
-                        Microsoft.PowerShell.Utility\Write-Warning `
+                        Microsoft.PowerShell.Utility\Write-Verbose `
                             "Failed to crop/save faces for $($imgPath): $_"
                     }
                 }
@@ -768,7 +769,7 @@ function Save-FoundImageFaces {
         if ($null -ne $InputObject) {
 
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Processing provided input objects")
+                'Processing provided input objects')
 
             # process each input object through the save image function
             $InputObject | Microsoft.PowerShell.Core\ForEach-Object {
@@ -777,20 +778,20 @@ function Save-FoundImageFaces {
         }
         else {
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Searching for indexed images")
+                'Searching for indexed images')
 
             # copy parameters for find indexed image function call
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "GenXdev.AI\Find-IndexedImage" `
+                -FunctionName 'GenXdev.AI\Find-IndexedImage' `
                 -DefaultValues (
-                    Microsoft.PowerShell.Utility\Get-Variable `
-                        -Scope Local `
-                        -ErrorAction SilentlyContinue
-                )
+                Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue
+            )
 
             # find indexed images and process each through save image function
-            GenXdev.AI\Find-IndexedImage @params |
+            Find-IndexedImage @params |
                 Microsoft.PowerShell.Core\ForEach-Object {
                     saveImage $_
                 }
@@ -799,7 +800,7 @@ function Save-FoundImageFaces {
     ###############################################################################
     end {
 
-        Microsoft.PowerShell.Utility\Write-Verbose ("Processed " +
+        Microsoft.PowerShell.Utility\Write-Verbose ('Processed ' +
             "$($info.resultCount) images")
     }
 }

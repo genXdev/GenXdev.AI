@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Batch updates image keywords, faces, objects, and scenes across multiple system
@@ -73,13 +73,23 @@ Set a TTL (in seconds) for models loaded via API.
 The directory containing face images organized by person folders. If not
 specified, uses the configured faces directory preference.
 
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
 .PARAMETER RetryFailed
 Specifies whether to retry previously failed image keyword updates. When
 enabled, the function will attempt to process images that failed in previous
 runs.
 
+.PARAMETER NoRecurse
+Dont't recurse into subdirectories when processing images.
+
 .PARAMETER RedoAll
 Forces reprocessing of all images regardless of previous processing status.
+
+.PARAMETER NoLMStudioInitialize
+Skip LM-Studio initialization when already called by parent function to avoid
+duplicate container setup.
 
 .PARAMETER NoDockerInitialize
 Skip Docker initialization when already called by parent function to avoid
@@ -87,7 +97,7 @@ duplicate container setup.
 
 .PARAMETER Force
 Force rebuild of Docker container and remove existing data for clean start.
-And force restart of LMStudio
+And force restart of LMStudio.
 
 .PARAMETER UseGPU
 Use GPU-accelerated version for faster processing (requires NVIDIA GPU).
@@ -109,12 +119,64 @@ Image collections, etc.
 Clear alternative settings stored in session for AI preferences like Language,
 Image collections, etc.
 
-.PARAMETER PreferencesDatabasePath
-Database path for preference data files.
-
 .PARAMETER SkipSession
 Dont use alternative settings stored in session for AI preferences like
 Language, Image collections, etc.
+
+.PARAMETER Monitor
+Monitor selection for window positioning: 0=primary, 1+=specific monitor,
+-1=current, -2=secondary.
+
+.PARAMETER NoBorders
+Removes window borders and title bar for a cleaner appearance.
+
+.PARAMETER Width
+Window width in pixels for positioning applications.
+
+.PARAMETER Height
+Window height in pixels for positioning applications.
+
+.PARAMETER X
+Window horizontal position for positioning applications.
+
+.PARAMETER Y
+Window vertical position for positioning applications.
+
+.PARAMETER Left
+Places window on left half of screen.
+
+.PARAMETER Right
+Places window on right half of screen.
+
+.PARAMETER Top
+Places window on top half of screen.
+
+.PARAMETER Bottom
+Places window on bottom half of screen.
+
+.PARAMETER Centered
+Centers window on screen.
+
+.PARAMETER Fullscreen
+Maximizes window to fill entire screen.
+
+.PARAMETER RestoreFocus
+Returns focus to PowerShell window after positioning.
+
+.PARAMETER SideBySide
+Places windows side by side with PowerShell on the same monitor.
+
+.PARAMETER FocusWindow
+Focus the window after positioning.
+
+.PARAMETER SetForeground
+Set the window to foreground after positioning.
+
+.PARAMETER Maximize
+Maximize the window after positioning.
+
+.PARAMETER KeysToSend
+Keystrokes to send to the window after positioning.
 
 .EXAMPLE
 Update-AllImageMetaData -ImageDirectories @("C:\Pictures", "D:\Photos") `
@@ -129,230 +191,230 @@ updateallimages @("C:\MyImages") -ContainerName "custom_face_recognition"
 function Update-AllImageMetaData {
 
     [CmdletBinding(SupportsShouldProcess)]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "")]
-    [Alias("updateallimages")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+    [Alias('updateallimages')]
 
     param(
         #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 0,
-            HelpMessage = "Array of directory paths to process for image updates"
+            HelpMessage = 'Array of directory paths to process for image updates'
         )]
-        [ValidateNotNullOrEmpty()]
-        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
-        [string[]] $ImageDirectories,
+        [Alias('imagespath', 'directories', 'imgdirs', 'imagedirectory')]
+        [string[]] $ImageDirectories,        
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The name for the Docker container"
+            HelpMessage = 'The name for the Docker container'
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ContainerName = "deepstack_face_recognition",
+        [string] $ContainerName = 'deepstack_face_recognition',
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The name for the Docker volume for persistent storage"
+            HelpMessage = 'The name for the Docker volume for persistent storage'
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $VolumeName = "deepstack_face_data",
+        [string] $VolumeName = 'deepstack_face_data',
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The port number for the DeepStack service"
+            HelpMessage = 'The port number for the DeepStack service'
         )]
         [ValidateRange(1, 65535)]
         [int] $ServicePort = 5000,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Maximum time in seconds to wait for service " +
-                "health check")
+            HelpMessage = ('Maximum time in seconds to wait for service ' +
+                'health check')
         )]
         [ValidateRange(10, 300)]
         [int] $HealthCheckTimeout = 60,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Interval in seconds between health check " +
-                "attempts")
+            HelpMessage = ('Interval in seconds between health check ' +
+                'attempts')
         )]
         [ValidateRange(1, 10)]
         [int] $HealthCheckInterval = 3,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Custom Docker image name to use"
+            HelpMessage = 'Custom Docker image name to use'
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImageName,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Minimum confidence threshold (0.0-1.0) for " +
-                "object detection")
+            HelpMessage = ('Minimum confidence threshold (0.0-1.0) for ' +
+                'object detection')
         )]
         [ValidateRange(0.0, 1.0)]
         [double] $ConfidenceThreshold = 0.7,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The language for generated descriptions and " +
-                "keywords")
+            HelpMessage = ('The language for generated descriptions and ' +
+                'keywords')
         )]
-        [PSDefaultValue(Value = "English")]
+        [PSDefaultValue(Value = 'English')]
         [ValidateSet(
-            "Afrikaans",
-            "Akan",
-            "Albanian",
-            "Amharic",
-            "Arabic",
-            "Armenian",
-            "Azerbaijani",
-            "Basque",
-            "Belarusian",
-            "Bemba",
-            "Bengali",
-            "Bihari",
-            "Bosnian",
-            "Breton",
-            "Bulgarian",
-            "Cambodian",
-            "Catalan",
-            "Cherokee",
-            "Chichewa",
-            "Chinese (Simplified)",
-            "Chinese (Traditional)",
-            "Corsican",
-            "Croatian",
-            "Czech",
-            "Danish",
-            "Dutch",
-            "English",
-            "Esperanto",
-            "Estonian",
-            "Ewe",
-            "Faroese",
-            "Filipino",
-            "Finnish",
-            "French",
-            "Frisian",
-            "Ga",
-            "Galician",
-            "Georgian",
-            "German",
-            "Greek",
-            "Guarani",
-            "Gujarati",
-            "Haitian Creole",
-            "Hausa",
-            "Hawaiian",
-            "Hebrew",
-            "Hindi",
-            "Hungarian",
-            "Icelandic",
-            "Igbo",
-            "Indonesian",
-            "Interlingua",
-            "Irish",
-            "Italian",
-            "Japanese",
-            "Javanese",
-            "Kannada",
-            "Kazakh",
-            "Kinyarwanda",
-            "Kirundi",
-            "Kongo",
-            "Korean",
-            "Krio (Sierra Leone)",
-            "Kurdish",
-            "Kurdish (Soranî)",
-            "Kyrgyz",
-            "Laothian",
-            "Latin",
-            "Latvian",
-            "Lingala",
-            "Lithuanian",
-            "Lozi",
-            "Luganda",
-            "Luo",
-            "Macedonian",
-            "Malagasy",
-            "Malay",
-            "Malayalam",
-            "Maltese",
-            "Maori",
-            "Marathi",
-            "Mauritian Creole",
-            "Moldavian",
-            "Mongolian",
-            "Montenegrin",
-            "Nepali",
-            "Nigerian Pidgin",
-            "Northern Sotho",
-            "Norwegian",
-            "Norwegian (Nynorsk)",
-            "Occitan",
-            "Oriya",
-            "Oromo",
-            "Pashto",
-            "Persian",
-            "Polish",
-            "Portuguese (Brazil)",
-            "Portuguese (Portugal)",
-            "Punjabi",
-            "Quechua",
-            "Romanian",
-            "Romansh",
-            "Runyakitara",
-            "Russian",
-            "Scots Gaelic",
-            "Serbian",
-            "Serbo-Croatian",
-            "Sesotho",
-            "Setswana",
-            "Seychellois Creole",
-            "Shona",
-            "Sindhi",
-            "Sinhalese",
-            "Slovak",
-            "Slovenian",
-            "Somali",
-            "Spanish",
-            "Spanish (Latin American)",
-            "Sundanese",
-            "Swahili",
-            "Swedish",
-            "Tajik",
-            "Tamil",
-            "Tatar",
-            "Telugu",
-            "Thai",
-            "Tigrinya",
-            "Tonga",
-            "Tshiluba",
-            "Tumbuka",
-            "Turkish",
-            "Turkmen",
-            "Twi",
-            "Uighur",
-            "Ukrainian",
-            "Urdu",
-            "Uzbek",
-            "Vietnamese",
-            "Welsh",
-            "Wolof",
-            "Xhosa",
-            "Yiddish",
-            "Yoruba",
-            "Zulu")]
+            'Afrikaans',
+            'Akan',
+            'Albanian',
+            'Amharic',
+            'Arabic',
+            'Armenian',
+            'Azerbaijani',
+            'Basque',
+            'Belarusian',
+            'Bemba',
+            'Bengali',
+            'Bihari',
+            'Bosnian',
+            'Breton',
+            'Bulgarian',
+            'Cambodian',
+            'Catalan',
+            'Cherokee',
+            'Chichewa',
+            'Chinese (Simplified)',
+            'Chinese (Traditional)',
+            'Corsican',
+            'Croatian',
+            'Czech',
+            'Danish',
+            'Dutch',
+            'English',
+            'Esperanto',
+            'Estonian',
+            'Ewe',
+            'Faroese',
+            'Filipino',
+            'Finnish',
+            'French',
+            'Frisian',
+            'Ga',
+            'Galician',
+            'Georgian',
+            'German',
+            'Greek',
+            'Guarani',
+            'Gujarati',
+            'Haitian Creole',
+            'Hausa',
+            'Hawaiian',
+            'Hebrew',
+            'Hindi',
+            'Hungarian',
+            'Icelandic',
+            'Igbo',
+            'Indonesian',
+            'Interlingua',
+            'Irish',
+            'Italian',
+            'Japanese',
+            'Javanese',
+            'Kannada',
+            'Kazakh',
+            'Kinyarwanda',
+            'Kirundi',
+            'Kongo',
+            'Korean',
+            'Krio (Sierra Leone)',
+            'Kurdish',
+            'Kurdish (Soranî)',
+            'Kyrgyz',
+            'Laothian',
+            'Latin',
+            'Latvian',
+            'Lingala',
+            'Lithuanian',
+            'Lozi',
+            'Luganda',
+            'Luo',
+            'Macedonian',
+            'Malagasy',
+            'Malay',
+            'Malayalam',
+            'Maltese',
+            'Maori',
+            'Marathi',
+            'Mauritian Creole',
+            'Moldavian',
+            'Mongolian',
+            'Montenegrin',
+            'Nepali',
+            'Nigerian Pidgin',
+            'Northern Sotho',
+            'Norwegian',
+            'Norwegian (Nynorsk)',
+            'Occitan',
+            'Oriya',
+            'Oromo',
+            'Pashto',
+            'Persian',
+            'Polish',
+            'Portuguese (Brazil)',
+            'Portuguese (Portugal)',
+            'Punjabi',
+            'Quechua',
+            'Romanian',
+            'Romansh',
+            'Runyakitara',
+            'Russian',
+            'Scots Gaelic',
+            'Serbian',
+            'Serbo-Croatian',
+            'Sesotho',
+            'Setswana',
+            'Seychellois Creole',
+            'Shona',
+            'Sindhi',
+            'Sinhalese',
+            'Slovak',
+            'Slovenian',
+            'Somali',
+            'Spanish',
+            'Spanish (Latin American)',
+            'Sundanese',
+            'Swahili',
+            'Swedish',
+            'Tajik',
+            'Tamil',
+            'Tatar',
+            'Telugu',
+            'Thai',
+            'Tigrinya',
+            'Tonga',
+            'Tshiluba',
+            'Tumbuka',
+            'Turkish',
+            'Turkmen',
+            'Twi',
+            'Uighur',
+            'Ukrainian',
+            'Urdu',
+            'Uzbek',
+            'Vietnamese',
+            'Welsh',
+            'Wolof',
+            'Xhosa',
+            'Yiddish',
+            'Yoruba',
+            'Zulu')]
         [string] $Language,
         #######################################################################
         [Parameter(
             Mandatory = $false,
             ValueFromPipeline = $true,
-            HelpMessage = "Name or partial path of the model to initialize"
+            HelpMessage = 'Name or partial path of the model to initialize'
         )]
         [ValidateNotNullOrEmpty()]
         [SupportsWildcards()]
@@ -360,65 +422,66 @@ function Update-AllImageMetaData {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The LM-Studio model to use"
+            HelpMessage = 'The LM-Studio model to use'
         )]
         [ValidateNotNullOrEmpty()]
         [string]$HuggingFaceIdentifier,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Api endpoint url, defaults to " +
-                "http://localhost:1234/v1/chat/completions")
+            HelpMessage = ('Api endpoint url, defaults to ' +
+                'http://localhost:1234/v1/chat/completions')
         )]
         [string] $ApiEndpoint = $null,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The API key to use for the request"
+            HelpMessage = 'The API key to use for the request'
         )]
         [string] $ApiKey = $null,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Timeout in seconds for the request, defaults to " +
-                "24 hours")
+            HelpMessage = ('Timeout in seconds for the request, defaults to ' +
+                '24 hours')
         )]
-        [int] $TimeoutSecond,
+        [int] $TimeoutSeconds,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Maximum tokens in response (-1 for default)"
+            HelpMessage = 'Maximum tokens in response (-1 for default)'
         )]
-        [Alias("MaxTokens")]
+        [Alias('MaxTokens')]
         [ValidateRange(-1, [int]::MaxValue)]
         [int]$MaxToken, # = 8192,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Set a TTL (in seconds) for models loaded via API"
+            HelpMessage = 'Set a TTL (in seconds) for models loaded via API'
         )]
-        [Alias("ttl")]
+        [Alias('ttl')]
         [ValidateRange(-1, [int]::MaxValue)]
         [int]$TTLSeconds,
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = ("The directory containing face images organized " +
-                "by person folders. If not specified, uses the configured " +
-                "faces directory preference.")
+            HelpMessage = ('The directory containing face images organized ' +
+                'by person folders. If not specified, uses the configured ' +
+                'faces directory preference.')
         )]
         [string] $FacesDirectory,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Will retry previously failed image keyword " +
-                "updates")
+            HelpMessage = ('Will retry previously failed image keyword ' +
+                'updates')
         )]
         [switch] $RetryFailed,
         #######################################################################
@@ -430,165 +493,250 @@ function Update-AllImageMetaData {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Redo all images regardless of previous " +
-                "processing")
+            HelpMessage = ('Redo all images regardless of previous ' +
+                'processing')
         )]
         [switch] $RedoAll,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Skip Docker initialization (used when already " +
-                "called by parent function)")
+            HelpMessage = ('Skip LM-Studio initialization (used when already ' +
+                'called by parent function)')
+        )]
+        [switch] $NoLMStudioInitialize,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Skip Docker initialization (used when already ' +
+                'called by parent function)')
         )]
         [switch] $NoDockerInitialize,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Force rebuild of Docker container and remove " +
-                "existing data")
+            HelpMessage = ('Force rebuild of Docker container and remove ' +
+                'existing data')
         )]
-        [Alias("ForceRebuild")]
+        [Alias('ForceRebuild')]
         [switch] $Force,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use GPU-accelerated version (requires NVIDIA " +
-                "GPU)")
+            HelpMessage = ('Use GPU-accelerated version (requires NVIDIA ' +
+                'GPU)')
         )]
         [switch] $UseGPU,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Show Docker + LM Studio window during " +
-                "initialization")
+            HelpMessage = ('Show Docker + LM Studio window during ' +
+                'initialization')
         )]
         [switch]$ShowWindow,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("PassThru to return structured objects instead " +
-                "of outputting to console")
+            HelpMessage = ('PassThru to return structured objects instead ' +
+                'of outputting to console')
         )]
-        [switch] $PassThru,
+        [Alias('pt')]
+        [switch]$PassThru,
+
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Detects changes in the faces directory and " +
-                "re-registers faces if needed")
+            HelpMessage = ('Detects changes in the faces directory and ' +
+                're-registers faces if needed')
         )]
         [switch] $AutoUpdateFaces,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for " +
-                "AI preferences like Language, Image collections, etc")
+            HelpMessage = ('Use alternative settings stored in session for ' +
+                'AI preferences like Language, Image collections, etc')
         )]
         [switch] $SessionOnly,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Clear alternative settings stored in session " +
-                "for AI preferences like Language, Image collections, etc")
+            HelpMessage = ('Clear alternative settings stored in session ' +
+                'for AI preferences like Language, Image collections, etc')
         )]
         [switch] $ClearSession,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Dont use alternative settings stored in " +
-                "session for AI preferences like Language, Image " +
-                "collections, etc")
+            HelpMessage = ('Dont use alternative settings stored in ' +
+                'session for AI preferences like Language, Image ' +
+                'collections, etc')
         )]
-        [Alias("FromPreferences")]
+        [Alias('FromPreferences')]
         [switch] $SkipSession
         #######################################################################
     )
 
     begin {
 
+        # prepare processing variables to track current state
         $OnlyNew = -not $RedoAll
         $Recurse = -not $NoRecurse
 
-        if (-not $NoDockerInitialize) {
+        # initialize lm studio service if not skipped
+        if (-not $NoLMStudioInitialize) {
 
-            # copy parameter values for deepstack service initialization
-            $params = Genxdev.Helpers\Copy-IdenticalParamValues `
-                -BoundParameters $PSBoundParameters `
-                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
-                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                    -Scope Local `
-                    -ErrorAction SilentlyContinue)
-
-            # initialize deepstack service with window display
-            $null = GenXdev.AI\EnsureDeepStack @params
-        }
-
-
-        if ($ShowWindow) {
+            # ensure lm studio is initialized with proper parameters
             try {
 
-                # get docker desktop window handle
-                $a = (GenXDev.Windows\Get-Window -ProcessName "Docker Desktop")
+                # copy identical parameter values for lm studio initialization
+                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                    -BoundParameters $PSBoundParameters `
+                    -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
+                    -DefaultValues (
+                    Microsoft.PowerShell.Utility\Get-Variable `
+                        -Scope Local `
+                        -ErrorAction SilentlyContinue
+                )
 
-                if ($null -eq $a) { return }
+                # ensure lm studio service is running
+                $null = Initialize-LMStudioModel @params -LLMQueryType Pictures
 
-                # show and restore docker desktop window
-                $null = $a.Show()
+                # position lm studio window if show window is requested
+                if ($ShowWindow) {
 
-                $null = $a.Restore()
+                    try {
 
-                # position docker desktop window to right bottom of monitor 0
-                GenXDev.Windows\Set-WindowPosition `
-                    -WindowHelper $a `
-                    -Monitor 0 `
-                    -Right `
-                    -Bottom
+                        # get lm studio window handle
+                        $a = (GenXdev.Windows\Get-Window -ProcessName 'LM Studio')
 
-                # position current terminal window to left side of monitor 0
-                GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
+                        # skip if no window found
+                        if ($null -eq $a) { return }
+
+                        # position lm studio window to right top of monitor 0
+                        $null = GenXdev.Windows\Set-WindowPosition `
+                            -WindowHelper $a `
+                            -RestoreFocus `
+                            -SetForeground `
+                            -Monitor 0 `
+                            -Right `
+                            -Top
+
+                        # position current terminal window to left side of monitor 0
+                        $null = GenXdev.Windows\Set-WindowPosition `
+                            -Left `
+                            -Monitor 0 `
+                            -Left
+                    }
+                    catch {
+                        # ignore window positioning errors
+                    }
+                }
+
+                # wait for services to stabilize
+                Microsoft.PowerShell.Utility\Start-Sleep 2
             }
             catch {
-                # ignore window positioning errors
+                # ignore lm studio initialization errors
+            }
+        }
+
+        # initialize docker services if not skipped
+        if (-not $NoDockerInitialize) {
+
+            # copy identical parameter values from bound parameters for deepstack
+            $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
+                -DefaultValues (
+                Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue
+            )
+
+            # check if force rebuild is requested and set appropriate flag
+            if ($ForceRebuild) {
+
+                $ensureParams.Force = $true
+            }
+            else {
+
+                $ensureParams.Force = $PSBoundParameters.ContainsKey('ForceRebuild') ?
+                $false : $null
+            }
+
+            # ensure deepstack service is running for face recognition
+            $null = EnsureDeepStack @ensureParams
+
+            # position docker windows appropriately if show window is requested
+            if ($ShowWindow) {
+
+                try {
+
+                    # find docker processes with main windows
+                    Microsoft.PowerShell.Management\Get-Process *docker* |
+                        Microsoft.PowerShell.Core\Where-Object `
+                            -Property MainWindowHandle `
+                            -NE 0 |
+                        Microsoft.PowerShell.Core\ForEach-Object {
+
+                            # set window position for docker ui
+                            $null = GenXdev.Windows\Set-WindowPosition `
+                                -Process $_ `
+                                -Right `
+                                -Bottom `
+                                -mon 0
+                        }
+
+                    # position current window to left side
+                    $null = GenXdev.Windows\Set-WindowPosition -Left -mon 0
+                }
+                catch {
+
+                    # fallback positioning if docker window positioning fails
+                    $null = GenXdev.Windows\Set-WindowPosition -Left -mon 0
+                }
             }
         }
 
         # copy parameter values for faces directory retrieval
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-AIKnownFacesRootpath" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+            -FunctionName 'GenXdev.AI\Get-AIKnownFacesRootpath' `
+            -DefaultValues (
+            Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local `
-                -ErrorAction SilentlyContinue)
+                -ErrorAction SilentlyContinue
+        )
 
         # get the configured faces directory path
-        $FacesDirectory = GenXdev.AI\Get-AIKnownFacesRootpath @params
+        $facesDirectory = Get-AIKnownFacesRootpath @params
 
         # count total files in faces directory including subdirectories
-        $filecount = (
-            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\" -PassThru) +
-            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\*.jpeg" `
-                -PassThru) +
-            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\*.png" `
-                -PassThru) +
-            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*\*.gif" `
-                -PassThru)
-        ).Count
+        $filecount = $AutoUpdateFaces ?(
+            @(GenXdev.FileSystem\Find-Item "$facesDirectory\*\" -PassThru) +
+            @(GenXdev.FileSystem\Find-Item "$facesDirectory\*\*.jpeg" `
+                    -PassThru) +
+            @(GenXdev.FileSystem\Find-Item "$facesDirectory\*\*.png" `
+                    -PassThru) +
+            @(GenXdev.FileSystem\Find-Item "$facesDirectory\*\*.gif" `
+                    -PassThru)
+        ).Count : 0
 
         # count directories that contain image files for face recognition
-        $dirCount = (
-            @(GenXdev.FileSystem\Find-Item "$FacesDirectory\*" `
-                -Directory `
-                -PassThru |
-                Microsoft.PowerShell.Core\Where-Object {
+        $dirCount = $AutoUpdateFaces ? (
+            @(GenXdev.FileSystem\Find-Item "$facesDirectory\*" `
+                    -Directory `
+                    -PassThru |
+                    Microsoft.PowerShell.Core\Where-Object {
 
-                    (
-                        @(GenXdev.FileSystem\Find-Item "$_\*.jpg" -PassThru) +
-                        @(GenXdev.FileSystem\Find-Item "$_\*.jpeg" -PassThru) +
-                        @(GenXdev.FileSystem\Find-Item "$_\*.png" -PassThru) +
-                        @(GenXdev.FileSystem\Find-Item "$_\*.gif" -PassThru)
-                    ).Count -gt 0
-                }
+                        (
+                            @(GenXdev.FileSystem\Find-Item "$_\*.jpg" -PassThru) +
+                            @(GenXdev.FileSystem\Find-Item "$_\*.jpeg" -PassThru) +
+                            @(GenXdev.FileSystem\Find-Item "$_\*.png" -PassThru) +
+                            @(GenXdev.FileSystem\Find-Item "$_\*.gif" -PassThru)
+                        ).Count -gt 0
+                    }
             ).Count
-        )
+        ) : 0
 
         # initialize registered faces count
         $count = 0
@@ -596,7 +744,7 @@ function Update-AllImageMetaData {
         try {
 
             # count total number of registered faces in the system
-            $count = @(GenXdev.AI\Get-RegisteredFaces).Count
+            $count = $AutoUpdateFaces  ? @(Get-RegisteredFaces).Count : 0
         }
         catch {
 
@@ -605,14 +753,13 @@ function Update-AllImageMetaData {
         }
 
         # determine if face registrations need to be forced
-        $ForceFaceRegistrations = $ForceFaceRegistrations -or (
+        $forceFaceRegistrations = $forceFaceRegistrations -or (
             $AutoUpdateFaces -and
             ($count -ne $dirCount)
         )
 
         # register faces if needed and files exist
-        if ((($count -eq 0) -or $ForceFaceRegistrations) -and
-            ($filecount -gt 0)) {
+        if ($forceFaceRegistrations) {
 
             try {
 
@@ -620,12 +767,14 @@ function Update-AllImageMetaData {
                 $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\UnRegister-AllFaces' `
-                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -DefaultValues (
+                    Microsoft.PowerShell.Utility\Get-Variable `
                         -Scope Local `
-                        -ErrorAction SilentlyContinue)
+                        -ErrorAction SilentlyContinue
+                )
 
                 # unregister all existing faces before re-registration
-                $null = GenXdev.AI\UnRegister-AllFaces @params -Confirm:$false
+                $null = Unregister-AllFaces @params -Confirm:$false
             }
             catch {
                 # ignore unregistration errors
@@ -637,12 +786,14 @@ function Update-AllImageMetaData {
                 $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\Register-AllFaces' `
-                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -DefaultValues (
+                    Microsoft.PowerShell.Utility\Get-Variable `
                         -Scope Local `
-                        -ErrorAction SilentlyContinue)
+                        -ErrorAction SilentlyContinue
+                )
 
                 # register all faces from the faces directory
-                $null = GenXdev.AI\Register-AllFaces @params -Confirm:$false
+                $null = Register-AllFaces @params -Confirm:$false
             }
             catch {
                 # ignore registration errors
@@ -651,207 +802,119 @@ function Update-AllImageMetaData {
 
         # log start of processing
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Starting systematic image keyword, faces, and objects update " +
-            "across directories"
+            'Starting systematic image keyword, faces, and objects update ' +
+            'across directories'
         )
 
         # copy parameter values for language preference retrieval
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+            -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
+            -DefaultValues (
+            Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local `
-                -ErrorAction SilentlyContinue)
+                -ErrorAction SilentlyContinue
+        )
 
         # get the configured language for ai processing
-        $Language = GenXdev.AI\Get-AIMetaLanguage @params
+        $language = Get-AIMetaLanguage @params
 
-        # ensure lm studio is initialized with proper parameters
-        try {
-
-            # copy identical parameter values for lm studio initialization
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
-                -BoundParameters $PSBoundParameters `
-                -FunctionName 'GenXdev.AI\EnsureLMStudio' `
-                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                    -Scope Local `
-                    -ErrorAction SilentlyContinue)
-
-            # ensure lm studio service is running
-            $null = GenXdev.AI\EnsureLMStudio @params
-            if ($ShowWindow) {
-                try {
-
-                    # get lm studio window handle
-                    $a = (GenXDev.Windows\Get-Window -ProcessName "LM Studio")
-
-                    if ($null -eq $a) { return }
-
-                    # show and restore lm studio window
-                    $null = $a.Show()
-
-                    $null = $a.Restore()
-
-                    # position lm studio window to right top of monitor 0
-                    GenXDev.Windows\Set-WindowPosition `
-                        -WindowHelper $a `
-                        -Monitor 0 `
-                        -Right `
-                        -Top
-
-                    # position current terminal window to left side of monitor 0
-                    GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
-                }
-                catch {
-                    # ignore window positioning errors
-                }
-            }
-            # wait for services to stabilize
-            Microsoft.PowerShell.Utility\Start-Sleep 2
-        }
-        catch {
-            # ignore lm studio initialization errors
-        }
-
-        if (-not $NoDockerInitialize) {
-
-            # copy identical parameter values for deepstack service initialization
-            $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-                -BoundParameters $PSBoundParameters `
-                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
-                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                    -Scope Local `
-                    -ErrorAction SilentlyContinue)
-
-            # ensure deepstack service is running for face recognition
-            $null = GenXdev.AI\EnsureDeepStack @ensureParams
-
-            # copy identical parameter values from bound parameters for deepstack
-            $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-                -BoundParameters $PSBoundParameters `
-                -FunctionName 'GenXdev.AI\EnsureDeepStack' `
-                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                    -Scope Local `
-                    -ErrorAction SilentlyContinue)
-
-            # check if force rebuild is requested and set appropriate flag
-            if ($ForceRebuild) {
-
-                $ensureParams.Force = $true
-            }
-            else {
-
-                $ensureParams.Force = $PSBoundParameters.ContainsKey("ForceRebuild") ?
-                    $false : $null
-            }
-
-            # ensure deepstack service is running for face recognition
-            $null = GenXdev.AI\EnsureDeepStack @ensureParams
-        }
-
-        # position docker windows appropriately
-        if ($ShowWindow) {
-            try {
-
-                # find docker processes with main windows
-                Microsoft.PowerShell.Management\Get-Process *docker* |
-                Microsoft.PowerShell.Core\Where-Object `
-                    -Property MainWindowHandle `
-                    -ne 0 |
-                Microsoft.PowerShell.Core\ForEach-Object {
-
-                    # set window position for docker ui
-                    $null = GenXdev.Windows\Set-WindowPosition `
-                        -Process $_ `
-                        -top `
-                        -bottom `
-                        -mon 0
-                }
-
-                # position current window to left side
-                $null = GenXdev.Windows\Set-WindowPosition -left -mon 0
-            }
-            catch {
-
-                # fallback positioning if docker window positioning fails
-                $null = GenXdev.Windows\Set-WindowPosition -left -mon 0
-            }
-        }
+        # prevent duplicate service initialization in child processes
+        $noDockerInitialize = $true
+        $noLMStudioInitialize = $true
     }
 
     process {
+
         # get configured directories using parameter values
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-AIImageCollection" `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+            -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
+            -DefaultValues (
+            Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local `
-                -ErrorAction SilentlyContinue)
+                -ErrorAction SilentlyContinue
+        )
 
         # retrieve image directories from configuration
-        $directories = GenXdev.AI\Get-AIImageCollection @params
+        $directories = Get-AIImageCollection @params
 
         # process each directory and file individually for structured output
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Processing files individually for structured output"
+            'Processing files individually for structured output'
         )
 
         # process each directory and stream results immediately
-        $directories | Microsoft.PowerShell.Core\ForEach-Object -ThrottleLimit 20 -Parallel{
+        $directories | Microsoft.PowerShell.Core\ForEach-Object {
 
             $dir = $_
 
+            # copy parameter values for face update processing
             $faceParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName (
-                    "GenXdev.AI\Invoke-ImageFacesUpdate"
-                ) `
+                'GenXdev.AI\Invoke-ImageFacesUpdate'
+            ) `
                 -DefaultValues (
-                    Microsoft.PowerShell.Utility\Get-Variable `
-                        -Scope Local `
-                        -ErrorAction SilentlyContinue
-                )
+                Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue
+            )
 
-             $null = GenXdev.AI\Invoke-ImageFacesUpdate @faceParams -ImageDirectories $dir -NoDockerInitialize -Recurse:$using:Recurse -OnlyNew:$using:OnlyNew -RetryFailed:$using:RetryFailed
+            # update face recognition data for images in current directory
+            $null = Invoke-ImageFacesUpdate @faceParams `
+                -ImageDirectories $dir `
+                -NoDockerInitialize
 
+            # copy parameter values for object detection processing
             $objectParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName (
-                    "GenXdev.AI\Invoke-ImageObjectsUpdate"
-                ) `
+                'GenXdev.AI\Invoke-ImageObjectsUpdate'
+            ) `
                 -DefaultValues (
-                    Microsoft.PowerShell.Utility\Get-Variable `
-                        -Scope Local `
-                        -ErrorAction SilentlyContinue
-                )
+                Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue
+            )
 
-            $null = GenXdev.AI\Invoke-ImageObjectsUpdate @objectParams -ImageDirectories $dir -NoDockerInitialize -Recurse:$using:Recurse -OnlyNew:$using:OnlyNew -RetryFailed:$using:RetryFailed
+            # update object detection data for images in current directory
+            $null = Invoke-ImageObjectsUpdate @objectParams `
+                -ImageDirectories $dir `
+                -NoLMStudioInitialize
 
+            # copy parameter values for scene classification processing
             $sceneParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-            -BoundParameters $PSBoundParameters `
-            -FunctionName (
-                "GenXdev.AI\Invoke-ImageScenesUpdate"
+                -BoundParameters $PSBoundParameters `
+                -FunctionName (
+                'GenXdev.AI\Invoke-ImageScenesUpdate'
             ) `
-            -DefaultValues (
+                -DefaultValues (
                 Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue
             )
 
-            $null = GenXdev.AI\Invoke-ImageScenesUpdate @sceneParams -ImageDirectories $dir -NoDockerInitialize -Recurse:$using:Recurse -OnlyNew:$using:OnlyNew -RetryFailed:$using:RetryFailed
+            # update scene classification data for images in current directory
+            $null = Invoke-ImageScenesUpdate @sceneParams `
+                -ImageDirectories $dir `
+                -NoDockerInitialize
 
+            # copy parameter values for keyword generation processing
             $keywordParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-            -BoundParameters $PSBoundParameters `
-            -FunctionName (
-                "GenXdev.AI\Invoke-ImageKeywordUpdate"
+                -BoundParameters $PSBoundParameters `
+                -FunctionName (
+                'GenXdev.AI\Invoke-ImageKeywordUpdate'
             ) `
-            -DefaultValues (
+                -DefaultValues (
                 Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local `
                     -ErrorAction SilentlyContinue
             )
 
-            $null = GenXdev.AI\Invoke-ImageKeywordUpdate @keywordParams -ImageDirectories $dir -Recurse:$using:Recurse -OnlyNew:$using:OnlyNew -RetryFailed:$using:RetryFailed
+            # update keyword and description data for images in current directory
+            $null = Invoke-ImageKeywordUpdate @keywordParams `
+                -ImageDirectories $dir -NoLMStudioInitialize
         }
     }
 
@@ -859,8 +922,8 @@ function Update-AllImageMetaData {
 
         # log completion of all directory processing
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Completed image processing with DeepStack functions first, " +
-            "then keywords across all directories"
+            'Completed image processing with DeepStack functions first, ' +
+            'then keywords across all directories'
         )
     }
 }

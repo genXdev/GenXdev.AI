@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Sets the directory for face image files used in GenXdev.AI operations.
@@ -58,130 +58,64 @@ function Set-AIKnownFacesRootpath {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
 
     param(
-    ###############################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
             Position = 0,
-            HelpMessage = "Directory path for face image files"
+            HelpMessage = 'Directory path for face image files'
         )]
         [string] $FacesDirectory,
-    ###############################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
-    ###############################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for AI " +
-                          "preferences like Language, Image collections, etc")
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
         [switch] $SessionOnly,
-    ###############################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Clear alternative settings stored in session for AI " +
-                          "preferences like Language, Image collections, etc")
+            HelpMessage = ('Clear alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
         [switch] $ClearSession,
-    ###############################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Dont use alternative settings stored in session for " +
-                          "AI preferences like Language, Image collections, etc")
+            HelpMessage = ('Dont use alternative settings stored in session for ' +
+                'AI preferences like Language, Image collections, etc')
         )]
-        [Alias("FromPreferences")]
+        [Alias('FromPreferences')]
         [switch] $SkipSession
-    ###############################################################################
+        ###############################################################################
     )
+    # fallback to default system directories
+    $picturesPath = GenXdev.FileSystem\Expand-Path '~\Pictures'
 
-    begin {
+    try {
 
-        # validate parameters - facesDirectory is required unless clearing session
-        if ((-not $ClearSession) -and
-            [string]::IsNullOrWhiteSpace($FacesDirectory)) {
+        # attempt to get known folder path for pictures directory
+        $picturesPath = GenXdev.Windows\Get-KnownFolderPath Pictures
+    }
+    catch {
 
-            throw ("FacesDirectory parameter is required when not using " +
-                  "-ClearSession")
-        }
-
-        # expand path only if not clearing session
-        if (-not $ClearSession) {
-
-            $FacesDirectory = GenXdev.FileSystem\Expand-Path "$FacesDirectory\" `
-                        -CreateDirectory
-
-            # display verbose information about the faces directory being
-            # configured
-            Microsoft.PowerShell.Utility\Write-Verbose (
-                "Setting faces directory for GenXdev.AI module: " +
-                "[$FacesDirectory]"
-            )
-        }
+        # fallback to default if known folder retrieval fails
+        $picturesPath = GenXdev.FileSystem\Expand-Path '~\Pictures'
     }
 
-    process {
+    $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        -BoundParameters $PSBoundParameters `
+        -FunctionName 'GenXdev.Data\Set-GenXdevPreference'
 
-        # handle clearing session variables
-        if ($ClearSession) {
-
-            if ($PSCmdlet.ShouldProcess(
-                "GenXdev.AI Module Configuration",
-                "Clear session faces directory setting (Global variable)"
-            )) {
-
-                # clear the global variable
-                $Global:FacesDirectory = $null
-
-                Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Cleared session faces directory setting: FacesDirectory"
-                )
-            }
-            return
-        }
-
-        # handle session-only storage
-        if ($SessionOnly) {
-
-            if ($PSCmdlet.ShouldProcess(
-                "GenXdev.AI Module Configuration",
-                "Set session-only faces directory to: [$FacesDirectory]"
-            )) {
-
-                # set global variable for session-only storage
-                $Global:FacesDirectory = $FacesDirectory
-
-                Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Set session-only faces directory: " +
-                    "FacesDirectory = $FacesDirectory"
-                )
-            }
-            return
-        }
-
-        # handle persistent storage (default behavior)
-        # confirm the operation with the user before proceeding with changes
-        if ($PSCmdlet.ShouldProcess(
-            "GenXdev.AI Module Configuration",
-            "Set faces directory to: [$FacesDirectory]"
-        )) {
-
-            # store the configuration in module preferences for persistence
-            $null = GenXdev.Data\Set-GenXdevPreference `
-                -PreferencesDatabasePath $PreferencesDatabasePath `
-                -Name "FacesDirectory" `
-                -Value $FacesDirectory
-
-            # output confirmation message about successful configuration
-            Microsoft.PowerShell.Utility\Write-Verbose (
-                "Successfully configured faces directory in GenXdev.AI module: " +
-                "[$FacesDirectory]"
-            )
-        }
-    }
-
-    end {
-    }
+    $null = Set-GenXdevPreference @params `
+        -Name 'AIKnownFacesRootpath' `
+        -Value "$((GenXdev.FileSystem\Expand-Path ([string]::IsNullOrWhiteSpace($FacesPath) ? "$picturesPath\Faces\" : $FacesPath) -CreateDirectory))"
 }
 ###############################################################################

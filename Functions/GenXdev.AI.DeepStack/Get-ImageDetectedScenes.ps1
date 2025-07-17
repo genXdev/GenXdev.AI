@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Classifies an image into one of 365 scene categories using DeepStack.
@@ -130,7 +130,7 @@ youth_hostel, zen_garden.
 function Get-ImageDetectedScenes {
 
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
 
     param(
         #######################################################################
@@ -139,15 +139,15 @@ function Get-ImageDetectedScenes {
             Mandatory = $true,
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true,
-            HelpMessage = "The local path to the image file to analyze"
+            HelpMessage = 'The local path to the image file to analyze'
         )]        [ValidateNotNullOrEmpty()]
         [string] $ImagePath,
         #######################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = ("Minimum confidence threshold (0.0-1.0). " +
-                          "Default is 0.0")
+            HelpMessage = ('Minimum confidence threshold (0.0-1.0). ' +
+                'Default is 0.0')
         )]
         [ValidateRange(0.0, 1.0)]
         [double] $ConfidenceThreshold = 0.0,
@@ -155,24 +155,24 @@ function Get-ImageDetectedScenes {
         [Parameter(
             Position = 2,
             Mandatory = $false,
-            HelpMessage = "The name for the Docker container"
+            HelpMessage = 'The name for the Docker container'
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ContainerName = "deepstack_face_recognition",
+        [string] $ContainerName = 'deepstack_face_recognition',
         #######################################################################
         [Parameter(
             Position = 3,
             Mandatory = $false,
-            HelpMessage = ("The name for the Docker volume for persistent " +
-                          "storage")
+            HelpMessage = ('The name for the Docker volume for persistent ' +
+                'storage')
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $VolumeName = "deepstack_face_data",
+        [string] $VolumeName = 'deepstack_face_data',
         #######################################################################
         [Parameter(
             Position = 4,
             Mandatory = $false,
-            HelpMessage = "The port number for the DeepStack service"
+            HelpMessage = 'The port number for the DeepStack service'
         )]
         [ValidateRange(1, 65535)]
         [int] $ServicePort = 5000,
@@ -180,8 +180,8 @@ function Get-ImageDetectedScenes {
         [Parameter(
             Position = 5,
             Mandatory = $false,
-            HelpMessage = ("Maximum time in seconds to wait for service " +
-                          "health check")
+            HelpMessage = ('Maximum time in seconds to wait for service ' +
+                'health check')
         )]
         [ValidateRange(10, 300)]
         [int] $HealthCheckTimeout = 60,
@@ -189,49 +189,51 @@ function Get-ImageDetectedScenes {
         [Parameter(
             Position = 6,
             Mandatory = $false,
-            HelpMessage = ("Interval in seconds between health check " +
-                          "attempts")
+            HelpMessage = ('Interval in seconds between health check ' +
+                'attempts')
         )]
         [ValidateRange(1, 10)]
         [int] $HealthCheckInterval = 3,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Custom Docker image name to use"
+            HelpMessage = 'Custom Docker image name to use'
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImageName,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Skip Docker initialization (used when already " +
-                          "called by parent function)")
+            HelpMessage = ('Skip Docker initialization (used when already ' +
+                'called by parent function)')
         )]
         [switch] $NoDockerInitialize,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Force rebuild of Docker container and remove " +
-                          "existing data")
+            HelpMessage = ('Force rebuild of Docker container and remove ' +
+                'existing data')
         )]
-        [Alias("ForceRebuild")]
+        [Alias('ForceRebuild')]
         [switch] $Force,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use GPU-accelerated version (requires NVIDIA " +
-                          "GPU)")
+            HelpMessage = ('Use GPU-accelerated version (requires NVIDIA ' +
+                'GPU)')
         )]
         [switch] $UseGPU,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show Docker Desktop window during initialization"
+            HelpMessage = 'Show Docker Desktop window during initialization'
         )]
+        [Alias('sw')]
         [switch]$ShowWindow
         ###################################################################
     )
-    begin {        # use script-scoped variables set by ensuredeepstack, with fallback
+    begin {
+        # use script-scoped variables set by ensuredeepstack, with fallback
         # defaults
         if (-not $ApiBaseUrl) {
 
@@ -245,8 +247,8 @@ function Get-ImageDetectedScenes {
         if (-not $NoDockerInitialize) {
 
             Microsoft.PowerShell.Utility\Write-Verbose `
-                ("Ensuring DeepStack scene recognition service is " +
-                 "available")
+            ('Ensuring DeepStack scene recognition service is ' +
+                'available')
 
             # copy parameter values for the ensuredeepstack function call
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -257,12 +259,12 @@ function Get-ImageDetectedScenes {
                     -ErrorAction SilentlyContinue)
 
             # initialize deepstack docker container if needed
-            $null = GenXdev.AI\EnsureDeepStack @ensureParams
+            $null = EnsureDeepStack @ensureParams
 
         } else {
 
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Skipping Docker initialization as requested"
+                'Skipping Docker initialization as requested'
         }
 
         Microsoft.PowerShell.Utility\Write-Verbose `
@@ -293,13 +295,13 @@ function Get-ImageDetectedScenes {
             if (-not $SceneData -or -not $SceneData.success) {
 
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "No successful scene data received"
+                    'No successful scene data received'
 
                 return @{
-                    success = $false
-                    scene = "unknown"
+                    success    = $false
+                    scene      = 'unknown'
                     confidence = 0.0
-                    message = "Scene recognition failed"
+                    message    = 'Scene recognition failed'
                 }
             }
 
@@ -307,7 +309,7 @@ function Get-ImageDetectedScenes {
             $scene = if ($SceneData.label) {
                 $SceneData.label
             } else {
-                "unknown"
+                'unknown'
             }
 
             $confidence = if ($SceneData.confidence) {
@@ -325,20 +327,20 @@ function Get-ImageDetectedScenes {
                     "Scene confidence $confidence below threshold $($script:ConfidenceThreshold), marking as unknown"
 
                 return @{
-                    success = $false
-                    scene = "unknown"
-                    label = "unknown"
-                    confidence = $confidence
+                    success               = $false
+                    scene                 = 'unknown'
+                    label                 = 'unknown'
+                    confidence            = $confidence
                     confidence_percentage = [math]::Round($confidence * 100, 2)
-                    message = "Scene confidence below threshold"
+                    message               = 'Scene confidence below threshold'
                 }
             }
 
             return @{
-                success = $true
-                scene = $scene
-                label = $scene
-                confidence = $confidence
+                success               = $true
+                scene                 = $scene
+                label                 = $scene
+                confidence            = $confidence
                 confidence_percentage = [math]::Round($confidence * 100, 2)
             }
         }
@@ -370,7 +372,7 @@ function Get-ImageDetectedScenes {
 
             # send the request to the deepstack scene recognition api
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Sending image data to DeepStack scene recognition API"
+                'Sending image data to DeepStack scene recognition API'
 
             $response = Microsoft.PowerShell.Utility\Invoke-RestMethod `
                 -Uri $uri `
@@ -380,8 +382,8 @@ function Get-ImageDetectedScenes {
                 -ErrorAction Stop
 
             Microsoft.PowerShell.Utility\Write-Verbose `
-                ("API Response: " +
-                 "$($response |
+            ('API Response: ' +
+                "$($response |
                     Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 3)")
 
             # process the response from deepstack
@@ -412,4 +414,3 @@ function Get-ImageDetectedScenes {
         # no cleanup required for this function
     }
 }
-        ###############################################################################

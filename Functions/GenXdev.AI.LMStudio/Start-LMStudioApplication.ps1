@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Starts the LM Studio application if it's not already running.
@@ -16,7 +16,7 @@ When specified, returns the Process object of the LM Studio application.
 
 .EXAMPLE
 Start-LMStudioApplication -ShowWindow -Passthru
-        ###############################################################################>
+#>
 function Start-LMStudioApplication {
 
     [CmdletBinding(SupportsShouldProcess = $true)]
@@ -24,16 +24,9 @@ function Start-LMStudioApplication {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 0,
-            HelpMessage = "Show or hide the LM Studio window after starting"
+            HelpMessage = 'Return the Process object'
         )]
-        [switch]$ShowWindow,
-        ########################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Return the Process object"
-        )]
-        [Alias("pt")]
+        [Alias('pt')]
         [switch]$Passthru
         ########################################################################
     )
@@ -41,33 +34,33 @@ function Start-LMStudioApplication {
     begin {
 
         # verify lm studio installation
-        Microsoft.PowerShell.Utility\Write-Verbose "Checking LM Studio installation..."
-        if (-not (GenXdev.AI\Test-LMStudioInstallation)) {
+        Microsoft.PowerShell.Utility\Write-Verbose 'Checking LM Studio installation...'
+        if (-not (Test-LMStudioInstallation)) {
 
-            if ($PSCmdlet.ShouldProcess("LM Studio", "Install application")) {
-                Microsoft.PowerShell.Utility\Write-Verbose "LM Studio not found, initiating installation..."
-                $null = GenXdev.AI\Install-LMStudioApplication
+            if ($PSCmdlet.ShouldProcess('LM Studio', 'Install application')) {
+                Microsoft.PowerShell.Utility\Write-Verbose 'LM Studio not found, initiating installation...'
+                $null = Install-LMStudioApplication
             }
         }
     }
 
 
-process {
+    process {
 
         # check if we need to start or show the process
-        if (-not (GenXdev.AI\Test-LMStudioProcess -ShowWindow:$ShowWindow) -or $ShowWindow) {
+        if (-not (Test-LMStudioProcess -ShowWindow:$ShowWindow) -or $ShowWindow) {
 
-            Microsoft.PowerShell.Utility\Write-Verbose "Preparing to start or show LM Studio..."
+            Microsoft.PowerShell.Utility\Write-Verbose 'Preparing to start or show LM Studio...'
 
             # get installation paths
-            $paths = GenXdev.AI\Get-LMStudioPaths
+            $paths = Get-LMStudioPaths
 
             # validate executable path
             if (-not $paths.LMStudioExe) {
-                throw "LM Studio executable could not be located"
+                throw 'LM Studio executable could not be located'
             }
 
-            if ($PSCmdlet.ShouldProcess("LM Studio", "Start application")) {
+            if ($PSCmdlet.ShouldProcess('LM Studio', 'Start application')) {
                 # start background job for non-blocking operation
                 $jobParams = @{
                     ScriptBlock  = {
@@ -76,7 +69,7 @@ process {
                         # start server component
                         $null = Microsoft.PowerShell.Management\Start-Process `
                             -FilePath $paths.LMSExe `
-                            -ArgumentList "server", "start", "--port", "1234"
+                            -ArgumentList 'server', 'start', '--port', '1234'
                         Microsoft.PowerShell.Utility\Start-Sleep -Seconds 4
                         $null = Microsoft.PowerShell.Management\Start-Process `
                             -FilePath $paths.LMStudioExe
@@ -89,17 +82,17 @@ process {
                 $null = Microsoft.PowerShell.Core\Start-Job @jobParams | Microsoft.PowerShell.Core\Wait-Job
 
                 # verify process starts within timeout period
-                Microsoft.PowerShell.Utility\Write-Verbose "Waiting for LM Studio process..."
+                Microsoft.PowerShell.Utility\Write-Verbose 'Waiting for LM Studio process...'
                 $timeout = 30
                 $timer = [System.Diagnostics.Stopwatch]::StartNew()
 
-                while (-not (GenXdev.AI\Test-LMStudioProcess) -and
+                while (-not (Test-LMStudioProcess) -and
                     ($timer.Elapsed.TotalSeconds -lt $timeout)) {
 
                     Microsoft.PowerShell.Utility\Start-Sleep -Seconds 1
                 }
 
-                if (-not (GenXdev.AI\Test-LMStudioProcess)) {
+                if (-not (Test-LMStudioProcess)) {
                     throw "LM Studio failed to start within $timeout seconds"
                 }
             }
@@ -107,26 +100,9 @@ process {
 
         # return process object if requested
         if ($Passthru) {
-            Microsoft.PowerShell.Management\Get-Process -Name "LM Studio" -ErrorAction Stop |
-            Microsoft.PowerShell.Core\Where-Object -Property MainWindowHandle -ne 0 |
-            Microsoft.PowerShell.Utility\Select-Object -First 1
-        }
-    }
-
-    end {
-        if ($ShowWindow -and $PSCmdlet.ShouldProcess("LM Studio", "Show window")) {
-            try {
-                $a = (GenXDev.Windows\Get-Window -ProcessName "LM Studio") ;
-                if ($null -eq $a) { return }
-                $null = $a.Show()
-                $null = $a.Restore()
-                $null = GenXDev.Windows\Set-WindowPosition -WindowHelper $a -Monitor 0 -Right
-                $null = GenXDev.Windows\Set-WindowPosition -Left -Monitor 0 -Left
-            }
-            catch {
-
-            }
+            Microsoft.PowerShell.Management\Get-Process -Name 'LM Studio' -ErrorAction Stop |
+                Microsoft.PowerShell.Core\Where-Object -Property MainWindowHandle -NE 0 |
+                Microsoft.PowerShell.Utility\Select-Object -First 1
         }
     }
 }
-        ###############################################################################

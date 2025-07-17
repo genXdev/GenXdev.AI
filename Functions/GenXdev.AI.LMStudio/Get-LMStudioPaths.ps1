@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Retrieves file paths for LM Studio executables.
@@ -17,12 +17,12 @@ System.Collections.Hashtable
 .EXAMPLE
 $paths = Get-LMStudioPaths
 Write-Output "LM Studio path: $($paths.LMStudioExe)"
-        ###############################################################################>
+#>
 function Get-LMStudioPaths {
 
     [CmdletBinding()]
     [OutputType([System.Collections.Hashtable])]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
     param()
 
     begin {
@@ -35,6 +35,7 @@ function Get-LMStudioPaths {
         )
 
         $searchPathsLMSexe = @(
+            '~\.cache\lm-studio\bin\lms.exe',
             "${env:LOCALAPPDATA}\LM-Studio\lms.exe",
             "${env:LOCALAPPDATA}\Programs\LM-Studio\lms.exe",
             "${env:LOCALAPPDATA}\Programs\LM Studio\lms.exe"
@@ -42,12 +43,12 @@ function Get-LMStudioPaths {
     }
 
 
-process {
+    process {
 
         # check if paths need to be discovered
         if (-not $script:LMStudioExe -or -not $script:LMSexe) {
 
-            Microsoft.PowerShell.Utility\Write-Verbose "Searching for LM Studio executables..."
+            Microsoft.PowerShell.Utility\Write-Verbose 'Searching for LM Studio executables...'
 
             # find main LM Studio executable
             $script:LMStudioExe = Microsoft.PowerShell.Management\Get-ChildItem `
@@ -55,8 +56,8 @@ process {
                 -File `
                 -Recurse `
                 -ErrorAction SilentlyContinue |
-            Microsoft.PowerShell.Utility\Select-Object -First 1 |
-            Microsoft.PowerShell.Core\ForEach-Object FullName
+                Microsoft.PowerShell.Utility\Select-Object -First 1 |
+                Microsoft.PowerShell.Core\ForEach-Object FullName
 
             # find LMS command-line executable
             $script:LMSExe = Microsoft.PowerShell.Management\Get-ChildItem `
@@ -64,8 +65,8 @@ process {
                 -File `
                 -Recurse `
                 -ErrorAction SilentlyContinue |
-            Microsoft.PowerShell.Utility\Select-Object -First 1 |
-            Microsoft.PowerShell.Core\ForEach-Object FullName
+                Microsoft.PowerShell.Utility\Select-Object -First 1 |
+                Microsoft.PowerShell.Core\ForEach-Object FullName
 
             Microsoft.PowerShell.Utility\Write-Verbose "Found LM Studio: $script:LMStudioExe"
             Microsoft.PowerShell.Utility\Write-Verbose "Found LMS: $script:LMSExe"
@@ -81,4 +82,3 @@ process {
         }
     }
 }
-        ###############################################################################

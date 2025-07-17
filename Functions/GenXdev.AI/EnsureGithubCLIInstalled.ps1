@@ -15,7 +15,7 @@ The function handles all prerequisites and ensures a working GitHub CLI setup.
 .EXAMPLE
 EnsureGithubCLIInstalled
 This will verify and setup GitHub CLI if needed.
-        ###############################################################################>
+#>
 function EnsureGithubCLIInstalled {
 
     [CmdletBinding()]
@@ -36,16 +36,16 @@ function EnsureGithubCLIInstalled {
         #>
         function IsWinGetInstalled {
             try {
-                Microsoft.PowerShell.Core\Import-Module "Microsoft.WinGet.Client" -ErrorAction Stop
-                $module = Microsoft.PowerShell.Core\Get-Module "Microsoft.WinGet.Client" -ErrorAction Stop
+                Microsoft.PowerShell.Core\Import-Module 'Microsoft.WinGet.Client' -ErrorAction Stop
+                $module = Microsoft.PowerShell.Core\Get-Module 'Microsoft.WinGet.Client' -ErrorAction Stop
                 return $null -ne $module
             }
             catch [System.IO.FileNotFoundException] {
-                Microsoft.PowerShell.Utility\Write-Verbose "WinGet module not found"
+                Microsoft.PowerShell.Utility\Write-Verbose 'WinGet module not found'
                 return $false
             }
             catch {
-                Microsoft.PowerShell.Utility\Write-Warning "Error checking WinGet installation: $_"
+                Microsoft.PowerShell.Utility\Write-Verbose "Error checking WinGet installation: $_"
                 return $false
             }
         }
@@ -60,9 +60,9 @@ function EnsureGithubCLIInstalled {
         #>
         function InstallWinGet {
             try {
-                Microsoft.PowerShell.Utility\Write-Verbose "Installing WinGet PowerShell client..."
-                PowerShellGet\Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber -ErrorAction Stop
-                Microsoft.PowerShell.Core\Import-Module "Microsoft.WinGet.Client" -ErrorAction Stop
+                Microsoft.PowerShell.Utility\Write-Verbose 'Installing WinGet PowerShell client...'
+                PowerShellGet\Install-Module 'Microsoft.WinGet.Client' -Force -AllowClobber -ErrorAction Stop
+                Microsoft.PowerShell.Core\Import-Module 'Microsoft.WinGet.Client' -ErrorAction Stop
             }
             catch [System.UnauthorizedAccessException] {
                 throw "Insufficient permissions to install WinGet module. Run as administrator: $_"
@@ -74,11 +74,11 @@ function EnsureGithubCLIInstalled {
     }
 
 
-process {
+    process {
         try {
             # First check and install Git if needed
             if (@(Microsoft.PowerShell.Core\Get-Command 'git.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
-                Microsoft.PowerShell.Utility\Write-Verbose "Git not found, installing..."
+                Microsoft.PowerShell.Utility\Write-Verbose 'Git not found, installing...'
 
                 if (-not (IsWinGetInstalled)) {
                     InstallWinGet
@@ -92,18 +92,18 @@ process {
                 }
 
                 if (-not (Microsoft.PowerShell.Core\Get-Command 'git.exe' -ErrorAction SilentlyContinue)) {
-                    throw "Git installation failed: Command not found after installation"
+                    throw 'Git installation failed: Command not found after installation'
                 }
             }
 
             # Then proceed with GitHub CLI installation
             if (@(Microsoft.PowerShell.Core\Get-Command 'gh.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
-                Microsoft.PowerShell.Utility\Write-Verbose "GitHub CLI not found in PATH, checking installation..."
+                Microsoft.PowerShell.Utility\Write-Verbose 'GitHub CLI not found in PATH, checking installation...'
                 $githubCliPath = "$env:ProgramFiles\GitHub CLI"
                 $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
 
                 if ($currentPath -notlike "*$githubCliPath*") {
-                    Microsoft.PowerShell.Utility\Write-Verbose "Adding GitHub CLI to PATH..."
+                    Microsoft.PowerShell.Utility\Write-Verbose 'Adding GitHub CLI to PATH...'
                     [Environment]::SetEnvironmentVariable(
                         'PATH',
                         "$currentPath;$githubCliPath",
@@ -116,7 +116,7 @@ process {
                 }
 
                 if (@(Microsoft.PowerShell.Core\Get-Command 'gh.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
-                    Microsoft.PowerShell.Utility\Write-Verbose "Installing GitHub CLI..."
+                    Microsoft.PowerShell.Utility\Write-Verbose 'Installing GitHub CLI...'
 
                     if (-not (IsWinGetInstalled)) {
                         InstallWinGet
@@ -130,11 +130,11 @@ process {
                     }
 
                     if (-not (Microsoft.PowerShell.Core\Get-Command 'gh.exe' -ErrorAction SilentlyContinue)) {
-                        throw "GitHub CLI installation failed: Command not found after installation"
+                        throw 'GitHub CLI installation failed: Command not found after installation'
                     }
 
                     try {
-                        Microsoft.PowerShell.Utility\Write-Verbose "Initiating GitHub authentication..."
+                        Microsoft.PowerShell.Utility\Write-Verbose 'Initiating GitHub authentication...'
                         $null = gh auth login --web -h github.com
                     }
                     catch {
@@ -152,4 +152,3 @@ process {
 
     end {}
 }
-        ###############################################################################

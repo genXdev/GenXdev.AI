@@ -1,16 +1,16 @@
-###############################################################################
-Pester\Describe "Register-Face" {
+﻿###############################################################################
+Pester\Describe 'Register-Face' {
 
-    Pester\It "should pass PSScriptAnalyzer rules" {
+    Pester\It 'should pass PSScriptAnalyzer rules' {
 
-# get the script path for analysis
+        # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.DeepStack\Register-Face.ps1"
 
-# run analyzer with explicit settings
+        # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 
-        [string] $message = ""
+        [string] $message = ''
         $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"

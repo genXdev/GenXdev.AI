@@ -14,7 +14,7 @@ The function handles all prerequisites and ensures a working Paint.NET installat
 .EXAMPLE
 EnsurePaintNet
 This will verify and setup Paint.NET if needed.
-        ###############################################################################>
+#>
 function EnsurePaintNet {
 
     [CmdletBinding()]
@@ -23,8 +23,8 @@ function EnsurePaintNet {
     param()
 
     begin {
-       # ensure graphics assembly is loaded for image processing
-       if (-not [System.Drawing.Rectangle]) {
+        # ensure graphics assembly is loaded for image processing
+        if (-not [System.Drawing.Rectangle]) {
 
             Microsoft.PowerShell.Utility\Add-Type -AssemblyName System.Drawing
         }
@@ -42,16 +42,16 @@ function EnsurePaintNet {
         #>
         function IsWinGetInstalled {
             try {
-                Microsoft.PowerShell.Core\Import-Module "Microsoft.WinGet.Client" -ErrorAction Stop
-                $module = Microsoft.PowerShell.Core\Get-Module "Microsoft.WinGet.Client" -ErrorAction Stop
+                Microsoft.PowerShell.Core\Import-Module 'Microsoft.WinGet.Client' -ErrorAction Stop
+                $module = Microsoft.PowerShell.Core\Get-Module 'Microsoft.WinGet.Client' -ErrorAction Stop
                 return $null -ne $module
             }
             catch [System.IO.FileNotFoundException] {
-                Microsoft.PowerShell.Utility\Write-Verbose "WinGet module not found"
+                Microsoft.PowerShell.Utility\Write-Verbose 'WinGet module not found'
                 return $false
             }
             catch {
-                Microsoft.PowerShell.Utility\Write-Warning "Error checking WinGet installation: $_"
+                Microsoft.PowerShell.Utility\Write-Verbose "Error checking WinGet installation: $_"
                 return $false
             }
         }
@@ -66,9 +66,9 @@ function EnsurePaintNet {
         #>
         function InstallWinGet {
             try {
-                Microsoft.PowerShell.Utility\Write-Verbose "Installing WinGet PowerShell client..."
-                PowerShellGet\Install-Module "Microsoft.WinGet.Client" -Force -AllowClobber -ErrorAction Stop
-                Microsoft.PowerShell.Core\Import-Module "Microsoft.WinGet.Client" -ErrorAction Stop
+                Microsoft.PowerShell.Utility\Write-Verbose 'Installing WinGet PowerShell client...'
+                PowerShellGet\Install-Module 'Microsoft.WinGet.Client' -Force -AllowClobber -ErrorAction Stop
+                Microsoft.PowerShell.Core\Import-Module 'Microsoft.WinGet.Client' -ErrorAction Stop
             }
             catch [System.UnauthorizedAccessException] {
                 throw "Insufficient permissions to install WinGet module. Run as administrator: $_"
@@ -81,7 +81,7 @@ function EnsurePaintNet {
     process {
         try {
             # First, ensure current session PATH is up to date with both Machine and User PATH
-            $paintNetPath = "C:\Program Files\paint.net"
+            $paintNetPath = 'C:\Program Files\paint.net'
 
             # Only add Paint.NET path to user PATH if it's not already present
             $userPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
@@ -96,12 +96,12 @@ function EnsurePaintNet {
             }
 
             # Check if Paint.NET is already accessible
-            Microsoft.PowerShell.Utility\Write-Verbose "Paint.NET not found in PATH, checking installation..."
+            Microsoft.PowerShell.Utility\Write-Verbose 'Paint.NET not found in PATH, checking installation...'
 
             # Check again after updating PATH
             if (@(Microsoft.PowerShell.Core\Get-Command 'paintdotnet.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
 
-                Microsoft.PowerShell.Utility\Write-Verbose "Installing Paint.NET..."
+                Microsoft.PowerShell.Utility\Write-Verbose 'Installing Paint.NET...'
 
                 if (-not (IsWinGetInstalled)) {
 
@@ -117,7 +117,7 @@ function EnsurePaintNet {
                 $userPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
                 if ($userPath -notlike "*$paintNetPath*") {
                     try {
-                        Microsoft.PowerShell.Utility\Write-Verbose "Adding Paint.NET to User PATH after installation..."
+                        Microsoft.PowerShell.Utility\Write-Verbose 'Adding Paint.NET to User PATH after installation...'
                         [Environment]::SetEnvironmentVariable(
                             'PATH',
                             "$userPath;$paintNetPath",
@@ -133,7 +133,7 @@ function EnsurePaintNet {
                 }
 
                 if (-not (Microsoft.PowerShell.Core\Get-Command 'paintdotnet.exe' -ErrorAction SilentlyContinue)) {
-                    throw "Paint.NET installation failed: paintdotnet.exe not found after installation"
+                    throw 'Paint.NET installation failed: paintdotnet.exe not found after installation'
                 }
             }
 
@@ -148,4 +148,3 @@ function EnsurePaintNet {
 
     end {}
 }
-        ###############################################################################

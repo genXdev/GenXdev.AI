@@ -1,16 +1,16 @@
-###############################################################################
-Pester\Describe "Find-Image" {
+﻿###############################################################################
+Pester\Describe 'Find-Image' {
 
-    Pester\It "Should pass PSScriptAnalyzer rules" {
+    Pester\It 'Should pass PSScriptAnalyzer rules' {
 
-# get the script path for analysis
+        # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Find-Image.ps1"
 
-# run analyzer with explicit settings
+        # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 
-        [string] $message = ""
+        [string] $message = ''
         $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
@@ -29,7 +29,7 @@ $message
     }
 
     ################################################################################
-    Pester\It "Should work the same as Find-IndexedImage" -Skip:(-not ($Global:AllowLongRunningTests -eq $true)) {
+    Pester\It 'Should work the same as Find-IndexedImage' -Skip:(-not ($Global:AllowLongRunningTests -eq $true)) {
 
         $dbPath = $tmpPath = GenXdev.FileSystem\Expand-Path ([IO.Path]::GetTempFileName()) -DeleteExistingFile
         $tmpPath = [IO.Path]::GetTempFileName()
@@ -39,16 +39,16 @@ $message
 
         Copy-Item $sourceImage $testImagePath -Force
 
-        $null = GenXdev.AI\Remove-ImageMetaData -ImageDirectories $tmpPath -AllLanguages
+        $null = Remove-ImageMetaData -ImageDirectories $tmpPath -AllLanguages
 
-        GenXdev.Windows\Set-WindowPosition -left -Monitor 0
-        GenXdev.AI\Update-AllImageMetaData -ImageDirectories $tmpPath -ShowWindow
-        GenXdev.AI\Export-ImageDatabase -DatabaseFilePath $dbPath -ImageDirectories $tmpPath -ShowWindow
+        GenXdev.Windows\Set-WindowPosition -Left -Monitor 0
+        Update-AllImageMetaData -ImageDirectories $tmpPath -ShowWindow
+        Export-ImageDatabase -DatabaseFilePath $dbPath -ImageDirectories $tmpPath -ShowWindow
 
-        $resultsFindImage = GenXdev.AI\Find-Image -ImageDirectories @($tmpPath) | ConvertTo-HashTable | ConvertTo-Json -Depth 20
-        $resultsFindIndexedImage = GenXdev.AI\Find-IndexedImage -ImageDirectories @($tmpPath) -DatabaseFilePath $dbPath | ConvertTo-HashTable | ConvertTo-Json -Depth 20
+        $resultsFindImage = Find-Image -ImageDirectories @($tmpPath) | ConvertTo-HashTable | ConvertTo-Json -Depth 20
+        $resultsFindIndexedImage = Find-IndexedImage -ImageDirectories @($tmpPath) -DatabaseFilePath $dbPath | ConvertTo-HashTable | ConvertTo-Json -Depth 20
 
-        $resultsFindImage | Pester\Should -Be $resultsFindIndexedImage -Because "The results of Find-Image and Find-IndexedImage should be the same."
+        $resultsFindImage | Pester\Should -Be $resultsFindIndexedImage -Because 'The results of Find-Image and Find-IndexedImage should be the same.'
     }
 }
 ###############################################################################

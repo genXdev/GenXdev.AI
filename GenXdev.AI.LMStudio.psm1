@@ -1,3 +1,4 @@
+. "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Add-GenXdevMCPServerToLMStudio.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\EnsureLMStudio.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Get-LMStudioLoadedModelList.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.LMStudio\Get-LMStudioModelList.ps1"

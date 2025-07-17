@@ -1,9 +1,22 @@
 {
     "SimpleIntelligence": [
         {
-            "Model": "*deepseek*8b*",
-            "HuggingFaceIdentifier": "deepseek/deepseek-r1-0528-qwen3-8b",
+            "Model": "llama-3-groq-8b-tool-use",
+            "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF",
+            "RequiredMemoryGB": 7,
             "MaxToken": null,
+            "TTLSeconds": null,
+            "ApiEndpoint": null,
+            "ApiKey": null,
+            "Cpu": null,
+            "Gpu": null,
+            "TimeoutSeconds": 86400
+        },
+        {
+            "Model": "qwen2.5-14b-instruct-1m",
+            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF",
+            "MaxToken": 32768,
+            "RequiredMemoryGB": 7,
             "TTLSeconds": null,
             "ApiEndpoint": null,
             "ApiKey": null,
@@ -14,9 +27,22 @@
     ],
     "Knowledge": [
         {
-            "Model": "*deepseek*8b*",
-            "HuggingFaceIdentifier": "deepseek/deepseek-r1-0528-qwen3-8b",
+            "Model": "llama-3-groq-8b-tool-use",
+            "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF",
+            "RequiredMemoryGB": 7,
             "MaxToken": null,
+            "TTLSeconds": null,
+            "ApiEndpoint": null,
+            "ApiKey": null,
+            "Cpu": null,
+            "Gpu": null,
+            "TimeoutSeconds": 86400
+        },
+        {
+            "Model": "qwen2.5-14b-instruct-1m",
+            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF",
+            "MaxToken": 32768,
+            "RequiredMemoryGB": 7,
             "TTLSeconds": null,
             "ApiEndpoint": null,
             "ApiKey": null,
@@ -27,8 +53,9 @@
     ],
     "Pictures": [
         {
-            "Model": "MiniCPM",
-            "HuggingFaceIdentifier": "lmstudio-community/MiniCPM-V-2_6-GGUF/MiniCPM-V-2_6-Q4_K_M.gguf",
+            "Model": "minicpm-v-2_6",
+            "HuggingFaceIdentifier": "lmstudio-community/MiniCPM-V-2_6-GGUF",
+            "RequiredMemoryGB": 6,
             "MaxToken": -1,
             "TTLSeconds": null,
             "ApiEndpoint": null,
@@ -38,8 +65,8 @@
             "TimeoutSeconds": 86400
         },
         {
-            "Model": "*gemma*3*27b*",
-            "HuggingFaceIdentifier": "lmstudio-community/gemma-3-27B-it-qat-GGUF",
+            "Model": "google/gemma-3-27b",
+            "HuggingFaceIdentifier": "google/gemma-3-27b",
             "RequiredMemoryGB": 19,
             "MaxToken": -1,
             "TTLSeconds": null,
@@ -52,9 +79,22 @@
     ],
     "TextTranslation": [
         {
-            "Model": "*deepseek*8b*",
-            "HuggingFaceIdentifier": "deepseek/deepseek-r1-0528-qwen3-8b",
+            "Model": "llama-3-groq-8b-tool-use",
+            "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF/Llama-3-Groq-8B-Tool-Use-Q4_K_M.gguf",
+            "RequiredMemoryGB": 7,
             "MaxToken": null,
+            "TTLSeconds": null,
+            "ApiEndpoint": null,
+            "ApiKey": null,
+            "Cpu": null,
+            "Gpu": null,
+            "TimeoutSeconds": 86400
+        },
+        {
+            "Model": "qwen2.5-14b-instruct-1m",
+            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF/Qwen2.5-14B-Instruct-1M-Q4_K_M.gguf",
+            "MaxToken": 32768,
+            "RequiredMemoryGB": 7,
             "TTLSeconds": null,
             "ApiEndpoint": null,
             "ApiKey": null,
@@ -65,10 +105,10 @@
     ],
     "Coding": [
         {
-            "Model": "*Qwen*14B*Instruct*",
-            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-GGUF",
+            "Model": "qwen2.5-14b-instruct-1m",
+            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF/Qwen2.5-14B-Instruct-1M-Q4_K_M.gguf",
             "MaxToken": 32768,
-            "RequiredMemoryGB": 18,
+            "RequiredMemoryGB": 7,
             "TTLSeconds": null,
             "ApiEndpoint": null,
             "ApiKey": null,
@@ -77,10 +117,10 @@
             "TimeoutSeconds": 86400
         },
         {
-            "Model": "*deepseek*70b*",
-            "HuggingFaceIdentifier": "lmstudio-community/Llama-3.3-70B-Instruct-GGUF",
+            "Model": "llama-3.3-70b-instruct",
+            "HuggingFaceIdentifier": "lmstudio-community/Llama-3.3-70B-Instruct-GGUF/Llama-3.3-70B-Instruct-Q4_K_M.gguf",
             "MaxToken": 32358,
-            "RequiredMemoryGB": 100,
+            "RequiredMemoryGB": 60,
             "TTLSeconds": null,
             "ApiEndpoint": null,
             "ApiKey": null,
@@ -91,10 +131,21 @@
     ],
     "ToolUse": [
         {
-            "Model": "*Qwen*14B*Instruct*",
-            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-GGUF",
+            "Model": "llama-3-groq-8b-tool-use",
+            "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF/Llama-3-Groq-8B-Tool-Use-Q4_K_M.gguf",
+            "MaxToken": null,
+            "TTLSeconds": null,
+            "ApiEndpoint": null,
+            "ApiKey": null,
+            "Cpu": null,
+            "Gpu": null,
+            "TimeoutSeconds": 86400
+        },
+        {
+            "Model": "qwen2.5-14b-instruct-1m",
+            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF/Qwen2.5-14B-Instruct-1M-Q4_K_M.gguf",
             "MaxToken": 32768,
-            "RequiredMemoryGB": 18,
+            "RequiredMemoryGB": 7,
             "TTLSeconds": null,
             "ApiEndpoint": null,
             "ApiKey": null,

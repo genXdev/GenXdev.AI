@@ -1,4 +1,4 @@
-################################################################################
+﻿################################################################################
 <#
 .SYNOPSIS
 Gets the configured directories for image files used in GenXdev.AI operations.
@@ -66,45 +66,46 @@ function Get-AIImageCollection {
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
-    [Alias("getimgdirs")]
+    [Alias('getimgdirs')]
 
     param(
         ########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 0,
-            HelpMessage = "Default directories to return if none are configured"
+            HelpMessage = 'Default directories to return if none are configured'
         )]
         [AllowNull()]
         [string[]] $ImageDirectories,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for AI " +
-                "preferences like Language, Image collections, etc")
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for AI " +
-                "preferences like Language, Image collections, etc")
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
         [switch] $SessionOnly,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Clear the session setting (Global variable) " +
-                "before retrieving")
+            HelpMessage = ('Clear the session setting (Global variable) ' +
+                'before retrieving')
         )]
         [switch] $ClearSession,
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Dont use alternative settings stored in session " +
-                "for AI preferences like Language, Image collections, etc")
+            HelpMessage = ('Dont use alternative settings stored in session ' +
+                'for AI preferences like Language, Image collections, etc')
         )]
-        [Alias("FromPreferences")]
+        [Alias('FromPreferences')]
         [switch] $SkipSession
         ########################################################################
     )
@@ -119,7 +120,7 @@ function Get-AIImageCollection {
 
             # output verbose message about clearing session setting
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Cleared session image directories setting: ImageDirectories"
+                'Cleared session image directories setting: ImageDirectories'
             )
         }
     }
@@ -135,101 +136,68 @@ function Get-AIImageCollection {
             return
         }
 
-        # determine which image directories to use based on priority order
-        # priority: global variable first (unless skipped), then preferences
-        # (unless sessiononly), finally system defaults
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName 'GenXdev.Data\Get-GenXdevPreference'
 
-        # first check global variable for image directories unless skipsession
-        # is specified
-        if ((-not $SkipSession) -and
-            ($Global:ImageDirectories -and
-             $Global:ImageDirectories.Count -gt 0)) {
+        # fallback to default system directories
+        $picturesPath = GenXdev.FileSystem\Expand-Path '~\Pictures'
 
-            # use global variable if available and not empty
-            $result = $Global:ImageDirectories
+        try {
+
+            # attempt to get known folder path for pictures directory
+            $picturesPath = GenXdev.Windows\Get-KnownFolderPath Pictures
         }
-        elseif (-not $SessionOnly) {
+        catch {
 
-            # fallback to preference storage since sessiononly not specified
-            $imageDirectoriesPreference = $null
-
-            try {
-
-                # retrieve image directories preference from genxdev data storage
-                $json = GenXdev.Data\Get-GenXdevPreference `
-                    -PreferencesDatabasePath $PreferencesDatabasePath `
-                    -Name "ImageDirectories" `
-                    -DefaultValue $null `
-                    -ErrorAction SilentlyContinue
-
-                # check if json preference data was retrieved successfully
-                if (-not [string]::IsNullOrEmpty($json)) {
-
-                    # convert json preference to powershell object
-                    $imageDirectoriesPreference = $json |
-                        Microsoft.PowerShell.Utility\ConvertFrom-Json
-                }
-            }
-            catch {
-
-                # set to null if preference retrieval fails
-                $imageDirectoriesPreference = $null
-            }
-
-            # check if preference contains valid directory data
-            if ($null -ne $imageDirectoriesPreference -and
-                $imageDirectoriesPreference.Count -gt 0) {
-
-                # use preference value if available and not empty
-                $result = $imageDirectoriesPreference
-            }
-            else {
-
-                # fallback to default system directories
-                $picturesPath = GenXdev.FileSystem\Expand-Path "~\Pictures"
-
-                try {
-
-                    # attempt to get known folder path for pictures directory
-                    $picturesPath = GenXdev.Windows\Get-KnownFolderPath Pictures
-                }
-                catch {
-
-                    # fallback to default if known folder retrieval fails
-                    $picturesPath = GenXdev.FileSystem\Expand-Path "~\Pictures"
-                }
-
-                # define default directories for image processing operations
-                $result = @(
-                    (GenXdev.FileSystem\Expand-Path '~\downloads'),
-                    (GenXdev.FileSystem\Expand-Path '~\onedrive'),
-                    $picturesPath
-                )
-            }
+            # fallback to default if known folder retrieval fails
+            $picturesPath = GenXdev.FileSystem\Expand-Path '~\Pictures'
         }
-        else {
 
-            # sessiononly is specified but no session variable found, use
-            # default directories
-            $picturesPath = GenXdev.FileSystem\Expand-Path "~\Pictures"
+        # fallback to default system directories
+        $desktopPath = GenXdev.FileSystem\Expand-Path '~\Desktop'
 
-            try {
+        try {
 
-                # attempt to get known folder path for pictures directory
-                $picturesPath = GenXdev.Windows\Get-KnownFolderPath Pictures
-            }
-            catch {
+            # attempt to get known folder path for desktop directory
+            $desktopPath = GenXdev.Windows\Get-KnownFolderPath Desktop
+        }
+        catch {
 
-                # fallback to default if known folder retrieval fails
-                $picturesPath = GenXdev.FileSystem\Expand-Path "~\Pictures"
-            }
+            # fallback to default if known folder retrieval fails
+            $desktopPath = GenXdev.FileSystem\Expand-Path '~\Desktop'
+        }
 
-            # define default directories for image processing operations
-            $result = @(
-                (GenXdev.FileSystem\Expand-Path '~\downloads'),
-                (GenXdev.FileSystem\Expand-Path '~\onedrive'),
-                $picturesPath
-            )
+        # fallback to default system directories
+        $documentsPath = GenXdev.FileSystem\Expand-Path '~\Documents'
+
+        try {
+
+            # attempt to get known folder path for documents directory
+            $documentsPath = GenXdev.Windows\Get-KnownFolderPath Documents
+        }
+        catch {
+
+            # fallback to default if known folder retrieval fails
+            $documentsPath = GenXdev.FileSystem\Expand-Path '~\Documents'
+        }
+
+        # define default directories for image processing operations
+        $DefaultValue = @(
+            (GenXdev.FileSystem\Expand-Path '~\downloads'),
+            (GenXdev.FileSystem\Expand-Path '~\onedrive'),
+            $picturesPath,
+            $desktopPath,
+            $documentsPath
+        ) | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress
+
+        try {
+            $result = Get-GenXdevPreference @params `
+                -Name 'AIImageCollection' `
+                -DefaultValue $DefaultValue | Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue
+        }
+        catch {
+            $result = @()
         }
     }
 
@@ -244,7 +212,7 @@ function Get-AIImageCollection {
                     GenXdev.FileSystem\Expand-Path $_
                 )
             } |
-                Microsoft.PowerShell.Utility\Select-Object -Unique
+            Microsoft.PowerShell.Utility\Select-Object -Unique
     }
 }
 ################################################################################

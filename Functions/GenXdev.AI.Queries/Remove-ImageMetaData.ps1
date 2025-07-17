@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 
 <#
 .SYNOPSIS
@@ -100,246 +100,245 @@ are removed.
 function Remove-ImageMetaData {
 
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
-    [Alias("removeimagedata")]
+    [Alias('removeimagedata')]
 
     param(
         #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 0,
-            HelpMessage = ("Array of directory paths to process for image " +
-                          "metadata removal. If not specified, uses default " +
-                          "system directories.")
+            HelpMessage = ('Array of directory paths to process for image ' +
+                'metadata removal. If not specified, uses default ' +
+                'system directories.')
         )]
-        [ValidateNotNullOrEmpty()]
-        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
-        [string[]] $ImageDirectories,
-        #######################################################################
+        [Alias('imagespath', 'directories', 'imgdirs', 'imagedirectory')]
+        [string[]] $ImageDirectories,        #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 1,
-            HelpMessage = ("The language for removing language-specific " +
-                          "metadata files.")
+            HelpMessage = ('The language for removing language-specific ' +
+                'metadata files.')
         )]
         [ValidateSet(
-            "Afrikaans",
-            "Akan",
-            "Albanian",
-            "Amharic",
-            "Arabic",
-            "Armenian",
-            "Azerbaijani",
-            "Basque",
-            "Belarusian",
-            "Bemba",
-            "Bengali",
-            "Bihari",
-            "Bosnian",
-            "Breton",
-            "Bulgarian",
-            "Cambodian",
-            "Catalan",
-            "Cherokee",
-            "Chichewa",
-            "Chinese (Simplified)",
-            "Chinese (Traditional)",
-            "Corsican",
-            "Croatian",
-            "Czech",
-            "Danish",
-            "Dutch",
-            "English",
-            "Esperanto",
-            "Estonian",
-            "Ewe",
-            "Faroese",
-            "Filipino",
-            "Finnish",
-            "French",
-            "Frisian",
-            "Ga",
-            "Galician",
-            "Georgian",
-            "German",
-            "Greek",
-            "Guarani",
-            "Gujarati",
-            "Haitian Creole",
-            "Hausa",
-            "Hawaiian",
-            "Hebrew",
-            "Hindi",
-            "Hungarian",
-            "Icelandic",
-            "Igbo",
-            "Indonesian",
-            "Interlingua",
-            "Irish",
-            "Italian",
-            "Japanese",
-            "Javanese",
-            "Kannada",
-            "Kazakh",
-            "Kinyarwanda",
-            "Kirundi",
-            "Kongo",
-            "Korean",
-            "Krio (Sierra Leone)",
-            "Kurdish",
-            "Kurdish (Soranî)",
-            "Kyrgyz",
-            "Laothian",
-            "Latin",
-            "Latvian",
-            "Lingala",
-            "Lithuanian",
-            "Lozi",
-            "Luganda",
-            "Luo",
-            "Macedonian",
-            "Malagasy",
-            "Malay",
-            "Malayalam",
-            "Maltese",
-            "Maori",
-            "Marathi",
-            "Mauritian Creole",
-            "Moldavian",
-            "Mongolian",
-            "Montenegrin",
-            "Nepali",
-            "Nigerian Pidgin",
-            "Northern Sotho",
-            "Norwegian",
-            "Norwegian (Nynorsk)",
-            "Occitan",
-            "Oriya",
-            "Oromo",
-            "Pashto",
-            "Persian",
-            "Polish",
-            "Portuguese (Brazil)",
-            "Portuguese (Portugal)",
-            "Punjabi",
-            "Quechua",
-            "Romanian",
-            "Romansh",
-            "Runyakitara",
-            "Russian",
-            "Scots Gaelic",
-            "Serbian",
-            "Serbo-Croatian",
-            "Sesotho",
-            "Setswana",
-            "Seychellois Creole",
-            "Shona",
-            "Sindhi",
-            "Sinhalese",
-            "Slovak",
-            "Slovenian",
-            "Somali",
-            "Spanish",
-            "Spanish (Latin American)",
-            "Sundanese",
-            "Swahili",
-            "Swedish",
-            "Tajik",
-            "Tamil",
-            "Tatar",
-            "Telugu",
-            "Thai",
-            "Tigrinya",
-            "Tonga",
-            "Tshiluba",
-            "Tumbuka",
-            "Turkish",
-            "Turkmen",
-            "Twi",
-            "Uighur",
-            "Ukrainian",
-            "Urdu",
-            "Uzbek",
-            "Vietnamese",
-            "Welsh",
-            "Wolof",
-            "Xhosa",
-            "Yiddish",
-            "Yoruba",
-            "Zulu"
+            'Afrikaans',
+            'Akan',
+            'Albanian',
+            'Amharic',
+            'Arabic',
+            'Armenian',
+            'Azerbaijani',
+            'Basque',
+            'Belarusian',
+            'Bemba',
+            'Bengali',
+            'Bihari',
+            'Bosnian',
+            'Breton',
+            'Bulgarian',
+            'Cambodian',
+            'Catalan',
+            'Cherokee',
+            'Chichewa',
+            'Chinese (Simplified)',
+            'Chinese (Traditional)',
+            'Corsican',
+            'Croatian',
+            'Czech',
+            'Danish',
+            'Dutch',
+            'English',
+            'Esperanto',
+            'Estonian',
+            'Ewe',
+            'Faroese',
+            'Filipino',
+            'Finnish',
+            'French',
+            'Frisian',
+            'Ga',
+            'Galician',
+            'Georgian',
+            'German',
+            'Greek',
+            'Guarani',
+            'Gujarati',
+            'Haitian Creole',
+            'Hausa',
+            'Hawaiian',
+            'Hebrew',
+            'Hindi',
+            'Hungarian',
+            'Icelandic',
+            'Igbo',
+            'Indonesian',
+            'Interlingua',
+            'Irish',
+            'Italian',
+            'Japanese',
+            'Javanese',
+            'Kannada',
+            'Kazakh',
+            'Kinyarwanda',
+            'Kirundi',
+            'Kongo',
+            'Korean',
+            'Krio (Sierra Leone)',
+            'Kurdish',
+            'Kurdish (Soranî)',
+            'Kyrgyz',
+            'Laothian',
+            'Latin',
+            'Latvian',
+            'Lingala',
+            'Lithuanian',
+            'Lozi',
+            'Luganda',
+            'Luo',
+            'Macedonian',
+            'Malagasy',
+            'Malay',
+            'Malayalam',
+            'Maltese',
+            'Maori',
+            'Marathi',
+            'Mauritian Creole',
+            'Moldavian',
+            'Mongolian',
+            'Montenegrin',
+            'Nepali',
+            'Nigerian Pidgin',
+            'Northern Sotho',
+            'Norwegian',
+            'Norwegian (Nynorsk)',
+            'Occitan',
+            'Oriya',
+            'Oromo',
+            'Pashto',
+            'Persian',
+            'Polish',
+            'Portuguese (Brazil)',
+            'Portuguese (Portugal)',
+            'Punjabi',
+            'Quechua',
+            'Romanian',
+            'Romansh',
+            'Runyakitara',
+            'Russian',
+            'Scots Gaelic',
+            'Serbian',
+            'Serbo-Croatian',
+            'Sesotho',
+            'Setswana',
+            'Seychellois Creole',
+            'Shona',
+            'Sindhi',
+            'Sinhalese',
+            'Slovak',
+            'Slovenian',
+            'Somali',
+            'Spanish',
+            'Spanish (Latin American)',
+            'Sundanese',
+            'Swahili',
+            'Swedish',
+            'Tajik',
+            'Tamil',
+            'Tatar',
+            'Telugu',
+            'Thai',
+            'Tigrinya',
+            'Tonga',
+            'Tshiluba',
+            'Tumbuka',
+            'Turkish',
+            'Turkmen',
+            'Twi',
+            'Uighur',
+            'Ukrainian',
+            'Urdu',
+            'Uzbek',
+            'Vietnamese',
+            'Welsh',
+            'Wolof',
+            'Xhosa',
+            'Yiddish',
+            'Yoruba',
+            'Zulu'
         )]
         [string] $Language,
         #######################################################################
         [Parameter(
             Mandatory = $false,
             Position = 2,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Recurse directories."
+            HelpMessage = 'Recurse directories.'
         )]
         [switch] $Recurse,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Only remove description.json files " +
-                          "(keywords/descriptions).")
+            HelpMessage = ('Only remove description.json files ' +
+                '(keywords/descriptions).')
         )]
         [switch] $OnlyKeywords,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Only remove people.json files " +
-                          "(face recognition data).")
+            HelpMessage = ('Only remove people.json files ' +
+                '(face recognition data).')
         )]
         [switch] $OnlyPeople,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Only remove objects.json files " +
-                          "(object detection data).")
+            HelpMessage = ('Only remove objects.json files ' +
+                '(object detection data).')
         )]
         [switch] $OnlyObjects,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Only remove scenes.json files " +
-                          "(scene classification data).")
+            HelpMessage = ('Only remove scenes.json files ' +
+                '(scene classification data).')
         )]
         [switch] $OnlyScenes,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Remove metadata files for all supported " +
-                          "languages.")
+            HelpMessage = ('Remove metadata files for all supported ' +
+                'languages.')
         )]
         [switch] $AllLanguages,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for " +
-                          "AI preferences like Language, Image collections, " +
-                          "etc")
+            HelpMessage = ('Use alternative settings stored in session for ' +
+                'AI preferences like Language, Image collections, ' +
+                'etc')
         )]
         [switch] $SessionOnly,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Clear alternative settings stored in session for " +
-                          "AI preferences like Language, Image collections, " +
-                          "etc")
+            HelpMessage = ('Clear alternative settings stored in session for ' +
+                'AI preferences like Language, Image collections, ' +
+                'etc')
         )]
         [switch] $ClearSession,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Dont use alternative settings stored in session " +
-                          "for AI preferences like Language, Image " +
-                          "collections, etc")
+            HelpMessage = ('Dont use alternative settings stored in session ' +
+                'for AI preferences like Language, Image ' +
+                'collections, etc')
         )]
-        [Alias("FromPreferences")]
+        [Alias('FromPreferences')]
         [switch] $SkipSession
         #######################################################################
     )
@@ -349,29 +348,29 @@ function Remove-ImageMetaData {
         # copy identical parameter values for image collection retrieval
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-AIImageCollection" `
+            -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                           -Scope Local `
-                           -ErrorAction SilentlyContinue)
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
 
         # get image directories using ai preferences
-        $directories = GenXdev.AI\Get-AIImageCollection @params
+        $directories = Get-AIImageCollection @params
 
         # copy identical parameter values for language retrieval
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
+            -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                           -Scope Local `
-                           -ErrorAction SilentlyContinue)
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
 
         # get configured language using ai preferences
-        $Language = GenXdev.AI\Get-AIMetaLanguage @params
+        $Language = Get-AIMetaLanguage @params
 
         # output verbose information about directories to process
         Microsoft.PowerShell.Utility\Write-Verbose `
-            ("Processing directories: {0} with language: {1}" -f `
-             ($directories -join ', '), $Language)
+        ('Processing directories: {0} with language: {1}' -f `
+            ($directories -join ', '), $Language)
     }
 
     process {
@@ -401,163 +400,163 @@ function Remove-ImageMetaData {
                 -Recurse:$Recurse `
                 -File `
                 -ErrorAction SilentlyContinue |
-            Microsoft.PowerShell.Core\ForEach-Object {
+                Microsoft.PowerShell.Core\ForEach-Object {
 
-                # store the full path of the current image
-                $image = $PSItem.FullName
+                    # store the full path of the current image
+                    $image = $PSItem.FullName
 
-                # initialize array to track successfully removed files
-                $removedFiles = @()
+                    # initialize array to track successfully removed files
+                    $removedFiles = @()
 
-                # determine which metadata files to remove based on switches
-                $filesToRemove = @()
+                    # determine which metadata files to remove based on switches
+                    $filesToRemove = @()
 
-                # determine languages to process
-                $languagesToProcess = @()
+                    # determine languages to process
+                    $languagesToProcess = @()
 
-                if ($AllLanguages) {
+                    if ($AllLanguages) {
 
-                    # get all supported languages from the dictionary
-                    $languageDict = GenXdev.Helpers\Get-WebLanguageDictionary
+                        # get all supported languages from the dictionary
+                        $languageDict = GenXdev.Helpers\Get-WebLanguageDictionary
 
-                    # use all available language keys
-                    $languagesToProcess = $languageDict.Keys
-                }
-                else {
-
-                    # use only the specified language
-                    $languagesToProcess = @($Language)
-                }
-
-                # iterate through each language to process
-                foreach ($currentLanguage in $languagesToProcess) {
-
-                    if ($OnlyKeywords) {
-
-                        # always add the default english description file
-                        if ("$($image):description.json" -notin $filesToRemove) {
-
-                            $filesToRemove += "$($image):description.json"
-                        }
-
-                        # add language-specific description file if not english
-                        if ($currentLanguage -ne "English") {
-
-                            $filesToRemove += `
-                                "$($image):description.$currentLanguage.json"
-                        }
-                    }
-                    elseif ($OnlyPeople) {
-
-                        # people data is not language-specific, so only add once
-                        if ("$($image):people.json" -notin $filesToRemove) {
-
-                            $filesToRemove += "$($image):people.json"
-                        }
-                    }
-                    elseif ($OnlyObjects) {
-
-                        # objects data is not language-specific, so only add once
-                        if ("$($image):objects.json" -notin $filesToRemove) {
-
-                            $filesToRemove += "$($image):objects.json"
-                        }
-                    }
-                    elseif ($OnlyScenes) {
-
-                        # scenes data is not language-specific, so only add once
-                        if ("$($image):scenes.json" -notin $filesToRemove) {
-
-                            $filesToRemove += "$($image):scenes.json"
-                        }
+                        # use all available language keys
+                        $languagesToProcess = $languageDict.Keys
                     }
                     else {
 
-                        # remove all metadata files for comprehensive cleanup
-
-                        # always add the default english description file
-                        if ("$($image):description.json" -notin $filesToRemove) {
-
-                            $filesToRemove += "$($image):description.json"
-                        }
-
-                        # add language-specific description file if not english
-                        if ($currentLanguage -ne "English") {
-
-                            $filesToRemove += `
-                                "$($image):description.$currentLanguage.json"
-                        }
-
-                        # add people and objects files only once
-                        if ("$($image):people.json" -notin $filesToRemove) {
-
-                            $filesToRemove += "$($image):people.json"
-                        }
-
-                        if ("$($image):objects.json" -notin $filesToRemove) {
-
-                            $filesToRemove += "$($image):objects.json"
-                        }
-
-                        if ("$($image):scenes.json" -notin $filesToRemove) {
-
-                            $filesToRemove += "$($image):scenes.json"
-                        }
+                        # use only the specified language
+                        $languagesToProcess = @($Language)
                     }
-                }
 
-                # remove the specified metadata files
-                foreach ($file in $filesToRemove) {
+                    # iterate through each language to process
+                    foreach ($currentLanguage in $languagesToProcess) {
 
-                    # check if the metadata file actually exists
-                    if ([System.IO.File]::Exists($file)) {
+                        if ($OnlyKeywords) {
 
-                        # extract just the filename for display purposes
-                        $fileName = [System.IO.Path]::GetFileName($file)
+                            # always add the default english description file
+                            if ("$($image):description.json" -notin $filesToRemove) {
 
-                        # use whatif processing to respect -whatif parameter
-                        if ($PSCmdlet.ShouldProcess($file, `
-                            "Remove metadata file '$fileName'")) {
-
-                            try {
-
-                                # delete the metadata file
-                                [System.IO.File]::Delete($file)
-
-                                # track the successfully removed file
-                                $removedFiles += $fileName
-
-                                # output verbose information about file removal
-                                Microsoft.PowerShell.Utility\Write-Verbose `
-                                    "Removed: $file"
+                                $filesToRemove += "$($image):description.json"
                             }
-                            catch {
 
-                                # handle file deletion errors gracefully
-                                Microsoft.PowerShell.Utility\Write-Warning `
-                                    ("Failed to remove {0}: {1}" -f `
-                                     $file, $_.Exception.Message)
+                            # add language-specific description file if not english
+                            if ($currentLanguage -ne 'English') {
+
+                                $filesToRemove += `
+                                    "$($image):description.$currentLanguage.json"
                             }
                         }
+                        elseif ($OnlyPeople) {
+
+                            # people data is not language-specific, so only add once
+                            if ("$($image):people.json" -notin $filesToRemove) {
+
+                                $filesToRemove += "$($image):people.json"
+                            }
+                        }
+                        elseif ($OnlyObjects) {
+
+                            # objects data is not language-specific, so only add once
+                            if ("$($image):objects.json" -notin $filesToRemove) {
+
+                                $filesToRemove += "$($image):objects.json"
+                            }
+                        }
+                        elseif ($OnlyScenes) {
+
+                            # scenes data is not language-specific, so only add once
+                            if ("$($image):scenes.json" -notin $filesToRemove) {
+
+                                $filesToRemove += "$($image):scenes.json"
+                            }
+                        }
+                        else {
+
+                            # remove all metadata files for comprehensive cleanup
+
+                            # always add the default english description file
+                            if ("$($image):description.json" -notin $filesToRemove) {
+
+                                $filesToRemove += "$($image):description.json"
+                            }
+
+                            # add language-specific description file if not english
+                            if ($currentLanguage -ne 'English') {
+
+                                $filesToRemove += `
+                                    "$($image):description.$currentLanguage.json"
+                            }
+
+                            # add people and objects files only once
+                            if ("$($image):people.json" -notin $filesToRemove) {
+
+                                $filesToRemove += "$($image):people.json"
+                            }
+
+                            if ("$($image):objects.json" -notin $filesToRemove) {
+
+                                $filesToRemove += "$($image):objects.json"
+                            }
+
+                            if ("$($image):scenes.json" -notin $filesToRemove) {
+
+                                $filesToRemove += "$($image):scenes.json"
+                            }
+                        }
+                    }
+
+                    # remove the specified metadata files
+                    foreach ($file in $filesToRemove) {
+
+                        # check if the metadata file actually exists
+                        if ([System.IO.File]::Exists($file)) {
+
+                            # extract just the filename for display purposes
+                            $fileName = [System.IO.Path]::GetFileName($file)
+
+                            # use whatif processing to respect -whatif parameter
+                            if ($PSCmdlet.ShouldProcess($file, `
+                                        "Remove metadata file '$fileName'")) {
+
+                                try {
+
+                                    # delete the metadata file
+                                    [System.IO.File]::Delete($file)
+
+                                    # track the successfully removed file
+                                    $removedFiles += $fileName
+
+                                    # output verbose information about file removal
+                                    Microsoft.PowerShell.Utility\Write-Verbose `
+                                        "Removed: $file"
+                                }
+                                catch {
+
+                                    # handle file deletion errors gracefully
+                                    Microsoft.PowerShell.Utility\Write-Verbose `
+                                    ('Failed to remove {0}: {1}' -f `
+                                            $file, $_.Exception.Message)
+                                }
+                            }
+                        }
+                    }
+
+                    # output information about what was removed
+                    if ($removedFiles.Count -gt 0) {
+
+                        # display successful removal summary
+                        Microsoft.PowerShell.Utility\Write-Host `
+                        ('Removed metadata for {0}: {1}' -f `
+                                $PSItem.Name, ($removedFiles -join ', ')) `
+                            -ForegroundColor Green
+                    }
+                    else {
+
+                        # output verbose message when no files were found
+                        Microsoft.PowerShell.Utility\Write-Verbose `
+                            "No metadata files found for $($PSItem.Name)"
                     }
                 }
-
-                # output information about what was removed
-                if ($removedFiles.Count -gt 0) {
-
-                    # display successful removal summary
-                    Microsoft.PowerShell.Utility\Write-Host `
-                        ("Removed metadata for {0}: {1}" -f `
-                         $PSItem.Name, ($removedFiles -join ', ')) `
-                        -ForegroundColor Green
-                }
-                else {
-
-                    # output verbose message when no files were found
-                    Microsoft.PowerShell.Utility\Write-Verbose `
-                        "No metadata files found for $($PSItem.Name)"
-                }
-            }
         }
     }
 

@@ -1,17 +1,17 @@
-###############################################################################
-Pester\Describe "Get-CpuCore" {
+﻿###############################################################################
+Pester\Describe 'Get-CpuCore' {
 
-    Pester\It "Should pass PSScriptAnalyzer rules" {
+    Pester\It 'Should pass PSScriptAnalyzer rules' {
 
-# get the analyzed script path
+        # get the analyzed script path
         $scriptPath = GenXdev.FileSystem\Expand-Path `
             "$PSScriptRoot\..\..\Functions\GenXdev.AI\Get-CpuCore.ps1"
 
-# execute analyzer with settings
+        # execute analyzer with settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 
-        [string] $message = ""
+        [string] $message = ''
         $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"

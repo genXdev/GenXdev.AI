@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Updates all face recognition profiles from image files in the faces directory.
@@ -74,7 +74,7 @@ updatefaces -RenameFailed
 function Register-AllFaces {
 
     [CmdletBinding()]
-    [Alias("UpdateFaces")]
+    [Alias('UpdateFaces')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
 
     param(
@@ -82,39 +82,39 @@ function Register-AllFaces {
         [parameter(
             Position = 0,
             Mandatory = $false,
-            HelpMessage = ("The directory containing face images organized by " +
-                          "person folders. If not specified, uses the " +
-                          "configured faces directory preference.")
+            HelpMessage = ('The directory containing face images organized by ' +
+                'person folders. If not specified, uses the ' +
+                'configured faces directory preference.')
         )]
         [string] $FacesDirectory,
         #######################################################################
         [parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = "Maximum number of retry attempts for failed registrations"
+            HelpMessage = 'Maximum number of retry attempts for failed registrations'
         )]
         [int] $MaxRetries = 3,
         #######################################################################
         [parameter(
             Position = 2,
             Mandatory = $false,
-            HelpMessage = "The name for the Docker container"
+            HelpMessage = 'The name for the Docker container'
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ContainerName = "deepstack_face_recognition",
+        [string] $ContainerName = 'deepstack_face_recognition',
         #######################################################################
         [parameter(
             Position = 3,
             Mandatory = $false,
-            HelpMessage = "The name for the Docker volume for persistent storage"
+            HelpMessage = 'The name for the Docker volume for persistent storage'
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $VolumeName = "deepstack_face_data",
+        [string] $VolumeName = 'deepstack_face_data',
         #######################################################################
         [parameter(
             Position = 4,
             Mandatory = $false,
-            HelpMessage = "The port number for the DeepStack service"
+            HelpMessage = 'The port number for the DeepStack service'
         )]
         [ValidateRange(1, 65535)]
         [int] $ServicePort = 5000,
@@ -122,8 +122,8 @@ function Register-AllFaces {
         [parameter(
             Position = 5,
             Mandatory = $false,
-            HelpMessage = ("Maximum time in seconds to wait for service " +
-                          "health check")
+            HelpMessage = ('Maximum time in seconds to wait for service ' +
+                'health check')
         )]
         [ValidateRange(10, 300)]
         [int] $HealthCheckTimeout = 60,
@@ -131,7 +131,7 @@ function Register-AllFaces {
         [parameter(
             Position = 6,
             Mandatory = $false,
-            HelpMessage = "Interval in seconds between health check attempts"
+            HelpMessage = 'Interval in seconds between health check attempts'
         )]
         [ValidateRange(1, 10)]
         [int] $HealthCheckInterval = 3,
@@ -139,7 +139,7 @@ function Register-AllFaces {
         [parameter(
             Position = 7,
             Mandatory = $false,
-            HelpMessage = "Custom Docker image name to use"
+            HelpMessage = 'Custom Docker image name to use'
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImageName,
@@ -147,52 +147,73 @@ function Register-AllFaces {
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = ("Skip Docker Desktop initialization (used when " +
-                          "already called by parent function)")
+            HelpMessage = ('Skip Docker Desktop initialization (used when ' +
+                'already called by parent function)')
         )]
         [switch] $NoDockerInitialize,
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = "Force re-registration of all faces"
+            HelpMessage = 'Force re-registration of all faces'
         )]
         [switch] $Force,
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = ("Rename failed image files that could not be " +
-                          "processed due to no face found")
+            HelpMessage = ('Rename failed image files that could not be ' +
+                'processed due to no face found')
         )]
         [switch] $RenameFailed,
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = "Force rebuild of Docker container and remove existing data"
+            HelpMessage = 'Force rebuild of Docker container and remove existing data'
         )]
         [switch] $ForceRebuild,
         #######################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = "Use GPU-accelerated version (requires NVIDIA GPU)"
+            HelpMessage = 'Use GPU-accelerated version (requires NVIDIA GPU)'
         )]
         [switch] $UseGPU,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show Docker Desktop window during initialization"
+            HelpMessage = 'Show Docker Desktop window during initialization'
         )]
-        [switch]$ShowWindow
-        ###################################################################
-
+        [Alias('sw')]
+        [switch]$ShowWindow,
+        ###############################################################################
+        [Parameter(Mandatory = $false, HelpMessage = 'If specified, only use the session (do not persist changes to preferences database).')]
+        [switch] $SessionOnly,
+        ###############################################################################
+        [Parameter(Mandatory = $false, HelpMessage = 'If specified, clear the current session preferences before use.')]
+        [switch] $ClearSession,
+        ###############################################################################
+        ###############################################################################
+        [Alias('DatabasePath')]
+        [Parameter(Mandatory = $false, HelpMessage = 'Path to the preferences database to use for known faces root path.')]
+        [string] $PreferencesDatabasePath,
+        ###############################################################################
+        ###############################################################################
+        [Alias('FromPreferences')]
+        [Parameter(Mandatory = $false, HelpMessage = 'If specified, skip session logic when retrieving known faces root path.')]
+        [switch] $SkipSession
+        ###############################################################################
     )
 
     begin {
 
-       $FacesDirectory = GenXdev.AI\Get-AIKnownFacesRootpath `
-            -FacesDirectory $FacesDirectory
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName 'GenXdev.AI\Get-AIKnownFacesRootpath' `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                -Scope Local `
+                -ErrorAction SilentlyContinue)
+        $FacesDirectory = Get-AIKnownFacesRootpath @params
 
-       Microsoft.PowerShell.Utility\Write-Verbose `
-                "Using provided faces directory: $FacesDirectory"
+        Microsoft.PowerShell.Utility\Write-Verbose `
+            "Using provided faces directory: $FacesDirectory"
 
         # initialize script-level tracking variables for registration results
         $script:RegistrationErrors = @()
@@ -201,7 +222,7 @@ function Register-AllFaces {
 
         # validate that the faces directory exists before proceeding
         if (-not (Microsoft.PowerShell.Management\Test-Path $FacesDirectory `
-                -PathType Container)) {
+                    -PathType Container)) {
 
             throw "Faces directory does not exist: $FacesDirectory"
         }
@@ -237,8 +258,8 @@ function Register-AllFaces {
 
                     # output verbose information about current initialization attempt
                     Microsoft.PowerShell.Utility\Write-Verbose `
-                        ("Attempt $attempt to initialize DeepStack face " +
-                        "recognition service")
+                    ("Attempt $attempt to initialize DeepStack face " +
+                        'recognition service')
 
                     # copy parameters for the EnsureDeepStack function call
                     $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -256,7 +277,7 @@ function Register-AllFaces {
                     else {
 
                         $ensureParams.Force = if ($PSBoundParameters.ContainsKey(
-                            "ForceRebuild")) {
+                                'ForceRebuild')) {
                             $false
                         } else {
                             $null
@@ -264,7 +285,7 @@ function Register-AllFaces {
                     }
 
                     # ensure deepstack service is running
-                    $null = GenXdev.AI\EnsureDeepStack @ensureParams
+                    $null = EnsureDeepStack @ensureParams
 
                     # verify service is responding by performing health check
                     $null = Microsoft.PowerShell.Utility\Invoke-RestMethod `
@@ -274,15 +295,15 @@ function Register-AllFaces {
 
                     # output success message for service initialization
                     Microsoft.PowerShell.Utility\Write-Verbose `
-                        ("DeepStack face recognition service initialized " +
-                        "successfully")
+                    ('DeepStack face recognition service initialized ' +
+                        'successfully')
 
                     return $true
                 }
                 catch {
 
                     # output warning about failed initialization attempt
-                    Microsoft.PowerShell.Utility\Write-Warning `
+                    Microsoft.PowerShell.Utility\Write-Verbose `
                         "Attempt $attempt failed: $_"
 
                     # wait before retry if not the last attempt
@@ -290,7 +311,7 @@ function Register-AllFaces {
 
                         # output verbose information about retry delay
                         Microsoft.PowerShell.Utility\Write-Verbose `
-                            "Waiting 30 seconds before retry..."
+                            'Waiting 30 seconds before retry...'
 
                         # pause before next attempt
                         Microsoft.PowerShell.Utility\Start-Sleep -Seconds 30
@@ -302,8 +323,8 @@ function Register-AllFaces {
             }
 
             # throw error if all attempts failed
-            throw ("Failed to initialize DeepStack face recognition service " +
-                  "after $maxAttempts attempts")
+            throw ('Failed to initialize DeepStack face recognition service ' +
+                "after $maxAttempts attempts")
         }
 
         #######################################################################
@@ -344,7 +365,7 @@ function Register-AllFaces {
 
                     # output verbose information about registration attempt
                     Microsoft.PowerShell.Utility\Write-Verbose `
-                        ("Registering face: $Identifier with " +
+                    ("Registering face: $Identifier with " +
                         "$($ImagePaths.Count) image(s) (attempt $attempt)")
 
                     # copy parameters for the Register-Face function call
@@ -360,7 +381,7 @@ function Register-AllFaces {
                     $registerParams.Identifier = $Identifier
 
                     # register the face using the deepstack service
-                    $null = GenXdev.AI\Register-Face @registerParams `
+                    $null = Register-Face @registerParams `
                         -NoDockerInitialize -ErrorAction Stop
 
                     # add delay between successful registrations to prevent service overload
@@ -374,14 +395,14 @@ function Register-AllFaces {
                     $errorMessage = $_.Exception.Message
 
                     # output warning about failed registration attempt
-                    Microsoft.PowerShell.Utility\Write-Warning `
-                        ("Registration attempt $attempt failed for " +
+                    Microsoft.PowerShell.Utility\Write-Verbose `
+                    ("Registration attempt $attempt failed for " +
                         "$Identifier`: $errorMessage")
 
                     # check if this is a "no face found" error and handle accordingly
-                    if ($RenameFailed -and ($errorMessage -like "*400*" -and
-                            $errorMessage -like "*Bad Request*" -and
-                            $errorMessage -like "*Could not find any face*")) {
+                    if ($RenameFailed -and ($errorMessage -like '*400*' -and
+                            $errorMessage -like '*Bad Request*' -and
+                            $errorMessage -like '*Could not find any face*')) {
 
                         # output verbose information about detected no face error
                         Microsoft.PowerShell.Utility\Write-Verbose `
@@ -403,7 +424,7 @@ function Register-AllFaces {
 
                                 # output information about renamed file
                                 Microsoft.PowerShell.Utility\Write-Output `
-                                    ("Renamed failed image: $imagePath -> " +
+                                ("Renamed failed image: $imagePath -> " +
                                     "$newPath")
                             }
 
@@ -411,8 +432,8 @@ function Register-AllFaces {
                             $script:RegistrationErrors += @{
                                 Identifier = $Identifier
                                 ImagePaths = $ImagePaths
-                                Error = ("No face found - files renamed to " +
-                                        ".failed")
+                                Error      = ('No face found - files renamed to ' +
+                                    '.failed')
                             }
 
                             return $false
@@ -420,7 +441,7 @@ function Register-AllFaces {
                         catch {
 
                             # output warning if file rename failed
-                            Microsoft.PowerShell.Utility\Write-Warning `
+                            Microsoft.PowerShell.Utility\Write-Verbose `
                                 "Failed to rename files for $Identifier`: $_"
                         }
                     }
@@ -448,7 +469,7 @@ function Register-AllFaces {
             $script:RegistrationErrors += @{
                 Identifier = $Identifier
                 ImagePaths = $ImagePaths
-                Error = "Failed after $MaxRetries attempts"
+                Error      = "Failed after $MaxRetries attempts"
             }
 
             return $false
@@ -499,7 +520,7 @@ function Register-AllFaces {
             if ($imageFiles.Count -eq 0) {
 
                 # output warning if no images found for person
-                Microsoft.PowerShell.Utility\Write-Warning `
+                Microsoft.PowerShell.Utility\Write-Verbose `
                     "No image files found for person: $personName"
 
                 return
@@ -509,7 +530,7 @@ function Register-AllFaces {
             if (-not $ForceUpdate) {
 
                 # get list of existing registered faces
-                $existingFaces = GenXdev.AI\Get-RegisteredFaces `
+                $existingFaces = Get-RegisteredFaces `
                     -NoDockerInitialize `
                     -ErrorAction SilentlyContinue
 
@@ -546,7 +567,7 @@ function Register-AllFaces {
 
                 # output warning for unexpected processing errors
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    ("Unexpected error processing images for " +
+                ('Unexpected error processing images for ' +
                     "$personName`: $_")
             }
 
@@ -568,7 +589,7 @@ function Register-AllFaces {
 
                 # output verbose information about skipped initialization
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "Skipping Docker initialization as requested"
+                    'Skipping Docker initialization as requested'
             }
 
             # clear existing faces if force flag is specified
@@ -576,7 +597,7 @@ function Register-AllFaces {
 
                 # output verbose information about force clearing
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "Force flag specified - clearing existing faces"
+                    'Force flag specified - clearing existing faces'
 
                 # copy parameters for the Unregister-AllFaces function call
                 $unregisterParams = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -587,7 +608,7 @@ function Register-AllFaces {
                         -ErrorAction SilentlyContinue)
 
                 # unregister all existing faces
-                $null = GenXdev.AI\Unregister-AllFaces @unregisterParams
+                $null = Unregister-AllFaces @unregisterParams
 
                 # pause to allow service to process the clearing operation
                 Microsoft.PowerShell.Utility\Start-Sleep -Seconds 5
@@ -602,14 +623,13 @@ function Register-AllFaces {
                 Microsoft.PowerShell.Management\Set-Location -Path $FacesDirectory
 
                 # get all person directories from the faces directory
-                $personDirectories = Microsoft.PowerShell.Management\Get-ChildItem `
-                    -Directory
+                $personDirectories = @(Microsoft.PowerShell.Management\Get-ChildItem  "$FacesDirectory\*" `
+                        -Directory)
 
                 # check if any person directories were found
                 if ($personDirectories.Count -eq 0) {
-
                     # output warning if no person directories found
-                    Microsoft.PowerShell.Utility\Write-Warning `
+                    Microsoft.PowerShell.Utility\Write-Verbose `
                         "No person directories found in: $FacesDirectory"
 
                     return
@@ -617,8 +637,8 @@ function Register-AllFaces {
 
                 # output verbose information about found directories
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    ("Found $($personDirectories.Count) person directories " +
-                    "to process")
+                ("Found $($personDirectories.Count) person directories " +
+                    'to process')
 
                 # process each person directory
                 foreach ($personDir in $personDirectories) {
@@ -635,10 +655,10 @@ function Register-AllFaces {
             }
 
             # report final results to user
-            Microsoft.PowerShell.Utility\Write-Output "Face registration completed:"
+            Microsoft.PowerShell.Utility\Write-Output 'Face registration completed:'
 
             Microsoft.PowerShell.Utility\Write-Output `
-                ("  Successful registrations: $script:SuccessfulRegistrations")
+            ("  Successful registrations: $script:SuccessfulRegistrations")
 
             Microsoft.PowerShell.Utility\Write-Output `
                 "  Skipped registrations: $script:SkippedRegistrations"
@@ -650,14 +670,14 @@ function Register-AllFaces {
             if ($script:RegistrationErrors.Count -gt 0) {
 
                 # output warning header for failed registrations
-                Microsoft.PowerShell.Utility\Write-Warning `
-                    "The following registrations failed:"
+                Microsoft.PowerShell.Utility\Write-Verbose `
+                    'The following registrations failed:'
 
                 # output each individual error
                 foreach ($error in $script:RegistrationErrors) {
 
                     # output specific error information
-                    Microsoft.PowerShell.Utility\Write-Warning `
+                    Microsoft.PowerShell.Utility\Write-Verbose `
                         "  $($error.Identifier): $($error.Error)"
                 }
             }
@@ -673,7 +693,6 @@ function Register-AllFaces {
 
         # output verbose information about process completion
         Microsoft.PowerShell.Utility\Write-Verbose `
-            "Face registration process completed"
+            'Face registration process completed'
     }
 }
-        ###############################################################################

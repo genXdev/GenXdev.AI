@@ -1,5 +1,4 @@
-
-<#
+﻿<#
 .SYNOPSIS
 Gets the LLM settings for AI operations in GenXdev.AI.
 
@@ -126,109 +125,110 @@ function Get-AILLMSettings {
         [Parameter(
             Position = 0,
             Mandatory = $false,
-            HelpMessage = "The type of LLM query to get settings for"
+            HelpMessage = 'The type of LLM query to get settings for'
         )]
         [ValidateSet(
-            "SimpleIntelligence",
-            "Knowledge",
-            "Pictures",
-            "TextTranslation",
-            "Coding",
-            "ToolUse"
+            'SimpleIntelligence',
+            'Knowledge',
+            'Pictures',
+            'TextTranslation',
+            'Coding',
+            'ToolUse'
         )]
-        [string] $LLMQueryType = "SimpleIntelligence",
+        [string] $LLMQueryType = 'SimpleIntelligence',
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The model identifier or pattern to use for AI operations"
+            HelpMessage = 'The model identifier or pattern to use for AI operations'
         )]
         [string] $Model,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The LM Studio specific model identifier"
+            HelpMessage = 'The LM Studio specific model identifier'
         )]
-        [Alias("ModelLMSGetIdentifier")]
+        [Alias('ModelLMSGetIdentifier')]
         [string] $HuggingFaceIdentifier,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The maximum number of tokens to use in AI operations"
+            HelpMessage = 'The maximum number of tokens to use in AI operations'
         )]
         [int] $MaxToken,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+            HelpMessage = 'The number of CPU cores to dedicate to AI operations'
         )]
         [int] $Cpu,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
-            "offloading is disabled. If 'max', all layers are " +
-            "offloaded to GPU. If a number between 0 and 1, " +
-            "that fraction of layers will be offloaded to the " +
-            "GPU. -1 = LM Studio will decide how much to " +
-            "offload to the GPU. -2 = Auto"))]
+                "offloading is disabled. If 'max', all layers are " +
+                'offloaded to GPU. If a number between 0 and 1, ' +
+                'that fraction of layers will be offloaded to the ' +
+                'GPU. -1 = LM Studio will decide how much to ' +
+                'offload to the GPU. -2 = Auto'))]
         [int] $Gpu,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The time-to-live in seconds for cached AI responses"
+            HelpMessage = 'The time-to-live in seconds for cached AI responses'
         )]
         [int] $TTLSeconds,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The API endpoint URL for AI operations"
+            HelpMessage = 'The API endpoint URL for AI operations'
         )]
         [string] $ApiEndpoint,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The API key for authenticated AI operations"
+            HelpMessage = 'The API key for authenticated AI operations'
         )]
         [string] $ApiKey,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The timeout in seconds for AI operations"
+            HelpMessage = 'The timeout in seconds for AI operations'
         )]
         [int] $TimeoutSeconds,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for AI " +
-                "preferences like Language, Image collections, etc")
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
         [switch] $SessionOnly,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Clear the session setting (Global variable) before retrieving"
+            HelpMessage = 'Clear the session setting (Global variable) before retrieving'
         )]
         [switch] $ClearSession,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Skip session settings and get from preferences " +
-                "or defaults only")
+            HelpMessage = ('Skip session settings and get from preferences ' +
+                'or defaults only')
         )]
-        [Alias("FromPreferences")]
+        [Alias('FromPreferences')]
         [switch] $SkipSession
         ###############################################################################
     )
 
     begin {
 
-        Microsoft.PowerShell.Utility\Write-Verbose "=== Get-AILLMSettings Started ==="
+        Microsoft.PowerShell.Utility\Write-Verbose '=== Get-AILLMSettings Started ==='
         Microsoft.PowerShell.Utility\Write-Verbose "LLMQueryType: $LLMQueryType"
         Microsoft.PowerShell.Utility\Write-Verbose "SessionOnly: $SessionOnly"
         Microsoft.PowerShell.Utility\Write-Verbose "SkipSession: $SkipSession"
@@ -243,13 +243,13 @@ function Get-AILLMSettings {
         if ($PSBoundParameters.ContainsKey('Gpu')) { $providedParams += "Gpu=$Gpu" }
         if ($PSBoundParameters.ContainsKey('TTLSeconds')) { $providedParams += "TTLSeconds=$TTLSeconds" }
         if ($PSBoundParameters.ContainsKey('ApiEndpoint')) { $providedParams += "ApiEndpoint=$ApiEndpoint" }
-        if ($PSBoundParameters.ContainsKey('ApiKey')) { $providedParams += "ApiKey=(redacted)" }
+        if ($PSBoundParameters.ContainsKey('ApiKey')) { $providedParams += 'ApiKey=(redacted)' }
         if ($PSBoundParameters.ContainsKey('TimeoutSeconds')) { $providedParams += "TimeoutSeconds=$TimeoutSeconds" }
 
         if ($providedParams.Count -gt 0) {
             Microsoft.PowerShell.Utility\Write-Verbose "Provided parameters: $($providedParams -join ', ')"
         } else {
-            Microsoft.PowerShell.Utility\Write-Verbose "No explicit parameter values provided"
+            Microsoft.PowerShell.Utility\Write-Verbose 'No explicit parameter values provided'
         }
 
         # handle clearing session variables first if requested
@@ -258,41 +258,41 @@ function Get-AILLMSettings {
             # clear all global session variables for llm settings
             # These variables are used dynamically via Get-Variable, so suppress PSScriptAnalyzer warnings
 
-            Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_Model") -Value $null -Scope Global
+            Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_Model') -Value $null -Scope Global
 
-            Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_HuggingFaceIdentifier") -Value $null -Scope Global
+            Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_HuggingFaceIdentifier') -Value $null -Scope Global
 
-            Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_MaxToken") -Value $null -Scope Global
+            Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_MaxToken') -Value $null -Scope Global
 
-            Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_Cpu") -Value $null -Scope Global
+            Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_Cpu') -Value $null -Scope Global
 
-            Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_Gpu") -Value $null -Scope Global
+            Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_Gpu') -Value $null -Scope Global
 
-            Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_TTLSeconds") -Value $null -Scope Global
+            Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_TTLSeconds') -Value $null -Scope Global
 
-            Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_ApiEndpoint") -Value $null -Scope Global
+            Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_ApiEndpoint') -Value $null -Scope Global
 
-            Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_ApiKey") -Value $null -Scope Global
+            Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_ApiKey') -Value $null -Scope Global
 
-            Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_TimeoutSeconds") -Value $null -Scope Global
+            Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_TimeoutSeconds') -Value $null -Scope Global
 
             # inform user that session variables have been cleared
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Cleared session LLM settings for all properties"
+                'Cleared session LLM settings for all properties'
             )
         }
 
         # initialize the result hashtable with all possible setting properties
         $result = @{
-            Model = $null
+            Model                 = $null
             HuggingFaceIdentifier = $null
-            MaxToken = $null
-            Cpu = $null
-            Gpu = $null
-            TTLSeconds = $null
-            ApiEndpoint = $null
-            ApiKey = $null
-            TimeoutSeconds = $null
+            MaxToken              = $null
+            Cpu                   = $null
+            Gpu                   = $null
+            TTLSeconds            = $null
+            ApiEndpoint           = $null
+            ApiKey                = $null
+            TimeoutSeconds        = $null
         }
     }
 
@@ -304,19 +304,36 @@ function Get-AILLMSettings {
             param(
                 [string]$propertyName,
                 [object]$parameterValue,
+                [bool]$parameterExplicitlyProvided,
                 [string]$llmQueryType,
                 [switch]$sessionOnly,
                 [switch]$skipSession,
                 [hashtable]$defaultConfig
             )
 
-            # return parameter value directly if provided
-            if ($null -ne $parameterValue -and $parameterValue -ne "") {
-                Microsoft.PowerShell.Utility\Write-Verbose "[$propertyName] Using parameter value: $parameterValue"
-                return $parameterValue
+            # check if parameter was explicitly provided and has a meaningful value
+            if ($parameterExplicitlyProvided) {
+                # for string parameters, check if the value is meaningful (not null/empty/whitespace)
+                $isStringParam = $propertyName -in @('Model', 'HuggingFaceIdentifier', 'ApiEndpoint', 'ApiKey')
+                if ($isStringParam) {
+                    if (-not [String]::IsNullOrWhiteSpace($parameterValue)) {
+                        Microsoft.PowerShell.Utility\Write-Verbose "[$propertyName] Using explicitly provided parameter value: $parameterValue"
+                        return $parameterValue
+                    } else {
+                        Microsoft.PowerShell.Utility\Write-Verbose "[$propertyName] Parameter explicitly provided but is null/empty, checking other sources..."
+                    }
+                } else {
+                    # for numeric parameters, check if not null and not zero
+                    if ($null -ne $parameterValue -and $parameterValue -ne 0) {
+                        Microsoft.PowerShell.Utility\Write-Verbose "[$propertyName] Using explicitly provided parameter value: $parameterValue"
+                        return $parameterValue
+                    } else {
+                        Microsoft.PowerShell.Utility\Write-Verbose "[$propertyName] Parameter explicitly provided but is null/zero, checking other sources..."
+                    }
+                }
+            } else {
+                Microsoft.PowerShell.Utility\Write-Verbose "[$propertyName] No parameter value provided, checking other sources..."
             }
-
-            Microsoft.PowerShell.Utility\Write-Verbose "[$propertyName] No parameter value provided, checking other sources..."
 
             # check session variables unless SkipSession is specified
             if (-not $skipSession) {
@@ -328,17 +345,17 @@ function Get-AILLMSettings {
 
                 # attempt to retrieve session variable value
                 if (Microsoft.PowerShell.Utility\Get-Variable `
-                    -Name $sessionVarName `
-                    -Scope Global `
-                    -ErrorAction SilentlyContinue) {
+                        -Name $sessionVarName `
+                        -Scope Global `
+                        -ErrorAction SilentlyContinue) {
 
                     # get the actual variable value
                     $sessionValue = (Microsoft.PowerShell.Utility\Get-Variable `
-                        -Name $sessionVarName `
-                        -Scope Global).Value
+                            -Name $sessionVarName `
+                            -Scope Global).Value
 
                     # return session value if it exists and is not empty
-                    if ($null -ne $sessionValue -and $sessionValue -ne "") {
+                    if ($null -ne $sessionValue -and $sessionValue -ne '') {
                         Microsoft.PowerShell.Utility\Write-Verbose "[$propertyName] Found session value: $sessionValue"
                         return $sessionValue
                     } else {
@@ -367,13 +384,13 @@ function Get-AILLMSettings {
                     $preferenceKey = "AILLMSettings_$($llmQueryType)_$propertyName"
 
                     # attempt to retrieve preference value
-                    $preferenceValue = GenXdev.Data\Get-GenXdevPreference `
+                    $preferenceValue = Get-GenXdevPreference `
                         -PreferencesDatabasePath $PreferencesDatabasePath `
                         -Name $preferenceKey `
                         -ErrorAction SilentlyContinue
 
                     # return preference value if it exists and is not empty
-                    if ($null -ne $preferenceValue -and $preferenceValue -ne "") {
+                    if ($null -ne $preferenceValue -and $preferenceValue -ne '') {
                         Microsoft.PowerShell.Utility\Write-Verbose "[$propertyName] Found preference value: $preferenceValue"
                         return $preferenceValue
                     } else {
@@ -406,10 +423,10 @@ function Get-AILLMSettings {
         # create parameter hashtable for Get-AIDefaultLLMSettings
         $defaultSettingsParams = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-AIDefaultLLMSettings"
-            # -DefaultValues (Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+            -FunctionName 'GenXdev.AI\Get-AIDefaultLLMSettings'
+        # -DefaultValues (Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
-        Microsoft.PowerShell.Utility\Write-Verbose "=== Using Get-AIDefaultLLMSettings for auto-selection ==="
+        Microsoft.PowerShell.Utility\Write-Verbose '=== Using Get-AIDefaultLLMSettings for auto-selection ==='
 
         $defaultConfig = GenXdev.AI\Get-AIDefaultLLMSettings @defaultSettingsParams -AutoSelect
 
@@ -417,55 +434,84 @@ function Get-AILLMSettings {
             # Check if it's an array or a single hashtable
             if ($defaultConfig -is [array] -and $defaultConfig.Count -gt 0) {
                 $selectedDefaultConfig = $defaultConfig[0] | GenXdev.Helpers\ConvertTo-HashTable
-                Microsoft.PowerShell.Utility\Write-Verbose "Auto-selected default configuration found (from array)"
+                Microsoft.PowerShell.Utility\Write-Verbose 'Auto-selected default configuration found (from array)'
             } elseif ($defaultConfig -is [hashtable]) {
                 # Single hashtable returned
                 $selectedDefaultConfig = $defaultConfig
-                Microsoft.PowerShell.Utility\Write-Verbose "Auto-selected default configuration found (single hashtable)"
+                Microsoft.PowerShell.Utility\Write-Verbose 'Auto-selected default configuration found (single hashtable)'
             } else {
                 $selectedDefaultConfig = $null
                 Microsoft.PowerShell.Utility\Write-Verbose "Default configuration has unexpected type: $($defaultConfig.GetType().FullName)"
             }
         } else {
             $selectedDefaultConfig = $null
-            Microsoft.PowerShell.Utility\Write-Verbose "No suitable default configuration found"
+            Microsoft.PowerShell.Utility\Write-Verbose 'No suitable default configuration found'
         }
 
         # Debug: Log the structure of the selected default configuration
         if ($null -ne $selectedDefaultConfig) {
-            Microsoft.PowerShell.Utility\Write-Verbose "=== DEBUG: Selected Default Configuration ==="
+            Microsoft.PowerShell.Utility\Write-Verbose '=== DEBUG: Selected Default Configuration ==='
             if ($selectedDefaultConfig -is [hashtable]) {
                 Microsoft.PowerShell.Utility\Write-Verbose "Configuration is a hashtable with keys: $($selectedDefaultConfig.Keys -join ', ')"
                 foreach ($key in $selectedDefaultConfig.Keys) {
-                    $value = if ($null -eq $selectedDefaultConfig[$key]) { "(null)" } else { $selectedDefaultConfig[$key] }
+                    $value = if ($null -eq $selectedDefaultConfig[$key]) { '(null)' } else { $selectedDefaultConfig[$key] }
                     Microsoft.PowerShell.Utility\Write-Verbose "  $key = $value"
                 }
             } else {
                 Microsoft.PowerShell.Utility\Write-Verbose "Configuration type: $($selectedDefaultConfig.GetType().FullName)"
             }
-            Microsoft.PowerShell.Utility\Write-Verbose "=== END DEBUG ==="
+            Microsoft.PowerShell.Utility\Write-Verbose '=== END DEBUG ==='
         }
 
         # for each property, use the priority: parameter > session > preferences > auto-selected default
         foreach ($propertyName in @('Model', 'HuggingFaceIdentifier', 'MaxToken', 'Cpu', 'Gpu', 'TTLSeconds', 'ApiEndpoint', 'ApiKey', 'TimeoutSeconds')) {
 
             $parameterValue = $null
+            $parameterExplicitlyProvided = $false
             switch ($propertyName) {
-                'Model' { $parameterValue = $Model }
-                'HuggingFaceIdentifier' { $parameterValue = $HuggingFaceIdentifier }
-                'MaxToken' { $parameterValue = $MaxToken }
-                'Cpu' { $parameterValue = $Cpu }
-                'Gpu' { $parameterValue = $Gpu }
-                'TTLSeconds' { $parameterValue = $TTLSeconds }
-                'ApiEndpoint' { $parameterValue = $ApiEndpoint }
-                'ApiKey' { $parameterValue = $ApiKey }
-                'TimeoutSeconds' { $parameterValue = $TimeoutSeconds }
+                'Model' {
+                    $parameterValue = $Model
+                    $parameterExplicitlyProvided = $PSBoundParameters.ContainsKey('Model')
+                }
+                'HuggingFaceIdentifier' {
+                    $parameterValue = $HuggingFaceIdentifier
+                    $parameterExplicitlyProvided = $PSBoundParameters.ContainsKey('HuggingFaceIdentifier')
+                }
+                'MaxToken' {
+                    $parameterValue = $MaxToken
+                    $parameterExplicitlyProvided = $PSBoundParameters.ContainsKey('MaxToken')
+                }
+                'Cpu' {
+                    $parameterValue = $Cpu
+                    $parameterExplicitlyProvided = $PSBoundParameters.ContainsKey('Cpu')
+                }
+                'Gpu' {
+                    $parameterValue = $Gpu
+                    $parameterExplicitlyProvided = $PSBoundParameters.ContainsKey('Gpu')
+                }
+                'TTLSeconds' {
+                    $parameterValue = $TTLSeconds
+                    $parameterExplicitlyProvided = $PSBoundParameters.ContainsKey('TTLSeconds')
+                }
+                'ApiEndpoint' {
+                    $parameterValue = $ApiEndpoint
+                    $parameterExplicitlyProvided = $PSBoundParameters.ContainsKey('ApiEndpoint')
+                }
+                'ApiKey' {
+                    $parameterValue = $ApiKey
+                    $parameterExplicitlyProvided = $PSBoundParameters.ContainsKey('ApiKey')
+                }
+                'TimeoutSeconds' {
+                    $parameterValue = $TimeoutSeconds
+                    $parameterExplicitlyProvided = $PSBoundParameters.ContainsKey('TimeoutSeconds')
+                }
             }
 
             # get the final value using priority logic
             $finalValue = Get-SettingValue `
                 -propertyName $propertyName `
                 -parameterValue $parameterValue `
+                -parameterExplicitlyProvided $parameterExplicitlyProvided `
                 -llmQueryType $LLMQueryType `
                 -sessionOnly:$SessionOnly `
                 -skipSession:$SkipSession `
@@ -478,13 +524,13 @@ function Get-AILLMSettings {
     end {
 
         # log final result summary
-        Microsoft.PowerShell.Utility\Write-Verbose "=== Final LLM Settings Summary ==="
+        Microsoft.PowerShell.Utility\Write-Verbose '=== Final LLM Settings Summary ==='
         Microsoft.PowerShell.Utility\Write-Verbose "LLMQueryType: $LLMQueryType"
         foreach ($key in $result.Keys) {
-            $value = if ($null -eq $result[$key]) { "(null)" } else { $result[$key] }
+            $value = if ($null -eq $result[$key]) { '(null)' } else { $result[$key] }
             Microsoft.PowerShell.Utility\Write-Verbose "$key = $value"
         }
-        Microsoft.PowerShell.Utility\Write-Verbose "=== End Summary ==="
+        Microsoft.PowerShell.Utility\Write-Verbose '=== End Summary ==='
 
         # return the completed settings hashtable to the caller
         return $result

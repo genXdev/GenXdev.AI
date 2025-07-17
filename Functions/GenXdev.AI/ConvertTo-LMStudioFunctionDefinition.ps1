@@ -1,8 +1,8 @@
-        ###############################################################################
-        ###############################################################################Module: GenXdev.AI.LMStudio
-        ###############################################################################Purpose: Converts PowerShell function definitions into a format compatible with LMStudio's
-        ###############################################################################         function calling interface. This enables seamless integration between PowerShell
-        ###############################################################################         commands and LMStudio's AI capabilities.
+###############################################################################
+###############################################################################Module: GenXdev.AI.LMStudio
+###############################################################################Purpose: Converts PowerShell function definitions into a format compatible with LMStudio's
+###############################################################################         function calling interface. This enables seamless integration between PowerShell
+###############################################################################         commands and LMStudio's AI capabilities.
 <#
 .SYNOPSIS
 Converts PowerShell functions to LMStudio function definitions.
@@ -16,14 +16,15 @@ One or more PowerShell function info objects to convert to LMStudio definitions.
 
 .EXAMPLE
 Get-Command Get-Process | ConvertTo-LMStudioFunctionDefinition
-        ###############################################################################>
+##############################################################################
+#>
 
-        ###############################################################################Main function that handles the conversion process from PowerShell to LMStudio format
+###############################################################################Main function that handles the conversion process from PowerShell to LMStudio format
 function ConvertTo-LMStudioFunctionDefinition {
 
     [CmdletBinding()]
     [OutputType([System.Collections.Generic.List[hashtable]])]
-    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     param(
         ########################################################################
         # Array of custom objects containing function definitions and their allowed parameters
@@ -31,7 +32,7 @@ function ConvertTo-LMStudioFunctionDefinition {
             Mandatory = $false,
             Position = 0,
             ValueFromPipeline = $true,
-            HelpMessage = "PowerShell commands to convert to tool functions"
+            HelpMessage = 'PowerShell commands to convert to tool functions'
         )]
         [GenXdev.Helpers.ExposedCmdletDefinition[]] $ExposedCmdLets = @()
     )
@@ -39,13 +40,13 @@ function ConvertTo-LMStudioFunctionDefinition {
     begin {
 
         # Initialize collection to store the converted function definitions
-        [System.Collections.Generic.List[hashtable]] $result = Microsoft.PowerShell.Utility\New-Object "System.Collections.Generic.List[System.Collections.Hashtable]"
+        [System.Collections.Generic.List[hashtable]] $result = Microsoft.PowerShell.Utility\New-Object 'System.Collections.Generic.List[System.Collections.Hashtable]'
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Starting conversion of PowerShell functions to LMStudio format"
+        Microsoft.PowerShell.Utility\Write-Verbose 'Starting conversion of PowerShell functions to LMStudio format'
     }
 
 
-process {
+    process {
 
         if ($ExposedCmdLets) {
 
@@ -57,7 +58,7 @@ process {
                 # Skip if command doesn't exist in the current session
                 if ($null -eq $commandInfo) {
 
-                    Microsoft.PowerShell.Utility\Write-Warning "Command $($currentCommand.Name) not found. Skipping."
+                    Microsoft.PowerShell.Utility\Write-Verbose "Command $($currentCommand.Name) not found. Skipping."
                     continue
                 }
 
@@ -81,11 +82,11 @@ process {
 
                     # Check if parameter is in allowed list and extract type information
                     $found = $false
-                    $typeStr = ""
+                    $typeStr = ''
                     foreach ($allowedParam in $allowedParams) {
 
                         # Parse parameter name and optional type override
-                        $parts = "$allowedParam".Split("=");
+                        $parts = "$allowedParam".Split('=');
                         $name = $parts[0].Trim()
 
                         if ($parameter.Name -like $name) {
@@ -106,13 +107,13 @@ process {
                     }
 
                     # Track return type information
-                    $returnType = "";
-                    $powershell_returnType = "";
+                    $returnType = '';
+                    $powershell_returnType = '';
 
                     # Process parameter attributes
                     $parameter.Attributes | Microsoft.PowerShell.Core\ForEach-Object {
                         # Handle mandatory parameters
-                        if ($_.TypeId -eq "System.Management.Automation.ParameterAttribute") {
+                        if ($_.TypeId -eq 'System.Management.Automation.ParameterAttribute') {
 
                             if ($_.Mandatory) {
 
@@ -120,7 +121,7 @@ process {
                             }
                         }
                         # Extract return type information
-                        if ($_.TypeId -eq "System.Management.Automation.OutputTypeAttribute") {
+                        if ($_.TypeId -eq 'System.Management.Automation.OutputTypeAttribute') {
 
                             [System.Management.Automation.OutputTypeAttribute] $p = $_
 
@@ -134,14 +135,14 @@ process {
 
                     try {
                         $moduleName = $commandInfo.ModuleName
-                        if ($moduleName -like "GenXdev.*") {
+                        if ($moduleName -like 'GenXdev.*') {
 
-                            $moduleName = (($commandInfo.ModuleName.Split(".") | Microsoft.PowerShell.Utility\Select-Object -First 2) -Join ".")
+                            $moduleName = (($commandInfo.ModuleName.Split('.') | Microsoft.PowerShell.Utility\Select-Object -First 2) -Join '.')
                         }
 
                         if ([string]::IsNullOrWhiteSpace($moduleName)) {
 
-                            $moduleName = ""
+                            $moduleName = ''
                         }
                         else {
 
@@ -187,10 +188,22 @@ process {
                         }
                     }
 
+                    # Handle switch parameters explicitly - ensure they get proper boolean/object type
+                    if ($parameter.ParameterType.FullName -eq 'System.Management.Automation.SwitchParameter') {
+                        $paramDefinition = $propertiesTable."$($parameter.Name)"
+                        # Use boolean if no type override is specified, otherwise respect the override
+                        if ([string]::IsNullOrWhiteSpace($typeStr)) {
+                            # Try 'boolean' first, fallback to 'object' if needed
+                            # This can be configured based on the target system's capabilities
+                            $paramDefinition.type = 'object'  # Use 'object' as default for broader compatibility
+                        }
+                        Microsoft.PowerShell.Utility\Write-Verbose "Switch parameter '$($parameter.Name)' set to type '$($paramDefinition.type)'"
+                    }
+
                     if ($parameter.ParameterType.IsEnum) {
 
                         $paramDefinition = $propertiesTable."$($parameter.Name)"
-                        $paramDefinition.type = "string"
+                        $paramDefinition.type = 'string'
                         $paramDefinition.enum = @($parameter.ParameterType.GetEnumNames())
                     }
                 }
@@ -200,14 +213,14 @@ process {
 
                 $moduleName = $commandInfo.ModuleName
 
-                if ($moduleName -like "GenXdev.*") {
+                if ($moduleName -like 'GenXdev.*') {
 
-                    $moduleName = (($commandInfo.ModuleName.Split(".") | Microsoft.PowerShell.Utility\Select-Object -First 2) -Join ".")
+                    $moduleName = (($commandInfo.ModuleName.Split('.') | Microsoft.PowerShell.Utility\Select-Object -First 2) -Join '.')
                 }
 
                 if ([string]::IsNullOrWhiteSpace($moduleName)) {
 
-                    $moduleName = ""
+                    $moduleName = ''
                 }
                 else {
                     $moduleName = "$moduleName\"
@@ -223,7 +236,7 @@ process {
                         $functionHelpMessage = "$((Microsoft.PowerShell.Core\Get-Help ("$ModuleName$($commandInfo.Name)")).description.Text)"
                     }
                     catch {
-                        $functionHelpMessage = "No description available."
+                        $functionHelpMessage = 'No description available.'
                     }
                 }
 
@@ -244,7 +257,7 @@ process {
 
                 # Construct the final function definition object
                 $newFunctionDefinition = @{
-                    type     = "function"
+                    type     = 'function'
                     function = @{
                         name        = "$name"
                         description = "$functionHelpMessage"
@@ -281,4 +294,3 @@ process {
         Microsoft.PowerShell.Utility\Write-Output $result
     }
 }
-        ###############################################################################

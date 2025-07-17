@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Tests if the specified file path is a valid image file with a supported format.
@@ -17,7 +17,7 @@ Test-DeepLinkImageFile -Path "C:\Images\photo.jpg"
 
 .EXAMPLE
 Test-DeepLinkImageFile "C:\Images\logo.png"
-        ###############################################################################>
+#>
 function Test-DeepLinkImageFile {
 
     [CmdletBinding()]
@@ -27,7 +27,7 @@ function Test-DeepLinkImageFile {
         [Parameter(
             Mandatory = $true,
             Position = 0,
-            HelpMessage = "The file path to the image file to be tested"
+            HelpMessage = 'The file path to the image file to be tested'
         )]
         [string] $Path
         ###############################################################################
@@ -42,7 +42,7 @@ function Test-DeepLinkImageFile {
     process {
 
         # check if the file exists at the specified path
-        if (-not (Microsoft.PowerShell.Management\Test-Path $Path)) {
+        if (-not ([IO.File]::Exists($Path))) {
 
             throw "Image file not found: $Path"
         }
@@ -53,8 +53,8 @@ function Test-DeepLinkImageFile {
         # verify the file has a supported image format extension
         if ($validExtensions -notcontains $fileExtension) {
 
-            throw ("Invalid image format. Supported formats: " +
-                   "png, jpg, jpeg, gif")
+            throw ('Invalid image format. Supported formats: ' +
+                'png, jpg, jpeg, gif')
         }
 
         # output verbose information about successful validation
@@ -66,4 +66,3 @@ function Test-DeepLinkImageFile {
     end {
     }
 }
-        ###############################################################################

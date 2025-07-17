@@ -118,104 +118,104 @@ function Invoke-LLMBooleanEvaluation {
 
     [CmdletBinding()]
     [OutputType([System.Boolean])]
-    [Alias("equalstrue")]
+    [Alias('equalstrue')]
     param (
         ###############################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
             ValueFromPipeline = $true,
-            HelpMessage = "The statement to evaluate"
+            HelpMessage = 'The statement to evaluate'
         )]
         [string] $Text,
         ###############################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = ("Instructions for the AI model on how to evaluate " +
-                "the statement")
+            HelpMessage = ('Instructions for the AI model on how to evaluate ' +
+                'the statement')
         )]
-        [string] $Instructions = "",
+        [string] $Instructions = '',
         ###############################################################################
         [Parameter(
             Position = 2,
             Mandatory = $false,
-            HelpMessage = "Array of file paths to attach"
+            HelpMessage = 'Array of file paths to attach'
         )]
         [string[]] $Attachments = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Temperature for response randomness (0.0-1.0)"
+            HelpMessage = 'Temperature for response randomness (0.0-1.0)'
         )]
         [ValidateRange(0.0, 1.0)]
         [double] $Temperature = 0.2,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Image detail level"
+            HelpMessage = 'Image detail level'
         )]
-        [ValidateSet("low", "medium", "high")]
-        [string] $ImageDetail = "low",
+        [ValidateSet('low', 'medium', 'high')]
+        [string] $ImageDetail = 'low',
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of function definitions"
+            HelpMessage = 'Array of function definitions'
         )]
         [hashtable[]] $Functions = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Array of PowerShell command definitions to use " +
-                "as tools")
+            HelpMessage = ('Array of PowerShell command definitions to use ' +
+                'as tools')
         )]
         [GenXdev.Helpers.ExposedCmdletDefinition[]] $ExposedCmdLets = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = ("Array of command names that don't require " +
-                "confirmation")
+                'confirmation')
         )]
-        [Alias("NoConfirmationFor")]
+        [Alias('NoConfirmationFor')]
         [string[]] $NoConfirmationToolFunctionNames = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The type of LLM query"
+            HelpMessage = 'The type of LLM query'
         )]
         [ValidateSet(
-            "SimpleIntelligence",
-            "Knowledge",
-            "Pictures",
-            "TextTranslation",
-            "Coding",
-            "ToolUse"
+            'SimpleIntelligence',
+            'Knowledge',
+            'Pictures',
+            'TextTranslation',
+            'Coding',
+            'ToolUse'
         )]
-        [string] $LLMQueryType = "Knowledge",
+        [string] $LLMQueryType = 'Knowledge',
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The model identifier or pattern to use for AI " +
-                "operations")
+            HelpMessage = ('The model identifier or pattern to use for AI ' +
+                'operations')
         )]
         [string] $Model,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The LM Studio specific model identifier"
+            HelpMessage = 'The LM Studio specific model identifier'
         )]
-        [Alias("ModelLMSGetIdentifier")]
+        [Alias('ModelLMSGetIdentifier')]
         [string] $HuggingFaceIdentifier,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The maximum number of tokens to use in AI operations"
+            HelpMessage = 'The maximum number of tokens to use in AI operations'
         )]
         [int] $MaxToken,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+            HelpMessage = 'The number of CPU cores to dedicate to AI operations'
         )]
         [int] $Cpu,
         ###############################################################################
@@ -223,53 +223,54 @@ function Invoke-LLMBooleanEvaluation {
             Mandatory = $false,
             HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
                 "offloading is disabled. If 'max', all layers are " +
-                "offloaded to GPU. If a number between 0 and 1, " +
-                "that fraction of layers will be offloaded to the " +
-                "GPU. -1 = LM Studio will decide how much to " +
-                "offload to the GPU. -2 = Auto")
+                'offloaded to GPU. If a number between 0 and 1, ' +
+                'that fraction of layers will be offloaded to the ' +
+                'GPU. -1 = LM Studio will decide how much to ' +
+                'offload to the GPU. -2 = Auto')
         )]
         [ValidateRange(-2, 1)]
         [int] $Gpu = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The API endpoint URL for AI operations"
+            HelpMessage = 'The API endpoint URL for AI operations'
         )]
         [string] $ApiEndpoint,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The API key for authenticated AI operations"
+            HelpMessage = 'The API key for authenticated AI operations'
         )]
         [string] $ApiKey,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The timeout in seconds for AI operations"
+            HelpMessage = 'The timeout in seconds for AI operations'
         )]
         [int] $TimeoutSeconds,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Copy the result to clipboard"
+            HelpMessage = 'Copy the result to clipboard'
         )]
         [switch] $SetClipboard,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show the LM Studio window"
+            HelpMessage = 'Show the LM Studio window'
         )]
         [switch] $ShowWindow,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Force stop LM Studio before initialization"
+            HelpMessage = 'Force stop LM Studio before initialization'
         )]
         [switch] $Force,
         ###############################################################################
@@ -287,19 +288,19 @@ function Invoke-LLMBooleanEvaluation {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Continue from last conversation"
+            HelpMessage = 'Continue from last conversation'
         )]
         [switch] $ContinueLast,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Enable text-to-speech for AI responses"
+            HelpMessage = 'Enable text-to-speech for AI responses'
         )]
         [switch] $Speak,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Enable text-to-speech for AI thought responses"
+            HelpMessage = 'Enable text-to-speech for AI thought responses'
         )]
         [switch] $SpeakThoughts,
         ###############################################################################
@@ -311,31 +312,290 @@ function Invoke-LLMBooleanEvaluation {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Allow AI to use default tools and capabilities"
+            HelpMessage = 'Allow AI to use default tools and capabilities'
         )]
         [switch] $AllowDefaultTools,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for " +
-                "AI preferences")
+            HelpMessage = ('Use alternative settings stored in session for ' +
+                'AI preferences')
         )]
         [switch] $SessionOnly,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Clear alternative settings stored in session " +
-                "for AI preferences")
+            HelpMessage = ('Clear alternative settings stored in session ' +
+                'for AI preferences')
         )]
         [switch] $ClearSession,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Store settings only in persistent preferences " +
-                "without affecting session")
+            HelpMessage = ('Store settings only in persistent preferences ' +
+                'without affecting session')
         )]
-        [Alias("FromPreferences")]
-        [switch] $SkipSession
+        [Alias('FromPreferences')]
+        [switch] $SkipSession,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Time-to-live in seconds for the query or session'
+        )]
+        [int] $TTLSeconds,
+        ###############################################################################
+        [Alias('m','mon')]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Monitor index or identifier for display operations'
+        )]
+        [string] $Monitor,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Width for display or rendering operations'
+        )]
+        [int] $Width,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Height for display or rendering operations'
+        )]
+        [int] $Height,
+        ###############################################################################
+        [Alias('DelayMilliSeconds')]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Delay in milliseconds between sending keys'
+        )]
+        [int] $SendKeyDelayMilliSeconds,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Return only markup blocks in the output'
+        )]
+        [switch] $OutputMarkdownBlocksOnly,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter for specific types of markup blocks'
+        )]
+        [string[]] $MarkupBlocksTypeFilter,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Temperature for audio response randomness'
+        )]
+        [double] $AudioTemperature,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Temperature for response generation'
+        )]
+        [double] $TemperatureResponse,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Language code or name for the response'
+        )]
+        [string] $Language,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Number of CPU threads to use for processing'
+        )]
+        [int] $CpuThreads,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Regular expression to suppress from output'
+        )]
+        [string] $SuppressRegex,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Audio context size for processing'
+        )]
+        [int] $AudioContextSize,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Silence threshold for audio detection'
+        )]
+        [double] $SilenceThreshold,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Length penalty for sequence generation'
+        )]
+        [double] $LengthPenalty,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Entropy threshold for output filtering'
+        )]
+        [double] $EntropyThreshold,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Log probability threshold for output filtering'
+        )]
+        [double] $LogProbThreshold,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'No speech threshold for audio detection'
+        )]
+        [double] $NoSpeechThreshold,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Disable speech output'
+        )]
+        [switch] $DontSpeak,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Disable speech output for thoughts'
+        )]
+        [switch] $DontSpeakThoughts,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Disable VOX (voice activation)'
+        )]
+        [switch] $NoVOX,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Use desktop audio capture for input'
+        )]
+        [switch] $UseDesktopAudioCapture,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Do not use context in the query'
+        )]
+        [switch] $NoContext,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Use beam search sampling strategy'
+        )]
+        [switch] $WithBeamSearchSamplingStrategy,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Return only responses from the model'
+        )]
+        [switch] $OnlyResponses,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Do not initialize LM Studio during operation'
+        )]
+        [switch] $NoLMStudioInitialize,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Unload resources after operation'
+        )]
+        [switch] $Unload,
+        ###############################################################################
+        [Alias('nb')]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Disable window borders for display operations'
+        )]
+        [switch] $NoBorders,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Align window to the left side of the screen'
+        )]
+        [switch] $Left,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Align window to the right side of the screen'
+        )]
+        [switch] $Right,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Align window to the bottom of the screen'
+        )]
+        [switch] $Bottom,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Center the window on the screen'
+        )]
+        [switch] $Centered,
+        ###############################################################################
+        [Alias('fs')]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Display window in full screen mode'
+        )]
+        [switch] $FullScreen,
+        ###############################################################################
+        [Alias('rf','bg')]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Restore focus to the previous window after operation'
+        )]
+        [switch] $RestoreFocus,
+        ###############################################################################
+        [Alias('sbs')]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Display side by side with other windows'
+        )]
+        [switch] $SideBySide,
+        ###############################################################################
+        [Alias('fw','focus')]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Focus the window after display'
+        )]
+        [switch] $FocusWindow,
+        ###############################################################################
+        [Alias('fg')]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Set the window to foreground after display'
+        )]
+        [switch] $SetForeground,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Maximize the window after display'
+        )]
+        [switch] $Maximize,
+        ###############################################################################
+        [Alias('Escape')]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Send Escape key after operation'
+        )]
+        [switch] $SendKeyEscape,
+        ###############################################################################
+        [Alias('HoldKeyboardFocus')]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Hold keyboard focus when sending keys'
+        )]
+        [switch] $SendKeyHoldKeyboardFocus,
+        ###############################################################################
+        [Alias('UseShiftEnter')]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Use Shift+Enter when sending keys'
+        )]
+        [switch] $SendKeyUseShiftEnter,
+        ###############################################################################
+        [int] $MaxToolcallBackLength
         ###############################################################################
     )
 
@@ -352,32 +612,32 @@ $Instructions
 
         # define response format schema for boolean evaluation
         $responseSchema = @{
-            type        = "json_schema"
+            type        = 'json_schema'
             json_schema = @{
-                name   = "boolean_evaluation_response"
-                strict = "true"
+                name   = 'boolean_evaluation_response'
+                strict = 'true'
                 schema = @{
-                    type       = "object"
+                    type       = 'object'
                     properties = @{
                         result     = @{
-                            type        = "boolean"
-                            description = ("The evaluation result: true if " +
+                            type        = 'boolean'
+                            description = ('The evaluation result: true if ' +
                                 "the statement is true, false if it's false")
                         }
                         confidence = @{
-                            type        = "number"
+                            type        = 'number'
                             minimum     = 0
                             maximum     = 1
-                            description = ("Confidence level in the " +
-                                "evaluation (0-1)")
+                            description = ('Confidence level in the ' +
+                                'evaluation (0-1)')
                         }
                         reason     = @{
-                            type        = "string"
-                            description = ("Explanation for why the statement " +
-                                "was evaluated as true or false")
+                            type        = 'string'
+                            description = ('Explanation for why the statement ' +
+                                'was evaluated as true or false')
                         }
                     }
-                    required   = @("result", "confidence", "reason")
+                    required   = @('result', 'confidence', 'reason')
                 }
             }
         } |
@@ -403,7 +663,7 @@ $Instructions
 
             # log clipboard reading operation
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "No direct text input, reading from clipboard"
+                'No direct text input, reading from clipboard'
             )
 
             # get text from system clipboard
@@ -411,8 +671,8 @@ $Instructions
 
             if ([string]::IsNullOrWhiteSpace($Text)) {
 
-                Microsoft.PowerShell.Utility\Write-Warning (
-                    "No text found in the clipboard."
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    'No text found in the clipboard.'
                 )
                 return
             }
@@ -422,13 +682,13 @@ $Instructions
 
             # log processing start
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Processing statement for evaluation"
+                'Processing statement for evaluation'
             )
 
             # copy parameters from current function to invoke-llmquery
             $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "GenXdev.AI\Invoke-LLMQuery"
+                -FunctionName 'GenXdev.AI\Invoke-LLMQuery'
 
             # configure query parameters for boolean evaluation
             $invocationParams.Query = $Text
@@ -440,7 +700,7 @@ $Instructions
             if ($AllowDefaultTools) {
 
                 # enable text prompt mode for tool usage
-                $invocationParams.ChatMode = "textprompt"
+                $invocationParams.ChatMode = 'textprompt'
                 $invocationParams.ChatOnce = $true
             }
 
@@ -475,7 +735,7 @@ $Instructions
 
                 # log clipboard operation
                 Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Copying result to clipboard"
+                    'Copying result to clipboard'
                 )
 
                 if ($IncludeThoughts) {

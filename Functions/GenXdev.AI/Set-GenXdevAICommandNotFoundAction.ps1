@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Sets up custom command not found handling with AI assistance.
@@ -11,7 +11,7 @@ for navigation, and finally offers AI assistance for unknown commands.
 
 .EXAMPLE
 Set-GenXdevAICommandNotFoundAction
-        ###############################################################################>
+#>
 function Set-GenXdevAICommandNotFoundAction {
 
     [CmdletBinding(SupportsShouldProcess)]
@@ -19,7 +19,7 @@ function Set-GenXdevAICommandNotFoundAction {
 
     begin {
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Starting Set-GenXdevAICommandNotFoundAction"
+        Microsoft.PowerShell.Utility\Write-Verbose 'Starting Set-GenXdevAICommandNotFoundAction'
 
         # store reference to existing handler if it's not already our handler
         $script:originalHandler = $null
@@ -29,22 +29,22 @@ function Set-GenXdevAICommandNotFoundAction {
         if ($null -ne $currentHandler) {
 
             $handlerString = $currentHandler.ToString()
-            if ($handlerString.Contains("Do you want AI to figure out")) {
+            if ($handlerString.Contains('Do you want AI to figure out')) {
 
-                Microsoft.PowerShell.Utility\Write-Verbose "AI Command handler already installed - exiting"
+                Microsoft.PowerShell.Utility\Write-Verbose 'AI Command handler already installed - exiting'
                 return
             }
 
             $script:originalHandler = $currentHandler
-            Microsoft.PowerShell.Utility\Write-Verbose "Stored original command handler for chaining"
+            Microsoft.PowerShell.Utility\Write-Verbose 'Stored original command handler for chaining'
         }
     }
 
 
-process {
+    process {
 
-        if (-not $PSCmdlet.ShouldProcess("Command not found handling",
-                "Set AI assistance handler")) {
+        if (-not $PSCmdlet.ShouldProcess('Command not found handling',
+                'Set AI assistance handler')) {
             return
         }
 
@@ -52,7 +52,7 @@ process {
             # Add flag to prevent recursion
             $script:insideCommandHandler = $false
 
-            Microsoft.PowerShell.Utility\Write-Verbose "Configuring new CommandNotFoundAction handler"
+            Microsoft.PowerShell.Utility\Write-Verbose 'Configuring new CommandNotFoundAction handler'
 
             # define the command not found action handler
             $ExecutionContext.InvokeCommand.CommandNotFoundAction = {
@@ -74,10 +74,10 @@ process {
 
                 try {
                     # suppress unnecessary output during handler execution
-                    $PSDebugPreference = "continue"
+                    $PSDebugPreference = 'continue'
                     $ErrorActionPreference = 'SilentlyContinue'
-                    $VerbosePreference = "SilentlyContinue"
-                    $WarningPreference = "SilentlyContinue"
+                    $VerbosePreference = 'SilentlyContinue'
+                    $WarningPreference = 'SilentlyContinue'
 
                     # skip .NET method calls
                     if ($CommandName -match '^\[.*\]::') {
@@ -120,8 +120,8 @@ process {
                 }
 
                 # skip internal and get- commands
-                if ($CommandLookupEventArgs.CommandOrigin -eq "Internal" -or
-                    $CommandName -like "get-*") {
+                if ($CommandLookupEventArgs.CommandOrigin -eq 'Internal' -or
+                    $CommandName -like 'get-*') {
                     return
                 }
 
@@ -129,28 +129,28 @@ process {
                 $CommandLookupEventArgs.CommandScriptBlock = {
 
                     $userChoice = $host.ui.PromptForChoice(
-                        "Command not found",
-                        "Do you want AI to figure out what you want?",
-                        @("&Nah", "&Yes"),
+                        'Command not found',
+                        'Do you want AI to figure out what you want?',
+                        @('&Nah', '&Yes'),
                         0)
 
                     if ($userChoice -eq 0) { return }
 
                     GenXdev.Windows\Send-Key ($MyInvocation.line) -Escape
 
-                    Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Yellow "What did you want to do?"
+                    Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Yellow 'What did you want to do?'
 
-                    [System.Console]::Write("> ")
+                    [System.Console]::Write('> ')
                     $userIntent = [System.Console]::ReadLine()
-                    Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Green "Ok, hold on a sec.."
+                    Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Green 'Ok, hold on a sec..'
 
                     # prepare AI hint
-                    $aiPrompt = ("Generate a Powershell commandline that would " +
-                        "be what user might have meant, but what triggered the " +
+                    $aiPrompt = ('Generate a Powershell commandline that would ' +
+                        'be what user might have meant, but what triggered the ' +
                         "`$ExecutionContext.InvokeCommand.CommandNotFoundAction " +
                         "with her prompt being: $userIntent")
 
-                    GenXdev.AI\Invoke-AIPowershellCommand $aiPrompt
+                    Invoke-AIPowershellCommand $aiPrompt
                 }.GetNewClosure()
 
                 $CommandLookupEventArgs.StopSearch = $true
@@ -162,7 +162,6 @@ process {
     }
 
     end {
-        Microsoft.PowerShell.Utility\Write-Verbose "Command not found handler configuration completed"
+        Microsoft.PowerShell.Utility\Write-Verbose 'Command not found handler configuration completed'
     }
 }
-        ###############################################################################

@@ -60,7 +60,7 @@ DeepStack Face Recognition API Endpoints:
 - POST /v1/vision/face/delete : Remove registered face
 
 For more information, see: https://docs.deepstack.cc/face-recognition/
-        ###############################################################################>
+#>
 function EnsureDeepStack {
 
     [CmdletBinding()]
@@ -71,24 +71,24 @@ function EnsureDeepStack {
         [Parameter(
             Position = 0,
             Mandatory = $false,
-            HelpMessage = "The name for the Docker container"
+            HelpMessage = 'The name for the Docker container'
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ContainerName = "deepstack_face_recognition",
+        [string] $ContainerName = 'deepstack_face_recognition',
         ###################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = ("The name for the Docker volume for persistent " +
-                          "storage")
+            HelpMessage = ('The name for the Docker volume for persistent ' +
+                'storage')
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $VolumeName = "deepstack_face_data",
+        [string] $VolumeName = 'deepstack_face_data',
         ###################################################################
         [Parameter(
             Position = 2,
             Mandatory = $false,
-            HelpMessage = "The port number for the DeepStack service"
+            HelpMessage = 'The port number for the DeepStack service'
         )]
         [ValidateRange(1, 65535)]
         [int] $ServicePort = 5000,
@@ -96,8 +96,8 @@ function EnsureDeepStack {
         [Parameter(
             Position = 3,
             Mandatory = $false,
-            HelpMessage = ("Maximum time in seconds to wait for service " +
-                          "health check")
+            HelpMessage = ('Maximum time in seconds to wait for service ' +
+                'health check')
         )]
         [ValidateRange(10, 300)]
         [int] $HealthCheckTimeout = 60,
@@ -105,8 +105,8 @@ function EnsureDeepStack {
         [Parameter(
             Position = 4,
             Mandatory = $false,
-            HelpMessage = ("Interval in seconds between health check " +
-                          "attempts")
+            HelpMessage = ('Interval in seconds between health check ' +
+                'attempts')
         )]
         [ValidateRange(1, 10)]
         [int] $HealthCheckInterval = 3,
@@ -114,31 +114,170 @@ function EnsureDeepStack {
         [Parameter(
             Position = 5,
             Mandatory = $false,
-            HelpMessage = "Custom Docker image name to use"
+            HelpMessage = 'Custom Docker image name to use'
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImageName,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Force rebuild of Docker container and remove " +
-                          "existing data")
+            HelpMessage = ('Force rebuild of Docker container and remove ' +
+                'existing data')
         )]
-        [Alias("ForceRebuild")]
+        [Alias('ForceRebuild')]
         [switch] $Force,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use GPU-accelerated version (requires NVIDIA " +
-                          "GPU)")
+            HelpMessage = ('Use GPU-accelerated version (requires NVIDIA ' +
+                'GPU)')
         )]
         [switch] $UseGPU,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show Docker Desktop window during initialization"
+            HelpMessage = 'Show Docker Desktop window during initialization'
         )]
-        [switch]$ShowWindow
+        [Alias('sw')]
+        [switch]$ShowWindow,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The monitor to use, 0 = default, -1 is discard'
+        )]
+        [Alias('m', 'mon')]
+        [int] $Monitor,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Removes the borders of the window'
+        )]
+        [Alias('nb')]
+        [switch] $NoBorders,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The initial width of the window'
+        )]
+        [int]$Width,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The initial height of the window'
+        )]
+        [int]$Height,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place window on the left side of the screen'
+        )]
+        [switch]$Left,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place window on the right side of the screen'
+        )]
+        [switch]$Right,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place window on the bottom side of the screen'
+        )]
+        [switch]$Bottom,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place window in the center of the screen'
+        )]
+        [switch]$Centered,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Maximize the window'
+        )]
+        [Alias('fs')]
+        [switch]$Fullscreen,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Restore PowerShell window focus'
+        )]
+        [Alias('rf', 'bg')]
+        [switch]$RestoreFocus,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Will either set the window fullscreen on a ' +
+                'different monitor than Powershell, or side by side with ' +
+                'Powershell on the same monitor')
+        )]
+        [Alias('sbs')]
+        [switch]$SideBySide,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Focus the window after opening'
+        )]
+        [Alias('fw','focus')]
+        [switch]$FocusWindow,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Set the window to foreground after opening'
+        )]
+        [Alias('fg')]
+        [switch]$SetForeground,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Escape control characters and modifiers when sending keys'
+        )]
+        [Alias('Escape')]
+        [switch] $SendKeyEscape,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Hold keyboard focus on target window when sending keys'
+        )]
+        [Alias('HoldKeyboardFocus')]
+        [switch] $SendKeyHoldKeyboardFocus,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Use Shift+Enter instead of Enter when sending keys'
+        )]
+        [Alias('UseShiftEnter')]
+        [switch] $SendKeyUseShiftEnter,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Delay between different input strings in ' +
+                'milliseconds when sending keys')
+        )]
+        [Alias('DelayMilliSeconds')]
+        [int] $SendKeyDelayMilliSeconds,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences')
+        )]
+        [switch]$SessionOnly,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Clear alternative settings stored in session for ' +
+                'AI preferences')
+        )]
+        [switch]$ClearSession,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Store settings only in persistent preferences ' +
+                'without affecting session')
+        )]
+        [Alias('FromPreferences')]
+        [switch]$SkipSession
         ###################################################################
     )
 
@@ -160,11 +299,11 @@ function EnsureDeepStack {
 
         } elseif ($UseGPU) {
 
-            "deepquestai/deepstack:gpu"
+            'deepquestai/deepstack:gpu'
 
         } else {
 
-            "deepquestai/deepstack:latest"
+            'deepquestai/deepstack:latest'
         }
 
         # set script-scoped variables for docker volume and networking
@@ -183,9 +322,9 @@ function EnsureDeepStack {
 
         # store original location for cleanup at the end of the function
         $script:originalLocation = `
-            (Microsoft.PowerShell.Management\Get-Location).Path
+        (Microsoft.PowerShell.Management\Get-Location).Path
 
-    ###################################################################
+        ###################################################################
         <#
         .SYNOPSIS
         Tests if Docker is available and responsive.
@@ -199,7 +338,7 @@ function EnsureDeepStack {
             try {
 
                 # attempt to get docker version to verify docker is running
-                $null = docker version --format "{{.Server.Version}}" 2>$null
+                $null = docker version --format '{{.Server.Version}}' 2>$null
 
                 # check if command succeeded
                 if ($LASTEXITCODE -eq 0) {
@@ -207,13 +346,13 @@ function EnsureDeepStack {
                     # docker is responding, check if there are any login issues
                     $dockerInfo = docker info 2>&1
 
-                    if ($dockerInfo -match "not logged in" -or
-                        $dockerInfo -match "Please log in") {
+                    if ($dockerInfo -match 'not logged in' -or
+                        $dockerInfo -match 'Please log in') {
 
-                        Microsoft.PowerShell.Utility\Write-Warning `
-                            ("Docker engine is running but user is not " +
-                             "logged in. Some operations may require " +
-                             "authentication via Docker Desktop.")
+                        Microsoft.PowerShell.Utility\Write-Verbose `
+                        ('Docker engine is running but user is not ' +
+                            'logged in. Some operations may require ' +
+                            'authentication via Docker Desktop.')
                     }
 
                     return $true
@@ -242,7 +381,7 @@ function EnsureDeepStack {
             try {
 
                 # query docker for existing images matching the specified name
-                $images = docker images $ImageName --format "{{.Repository}}" `
+                $images = docker images $ImageName --format '{{.Repository}}' `
                     2>$null
 
                 return -not [string]::IsNullOrWhiteSpace($images)
@@ -270,7 +409,7 @@ function EnsureDeepStack {
 
                 # search for containers with exact name match including stopped ones
                 $containers = docker ps -a --filter "name=^${ContainerName}$" `
-                    --format "{{.ID}}" 2>$null
+                    --format '{{.ID}}' 2>$null
 
                 return -not [string]::IsNullOrWhiteSpace($containers)
 
@@ -297,7 +436,7 @@ function EnsureDeepStack {
 
                 # search for running containers with exact name match
                 $containers = docker ps --filter "name=^${ContainerName}$" `
-                    --format "{{.ID}}" 2>$null
+                    --format '{{.ID}}' 2>$null
 
                 return -not [string]::IsNullOrWhiteSpace($containers)
 
@@ -327,7 +466,7 @@ function EnsureDeepStack {
                 if (Test-DockerContainer $ContainerName) {
 
                     if ($PSCmdlet.ShouldProcess($ContainerName,
-                        "Stop and remove Docker container")) {
+                            'Stop and remove Docker container')) {
 
                         # output verbose information about container removal
                         Microsoft.PowerShell.Utility\Write-Verbose `
@@ -344,7 +483,7 @@ function EnsureDeepStack {
             } catch {
 
                 # warn about container removal failures
-                Microsoft.PowerShell.Utility\Write-Warning `
+                Microsoft.PowerShell.Utility\Write-Verbose `
                     "Failed to remove container ${ContainerName}: $_"
             }
         }
@@ -366,7 +505,7 @@ function EnsureDeepStack {
             try {
 
                 if ($PSCmdlet.ShouldProcess($VolumeName,
-                    "Remove Docker volume")) {
+                        'Remove Docker volume')) {
 
                     # output verbose information about volume removal
                     Microsoft.PowerShell.Utility\Write-Verbose `
@@ -379,7 +518,7 @@ function EnsureDeepStack {
             } catch {
 
                 # warn about volume removal failures
-                Microsoft.PowerShell.Utility\Write-Warning `
+                Microsoft.PowerShell.Utility\Write-Verbose `
                     "Failed to remove volume ${VolumeName}: $_"
             }
         }
@@ -405,7 +544,7 @@ function EnsureDeepStack {
 
                 # log successful health check for debugging
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "DeepStack service health check passed"
+                    'DeepStack service health check passed'
 
                 return $true
 
@@ -432,14 +571,14 @@ function EnsureDeepStack {
 
             # output verbose information about waiting for service readiness
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Waiting for DeepStack service to become ready..."
+                'Waiting for DeepStack service to become ready...'
 
             # initialize retry counter
             $retryCount = 0
 
             # calculate maximum retry attempts based on timeout and interval
             $maxRetries = [math]::Floor($script:healthCheckTimeout / `
-                $script:healthCheckInterval)
+                    $script:healthCheckInterval)
 
             while ($retryCount -lt $maxRetries) {
 
@@ -448,7 +587,7 @@ function EnsureDeepStack {
 
                     # log successful service readiness
                     Microsoft.PowerShell.Utility\Write-Verbose `
-                        "DeepStack service is ready and responding"
+                        'DeepStack service is ready and responding'
 
                     return $true
                 }
@@ -458,8 +597,8 @@ function EnsureDeepStack {
 
                 # output verbose information about retry attempt
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    ("Service not ready yet, attempt " +
-                     "$retryCount/$maxRetries...")
+                ('Service not ready yet, attempt ' +
+                    "$retryCount/$maxRetries...")
 
                 # wait between health check attempts
                 Microsoft.PowerShell.Utility\Start-Sleep `
@@ -467,9 +606,9 @@ function EnsureDeepStack {
             }
 
             # warn about service readiness timeout
-            Microsoft.PowerShell.Utility\Write-Warning `
-                ("DeepStack service did not become ready within " +
-                 "$script:healthCheckTimeout seconds")
+            Microsoft.PowerShell.Utility\Write-Verbose `
+            ('DeepStack service did not become ready within ' +
+                "$script:healthCheckTimeout seconds")
 
             return $false
         }
@@ -501,27 +640,27 @@ function EnsureDeepStack {
                 if ($LASTEXITCODE -ne 0) {
 
                     # check if the error is related to authentication
-                    if ($pullResult -match "authentication required" -or
-                        $pullResult -match "unauthorized" -or
-                        $pullResult -match "not logged in") {
+                    if ($pullResult -match 'authentication required' -or
+                        $pullResult -match 'unauthorized' -or
+                        $pullResult -match 'not logged in') {
 
-                        Microsoft.PowerShell.Utility\Write-Warning `
-                            ("Docker pull failed due to authentication. " +
-                             "Please log in to Docker Desktop first. " +
-                             "Error: $pullResult")
+                        Microsoft.PowerShell.Utility\Write-Verbose `
+                        ('Docker pull failed due to authentication. ' +
+                            'Please log in to Docker Desktop first. ' +
+                            "Error: $pullResult")
 
                         # try to open docker desktop for user to log in
                         try {
 
                             $dockerDesktopPath = `
                                 Microsoft.PowerShell.Core\Get-Command `
-                                "Docker Desktop.exe" -ErrorAction SilentlyContinue
+                                'Docker Desktop.exe' -ErrorAction SilentlyContinue
 
                             if ($dockerDesktopPath) {
 
                                 Microsoft.PowerShell.Utility\Write-Host `
-                                    ("Opening Docker Desktop for " +
-                                     "authentication...") -ForegroundColor Yellow
+                                ('Opening Docker Desktop for ' +
+                                    'authentication...') -ForegroundColor Yellow
 
                                 Microsoft.PowerShell.Management\Start-Process `
                                     $dockerDesktopPath.Source -WindowStyle Normal
@@ -537,10 +676,10 @@ function EnsureDeepStack {
 
                 # log successful image pull
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "✅ DeepStack image pulled successfully"
+                    '✅ DeepStack image pulled successfully'
 
                 Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Cyan `
-                    "✅ DeepStack image pulled successfully"
+                    '✅ DeepStack image pulled successfully'
 
                 return $true
 
@@ -572,7 +711,7 @@ function EnsureDeepStack {
 
                 # output verbose information about container creation
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "Creating DeepStack container..."
+                    'Creating DeepStack container...'
 
                 Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Cyan `
                     "Creating DeepStack container: $script:containerName"
@@ -580,14 +719,14 @@ function EnsureDeepStack {
                 # check if docker volume already exists
                 $volumeExists = docker volume ls `
                     --filter "name=^$($script:volumeName)$" `
-                    --format "{{.Name}}" 2>$null
+                    --format '{{.Name}}' 2>$null
 
                 # create docker volume if it doesn't exist
                 if ([string]::IsNullOrWhiteSpace($volumeExists)) {
 
                     # use shouldprocess to confirm volume creation
                     if ($PSCmdlet.ShouldProcess("$script:volumeName",
-                        "Create Docker volume")) {
+                            'Create Docker volume')) {
 
                         # output verbose information about volume creation
                         Microsoft.PowerShell.Utility\Write-Verbose `
@@ -600,28 +739,28 @@ function EnsureDeepStack {
                         # check if volume creation failed
                         if ($LASTEXITCODE -ne 0) {
 
-                            throw ("Failed to create Docker volume " +
-                                  "$script:volumeName`: $volumeResult")
+                            throw ('Failed to create Docker volume ' +
+                                "$script:volumeName`: $volumeResult")
                         }
                     }
                 }
 
                 # prepare docker run arguments for container creation
                 $dockerArgs = @(
-                    "run", "-d"
-                    "--name", $script:containerName
-                    "-p", "$($script:servicePort):5000"
-                    "-v", "$($script:volumeName):/datastore"
-                    "-e", "VISION-FACE=True"
-                    "-e", "VISION-DETECTION=True"
-                    "-e", "VISION-SCENE=True"
-                    "--restart", "unless-stopped"
+                    'run', '-d'
+                    '--name', $script:containerName
+                    '-p', "$($script:servicePort):5000"
+                    '-v', "$($script:volumeName):/datastore"
+                    '-e', 'VISION-FACE=True'
+                    '-e', 'VISION-DETECTION=True'
+                    '-e', 'VISION-SCENE=True'
+                    '--restart', 'unless-stopped'
                 )
 
                 # add gpu support if requested
                 if ($UseGPU) {
 
-                    $dockerArgs += "--gpus", "all"
+                    $dockerArgs += '--gpus', 'all'
                 }
 
                 # add the docker image name as final argument
@@ -633,7 +772,7 @@ function EnsureDeepStack {
 
                 # use shouldprocess to confirm container creation
                 if ($PSCmdlet.ShouldProcess("$script:containerName",
-                    "Create DeepStack container")) {
+                        'Create DeepStack container')) {
 
                     # execute docker run command to create container
                     $result = & docker @dockerArgs 2>&1
@@ -650,7 +789,7 @@ function EnsureDeepStack {
 
                 # log successful container creation
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "✅ DeepStack container created successfully"
+                    '✅ DeepStack container created successfully'
 
                 return $true
 
@@ -672,14 +811,20 @@ function EnsureDeepStack {
 
             # ensure docker desktop is available and running
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Ensuring Docker Desktop is available..."
+                'Ensuring Docker Desktop is available...'
 
-            GenXdev.Windows\EnsureDockerDesktop -ShowWindow:$ShowWindow
+            # Copy identical parameters between functions
+            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -FunctionName 'GenXdev.Windows\EnsureDockerDesktop' `
+                -BoundParameters $PSBoundParameters `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+
+            GenXdev.Windows\EnsureDockerDesktop @params
 
             # verify docker is responding to commands
             if (-not (Test-DockerAvailability)) {
 
-                throw "Docker is not available or not responding"
+                throw 'Docker is not available or not responding'
             }
 
             # handle force cleanup if requested by user
@@ -687,7 +832,7 @@ function EnsureDeepStack {
 
                 # output verbose information about forced cleanup
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "Force flag specified - cleaning up existing resources..."
+                    'Force flag specified - cleaning up existing resources...'
 
                 # remove existing container and volume for clean slate
                 Remove-DockerContainer $script:containerName
@@ -701,14 +846,14 @@ function EnsureDeepStack {
                 # pull the docker image if not present or force specified
                 if (-not (Get-DeepStackImage)) {
 
-                    throw "Failed to obtain DeepStack Docker image"
+                    throw 'Failed to obtain DeepStack Docker image'
                 }
 
             } else {
 
                 # log that image is already available
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "✅ DeepStack image already available"
+                    '✅ DeepStack image already available'
             }
 
             # check current container state
@@ -727,14 +872,14 @@ function EnsureDeepStack {
 
                         # log successful health check
                         Microsoft.PowerShell.Utility\Write-Verbose `
-                            "✅ DeepStack container is healthy and responding"
+                            '✅ DeepStack container is healthy and responding'
 
                     } else {
 
                         # restart unhealthy running container
                         Microsoft.PowerShell.Utility\Write-Verbose `
-                            ("Container is running but not responding - " +
-                             "restarting...")
+                        ('Container is running but not responding - ' +
+                            'restarting...')
 
                         # restart the container to fix health issues
                         $null = docker restart $script:containerName 2>$null
@@ -748,9 +893,9 @@ function EnsureDeepStack {
                         # warn if service is not ready after restart
                         if (-not $serviceReady) {
 
-                            Microsoft.PowerShell.Utility\Write-Warning `
-                                ("DeepStack service may not be fully ready " +
-                                 "after restart")
+                            Microsoft.PowerShell.Utility\Write-Verbose `
+                            ('DeepStack service may not be fully ready ' +
+                                'after restart')
                         }
                     }
 
@@ -758,7 +903,7 @@ function EnsureDeepStack {
 
                     # start existing stopped container
                     Microsoft.PowerShell.Utility\Write-Verbose `
-                        "Starting existing container..."
+                        'Starting existing container...'
 
                     # start the stopped container
                     $null = docker start $script:containerName 2>$null
@@ -773,14 +918,14 @@ function EnsureDeepStack {
                     if ($serviceReady) {
 
                         Microsoft.PowerShell.Utility\Write-Verbose `
-                            ("✅ DeepStack service is ready after " +
-                             "container start")
+                        ('✅ DeepStack service is ready after ' +
+                            'container start')
 
                     } else {
 
-                        Microsoft.PowerShell.Utility\Write-Warning `
-                            ("DeepStack service may not be fully ready " +
-                             "after start")
+                        Microsoft.PowerShell.Utility\Write-Verbose `
+                        ('DeepStack service may not be fully ready ' +
+                            'after start')
                     }
                 }
 
@@ -788,17 +933,17 @@ function EnsureDeepStack {
 
                 # create and start new container when none exists
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "Creating and starting DeepStack container..."
+                    'Creating and starting DeepStack container...'
 
                 # attempt to create new deepstack container
                 if (-not (New-DeepStackContainer)) {
 
-                    throw "Failed to create DeepStack container"
+                    throw 'Failed to create DeepStack container'
                 }
 
                 # wait for service to be ready after creation
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "Waiting for DeepStack service to be ready..."
+                    'Waiting for DeepStack service to be ready...'
 
                 $serviceReady = Wait-ServiceReady
 
@@ -810,15 +955,15 @@ function EnsureDeepStack {
 
                 } else {
 
-                    Microsoft.PowerShell.Utility\Write-Warning `
-                        ("DeepStack service may not be fully ready " +
-                         "after creation")
+                    Microsoft.PowerShell.Utility\Write-Verbose `
+                    ('DeepStack service may not be fully ready ' +
+                        'after creation')
                 }
             }
 
             # perform final validation of service state
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Performing final validation..."
+                'Performing final validation...'
 
             # check if container is running and service is healthy
             if ((Test-DockerContainerRunning $script:containerName) -and `
@@ -826,16 +971,16 @@ function EnsureDeepStack {
 
                 # log successful service operation
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    ("✅ DeepStack face recognition service is fully " +
-                     "operational at $script:apiBaseUrl")
+                ('✅ DeepStack face recognition service is fully ' +
+                    "operational at $script:apiBaseUrl")
 
                 return $true
 
             } else {
 
                 # warn about potential service issues
-                Microsoft.PowerShell.Utility\Write-Warning `
-                    "DeepStack service may not be fully operational"
+                Microsoft.PowerShell.Utility\Write-Verbose `
+                    'DeepStack service may not be fully operational'
 
                 return $false
             }
@@ -856,4 +1001,3 @@ function EnsureDeepStack {
         Microsoft.PowerShell.Management\Set-Location $script:originalLocation
     }
 }
-        ###############################################################################

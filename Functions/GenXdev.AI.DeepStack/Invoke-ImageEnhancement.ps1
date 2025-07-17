@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Enhances an image by enlarging it 4X while improving quality using DeepStack.
@@ -78,7 +78,7 @@ original.
 function Invoke-ImageEnhancement {
 
     [CmdletBinding()]
-    [Alias("enhanceimage")]
+    [Alias('enhanceimage')]
 
     param(
         #######################################################################
@@ -87,93 +87,94 @@ function Invoke-ImageEnhancement {
             Mandatory = $true,
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true,
-            HelpMessage = "The local path to the image file to enhance"
+            HelpMessage = 'The local path to the image file to enhance'
         )]
         [ValidateNotNullOrEmpty()]
-        [Alias("path", "FullName", "ImageFile", "ImageFilePath")]
+        [Alias('path', 'FullName', 'ImageFile', 'ImageFilePath')]
         [string] $ImagePath,
         #######################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = ("Optional path where the enhanced image should be " +
-                          "saved")
+            HelpMessage = ('Optional path where the enhanced image should be ' +
+                'saved')
         )]
         [ValidateNotNullOrEmpty()]
-        [Alias("outfile", "OutputFile", "EnhancedImagePath")]
+        [Alias('outfile', 'OutputFile', 'EnhancedImagePath')]
         [string] $OutputPath,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Skip Docker initialization (used when already " +
-                          "called by parent function)")
+            HelpMessage = ('Skip Docker initialization (used when already ' +
+                'called by parent function)')
         )]
         [switch] $NoDockerInitialize,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Force rebuild of Docker container and remove " +
-                          "existing data")
+            HelpMessage = ('Force rebuild of Docker container and remove ' +
+                'existing data')
         )]
-        [Alias("ForceRebuild")]
+        [Alias('ForceRebuild')]
         [switch] $Force,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use GPU-accelerated version (requires NVIDIA " +
-                          "GPU)")
+            HelpMessage = ('Use GPU-accelerated version (requires NVIDIA ' +
+                'GPU)')
         )]
         [switch] $UseGPU,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The name for the Docker container"
+            HelpMessage = 'The name for the Docker container'
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ContainerName = "deepstack_face_recognition",
+        [string] $ContainerName = 'deepstack_face_recognition',
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The name for the Docker volume for persistent " +
-                          "storage")
+            HelpMessage = ('The name for the Docker volume for persistent ' +
+                'storage')
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $VolumeName = "deepstack_face_data",
+        [string] $VolumeName = 'deepstack_face_data',
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The port number for the DeepStack service"
+            HelpMessage = 'The port number for the DeepStack service'
         )]
         [ValidateRange(1, 65535)]
         [int] $ServicePort = 5000,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Maximum time in seconds to wait for service " +
-                          "health check")
+            HelpMessage = ('Maximum time in seconds to wait for service ' +
+                'health check')
         )]
         [ValidateRange(10, 300)]
         [int] $HealthCheckTimeout = 60,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Interval in seconds between health check " +
-                          "attempts")
+            HelpMessage = ('Interval in seconds between health check ' +
+                'attempts')
         )]
         [ValidateRange(1, 10)]
         [int] $HealthCheckInterval = 3,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Custom Docker image name to use"
+            HelpMessage = 'Custom Docker image name to use'
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImageName,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show Docker Desktop window during initialization"
+            HelpMessage = 'Show Docker Desktop window during initialization'
         )]
+        [Alias('sw')]
         [switch]$ShowWindow
         ###################################################################
 
@@ -192,8 +193,8 @@ function Invoke-ImageEnhancement {
         if (-not $NoDockerInitialize) {
 
             Microsoft.PowerShell.Utility\Write-Verbose `
-                ("Ensuring DeepStack image enhancement service is " +
-                 "available")
+            ('Ensuring DeepStack image enhancement service is ' +
+                'available')
 
             # copy parameter values for the EnsureDeepStack function call
             $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -204,12 +205,12 @@ function Invoke-ImageEnhancement {
                     -ErrorAction SilentlyContinue)
 
             # initialize deepstack docker container if needed
-            $null = GenXdev.AI\EnsureDeepStack @ensureParams
+            $null = EnsureDeepStack @ensureParams
         }
         else {
 
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Skipping Docker initialization as requested"
+                'Skipping Docker initialization as requested'
         }
 
         Microsoft.PowerShell.Utility\Write-Verbose `
@@ -244,11 +245,11 @@ function Invoke-ImageEnhancement {
             if (-not $EnhanceData -or -not $EnhanceData.success) {
 
                 Microsoft.PowerShell.Utility\Write-Verbose `
-                    "No successful enhancement data received"
+                    'No successful enhancement data received'
 
                 return @{
                     success = $false
-                    message = "Image enhancement failed"
+                    message = 'Image enhancement failed'
                 }
             }
 
@@ -263,10 +264,10 @@ function Invoke-ImageEnhancement {
                 "Enhanced image dimensions: ${width}x${height}"
 
             $result = @{
-                success = $true
-                base64 = $base64Data
-                width = $width
-                height = $height
+                success         = $true
+                base64          = $base64Data
+                width           = $width
+                height          = $height
                 size_multiplier = 4
             }
 
@@ -285,7 +286,7 @@ function Invoke-ImageEnhancement {
                         -Parent
 
                     if (-not (Microsoft.PowerShell.Management\Test-Path `
-                        $outputDir)) {
+                                $outputDir)) {
 
                         $null = Microsoft.PowerShell.Management\New-Item `
                             -Path $outputDir `
@@ -295,11 +296,11 @@ function Invoke-ImageEnhancement {
 
                     # convert base64 to bytes and save to file
                     $imageBytes = [System.Convert]::FromBase64String(`
-                        $base64Data)
+                            $base64Data)
 
                     [System.IO.File]::WriteAllBytes(`
-                        $expandedOutputPath, `
-                        $imageBytes)
+                            $expandedOutputPath, `
+                            $imageBytes)
 
                     $result.output_path = $expandedOutputPath
 
@@ -310,9 +311,9 @@ function Invoke-ImageEnhancement {
                 }
                 catch {
 
-                    Microsoft.PowerShell.Utility\Write-Warning `
-                        ("Failed to save enhanced image to " +
-                         "$OutputPath`: $_")
+                    Microsoft.PowerShell.Utility\Write-Verbose `
+                    ('Failed to save enhanced image to ' +
+                        "$OutputPath`: $_")
 
                     $result.save_error = $_.Exception.Message
                 }
@@ -347,7 +348,7 @@ function Invoke-ImageEnhancement {
 
             # send the request to the DeepStack image enhancement API
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Sending image data to DeepStack image enhancement API"
+                'Sending image data to DeepStack image enhancement API'
 
             $response = Microsoft.PowerShell.Utility\Invoke-RestMethod `
                 -Uri $uri `
@@ -357,7 +358,7 @@ function Invoke-ImageEnhancement {
                 -ErrorAction Stop
 
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Enhancement completed successfully"
+                'Enhancement completed successfully'
 
             # process the response from DeepStack
             $enhancementResult = Format-EnhancementResult `
@@ -374,8 +375,8 @@ function Invoke-ImageEnhancement {
         catch [System.TimeoutException] {
 
             Microsoft.PowerShell.Utility\Write-Error `
-                ("Timeout during image enhancement for $imagePath " +
-                 "(enhancement can take longer for large images)")
+            ("Timeout during image enhancement for $imagePath " +
+                '(enhancement can take longer for large images)')
         }
         catch {
 
@@ -389,4 +390,3 @@ function Invoke-ImageEnhancement {
         # no cleanup required for this function
     }
 }
-        ###############################################################################

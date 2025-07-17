@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Registers a new face with the DeepStack face recognition API.
@@ -53,7 +53,7 @@ Register-Face "JohnDoe" @("C:\Users\YourName\faces\john1.jpg", "C:\Users\YourNam
 
 .EXAMPLE
 Register-Face -Identifier "JohnDoe" -ImagePath "C:\Users\YourName\faces\john.jpg"
-        ###############################################################################>
+#>
 function Register-Face {
 
     [CmdletBinding()]
@@ -63,8 +63,8 @@ function Register-Face {
         [Parameter(
             Position = 0,
             Mandatory = $true,
-            HelpMessage = ("The unique identifier for the face " +
-                          "(e.g., person's name)")
+            HelpMessage = ('The unique identifier for the face ' +
+                "(e.g., person's name)")
         )]
         [ValidateNotNullOrEmpty()]
         [string] $Identifier,
@@ -72,83 +72,83 @@ function Register-Face {
         [Parameter(
             Position = 1,
             Mandatory = $true,
-            HelpMessage = ("Array of local paths to image files " +
-                          "(png, jpg, jpeg, or gif)")
+            HelpMessage = ('Array of local paths to image files ' +
+                '(png, jpg, jpeg, or gif)')
         )]
-        [ValidateNotNullOrEmpty()]
         [string[]] $ImagePath,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The name for the Docker container")
+            HelpMessage = ('The name for the Docker container')
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ContainerName = "deepstack_face_recognition",
+        [string] $ContainerName = 'deepstack_face_recognition',
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The name for the Docker volume for persistent " +
-                          "storage")
+            HelpMessage = ('The name for the Docker volume for persistent ' +
+                'storage')
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $VolumeName = "deepstack_face_data",
+        [string] $VolumeName = 'deepstack_face_data',
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The port number for the DeepStack service"
+            HelpMessage = 'The port number for the DeepStack service'
         )]
         [ValidateRange(1, 65535)]
         [int] $ServicePort = 5000,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Maximum time in seconds to wait for service " +
-                          "health check")
+            HelpMessage = ('Maximum time in seconds to wait for service ' +
+                'health check')
         )]
         [ValidateRange(10, 300)]
         [int] $HealthCheckTimeout = 60,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Interval in seconds between health check " +
-                          "attempts")
+            HelpMessage = ('Interval in seconds between health check ' +
+                'attempts')
         )]
         [ValidateRange(1, 10)]
         [int] $HealthCheckInterval = 3,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Custom Docker image name to use"
+            HelpMessage = 'Custom Docker image name to use'
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImageName,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Skip Docker initialization (used when already " +
-                          "called by parent function)")
+            HelpMessage = ('Skip Docker initialization (used when already ' +
+                'called by parent function)')
         )]
         [switch] $NoDockerInitialize,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Force rebuild of Docker container and remove " +
-                          "existing data")
+            HelpMessage = ('Force rebuild of Docker container and remove ' +
+                'existing data')
         )]
-        [Alias("ForceRebuild")]
+        [Alias('ForceRebuild')]
         [switch] $Force,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use GPU-accelerated version (requires " +
-                          "NVIDIA GPU)")
+            HelpMessage = ('Use GPU-accelerated version (requires ' +
+                'NVIDIA GPU)')
         )]
         [switch] $UseGPU,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show Docker Desktop window during initialization"
+            HelpMessage = 'Show Docker Desktop window during initialization'
         )]
+        [Alias('sw')]
         [switch]$ShowWindow
         ###################################################################
     )
@@ -173,12 +173,12 @@ function Register-Face {
                     -ErrorAction SilentlyContinue)
 
             # initialize deepstack service with matching parameters
-            $null = GenXdev.AI\EnsureDeepStack @ensureParams
+            $null = EnsureDeepStack @ensureParams
         } else {
 
             # log that docker initialization was skipped
             Microsoft.PowerShell.Utility\Write-Verbose `
-                "Skipping Docker initialization as requested"
+                'Skipping Docker initialization as requested'
         }
 
         # log the start of face registration process
@@ -193,13 +193,13 @@ function Register-Face {
             # check for empty or whitespace identifier
             if ([string]::IsNullOrWhiteSpace($identifier)) {
 
-                throw "Identifier cannot be empty or whitespace"
+                throw 'Identifier cannot be empty or whitespace'
             }
 
             # check for excessively long identifier
             if ($identifier.Length -gt 100) {
 
-                throw "Identifier cannot be longer than 100 characters"
+                throw 'Identifier cannot be longer than 100 characters'
             }
 
             # check for invalid characters that might cause api issues
@@ -210,9 +210,9 @@ function Register-Face {
                 # warn about potentially problematic characters
                 if ($identifier.Contains($char)) {
 
-                    Microsoft.PowerShell.Utility\Write-Warning `
-                        ("Identifier contains potentially problematic " +
-                         "character: $char")
+                    Microsoft.PowerShell.Utility\Write-Verbose `
+                    ('Identifier contains potentially problematic ' +
+                        "character: $char")
                 }
             }
         }
@@ -244,8 +244,8 @@ function Register-Face {
 
             # log the number of images being registered
             Microsoft.PowerShell.Utility\Write-Verbose `
-                ("Registering $($validatedImagePaths.Count) images for: " +
-                 "$Identifier")
+            ("Registering $($validatedImagePaths.Count) images for: " +
+                "$Identifier")
 
             # construct the api endpoint uri for deepstack face registration
             $uri = "$($script:ApiBaseUrl)/v1/vision/face/register"
@@ -264,7 +264,7 @@ function Register-Face {
 
                 # use 'image' for single image, 'image1', 'image2' for multiple
                 $imageKey = if ($validatedImagePaths.Count -eq 1) {
-                    "image"
+                    'image'
                 } else {
                     "image$($i + 1)"
                 }
@@ -276,8 +276,8 @@ function Register-Face {
 
             # send the http request to the deepstack face recognition api
             Microsoft.PowerShell.Utility\Write-Verbose `
-                ("Uploading $($validatedImagePaths.Count) face image(s) " +
-                 "for: $Identifier")
+            ("Uploading $($validatedImagePaths.Count) face image(s) " +
+                "for: $Identifier")
 
             # add connection retry logic with exponential backoff
             $maxAttempts = 3
@@ -313,9 +313,9 @@ function Register-Face {
                     $delay = $baseDelay * [Math]::Pow(2, $attempt - 1)
 
                     # log retry attempt with delay information
-                    Microsoft.PowerShell.Utility\Write-Warning `
-                        ("Connection attempt $attempt failed for $Identifier. " +
-                         "Retrying in $delay seconds...")
+                    Microsoft.PowerShell.Utility\Write-Verbose `
+                    ("Connection attempt $attempt failed for $Identifier. " +
+                        "Retrying in $delay seconds...")
 
                     # wait before retrying with exponential backoff
                     Microsoft.PowerShell.Utility\Start-Sleep -Seconds $delay
@@ -327,8 +327,8 @@ function Register-Face {
 
             # log successful face registration
             Microsoft.PowerShell.Utility\Write-Output `
-                ("Face(s) registered successfully for $Identifier " +
-                 "($($validatedImagePaths.Count) image(s))")
+            ("Face(s) registered successfully for $Identifier " +
+                "($($validatedImagePaths.Count) image(s))")
 
             # return the response from deepstack
             return $response
@@ -337,7 +337,7 @@ function Register-Face {
 
             # handle network-related errors during registration
             Microsoft.PowerShell.Utility\Write-Error `
-               "Network error during face registration: $_"
+                "Network error during face registration: $_"
         }
         catch [System.TimeoutException] {
 
@@ -351,11 +351,10 @@ function Register-Face {
             Microsoft.PowerShell.Utility\Write-Error `
                 "Failed to register face for $Identifier`: $_"
 
-         }
+        }
     }
 
     end {
 
     }
 }
-        ###############################################################################

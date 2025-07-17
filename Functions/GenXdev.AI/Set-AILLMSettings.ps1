@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Sets the LLM settings for AI operations in GenXdev.AI.
@@ -61,7 +61,7 @@ Set-AILLMSettings -LLMQueryType "Coding" -Model "*Qwen*14B*" -MaxToken 32768
 Sets the LLM settings for Coding query type persistently in preferences.
 
 .EXAMPLE
-Set-AILLMSettings -LLMQueryType "SimpleIntelligence" -Model "*deepseek*8b*" -TimeoutSeconds 7200 -SessionOnly
+Set-AILLMSettings -LLMQueryType "SimpleIntelligence" -Model "maziyarpanahi/llama-3-groq-8b-tool-use" -TimeoutSeconds 7200 -SessionOnly
 
 Sets the LLM settings for SimpleIntelligence only for the current
 session.
@@ -93,43 +93,43 @@ function Set-AILLMSettings {
         [Parameter(
             Position = 0,
             Mandatory = $true,
-            HelpMessage = "The type of LLM query"
+            HelpMessage = 'The type of LLM query'
         )]
         [ValidateSet(
-            "SimpleIntelligence",
-            "Knowledge",
-            "Pictures",
-            "TextTranslation",
-            "Coding",
-            "ToolUse"
+            'SimpleIntelligence',
+            'Knowledge',
+            'Pictures',
+            'TextTranslation',
+            'Coding',
+            'ToolUse'
         )]
         [string] $LLMQueryType,
         ###############################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
-            HelpMessage = "The model identifier or pattern to use for AI operations"
+            HelpMessage = 'The model identifier or pattern to use for AI operations'
         )]
         [string] $Model,
         ###############################################################################
         [Parameter(
             Position = 2,
             Mandatory = $false,
-            HelpMessage = "The LM Studio specific model identifier"
+            HelpMessage = 'The LM Studio specific model identifier'
         )]
         [string] $HuggingFaceIdentifier,
         ###############################################################################
         [Parameter(
             Position = 3,
             Mandatory = $false,
-            HelpMessage = "The maximum number of tokens to use in AI operations"
+            HelpMessage = 'The maximum number of tokens to use in AI operations'
         )]
         [int] $MaxToken,
         ###############################################################################
         [Parameter(
             Position = 4,
             Mandatory = $false,
-            HelpMessage = "The number of CPU cores to dedicate to AI operations"
+            HelpMessage = 'The number of CPU cores to dedicate to AI operations'
         )]
         [int] $Cpu,
         ###############################################################################
@@ -137,11 +137,11 @@ function Set-AILLMSettings {
             Position = 5,
             Mandatory = $false,
             HelpMessage = ("How much to offload to the GPU. If 'off', GPU " +
-            "offloading is disabled. If 'max', all layers are " +
-            "offloaded to GPU. If a number between 0 and 1, " +
-            "that fraction of layers will be offloaded to the " +
-            "GPU. -1 = LM Studio will decide how much to " +
-            "offload to the GPU. -2 = Auto")
+                "offloading is disabled. If 'max', all layers are " +
+                'offloaded to GPU. If a number between 0 and 1, ' +
+                'that fraction of layers will be offloaded to the ' +
+                'GPU. -1 = LM Studio will decide how much to ' +
+                'offload to the GPU. -2 = Auto')
         )]
         [ValidateRange(-2, 1)]
         [int] $Gpu,
@@ -149,57 +149,58 @@ function Set-AILLMSettings {
         [Parameter(
             Position = 6,
             Mandatory = $false,
-            HelpMessage = "The time-to-live in seconds for cached AI responses"
+            HelpMessage = 'The time-to-live in seconds for cached AI responses'
         )]
         [int] $TTLSeconds,
         ###############################################################################
         [Parameter(
             Position = 7,
             Mandatory = $false,
-            HelpMessage = "The API endpoint URL for AI operations"
+            HelpMessage = 'The API endpoint URL for AI operations'
         )]
         [string] $ApiEndpoint,
         ###############################################################################
         [Parameter(
             Position = 8,
             Mandatory = $false,
-            HelpMessage = "The API key for authenticated AI operations"
+            HelpMessage = 'The API key for authenticated AI operations'
         )]
         [string] $ApiKey,
         ###############################################################################
         [Parameter(
             Position = 9,
             Mandatory = $false,
-            HelpMessage = "The timeout in seconds for AI operations"
+            HelpMessage = 'The timeout in seconds for AI operations'
         )]
         [int] $TimeoutSeconds,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for AI " +
-                "preferences")
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences')
         )]
         [switch] $SessionOnly,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Clear alternative settings stored in session for AI " +
-                "preferences")
+            HelpMessage = ('Clear alternative settings stored in session for AI ' +
+                'preferences')
         )]
         [switch] $ClearSession,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
+        [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Store settings only in persistent preferences without " +
-                "affecting session")
+            HelpMessage = ('Store settings only in persistent preferences without ' +
+                'affecting session')
         )]
-        [Alias("FromPreferences")]
+        [Alias('FromPreferences')]
         [switch] $SkipSession
         ###############################################################################
     )
@@ -232,8 +233,8 @@ function Set-AILLMSettings {
             # ensure at least one setting parameter was provided
             if ($providedSettings.Count -eq 0) {
 
-                throw ("At least one LLM setting parameter must be provided " +
-                    "when not using -ClearSession")
+                throw ('At least one LLM setting parameter must be provided ' +
+                    'when not using -ClearSession')
             }
         }
 
@@ -244,16 +245,16 @@ function Set-AILLMSettings {
             if ($PSBoundParameters.ContainsKey('Model') -and
                 -not $PSBoundParameters.ContainsKey('HuggingFaceIdentifier')) {
 
-                throw ("HuggingFaceIdentifier must be provided when Model is " +
-                    "specified for persistent storage")
+                throw ('HuggingFaceIdentifier must be provided when Model is ' +
+                    'specified for persistent storage')
             }
 
             # check if api endpoint is provided without api key
             if ($PSBoundParameters.ContainsKey('ApiEndpoint') -and
                 -not $PSBoundParameters.ContainsKey('ApiKey')) {
 
-                throw ("ApiKey must be provided when ApiEndpoint is " +
-                    "specified for persistent storage")
+                throw ('ApiKey must be provided when ApiEndpoint is ' +
+                    'specified for persistent storage')
             }
         }
 
@@ -269,28 +270,28 @@ function Set-AILLMSettings {
         if ($ClearSession) {
 
             # create descriptive message for whatif processing
-            $clearMessage = "Clear session LLM settings for all properties (Global variables)"
+            $clearMessage = 'Clear session LLM settings for all properties (Global variables)'
 
             # check if user confirmed the operation or whatif mode
             if ($PSCmdlet.ShouldProcess(
-                "GenXdev.AI Module Configuration",
-                $clearMessage
-            )) {
+                    'GenXdev.AI Module Configuration',
+                    $clearMessage
+                )) {
 
                 # clear individual session variables for each property
-                Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_Model") -Value $null -Scope Global
-                Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_HuggingFaceIdentifier") -Value $null -Scope Global
-                Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_MaxToken") -Value $null -Scope Global
-                Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_Cpu") -Value $null -Scope Global
-                Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_Gpu") -Value $null -Scope Global
-                Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_TTLSeconds") -Value $null -Scope Global
-                Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_ApiEndpoint") -Value $null -Scope Global
-                Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_ApiKey") -Value $null -Scope Global
-                Microsoft.PowerShell.Utility\Set-Variable -Name ("AILLMSettings_" + $LLMQueryType + "_TimeoutSeconds") -Value $null -Scope Global
+                Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_Model') -Value $null -Scope Global
+                Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_HuggingFaceIdentifier') -Value $null -Scope Global
+                Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_MaxToken') -Value $null -Scope Global
+                Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_Cpu') -Value $null -Scope Global
+                Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_Gpu') -Value $null -Scope Global
+                Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_TTLSeconds') -Value $null -Scope Global
+                Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_ApiEndpoint') -Value $null -Scope Global
+                Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_ApiKey') -Value $null -Scope Global
+                Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_TimeoutSeconds') -Value $null -Scope Global
 
                 # output confirmation of the clearing operation
                 Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Cleared session LLM settings for all properties"
+                    'Cleared session LLM settings for all properties'
                 )
             }
             return
@@ -314,6 +315,7 @@ function Set-AILLMSettings {
 
         # iterate through all possible parameters and add provided ones to
         # settings
+        $preferencesToRemove = @()
         foreach ($param in $settingParams) {
 
             # check if this parameter was actually provided by the user
@@ -325,17 +327,26 @@ function Set-AILLMSettings {
                     $settings[$param] = $PSBoundParameters[$param]
                 }
                 else {
-                    # for persistent storage, validate that values are not null/empty
-                    if ($null -ne $PSBoundParameters[$param]) {
+                    # for persistent storage, handle null values by marking for deletion
+                    if ($null -eq $PSBoundParameters[$param]) {
+                        # mark this preference for deletion
+                        $preferenceKey = "AILLMSettings_$($LLMQueryType)_$param"
+                        $preferencesToRemove += $preferenceKey
+                        Microsoft.PowerShell.Utility\Write-Verbose "Marking preference for deletion: $preferenceKey"
+                    }
+                    else {
                         # for string parameters, also check that they're not empty
                         $isStringParam = $param -in @('Model', 'HuggingFaceIdentifier', 'ApiEndpoint', 'ApiKey')
                         if ($isStringParam -and [string]::IsNullOrWhiteSpace($PSBoundParameters[$param])) {
-                            # skip empty string values for string parameters in persistent storage
-                            continue
+                            # mark empty string values for deletion too
+                            $preferenceKey = "AILLMSettings_$($LLMQueryType)_$param"
+                            $preferencesToRemove += $preferenceKey
+                            Microsoft.PowerShell.Utility\Write-Verbose "Marking preference for deletion (empty string): $preferenceKey"
                         }
-
-                        # add the parameter value to our settings hashtable
-                        $settings[$param] = $PSBoundParameters[$param]
+                        else {
+                            # add the parameter value to our settings hashtable
+                            $settings[$param] = $PSBoundParameters[$param]
+                        }
                     }
                 }
             }
@@ -346,15 +357,15 @@ function Set-AILLMSettings {
 
             # create human-readable description of settings for logging
             $settingsDescription = ($settings.GetEnumerator() |
-                Microsoft.PowerShell.Core\ForEach-Object {
-                    "$($_.Key): $($_.Value)"
-                }) -join ", "
+                    Microsoft.PowerShell.Core\ForEach-Object {
+                        "$($_.Key): $($_.Value)"
+                    }) -join ', '
 
             # check if user confirmed the operation or whatif mode
             if ($PSCmdlet.ShouldProcess(
-                "GenXdev.AI Module Configuration",
+                    'GenXdev.AI Module Configuration',
                 ("Set session-only LLM settings: [$settingsDescription]")
-            )) {
+                )) {
 
                 # set individual session variables for each provided setting
                 foreach ($key in $settings.Keys) {
@@ -376,23 +387,37 @@ function Set-AILLMSettings {
         # handle persistent storage (default behavior)
         # create human-readable description of settings for logging
         $settingsDescription = ($settings.GetEnumerator() |
-            Microsoft.PowerShell.Core\ForEach-Object {
-                "$($_.Key): $($_.Value)"
-            }) -join ", "
+                Microsoft.PowerShell.Core\ForEach-Object {
+                    "$($_.Key): $($_.Value)"
+                }) -join ', '
 
         # check if user confirmed the operation or whatif mode
         if ($PSCmdlet.ShouldProcess(
-            "GenXdev.AI Module Configuration",
+                'GenXdev.AI Module Configuration',
             ("Set LLM settings for ${LLMQueryType}: [$settingsDescription]")
-        )) {
+            )) {
 
             # store each setting individually in preferences
             foreach ($key in $settings.Keys) {
                 $preferenceKey = "AILLMSettings_$($LLMQueryType)_$key"
-                $null = GenXdev.Data\Set-GenXdevPreference `
+                $null = Set-GenXdevPreference `
                     -PreferencesDatabasePath $PreferencesDatabasePath `
                     -Name $preferenceKey `
                     -Value $settings[$key]
+            }
+
+            # remove preferences that were marked for deletion (null values)
+            foreach ($preferenceKey in $preferencesToRemove) {
+                try {
+                    $null = Remove-GenXdevPreference `
+                        -PreferencesDatabasePath $PreferencesDatabasePath `
+                        -Name $preferenceKey `
+                        -ErrorAction SilentlyContinue
+                    Microsoft.PowerShell.Utility\Write-Verbose "Deleted preference: $preferenceKey"
+                }
+                catch {
+                    Microsoft.PowerShell.Utility\Write-Verbose "Could not delete preference: $preferenceKey (may not exist)"
+                }
             }
 
             # output confirmation of the persistent storage operation

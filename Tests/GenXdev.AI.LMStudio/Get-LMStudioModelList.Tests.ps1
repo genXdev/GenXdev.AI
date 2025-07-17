@@ -1,17 +1,17 @@
-###############################################################################
+﻿###############################################################################
 
-Pester\Describe "Get-LMStudioModelList.Tests" {
+Pester\Describe 'Get-LMStudioModelList.Tests' {
 
-    Pester\It "Should pass PSScriptAnalyzer rules" {
+    Pester\It 'Should pass PSScriptAnalyzer rules' {
 
-# get the script path for analysis
+        # get the script path for analysis
         $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.LMStudio\Get-LMStudioModelList.ps1"
 
-# run analyzer with explicit settings
+        # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $scriptPath
 
-        [string] $message = ""
+        [string] $message = ''
         $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
 
             $message = $message + @"
@@ -29,19 +29,19 @@ $message
 "@;
     }
 
-    Pester\Context "Basic functionality" {
+    Pester\Context 'Basic functionality' {
 
-        Pester\It "Should return models with required properties" {
-    # get all models
-            $result = GenXdev.AI\Get-LMStudioModelList
+        Pester\It 'Should return models with required properties' {
+            # get all models
+            $result = Get-LMStudioModelList
 
-    # verify if any models exist
+            # verify if any models exist
             if ($null -eq $result) {
-                Pester\Set-ItResult -Skipped -Because "No models found in LM Studio"
+                Pester\Set-ItResult -Skipped -Because 'No models found in LM Studio'
                 return
             }
 
-    # verify models have required properties
+            # verify models have required properties
             $result | Pester\Should -Not -BeNullOrEmpty
             $result | Microsoft.PowerShell.Core\ForEach-Object {
                 $_.path | Pester\Should -Not -BeNullOrEmpty

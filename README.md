@@ -103,6 +103,7 @@ Update-Module
 | [New-LLMTextChat](#New-LLMTextChat) | llmchat | Starts an interactive text chat session with AI capabilities. |
 | [Set-AILLMSettings](#Set-AILLMSettings) |  | Sets the LLM settings for AI operations in GenXdev.AI. |
 | [Set-GenXdevAICommandNotFoundAction](#Set-GenXdevAICommandNotFoundAction) |  | Sets up custom command not found handling with AI assistance. |
+| [Start-GenXdevMCPServer](#Start-GenXdevMCPServer) |  | Starts the GenXdev MCP server that exposes PowerShell cmdlets as tools. |
 | [Test-DeepLinkImageFile](#Test-DeepLinkImageFile) |  | Tests if the specified file path is a valid image file with a supported format. |
 
 <hr/>
@@ -129,13 +130,14 @@ Update-Module
 ### GenXdev.AI.LMStudio</hr>
 | Command&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | aliases&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Description |
 | --- | --- | --- |
+| [Add-GenXdevMCPServerToLMStudio](#Add-GenXdevMCPServerToLMStudio) |  |  |
 | [EnsureLMStudio](#EnsureLMStudio) |  | Ensures LM Studio is properly initialized with the specified model. |
 | [Get-LMStudioLoadedModelList](#Get-LMStudioLoadedModelList) |  | Retrieves the list of currently loaded models from LM Studio. |
 | [Get-LMStudioModelList](#Get-LMStudioModelList) |  | Retrieves a list of installed LM Studio models. |
 | [Get-LMStudioPaths](#Get-LMStudioPaths) |  | Retrieves file paths for LM Studio executables. |
 | [Get-LMStudioTextEmbedding](#Get-LMStudioTextEmbedding) | embed-text, get-textembedding | Gets text embeddings from LM Studio model. |
-| [Get-LMStudioWindow](#Get-LMStudioWindow) |  | Gets a window helper for the LM Studio application. |
-| [Initialize-LMStudioModel](#Initialize-LMStudioModel) |  | Initializes and loads an AI model in LM Studio. |
+| [Get-LMStudioWindow](#Get-LMStudioWindow) | lmstudiowindow, setlmstudiowindow | Gets a window helper for the LM Studio application. |
+| [Initialize-LMStudioModel](#Initialize-LMStudioModel) | initlmstudio | Initializes and loads an AI model in LM Studio. |
 | [Install-LMStudioApplication](#Install-LMStudioApplication) |  | Installs LM Studio application using WinGet package manager. |
 | [Start-LMStudioApplication](#Start-LMStudioApplication) |  | Starts the LM Studio application if it's not already running. |
 | [Test-LMStudioInstallation](#Test-LMStudioInstallation) |  | Tests if LMStudio is installed and accessible on the system. |
@@ -154,7 +156,7 @@ Update-Module
 | [ConvertTo-CorporateSpeak](#ConvertTo-CorporateSpeak) | corporatize | Converts direct or blunt text into polite, professional corporate speak using AI. |
 | [ConvertTo-DiplomaticSpeak](#ConvertTo-DiplomaticSpeak) | diplomatize | Converts direct or blunt text into polite, tactful diplomatic language. |
 | [Export-ImageDatabase](#Export-ImageDatabase) | indexcachedimages, inititalize-imagedatabase, recreate-imageindex | Initializes and populates the SQLite database by discovering images directly. |
-| [Find-Image](#Find-Image) | findimages, li | Scans image files for keywords and descriptions using metadata files. |
+| [Find-Image](#Find-Image) | findimages, li |  |
 | [Find-IndexedImage](#Find-IndexedImage) | findindexedimages, lii | Searches for images using an optimized SQLite database with fast indexed lookups. |
 | [Get-AIImageCollection](#Get-AIImageCollection) | getimgdirs | Gets the configured directories for image files used in GenXdev.AI operations. |
 | [Get-AIKnownFacesRootpath](#Get-AIKnownFacesRootpath) |  |  |
@@ -164,7 +166,7 @@ Update-Module
 | [Get-ImageDatabaseStats](#Get-ImageDatabaseStats) | getimagedbstats, gids | Retrieves comprehensive statistics and information about the image database. |
 | [Get-MediaFileAudioTranscription](#Get-MediaFileAudioTranscription) | transcribefile | Transcribes an audio or video file to text. |
 | [Get-ScriptExecutionErrorFixPrompt](#Get-ScriptExecutionErrorFixPrompt) | getfixprompt | Captures error messages from various streams and uses LLM to suggest fixes. |
-| [Get-SimularMovieTitles](#Get-SimularMovieTitles) | moremovietitles | Finds similar movie titles based on common properties. |
+| [Get-SimularMovieTitles](#Get-SimularMovieTitles) |  | Finds similar movie titles based on common properties. |
 | [Invoke-AIPowershellCommand](#Invoke-AIPowershellCommand) | hint | Converts AI command suggestions to JSON format for processing. |
 | [Invoke-ImageFacesUpdate](#Invoke-ImageFacesUpdate) | facerecognition | Updates face recognition metadata for image files in a specified directory. |
 | [Invoke-ImageKeywordUpdate](#Invoke-ImageKeywordUpdate) | updateimages | Updates image metadata with AI-generated descriptions and keywords. |
@@ -200,7 +202,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Approve-NewTextFileContent [-ContentPath] <String> [-NewContent] <String> [<CommonParameters>]
+    Approve-NewTextFileContent [-ContentPath] <String> [[-Monitor] <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-AcceptLang <String>] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-FullScreen] [-Private] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-NewWindow] [-FocusWindow] [-SetForeground] [-Maximize] [-PassThru] [-NoBorders] [-RestoreFocus] [-SideBySide] [-KeysToSend <String[]>] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -221,12 +223,344 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -NewContent <String>
-        The proposed new content to compare against the existing file content.
+    -Monitor <Int32>
         
-        Required?                    true
+        Required?                    false
         Position?                    2
+        Default value                -2
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -X <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                -999999
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Y <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                -999999
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AcceptLang <String>
+        
+        Required?                    false
+        Position?                    named
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Edge [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chrome [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chromium [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Firefox [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -All [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Top [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Private [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApplicationMode [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBrowserExtensions [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DisablePopupBlocker [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NewWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -KeysToSend <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -249,7 +583,6 @@ NOTES
         - approvedAsIs: True if content was accepted without modifications
         - savedContent: Final content if modified by user
         - userDeletedFile: True if user deleted existing file
-                ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -307,7 +640,7 @@ OUTPUTS
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > Convert-DotNetTypeToLLMType -DotNetType "System.String"
-            ###############################################################################Returns: "string"
+    Returns: "string"
     
     
     
@@ -317,8 +650,7 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > Convert-DotNetTypeToLLMType "System.Collections.Generic.List``1"
-            ###############################################################################Returns: "array"
-            ##############################################################################
+    Returns: "object"
     
     
     
@@ -409,7 +741,6 @@ OUTPUTS
     
     PS > EnsureGithubCLIInstalled
     This will verify and setup GitHub CLI if needed.
-            ##############################################################################
     
     
     
@@ -456,7 +787,6 @@ OUTPUTS
     
     PS > EnsurePaintNet
     This will verify and setup Paint.NET if needed.
-            ##############################################################################
     
     
     
@@ -500,7 +830,6 @@ OUTPUTS
     
     PS > EnsureWinMergeInstalled
     Ensures WinMerge is installed and properly configured.
-            ##############################################################################
     
     
     
@@ -520,7 +849,7 @@ SYNOPSIS
     
     
 SYNTAX
-    GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [-Title <String>] [-Description <String>] [-CanEdit] [-CanDelete] [-EmbedImages] [-ShowOnlyPictures] [<CommonParameters>]
+    GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [-Title <String>] [-Description <String>] [-CanEdit] [-CanDelete] [-EmbedImages] [-ShowOnlyPictures] [-AutoScrollPixelsPerSecond <Int32>] [-AutoAnimateRectangles] [-SingleColumnMode] [-ImageUrlPrefix <String>] [-PageSize <Int32>] [-MaxPrintImages <Int32>] [-RootMargin <String>] [-Threshold <Double>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -610,6 +939,78 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -AutoScrollPixelsPerSecond <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AutoAnimateRectangles [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SingleColumnMode [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageUrlPrefix <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PageSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                20
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxPrintImages <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                50
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RootMargin <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                1200px
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Threshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0.1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -624,16 +1025,16 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > ###############################################################################Create gallery from image array and save to file
+    PS > Create gallery from image array and save to file
     $images = @(
-    @{
-    path = "C:\photos\sunset.jpg"
-    keywords = @("nature", "sunset", "landscape")
-    description = @{
-        short_description = "Mountain sunset"
-        long_description = "Beautiful sunset over mountain range"
-    }
-    }
+        @{
+            path = "C:\photos\sunset.jpg"
+            keywords = @("nature", "sunset", "landscape")
+            description = @{
+                short_description = "Mountain sunset"
+                long_description = "Beautiful sunset over mountain range"
+            }
+        }
     )
     GenerateMasonryLayoutHtml -Images $images -FilePath "C:\output\gallery.html"
     
@@ -644,9 +1045,8 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > ###############################################################################Generate HTML string without saving
+    PS > Generate HTML string without saving
     $html = GenerateMasonryLayoutHtml $images
-    ##############################################################################
     
     
     
@@ -1210,10 +1610,9 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > ###############################################################################Get the total number of logical CPU cores
+    PS > Get the total number of logical CPU cores
     $cores = Get-CpuCore
     Write-Host "System has $cores logical CPU cores available"
-    ##############################################################################
     
     
     
@@ -1260,7 +1659,6 @@ OUTPUTS
     
     PS > $hasGpu = Get-HasCapableGpu
     Write-Host "System has capable GPU: $hasGpu"
-            ##############################################################################
     
     
     
@@ -1314,11 +1712,11 @@ NOTES
         - Assumes all processors support hyperthreading
         - Requires WMI access permissions
         - Works on Windows systems only
-                ##############################################################################
+        ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > ###############################################################################Get the total number of logical CPU cores
+    PS > Get the total number of logical CPU cores
     $cores = Get-NumberOfCpuCores
     Write-Host "System has $cores logical CPU cores available"
     
@@ -1340,7 +1738,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-TextTranslation [[-Text] <String>] [[-Language] <String>] [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-TextTranslation [[-Text] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Monitor <String>] [-Width <Int32>] [-Height <Int32>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-SendKeyDelayMilliSeconds <Int32>] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-NoLMStudioInitialize] [-Unload] [-NoBorders] [-Left] [-Right] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-MaxToolcallBackLength <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -1362,23 +1760,11 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Language <String>
-        Target language for translation. Supports 140+ languages including major world
-        languages and variants.
-        
-        Required?                    false
-        Position?                    2
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Instructions <String>
-        Additional instructions to guide the AI model in translation style and context.
+    -Attachments <String[]>
         
         Required?                    false
         Position?                    3
-        Default value                
+        Default value                @()
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -1393,12 +1779,48 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ImageDetail <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                low
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <Hashtable[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -LLMQueryType <String>
         The type of LLM query to perform for AI operations.
         
         Required?                    false
         Position?                    named
-        Default value                TextTranslation
+        Default value                SimpleIntelligence
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -1423,16 +1845,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -MaxToken <Int32>
-        The maximum number of tokens to use in AI operations.
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Cpu <Int32>
         The number of CPU cores to dedicate to AI operations.
         
@@ -1451,7 +1863,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -1506,8 +1918,71 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -Force [<SwitchParameter>]
         Force stop LM Studio before initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Speak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSessionCaching [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AllowDefaultTools [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -1542,6 +2017,396 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        Target language for translation. Supports 140+ languages including major world
+        languages and variants.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -1640,8 +2505,7 @@ OUTPUTS
     PS > $v1 = @(0.12, -0.45, 0.89)
     $v2 = @(0.15, -0.40, 0.92)
     Get-VectorSimilarity -Vector1 $v1 -Vector2 $v2
-            ###############################################################################Returns approximately 0.998, indicating high similarity
-            ##############################################################################
+    Returns approximately 0.998, indicating high similarity
     
     
     
@@ -1744,7 +2608,6 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > $result = Invoke-CommandFromToolCall $toolCall $functions -ForceAsText
-            ##############################################################################
     
     
     
@@ -1764,7 +2627,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-LLMBooleanEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Invoke-LLMBooleanEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [-TTLSeconds <Int32>] [-Monitor <String>] [-Width <Int32>] [-Height <Int32>] [-SendKeyDelayMilliSeconds <Int32>] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoLMStudioInitialize] [-Unload] [-NoBorders] [-Left] [-Right] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-MaxToolcallBackLength <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -2088,6 +2951,384 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -2142,13 +3383,23 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-LLMQuery [[-Query] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-ResponseFormat <String>] [-Temperature <Double>] [-ShowWindow] [-Force] [-ImageDetail <String>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-ChatMode <String>] [-ChatOnce] [-NoSessionCaching] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
+    Invoke-LLMQuery [[-Query] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-ResponseFormat <String>] [-Temperature <Double>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-ImageDetail <String>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-TTLSeconds <Int32>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-KeysToSend <String[]>] [-SendKeyDelayMilliSeconds <Int32>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-ChatMode <String>] [-ChatOnce] [-NoSessionCaching] [-NoLMStudioInitialize] [-ShowWindow] [-Force] [-Unload] [-NoBorders] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SessionOnly] [-ClearSession] [-SkipSession] [-MaxToolcallBackLength <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
-    This function sends queries to an OpenAI compatible Large Language Chat completion
-    API and processes responses. It supports text and image inputs, handles tool
-    function calls, and can operate in various chat modes including text and audio.
+    This function sends queries to an OpenAI compatible Large Language Chat
+    completion API and processes responses. It supports text and image inputs,
+    handles tool function calls, and can operate in various chat modes including
+    text and audio.
+    
+    The function provides comprehensive support for LLM interaction including:
+    - Text and image input processing
+    - Tool function calling and command execution
+    - Interactive chat modes (text and audio)
+    - Model initialization and configuration
+    - Response formatting and processing
+    - Session management and caching
+    - Window positioning and display control
     
 
 PARAMETERS
@@ -2202,22 +3453,32 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ShowWindow [<SwitchParameter>]
-        Show the LM Studio window during processing.
+    -Functions <Hashtable[]>
+        Array of function definitions that the model can call.
         
         Required?                    false
         Position?                    named
-        Default value                False
+        Default value                @()
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -Force [<SwitchParameter>]
-        Force stop LM Studio before initialization.
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        PowerShell commands to expose as tools to the model.
         
         Required?                    false
         Position?                    named
-        Default value                False
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        Tool functions that don't require user confirmation.
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -2228,6 +3489,349 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                low
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LLMQueryType <String>
+        The type of LLM query to use for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                SimpleIntelligence
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        The model identifier or pattern to use for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        The LM Studio specific model identifier.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        How much to offload to the GPU. Values range from -2 (Auto) to 1 (max).
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        The API endpoint URL for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        The API key for authenticated AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        Time-to-live in seconds for loaded models.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <Int32>
+        The monitor to use, 0 = default, -1 is discard.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        The initial width of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        The initial height of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -X <Int32>
+        The initial X position of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Y <Int32>
+        The initial Y position of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -KeysToSend <String[]>
+        Keystrokes to send to the Window, see documentation for cmdlet
+        GenXdev.Windows\Send-Key.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        Delay between different input strings in milliseconds when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -2262,36 +3866,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Functions <Hashtable[]>
-        Array of function definitions that the model can call.
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ExposedCmdLets <ExposedCmdletDefinition[]>
-        PowerShell commands to expose as tools to the model.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -NoConfirmationToolFunctionNames <String[]>
-        Tool functions that don't require user confirmation.
-        
-        Required?                    false
-        Position?                    named
-        Default value                @()
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Speak [<SwitchParameter>]
         Enable text-to-speech for AI responses.
         
@@ -2312,7 +3886,7 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -OutputMarkupBlocksOnly [<SwitchParameter>]
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
         Only output markup block responses.
         
         Required?                    false
@@ -2327,7 +3901,9 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                @("json", "powershell", "C#", "python", "javascript", "typescript", "html", "css", "yaml", "xml", "bash")
+        Default value                @('json', 'powershell', 'C#',
+                    'python', 'javascript', 'typescript', 'html', 'css', 'yaml',
+                    'xml', 'bash')
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -2362,94 +3938,199 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -LLMQueryType <String>
+    -NoLMStudioInitialize [<SwitchParameter>]
+        Skip LM-Studio initialization (used when already called by parent function).
         
         Required?                    false
         Position?                    named
-        Default value                SimpleIntelligence
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -Model <String>
-        The name or identifier of the LM Studio model to use.
+    -ShowWindow [<SwitchParameter>]
+        Show the LM Studio window during processing.
         
         Required?                    false
         Position?                    named
-        Default value                
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -HuggingFaceIdentifier <String>
-        Alternative identifier for getting a specific model from LM Studio.
+    -Force [<SwitchParameter>]
+        Force stop LM Studio before initialization.
         
         Required?                    false
         Position?                    named
-        Default value                
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -MaxToken <Int32>
-        Maximum tokens allowed in the response. Use -1 for model default.
+    -Unload [<SwitchParameter>]
+        Unloads the specified model instead of loading it.
         
         Required?                    false
         Position?                    named
-        Default value                0
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -Cpu <Int32>
+    -NoBorders [<SwitchParameter>]
+        Removes the borders of the window.
         
         Required?                    false
         Position?                    named
-        Default value                0
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -Gpu <Int32>
-        How much to offload to the GPU. Values range from -2 (Auto) to 1 (max).
+    -Left [<SwitchParameter>]
+        Place window on the left side of the screen.
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -ApiEndpoint <String>
-        API endpoint URL, defaults to http://localhost:1234/v1/chat/completions.
+    -Right [<SwitchParameter>]
+        Place window on the right side of the screen.
         
         Required?                    false
         Position?                    named
-        Default value                
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -ApiKey <String>
-        The API key to use for the request.
+    -Top [<SwitchParameter>]
+        Place window on the top side of the screen.
         
         Required?                    false
         Position?                    named
-        Default value                
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -TimeoutSeconds <Int32>
+    -Bottom [<SwitchParameter>]
+        Place window on the bottom side of the screen.
         
         Required?                    false
         Position?                    named
-        Default value                0
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        Place window in the center of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        Maximize the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        Restore PowerShell window focus.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        Will either set the window fullscreen on a different monitor than PowerShell,
+        or side by side with PowerShell on the same monitor.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        Focus the window after opening.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        Set the window to foreground after opening.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        Maximize the window after positioning.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        Escape control characters and modifiers when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        Hold keyboard focus on target window when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        Use Shift+Enter instead of Enter when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -2459,28 +4140,30 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
         Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -PreferencesDatabasePath <String>
-        
-        Required?                    false
-        Position?                    named
-        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
         
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                100000
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -2499,7 +4182,7 @@ OUTPUTS
     
     PS > Invoke-LLMQuery -Query "What is 2+2?" -Model "qwen" -Temperature 0.7
     
-    
+    Sends a simple mathematical query to the qwen model with specified temperature.
     
     
     
@@ -2507,9 +4190,26 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > qllm "What is 2+2?" -Model "qwen"
-    ##############################################################################
+    
+    Uses the alias to send a query with default parameters.
     
     
+    
+    
+    -------------------------- EXAMPLE 3 --------------------------
+    
+    PS > Invoke-LLMQuery -Query "Analyze this image" -Attachments @("image.jpg") -Model "qwen"
+    
+    Sends a query with an image attachment for analysis.
+    
+    
+    
+    
+    -------------------------- EXAMPLE 4 --------------------------
+    
+    PS > llm "Start a conversation" -ChatMode "textprompt" -Model "qwen"
+    
+    Starts an interactive text chat session with the specified model.
     
     
     
@@ -2528,7 +4228,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-LLMStringListEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Invoke-LLMStringListEvaluation [[-Text] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [-TTLSeconds <Int32>] [-Monitor <String>] [-Width <Int32>] [-Height <Int32>] [-SendKeyDelayMilliSeconds <Int32>] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoLMStudioInitialize] [-Unload] [-NoBorders] [-Left <Int32>] [-Right <Int32>] [-Bottom <Int32>] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-MaxToolcallBackLength <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -2863,6 +4563,384 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -2924,7 +5002,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-LLMTextTransformation [[-Text] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Invoke-LLMTextTransformation [[-Text] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Monitor <String>] [-Width <Int32>] [-Height <Int32>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-SendKeyDelayMilliSeconds <Int32>] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-NoLMStudioInitialize] [-Unload] [-NoBorders] [-Left] [-Right] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-MaxToolcallBackLength <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -3062,7 +5140,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -3228,6 +5306,393 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -MaxToken <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -3351,7 +5816,6 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > merge "C:\source\file1.txt" "C:\target\file2.txt"
-            ##############################################################################
     
     
     
@@ -3371,14 +5835,15 @@ SYNOPSIS
     
     
 SYNTAX
-    New-LLMAudioChat [[-Query] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-AudioTemperature <Double>] [-Temperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-Cpu <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Int32>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Gpu <Int32>] [-ImageDetail <String>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-ResponseFormat <String>] [-MarkupBlocksTypeFilter <String[]>] [-PreferencesDatabasePath <String>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoSessionCaching] [-OutputMarkupBlocksOnly] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    New-LLMAudioChat [[-Query] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-AudioTemperature <Double>] [-Temperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-Cpu <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Int32>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Gpu <Int32>] [-ImageDetail <String>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-ResponseFormat <String>] [-MarkupBlocksTypeFilter <String[]>] [-PreferencesDatabasePath <String>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Monitor <Int32>] [-Functions <ScriptBlock[]>] [-NoConfirmationToolFunctionNames <String[]>] [-ChatMode <String>] [-MaxToolcallBackLength <Int32>] [-NoBorders] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-KeysToSend <String[]>] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [-Unload] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-NoSessionCaching] [-OutputMarkdownBlocksOnly] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [-NoLMStudioInitialize] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
     Initiates a voice-based conversation with a language model, supporting audio
     input and output. The function handles audio recording, transcription, model
     queries, and text-to-speech responses. Supports multiple language models and
-    various configuration options.
+    various configuration options including window management, GPU acceleration,
+    and advanced audio processing features.
     
 
 PARAMETERS
@@ -3583,6 +6048,16 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -TTLSeconds <Int32>
+        Time-to-live in seconds for models loaded via API requests. Use -1 for no TTL.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -Gpu <Int32>
         GPU offloading configuration. -2=Auto, -1=LM Studio decides, 0-1=fraction of
         layers. Default: -1
@@ -3650,17 +6125,17 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                @(
-                    "json",
-                    "powershell",
-                    "C#",
-                    "python",
-                    "javascript",
-                    "typescript",
-                    "html",
-                    "css",
-                    "yaml",
-                    "xml",
-                    "bash"
+                    'json',
+                    'powershell',
+                    'C#',
+                    'python',
+                    'javascript',
+                    'typescript',
+                    'html',
+                    'css',
+                    'yaml',
+                    'xml',
+                    'bash'
                 )
         Accept pipeline input?       false
         Aliases                      
@@ -3682,6 +6157,272 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <Int32>
+        The monitor to use for window display. 0=default, -1=discard
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <ScriptBlock[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ChatMode <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        Switch to remove window borders from LM Studio window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        The initial width of the LM Studio window
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        The initial height of the LM Studio window
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -X <Int32>
+        The initial X position of the LM Studio window
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Y <Int32>
+        The initial Y position of the LM Studio window
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        Switch to place LM Studio window on the left side of the screen
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        Switch to place LM Studio window on the right side of the screen
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Top [<SwitchParameter>]
+        Switch to place LM Studio window on the top side of the screen
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        Switch to place LM Studio window on the bottom side of the screen
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        Switch to place LM Studio window in the center of the screen
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        Switch to make LM Studio window fullscreen
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        Switch to restore PowerShell window focus after initialization
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        Switch to set window either fullscreen on different monitor or side by side
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        Switch to focus the LM Studio window after opening
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        Switch to set the LM Studio window to foreground after opening
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        Switch to maximize the LM Studio window after positioning
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -KeysToSend <String[]>
+        Array of keystrokes to send to the LM Studio window
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        Switch to escape control characters when sending keys
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        Switch to prevent returning keyboard focus to PowerShell after sending keys
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        Switch to send Shift+Enter instead of regular Enter for line breaks
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        Delay between sending different key sequences in milliseconds
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        Switch to unload the specified model instead of loading it
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -3796,7 +6537,7 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -OutputMarkupBlocksOnly [<SwitchParameter>]
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
         Will only output markup block responses
         
         Required?                    false
@@ -3848,6 +6589,16 @@ PARAMETERS
         
     -SkipSession [<SwitchParameter>]
         Store settings only in persistent preferences without affecting session
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        Switch to skip LM-Studio initialization (used when already called by parent function).
         
         Required?                    false
         Position?                    named
@@ -3914,7 +6665,7 @@ NAME
     New-LLMTextChat
     
 SYNTAX
-    New-LLMTextChat [[-Query] <string>] [[-Instructions] <string>] [[-Attachments] <string[]>] [-Temperature <double>] [-ImageDetail {low | medium | high}] [-ResponseFormat <string>] [-LLMQueryType {SimpleIntelligence | Knowledge | Pictures | TextTranslation | Coding | ToolUse}] [-Model <string>] [-HuggingFaceIdentifier <string>] [-MaxToken <int>] [-Cpu <int>] [-Gpu <int>] [-ApiEndpoint <string>] [-ApiKey <string>] [-TimeoutSeconds <int>] [-PreferencesDatabasePath <string>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-MarkupBlocksTypeFilter <string[]>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ShowWindow] [-Force] [-Speak] [-SpeakThoughts] [-OutputMarkupBlocksOnly] [-ChatOnce] [-NoSessionCaching] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    New-LLMTextChat [[-Query] <string>] [[-Instructions] <string>] [[-Attachments] <string[]>] [[-Temperature] <double>] [-ImageDetail {low | medium | high}] [-ResponseFormat <string>] [-LLMQueryType {SimpleIntelligence | Knowledge | Pictures | TextTranslation | Coding | ToolUse}] [-Model <string>] [-HuggingFaceIdentifier <string>] [-MaxToken <int>] [-Cpu <int>] [-Gpu <int>] [-ApiEndpoint <string>] [-ApiKey <string>] [-TimeoutSeconds <int>] [-PreferencesDatabasePath <string>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-MarkupBlocksTypeFilter <string[]>] [-TTLSeconds <int>] [-Monitor <int>] [-Width <int>] [-Height <int>] [-X <int>] [-Y <int>] [-KeysToSend <string[]>] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-ShowWindow] [-Force] [-Speak] [-SpeakThoughts] [-OutputMarkdownBlocksOnly] [-ChatOnce] [-NoSessionCaching] [-SessionOnly] [-ClearSession] [-SkipSession] [-NoLMStudioInitialize] [-Unload] [-NoBorders] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <int>] [-NoConfirmationToolFunctionNames <string[]>] [-MaxToolcallBackLength <int>] [-AudioTemperature <Object>] [-TemperatureResponse <Object>] [-Language <Object>] [-CpuThreads <Object>] [-SuppressRegex <Object>] [-AudioContextSize <Object>] [-SilenceThreshold <Object>] [-LengthPenalty <Object>] [-EntropyThreshold <Object>] [-LogProbThreshold <Object>] [-NoSpeechThreshold <Object>] [-DontSpeak <Object>] [-DontSpeakThoughts <Object>] [-NoVOX <Object>] [-UseDesktopAudioCapture <Object>] [-NoContext <Object>] [-WithBeamSearchSamplingStrategy <Object>] [-OnlyResponses <Object>] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 PARAMETERS
@@ -3945,6 +6696,50 @@ PARAMETERS
         
         Required?                    false
         Position?                    2
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Object>
+        Audio context size for processing
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Object>
+        Temperature for audio generation
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Bottom
+        Place window on the bottom side of the screen
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Centered
+        Place window in the center of the screen
+        
+        Required?                    false
+        Position?                    Named
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      None
@@ -4005,8 +6800,52 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -CpuThreads <Object>
+        Number of CPU threads to use
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -DontAddThoughtsToHistory
         Include model's thoughts in output
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -DontSpeak <Object>
+        Disable speech output
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts <Object>
+        Disable speech output for thoughts
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Object>
+        Entropy threshold for output filtering
         
         Required?                    false
         Position?                    Named
@@ -4027,6 +6866,17 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -FocusWindow
+        Focus the window after opening
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      fw, focus
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -Force
         Force stop LM Studio before initialization
         
@@ -4038,8 +6888,30 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -FullScreen
+        Sends F11 to the window
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      fs
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -Gpu <int>
         How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max', all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Height <int>
+        The initial height of the window
         
         Required?                    false
         Position?                    Named
@@ -4093,8 +6965,63 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -KeysToSend <string[]>
+        Keystrokes to send to the Window, see documentation for cmdlet GenXdev.Windows\Send-Key
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -LLMQueryType <string>
         The type of LLM query
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Language <Object>
+        Language for the model or output
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Left
+        Place window on the left side of the screen
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Object>
+        Length penalty for sequence generation
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Object>
+        Log probability threshold for output filtering
         
         Required?                    false
         Position?                    Named
@@ -4126,8 +7053,85 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -MaxToolcallBackLength <int>
+        Maximum length for tool callback responses
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Maximize
+        Maximize the window after positioning
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -Model <string>
         The model identifier or pattern to use for AI operations
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Monitor <int>
+        The monitor to use, 0 = default, -1 is discard
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      m, mon
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoBorders
+        Removes the borders of the window
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      nb
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <string[]>
+        Names of tool functions that should not require confirmation
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      NoConfirmationFor
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoContext <Object>
+        Disable context usage
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize
+        Skip LM-Studio initialization (used when already called by parent function)
         
         Required?                    false
         Position?                    Named
@@ -4148,7 +7152,40 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
-    -OutputMarkupBlocksOnly
+    -NoSpeechThreshold <Object>
+        No speech threshold for audio detection
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoVOX <Object>
+        Disable VOX (voice activation)
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -OnlyResponses <Object>
+        Return only responses
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly
         Will only output markup block responses
         
         Required?                    false
@@ -4166,7 +7203,7 @@ PARAMETERS
         Position?                    Named
         Accept pipeline input?       false
         Parameter set name           (All)
-        Aliases                      None
+        Aliases                      DatabasePath
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -4192,6 +7229,72 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -RestoreFocus
+        Restore PowerShell window focus
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      rf, bg
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Right
+        Place window on the right side of the screen
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <int>
+        Delay between different input strings in milliseconds when sending keys
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      DelayMilliSeconds
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape
+        Escape control characters and modifiers when sending keys
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      Escape
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus
+        Hold keyboard focus on target window when sending keys
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      HoldKeyboardFocus
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter
+        Use Shift+Enter instead of Enter when sending keys
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      UseShiftEnter
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -SessionOnly
         Use alternative settings stored in session for AI preferences
         
@@ -4203,8 +7306,41 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -SetForeground
+        Set the window to foreground after opening
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      fg
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -ShowWindow
         Show the LM Studio window
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SideBySide
+        Will either set the window fullscreen on a different monitor than Powershell, or side by side with Powershell on the same monitor
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      sbs
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Object>
+        Silence threshold for audio processing
         
         Required?                    false
         Position?                    Named
@@ -4247,8 +7383,41 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -SuppressRegex <Object>
+        Regular expression to suppress output
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <int>
+        Time-to-live in seconds for models loaded via API requests
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -Temperature <double>
         Temperature for response randomness (0.0-1.0)
+        
+        Required?                    false
+        Position?                    3
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Object>
+        Temperature for response generation
         
         Required?                    false
         Position?                    Named
@@ -4269,6 +7438,39 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -Top
+        Place window on the top side of the screen
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Unload
+        Unloads the specified model instead of loading it
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture <Object>
+        Use desktop audio capture
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -WhatIf
         
         Required?                    false
@@ -4276,6 +7478,50 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      wi
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Width <int>
+        The initial width of the window
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy <Object>
+        Use beam search sampling strategy
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -X <int>
+        The initial X position of the window
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Y <int>
+        The initial Y position of the window
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -4506,7 +7752,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > Set-AILLMSettings -LLMQueryType "SimpleIntelligence" -Model "*deepseek*8b*" -TimeoutSeconds 7200 -SessionOnly
+    PS > Set-AILLMSettings -LLMQueryType "SimpleIntelligence" -Model "maziyarpanahi/llama-3-groq-8b-tool-use" -TimeoutSeconds 7200 -SessionOnly
     
     Sets the LLM settings for SimpleIntelligence only for the current
     session.
@@ -4598,7 +7844,116 @@ OUTPUTS
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > Set-GenXdevAICommandNotFoundAction
-            ##############################################################################
+    
+    
+    
+    
+    
+    
+    
+RELATED LINKS 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
+    Start-GenXdevMCPServer
+    
+SYNOPSIS
+    Starts the GenXdev MCP server that exposes PowerShell cmdlets as tools.
+    
+    
+SYNTAX
+    Start-GenXdevMCPServer [[-Port] <Int32>] [[-ExposedCmdLets] <ExposedCmdletDefinition[]>] [[-NoConfirmationToolFunctionNames] <String[]>] [-StopExisting] [[-MaxOutputLength] <Int32>] [<CommonParameters>]
+    
+    
+DESCRIPTION
+    This function starts an HTTP server that implements the Model Context Protocol (MCP)
+    server pattern, exposing PowerShell cmdlets as callable tools. The server provides
+    endpoints for listing available tools and executing them, similar to the TypeScript
+    example but using PowerShell's ExposedCmdLets functionality.
+    
+
+PARAMETERS
+    -Port <Int32>
+        The port on which the server will listen. Default is 2175.
+        
+        Required?                    false
+        Position?                    1
+        Default value                2175
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        Array of PowerShell command definitions to expose as tools.
+        
+        Required?                    false
+        Position?                    2
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        Array of command names that can execute without user confirmation.
+        
+        Required?                    false
+        Position?                    3
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -StopExisting [<SwitchParameter>]
+        Stop any existing server running on the specified port.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxOutputLength <Int32>
+        Maximum length of tool output in characters. Output exceeding this length will be trimmed with a warning message. Default is 75000 characters (100KB).
+        
+        Required?                    false
+        Position?                    4
+        Default value                75000
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    <CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216). 
+    
+INPUTS
+    
+OUTPUTS
+    
+    -------------------------- EXAMPLE 1 --------------------------
+    
+    PS > Start-GenXdevMCPServer -Port 2175
+    
+    
+    
+    
+    
+    
+    -------------------------- EXAMPLE 2 --------------------------
+    
+    PS > $exposedCmdlets = @(
+        [GenXdev.Helpers.ExposedCmdletDefinition]@{
+            Name = "Get-Process"
+            Description = "Get running processes"
+            AllowedParams = @("Name", "Id")
+            Confirm = $false
+        }
+    )
+    Start-GenXdevMCPServer -Port 2175 -ExposedCmdLets $exposedCmdlets
     
     
     
@@ -4661,7 +8016,6 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > Test-DeepLinkImageFile "C:\Images\logo.png"
-            ##############################################################################
     
     
     
@@ -4846,7 +8200,6 @@ NOTES
         comparison.
         Example: curl -X POST -F "image1=@person1.jpg" -F "image2=@person2.jpg"
         http://localhost:5000/v1/vision/face/match
-                ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -4881,7 +8234,7 @@ SYNOPSIS
     
     
 SYNTAX
-    EnsureDeepStack [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-Force] [-UseGPU] [-ShowWindow] [<CommonParameters>]
+    EnsureDeepStack [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-Force] [-UseGPU] [-ShowWindow] [-Monitor <Int32>] [-NoBorders] [-Width <Int32>] [-Height <Int32>] [-Left] [-Right] [-Bottom] [-Centered] [-Fullscreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -4990,6 +8343,186 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -Monitor <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Fullscreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -5012,7 +8545,6 @@ NOTES
         - POST /v1/vision/face/delete : Remove registered face
         
         For more information, see: https://docs.deepstack.cc/face-recognition/
-                ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -5428,7 +8960,6 @@ NOTES
         potted plant, bed, dining table, toilet, tv, laptop, mouse, remote, keyboard,
         cell phone, microwave, oven, toaster, sink, refrigerator, book, clock, vase,
         scissors, teddy bear, hair drier, toothbrush.
-                ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -5865,7 +9396,6 @@ NOTES
     
     
         DeepStack API Documentation: POST /v1/vision/face/list endpoint
-                ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -6124,7 +9654,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Register-AllFaces [[-FacesDirectory] <String>] [[-MaxRetries] <Int32>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-NoDockerInitialize] [-Force] [-RenameFailed] [-ForceRebuild] [-UseGPU] [-ShowWindow] [<CommonParameters>]
+    Register-AllFaces [[-FacesDirectory] <String>] [[-MaxRetries] <Int32>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ImageName] <String>] [-NoDockerInitialize] [-Force] [-RenameFailed] [-ForceRebuild] [-UseGPU] [-ShowWindow] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -6277,6 +9807,42 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -6503,7 +10069,6 @@ OUTPUTS
     -------------------------- EXAMPLE 3 --------------------------
     
     PS > Register-Face -Identifier "JohnDoe" -ImagePath "C:\Users\YourName\faces\john.jpg"
-            ##############################################################################
     
     
     
@@ -6699,7 +10264,6 @@ OUTPUTS
     PS > unregall -Force
     
     Uses alias to remove all faces without confirmation.
-            ##############################################################################
     
     
     
@@ -6871,7 +10435,6 @@ NOTES
     
         DeepStack API Documentation: POST /v1/vision/face/delete endpoint
         This endpoint is used to remove a previously registered face from the system.
-                ##############################################################################
     
     -------------------------- EXAMPLE 1 --------------------------
     
@@ -6901,6 +10464,51 @@ RELATED LINKS
 &nbsp;<hr/>
 ###	GenXdev.AI.LMStudio<hr/> 
 NAME
+    Add-GenXdevMCPServerToLMStudio
+    
+SYNTAX
+    Add-GenXdevMCPServerToLMStudio [[-ServerName] <string>] [[-Url] <string>] 
+    
+    
+PARAMETERS
+    -ServerName <string>
+        
+        Required?                    false
+        Position?                    0
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Url <string>
+        
+        Required?                    false
+        Position?                    1
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    
+INPUTS
+    None
+    
+    
+OUTPUTS
+    System.Object
+    
+ALIASES
+    None
+    
+
+REMARKS
+    None 
+
+<br/><hr/><hr/><br/>
+ 
+NAME
     EnsureLMStudio
     
 SYNOPSIS
@@ -6908,7 +10516,7 @@ SYNOPSIS
     
     
 SYNTAX
-    EnsureLMStudio [[-Model] <String>] [[-HuggingFaceIdentifier] <String>] [[-MaxToken] <Int32>] [[-Cpu] <Int32>] [[-TTLSeconds] <Int32>] [[-TimeoutSeconds] <Int32>] [[-LLMQueryType] <String>] [[-PreferencesDatabasePath] <String>] [-ShowWindow] [-Force] [-Unload] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    EnsureLMStudio [[-Model] <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-TTLSeconds <Int32>] [-TimeoutSeconds <Int32>] [-LLMQueryType <String>] [-PreferencesDatabasePath <String>] [-Monitor <Int32>] [-ApiKey <String>] [-NoBorders] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-KeysToSend <String[]>] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [-ShowWindow] [-Force] [-Unload] [-SessionOnly] [-ClearSession] [-SkipSession] [-NoLMStudioInitialize] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -6932,7 +10540,7 @@ PARAMETERS
         The LM Studio specific model identifier.
         
         Required?                    false
-        Position?                    2
+        Position?                    named
         Default value                
         Accept pipeline input?       false
         Aliases                      
@@ -6942,7 +10550,7 @@ PARAMETERS
         The maximum number of tokens to use in AI operations.
         
         Required?                    false
-        Position?                    3
+        Position?                    named
         Default value                0
         Accept pipeline input?       false
         Aliases                      
@@ -6952,7 +10560,7 @@ PARAMETERS
         The number of CPU cores to dedicate to AI operations.
         
         Required?                    false
-        Position?                    4
+        Position?                    named
         Default value                0
         Accept pipeline input?       false
         Aliases                      
@@ -6962,7 +10570,7 @@ PARAMETERS
         The time-to-live in seconds for cached AI responses.
         
         Required?                    false
-        Position?                    5
+        Position?                    named
         Default value                0
         Accept pipeline input?       false
         Aliases                      
@@ -6972,7 +10580,7 @@ PARAMETERS
         The timeout in seconds for AI operations.
         
         Required?                    false
-        Position?                    6
+        Position?                    named
         Default value                0
         Accept pipeline input?       false
         Aliases                      
@@ -6982,7 +10590,7 @@ PARAMETERS
         The type of LLM query.
         
         Required?                    false
-        Position?                    7
+        Position?                    named
         Default value                SimpleIntelligence
         Accept pipeline input?       false
         Aliases                      
@@ -6992,8 +10600,235 @@ PARAMETERS
         Database path for preference data files.
         
         Required?                    false
-        Position?                    8
+        Position?                    named
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <Int32>
+        The monitor to use, 0 = default, -1 is discard.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        Removes the borders of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        The initial width of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        The initial height of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -X <Int32>
+        The initial X position of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Y <Int32>
+        The initial Y position of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        Place window on the left side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        Place window on the right side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Top [<SwitchParameter>]
+        Place window on the top side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        Place window on the bottom side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        Place window in the center of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        Maximize the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        Restore PowerShell window focus.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        Will either set the window fullscreen on a different monitor than Powershell, or
+        side by side with Powershell on the same monitor.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        Focus the window after opening.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        Set the window to foreground after opening.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        Maximize the window after positioning.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -KeysToSend <String[]>
+        Keystrokes to send to the Window, see documentation for cmdlet
+        GenXdev.Windows\Send-Key.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -7058,6 +10893,16 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -NoLMStudioInitialize [<SwitchParameter>]
+        Switch to skip LM-Studio initialization (used when already called by parent function).
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -7070,7 +10915,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > EnsureLMStudio -LMSQueryType "TextTranslate" -MaxToken 8192 -ShowWindow
+    PS > EnsureLMStudio -LLMQueryType "TextTranslation" -MaxToken 8192 -ShowWindow
     
     
     
@@ -7124,7 +10969,6 @@ OUTPUTS
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > Get-LMStudioLoadedModelList
-            ##############################################################################
     
     
     
@@ -7181,7 +11025,6 @@ OUTPUTS
     
     PS > Get-LMStudioModelList -Verbose
     Retrieves models while showing detailed progress information.
-            ##############################################################################
     
     
     
@@ -7230,7 +11073,6 @@ OUTPUTS
     
     PS > $paths = Get-LMStudioPaths
     Write-Output "LM Studio path: $($paths.LMStudioExe)"
-            ##############################################################################
     
     
     
@@ -7250,7 +11092,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-LMStudioTextEmbedding [-Text] <String[]> [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-TTLSeconds <Int32>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-LLMQueryType <String>] [-ShowWindow] [-Force] [-Unload] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-LMStudioTextEmbedding [-Text] <String[]> [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-TTLSeconds <Int32>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-LLMQueryType <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-KeysToSend <String[]>] [-ShowWindow] [-Force] [-Unload] [-NoBorders] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SessionOnly] [-ClearSession] [-SkipSession] [-NoLMStudioInitialize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -7350,8 +11192,69 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -Monitor <Int32>
+        The monitor to use, 0 = default, -1 is discard.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        The initial width of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        The initial height of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -X <Int32>
+        The initial X position of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Y <Int32>
+        The initial Y position of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -KeysToSend <String[]>
+        Keystrokes to send to the Window, see documentation for cmdlet
+        GenXdev.Windows\Send-Key.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -ShowWindow [<SwitchParameter>]
-        Shows the LM Studio window during processing.
+        Show the LM Studio window during processing.
         
         Required?                    false
         Position?                    named
@@ -7361,7 +11264,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Force [<SwitchParameter>]
-        Forces LM Studio restart before processing.
+        Force LM Studio restart before processing.
         
         Required?                    false
         Position?                    named
@@ -7371,7 +11274,128 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Unload [<SwitchParameter>]
-        Unloads the specified model instead of loading it.
+        Unload the specified model instead of loading it.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        Remove the borders of the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        Place window on the left side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        Place window on the right side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Top [<SwitchParameter>]
+        Place window on the top side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        Place window on the bottom side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        Place window in the center of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        Maximize the window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        Restore PowerShell window focus.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        Set the window fullscreen on a different monitor than Powershell, or side by
+        side with Powershell on the same monitor.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        Focus the window after opening.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        Set the window to foreground after opening.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        Maximize the window after positioning.
         
         Required?                    false
         Position?                    named
@@ -7406,6 +11430,52 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        Switch to skip LM-Studio initialization (used when already called by parent function).
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -7451,18 +11521,21 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-LMStudioWindow [[-LLMQueryType] <String>] [[-Model] <String>] [[-HuggingFaceIdentifier] <String>] [[-MaxToken] <Int32>] [[-Cpu] <Int32>] [[-TTLSeconds] <Int32>] [[-TimeoutSeconds] <Int32>] [[-PreferencesDatabasePath] <String>] [-Unload] [-ShowWindow] [-Force] [-NoAutoStart] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-LMStudioWindow [[-LLMQueryType] <String>] [[-Model] <String>] [[-HuggingFaceIdentifier] <String>] [[-MaxToken] <Int32>] [[-Cpu] <Int32>] [[-TTLSeconds] <Int32>] [[-TimeoutSeconds] <Int32>] [[-PreferencesDatabasePath] <String>] [-Unload] [-ShowWindow] [-Force] [-NoAutoStart] [-NoLMStudioInitialize] [[-Monitor] <Int32>] [-NoBorders] [[-Width] <Int32>] [[-Height] <Int32>] [[-X] <Int32>] [[-Y] <Int32>] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-PassThru] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [[-KeysToSend] <String[]>] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [[-SendKeyDelayMilliSeconds] <Int32>] [-SessionOnly] [-ClearSession] [-SkipSession] [[-ApiKey] <String>] [<CommonParameters>]
     
     
 DESCRIPTION
     Gets a window helper for the LM Studio application. If LM Studio is not running,
     it will be started automatically unless prevented by NoAutoStart switch.
-    The function handles process management and window positioning.
+    The function handles process management and window positioning, model loading,
+    and configuration. Provides comprehensive window manipulation capabilities
+    including positioning, sizing, focusing, and keyboard input automation.
     
 
 PARAMETERS
     -LLMQueryType <String>
-        The type of LLM query to use for AI operations.
+        The type of LLM query to use for AI operations. Valid values include
+        SimpleIntelligence, Knowledge, Pictures, TextTranslation, Coding, and ToolUse.
         
         Required?                    false
         Position?                    1
@@ -7482,7 +11555,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -HuggingFaceIdentifier <String>
-        The LM Studio specific model identifier.
+        The LM Studio specific model identifier for loading specific AI models.
         
         Required?                    false
         Position?                    3
@@ -7581,8 +11654,250 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <Int32>
+        The monitor to use, 0 = default, -1 is discard.
+        
+        Required?                    false
+        Position?                    9
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        Removes the borders of the LM Studio window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        The initial width of the LM Studio window.
+        
+        Required?                    false
+        Position?                    10
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        The initial height of the LM Studio window.
+        
+        Required?                    false
+        Position?                    11
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -X <Int32>
+        The initial X position of the LM Studio window.
+        
+        Required?                    false
+        Position?                    12
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Y <Int32>
+        The initial Y position of the LM Studio window.
+        
+        Required?                    false
+        Position?                    13
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        Place LM Studio window on the left side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        Place LM Studio window on the right side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Top [<SwitchParameter>]
+        Place LM Studio window on the top side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        Place LM Studio window on the bottom side of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        Place LM Studio window in the center of the screen.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        Maximize the LM Studio window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        Restore PowerShell window focus after positioning.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
+        Returns the window helper for each process.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        Will either set the LM Studio window fullscreen on a different monitor than
+        Powershell, or side by side with Powershell on the same monitor.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        Focus the LM Studio window after opening.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        Set the LM Studio window to foreground after opening.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        Maximize the LM Studio window after positioning.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -KeysToSend <String[]>
+        Keystrokes to send to the LM Studio Window, see documentation for cmdlet
+        GenXdev.Windows\Send-Key.
+        
+        Required?                    false
+        Position?                    14
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        Escape control characters and modifiers when sending keys to LM Studio window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        Hold keyboard focus on target LM Studio window when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        Use Shift+Enter instead of Enter when sending keys to LM Studio window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        Delay between different input strings in milliseconds when sending keys to
+        LM Studio window.
+        
+        Required?                    false
+        Position?                    15
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
-        Switch to use alternative settings stored in session for AI preferences.
+        Use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -7592,7 +11907,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
-        Switch to clear alternative settings stored in session for AI preferences.
+        Clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -7602,12 +11917,20 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
-        Switch to store settings only in persistent preferences without affecting
-        session.
+        Store settings only in persistent preferences without affecting session.
         
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        
+        Required?                    false
+        Position?                    16
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -7633,7 +11956,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > Get-LMStudioWindow "qwen2.5-14b-instruct" -TTLSeconds 3600
+    PS > lmstudiowindow "qwen2.5-14b-instruct" -TTLSeconds 3600
     
     
     
@@ -7653,7 +11976,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Initialize-LMStudioModel [-ShowWindow] [-Force] [-Unload] [[-LLMQueryType] <String>] [[-Model] <String>] [[-HuggingFaceIdentifier] <String>] [[-MaxToken] <Int32>] [[-Cpu] <Int32>] [[-Gpu] <Int32>] [[-TTLSeconds] <Int32>] [[-TimeoutSeconds] <Int32>] [-SessionOnly] [-ClearSession] [[-PreferencesDatabasePath] <String>] [-SkipSession] [<CommonParameters>]
+    Initialize-LMStudioModel [-Force] [-Unload] [[-LLMQueryType] <String>] [[-Model] <String>] [[-HuggingFaceIdentifier] <String>] [[-MaxToken] <Int32>] [[-Cpu] <Int32>] [[-TTLSeconds] <Int32>] [[-TimeoutSeconds] <Int32>] [[-PreferencesDatabasePath] <String>] [-ShowWindow] [[-Monitor] <Int32>] [-NoBorders] [[-Width] <Int32>] [[-Height] <Int32>] [[-X] <Int32>] [[-Y] <Int32>] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-PassThru] [-SideBySide] [-FocusWindow] [-SetForeground] [[-ApiKey] <String>] [-Maximize] [[-KeysToSend] <String[]>] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [[-SendKeyDelayMilliSeconds] <Int32>] [-SessionOnly] [-ClearSession] [-SkipSession] [-NoLMStudioInitialize] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -7662,18 +11985,8 @@ DESCRIPTION
     
 
 PARAMETERS
-    -ShowWindow [<SwitchParameter>]
-        Shows the LM Studio window during initialization.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Force [<SwitchParameter>]
-        Force stops LM Studio before initialization.
+        Switch to force stop LM Studio before initialization.
         
         Required?                    false
         Position?                    named
@@ -7683,7 +11996,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Unload [<SwitchParameter>]
-        Unloads the specified model instead of loading it.
+        Switch to unload the specified model instead of loading it.
         
         Required?                    false
         Position?                    named
@@ -7693,6 +12006,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -LLMQueryType <String>
+        The type of LLM query to use for AI operations.
         
         Required?                    false
         Position?                    1
@@ -7732,6 +12046,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Cpu <Int32>
+        The number of CPU cores to dedicate to AI operations.
         
         Required?                    false
         Position?                    5
@@ -7740,18 +12055,18 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Gpu <Int32>
-        GPU offloading level: -2=Auto, -1=LMStudio decides, 0=Off, 0-1=Layer fraction
+    -TTLSeconds <Int32>
+        Time-to-live in seconds for loaded models. -1 for no TTL.
         
         Required?                    false
         Position?                    6
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -TTLSeconds <Int32>
-        Time-to-live in seconds for loaded models. -1 for no TTL.
+    -TimeoutSeconds <Int32>
+        The timeout in seconds for AI operations.
         
         Required?                    false
         Position?                    7
@@ -7760,16 +12075,244 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -TimeoutSeconds <Int32>
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
         
         Required?                    false
         Position?                    8
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
+        Switch to show LM Studio window during initialization.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <Int32>
+        
+        Required?                    false
+        Position?                    9
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    10
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    11
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -X <Int32>
+        
+        Required?                    false
+        Position?                    12
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Y <Int32>
+        
+        Required?                    false
+        Position?                    13
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Top [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        
+        Required?                    false
+        Position?                    14
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -KeysToSend <String[]>
+        
+        Required?                    false
+        Position?                    15
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    16
         Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
     -SessionOnly [<SwitchParameter>]
+        Switch to use alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -7779,6 +12322,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ClearSession [<SwitchParameter>]
+        Switch to clear alternative settings stored in session for AI preferences.
         
         Required?                    false
         Position?                    named
@@ -7787,16 +12331,19 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -PreferencesDatabasePath <String>
+    -SkipSession [<SwitchParameter>]
+        Switch to store settings only in persistent preferences without affecting
+        session.
         
         Required?                    false
-        Position?                    9
-        Default value                
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -SkipSession [<SwitchParameter>]
+    -NoLMStudioInitialize [<SwitchParameter>]
+        Switch to skip LM-Studio initialization (used when already called by parent function).
         
         Required?                    false
         Position?                    named
@@ -7859,7 +12406,6 @@ OUTPUTS
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > Install-LMStudioApplication
-            ##############################################################################
     
     
     
@@ -7879,7 +12425,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Start-LMStudioApplication [[-ShowWindow]] [-Passthru] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Start-LMStudioApplication [-Passthru] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -7889,16 +12435,6 @@ DESCRIPTION
     
 
 PARAMETERS
-    -ShowWindow [<SwitchParameter>]
-        Determines if the LM Studio window should be visible after starting.
-        
-        Required?                    false
-        Position?                    1
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Passthru [<SwitchParameter>]
         When specified, returns the Process object of the LM Studio application.
         
@@ -7940,7 +12476,6 @@ OUTPUTS
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > Start-LMStudioApplication -ShowWindow -Passthru
-            ##############################################################################
     
     
     
@@ -7996,7 +12531,6 @@ OUTPUTS
     
     PS > tlms
     Uses the alias to check LMStudio installation status.
-            ##############################################################################
     
     
     
@@ -8049,7 +12583,6 @@ OUTPUTS
     -------------------------- EXAMPLE 1 --------------------------
     
     PS > [bool] $lmStudioRunning = Test-LMStudioProcess
-            ##############################################################################
     
     
     
@@ -8072,7 +12605,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Add-EmoticonsToText [[-Text] <String>] [[-Instructions] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Monitor <String>] [-Width <Int32>] [-Height <Int32>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-SendKeyDelayMilliSeconds <Int32>] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-NoLMStudioInitialize] [-Unload] [-NoBorders] [-Left] [-Right] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-MaxToolcallBackLength <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -8105,6 +12638,15 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -Attachments <String[]>
+        
+        Required?                    false
+        Position?                    3
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -Temperature <Double>
         Temperature for response randomness (0.0-1.0).
         
@@ -8115,12 +12657,48 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ImageDetail <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                low
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <Hashtable[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -LLMQueryType <String>
         The type of LLM query.
         
         Required?                    false
         Position?                    named
-        Default value                Knowledge
+        Default value                SimpleIntelligence
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -8145,16 +12723,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -MaxToken <Int32>
-        The maximum number of tokens to use in AI operations.
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Cpu <Int32>
         The number of CPU cores to dedicate to AI operations.
         
@@ -8173,7 +12741,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -8249,6 +12817,60 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Speak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSessionCaching [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AllowDefaultTools [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
         Use alternative settings stored in session for AI preferences.
         
@@ -8275,6 +12897,394 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -8453,7 +13463,7 @@ SYNOPSIS
     
     
 SYNTAX
-    ConvertFrom-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-SetClipboard] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
+    ConvertFrom-CorporateSpeak [[-Text] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Monitor <String>] [-Width <Int32>] [-Height <Int32>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-SendKeyDelayMilliSeconds <Int32>] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-NoLMStudioInitialize] [-Unload] [-NoBorders] [-Left] [-Right] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-MaxToolcallBackLength <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -8477,13 +13487,11 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Instructions <String>
-        Additional instructions to guide the AI model in converting the text.
-        These can help fine-tune the tone and style of the direct language.
+    -Attachments <String[]>
         
         Required?                    false
-        Position?                    2
-        Default value                
+        Position?                    3
+        Default value                @()
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -8493,7 +13501,43 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                0
+        Default value                0.2
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDetail <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                low
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <Hashtable[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -8503,7 +13547,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                Knowledge
+        Default value                SimpleIntelligence
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -8529,16 +13573,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -MaxToken <Int32>
-        Maximum tokens in response (-1 for default).
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Cpu <Int32>
         The number of CPU cores to dedicate to AI operations.
         
@@ -8555,7 +13589,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -8590,6 +13624,16 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SetClipboard [<SwitchParameter>]
         When specified, copies the transformed text back to the system clipboard.
         
@@ -8620,6 +13664,60 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Speak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSessionCaching [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AllowDefaultTools [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
         Use alternative settings stored in session for AI preferences.
         
@@ -8640,8 +13738,36 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -PreferencesDatabasePath <String>
-        Database path for preference data files.
+    -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        Maximum tokens in response (-1 for default).
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <String>
         
         Required?                    false
         Position?                    named
@@ -8650,12 +13776,362 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -SkipSession [<SwitchParameter>]
-        Store settings only in persistent preferences without affecting session.
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -8706,7 +14182,7 @@ SYNOPSIS
     
     
 SYNTAX
-    ConvertFrom-DiplomaticSpeak [[-Text] <String>] [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    ConvertFrom-DiplomaticSpeak [[-Text] <String>] [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [-Attachments <Object[]>] [-ImageDetail <String>] [-Functions <Object[]>] [-ExposedCmdLets <Object[]>] [-NoConfirmationToolFunctionNames <String[]>] [-DontAddThoughtsToHistory] [-ContinueLast] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-TTLSeconds <Int32>] [-Monitor] [-Width <Int32>] [-Height <Int32>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-CpuThreads <Int32>] [-SuppressRegex <String[]>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-SendKeyDelayMilliSeconds <Int32>] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-NoLMStudioInitialize] [-Unload] [-NoBorders] [-Left <Int32>] [-Bottom <Int32>] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-MaxToolcallBackLength <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -8915,6 +14391,456 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -Attachments <Object[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDetail <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <Object[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <Object[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSessionCaching [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AllowDefaultTools [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -8968,7 +14894,7 @@ SYNOPSIS
     
     
 SYNTAX
-    ConvertTo-CorporateSpeak [[-Text] <String>] [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    ConvertTo-CorporateSpeak [[-Text] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Monitor <String>] [-Width <Int32>] [-Height <Int32>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-SendKeyDelayMilliSeconds <Int32>] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-NoLMStudioInitialize] [-Unload] [-NoBorders] [-Left] [-Right] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-MaxToolcallBackLength <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -8991,13 +14917,11 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Instructions <String>
-        Additional instructions to guide the AI model in converting the text.
-        These can help fine-tune the tone and style of the corporate language.
+    -Attachments <String[]>
         
         Required?                    false
-        Position?                    2
-        Default value                
+        Position?                    3
+        Default value                @()
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9007,7 +14931,43 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                0
+        Default value                0.2
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDetail <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                low
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <Hashtable[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9017,7 +14977,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                Knowledge
+        Default value                SimpleIntelligence
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9042,16 +15002,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -MaxToken <Int32>
-        The maximum number of tokens to use in AI operations.
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Cpu <Int32>
         The number of CPU cores to dedicate to AI operations.
         
@@ -9070,7 +15020,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9145,6 +15095,60 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Speak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSessionCaching [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AllowDefaultTools [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
         Use alternative settings stored in session for AI preferences.
         
@@ -9171,6 +15175,394 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9218,7 +15610,7 @@ SYNOPSIS
     
     
 SYNTAX
-    ConvertTo-DiplomaticSpeak [[-Text] <String>] [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    ConvertTo-DiplomaticSpeak [[-Text] <String>] [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Monitor <String>] [-Width <Int32>] [-Height <Int32>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-SendKeyDelayMilliSeconds <Int32>] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-NoLMStudioInitialize] [-Unload] [-NoBorders] [-Left] [-Right] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-MaxToolcallBackLength <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -9240,12 +15632,11 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Instructions <String>
-        Additional instructions for the AI model.
+    -Attachments <String[]>
         
         Required?                    false
-        Position?                    2
-        Default value                
+        Position?                    3
+        Default value                @()
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9255,7 +15646,43 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                0
+        Default value                0.2
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDetail <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                low
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <Hashtable[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9265,7 +15692,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                Knowledge
+        Default value                SimpleIntelligence
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9290,16 +15717,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -MaxToken <Int32>
-        The maximum number of tokens to use in AI operations.
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Cpu <Int32>
         The number of CPU cores to dedicate to AI operations.
         
@@ -9318,7 +15735,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9393,6 +15810,60 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Speak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSessionCaching [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AllowDefaultTools [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
         Use alternative settings stored in session for AI preferences.
         
@@ -9419,6 +15890,394 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -9674,7 +16533,7 @@ NAME
     Find-Image
     
 SYNTAX
-    Find-Image [[-Any] <string[]>] [[-DatabaseFilePath] <string>] [-ImageDirectories <string[]>] [-PathLike <string[]>] [-Language {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bork, bork, bork! | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | Elmer Fudd | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Hacker | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Klingon | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Pirate | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [-FacesDirectory <string>] [-DescriptionSearch <string[]>] [-Keywords <string[]>] [-People <string[]>] [-Objects <string[]>] [-Scenes <string[]>] [-InputObject <Object[]>] [-PictureType <string[]>] [-StyleType <string[]>] [-OverallMood <string[]>] [-Title <string>] [-Description <string>] [-AcceptLang <string>] [-Monitor <int>] [-Width <int>] [-Height <int>] [-X <int>] [-Y <int>] [-PreferencesDatabasePath <string>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-ShowOnlyPictures] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Find-Image [[-Any] <string[]>] [[-DatabaseFilePath] <string>] [-ImageDirectories <string[]>] [-PathLike <string[]>] [-Language {Afrikaans | Akan | Albanian | Amharic | Arabic | Armenian | Azerbaijani | Basque | Belarusian | Bemba | Bengali | Bihari | Bork, bork, bork! | Bosnian | Breton | Bulgarian | Cambodian | Catalan | Cherokee | Chichewa | Chinese (Simplified) | Chinese (Traditional) | Corsican | Croatian | Czech | Danish | Dutch | Elmer Fudd | English | Esperanto | Estonian | Ewe | Faroese | Filipino | Finnish | French | Frisian | Ga | Galician | Georgian | German | Greek | Guarani | Gujarati | Hacker | Haitian Creole | Hausa | Hawaiian | Hebrew | Hindi | Hungarian | Icelandic | Igbo | Indonesian | Interlingua | Irish | Italian | Japanese | Javanese | Kannada | Kazakh | Kinyarwanda | Kirundi | Klingon | Kongo | Korean | Krio (Sierra Leone) | Kurdish | Kurdish (Soranî) | Kyrgyz | Laothian | Latin | Latvian | Lingala | Lithuanian | Lozi | Luganda | Luo | Macedonian | Malagasy | Malay | Malayalam | Maltese | Maori | Marathi | Mauritian Creole | Moldavian | Mongolian | Montenegrin | Nepali | Nigerian Pidgin | Northern Sotho | Norwegian | Norwegian (Nynorsk) | Occitan | Oriya | Oromo | Pashto | Persian | Pirate | Polish | Portuguese (Brazil) | Portuguese (Portugal) | Punjabi | Quechua | Romanian | Romansh | Runyakitara | Russian | Scots Gaelic | Serbian | Serbo-Croatian | Sesotho | Setswana | Seychellois Creole | Shona | Sindhi | Sinhalese | Slovak | Slovenian | Somali | Spanish | Spanish (Latin American) | Sundanese | Swahili | Swedish | Tajik | Tamil | Tatar | Telugu | Thai | Tigrinya | Tonga | Tshiluba | Tumbuka | Turkish | Turkmen | Twi | Uighur | Ukrainian | Urdu | Uzbek | Vietnamese | Welsh | Wolof | Xhosa | Yiddish | Yoruba | Zulu}] [-FacesDirectory <string>] [-DescriptionSearch <string[]>] [-Keywords <string[]>] [-People <string[]>] [-Objects <string[]>] [-Scenes <string[]>] [-InputObject <Object[]>] [-PictureType <string[]>] [-StyleType <string[]>] [-OverallMood <string[]>] [-Title <string>] [-Description <string>] [-AcceptLang <string>] [-KeysToSend <string[]>] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <int>] [-FocusWindow] [-SetForeground] [-Maximize] [-Monitor <int>] [-Width <int>] [-Height <int>] [-X <int>] [-Y <int>] [-PreferencesDatabasePath <string>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-NoBorders] [-SideBySide] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-ShowOnlyPictures] [-SessionOnly] [-ClearSession] [-SkipSession] [-AutoScrollPixelsPerSecond <int>] [-AutoAnimateRectangles] [-SingleColumnMode] [-ImageUrlPrefix <string>] [<CommonParameters>]
     
     
 PARAMETERS
@@ -9719,6 +16578,28 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      a, app, appmode
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -AutoAnimateRectangles
+        Animate rectangles (objects/faces) in visible range, cycling every 300ms
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -AutoScrollPixelsPerSecond <int>
+        Auto-scroll the page by this many pixels per second (null to disable)
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -9865,6 +16746,17 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -FocusWindow
+        Focus the browser window after opening
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      fw, focus
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -Force
         Force enable debugging port, stopping existing browsers if needed
         
@@ -9942,6 +16834,17 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -ImageUrlPrefix <string>
+        Prefix to prepend to each image path (e.g. for remote URLs)
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -InputObject <Object[]>
         Accepts search results from a previous -PassThru call to regenerate the view.
         
@@ -9961,6 +16864,17 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      i, editimages
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -KeysToSend <string[]>
+        Keystrokes to send to the Browser window, see documentation for cmdlet GenXdev.Windows\Send-Key
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -9988,6 +16902,17 @@ PARAMETERS
         
     -Left
         Place browser window on the left side of the screen
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Maximize
+        Maximize the window after positioning
         
         Required?                    false
         Position?                    Named
@@ -10027,6 +16952,17 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      nw, new
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoBorders
+        Remove window borders and title bar for a cleaner appearance
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      nb
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -10114,7 +17050,7 @@ PARAMETERS
         Position?                    Named
         Accept pipeline input?       false
         Parameter set name           (All)
-        Aliases                      None
+        Aliases                      pt
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -10158,7 +17094,7 @@ PARAMETERS
         Position?                    Named
         Accept pipeline input?       false
         Parameter set name           (All)
-        Aliases                      None
+        Aliases                      DatabasePath
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -10180,7 +17116,7 @@ PARAMETERS
         Position?                    Named
         Accept pipeline input?       false
         Parameter set name           (All)
-        Aliases                      bg
+        Aliases                      rf, bg
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -10206,6 +17142,50 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -SendKeyDelayMilliSeconds <int>
+        Delay between different input strings in milliseconds when sending keys
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      DelayMilliSeconds
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape
+        Escape control characters and modifiers when sending keys
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      Escape
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus
+        Prevent returning keyboard focus to PowerShell after sending keys
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      HoldKeyboardFocus
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter
+        Use Shift+Enter instead of Enter when sending keys
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      UseShiftEnter
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -SessionOnly
         Use alternative settings stored in session for AI preferences like Language, Image collections, etc
         
@@ -10214,6 +17194,17 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SetForeground
+        Set the browser window to foreground after opening
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      fg
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -10236,6 +17227,28 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      NoMetadata, OnlyPictures
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SideBySide
+        Place browser window side by side with PowerShell on the same monitor
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      sbs
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SingleColumnMode
+        Force single column layout (centered, 1/3 screen width)
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -10351,7 +17364,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Find-IndexedImage [[-Any] <String[]>] [-DatabaseFilePath <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-InputObject <Object[]>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-Title <String>] [-Description <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-ShowOnlyPictures] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
+    Find-IndexedImage [[-Any] <String[]>] [-DatabaseFilePath <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-InputObject <Object[]>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [-NoBorders] [-SideBySide] [-Title <String>] [-Description <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-ShowOnlyPictures] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-ShowWindow] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [-FocusWindow] [-SetForeground] [-Maximize] [-KeysToSend <String[]>] [-AutoScrollPixelsPerSecond <Int32>] [-AutoAnimateRectangles] [-SingleColumnMode] [-ImageUrlPrefix <String>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -10614,6 +17627,66 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SendKeyEscape [<SwitchParameter>]
+        Escape control characters and modifiers when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        Prevents returning keyboard focus to PowerShell after sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        Use Shift+Enter instead of Enter when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        Delay between different input strings in milliseconds when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        Remove window borders and title bar for a cleaner appearance.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        Place browser window side by side with PowerShell on the same monitor.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -Title <String>
         Title for the image gallery.
         
@@ -10649,7 +17722,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                0
+        Default value                -2
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -10784,8 +17857,7 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -FullScreen [<SwitchParameter>]
-        Open in fullscreen mode.
+    -ShowWindow [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -10943,6 +18015,82 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        Focus the browser window after opening.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        Set the browser window to foreground after opening.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        Maximize the browser window after positioning.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -KeysToSend <String[]>
+        Array of key combinations to send to the browser after opening (e.g., @('F11', 'Ctrl+Shift+I')).
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AutoScrollPixelsPerSecond <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AutoAnimateRectangles [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SingleColumnMode [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageUrlPrefix <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -11387,7 +18535,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-Fallacy [-Text] <String[]> [[-Instructions] <String>] [[-Attachments] <String[]>] [-Functions <Hashtable[]>] [-ImageDetail <String>] [-NoConfirmationToolFunctionNames <String[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-ContinueLast] [-Force] [-IncludeThoughts] [-NoSessionCaching] [-OpenInImdb] [-ShowWindow] [-Speak] [-SpeakThoughts] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-Fallacy [-Text] <String[]> [[-Instructions] <String>] [[-Attachments] <String[]>] [-Functions <Hashtable[]>] [-ImageDetail <String>] [-NoConfirmationToolFunctionNames <String[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-ContinueLast] [-Force] [-IncludeThoughts] [-NoSessionCaching] [-OpenInImdb] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-ShowWindow] [-Speak] [-SpeakThoughts] [-SessionOnly] [-ClearSession] [-SkipSession] [-TTLSeconds <Int32>] [-Monitor <String>] [-Width <Int32>] [-Height <Int32>] [-SendKeyDelayMilliSeconds <Int32>] [-DontAddThoughtsToHistory] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-NoLMStudioInitialize] [-Unload] [-NoBorders] [-Left <Int32>] [-Right <Int32>] [-Bottom <Int32>] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-MaxToolcallBackLength <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -11645,6 +18793,159 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -ShowWindow [<SwitchParameter>]
         Switch to display the LM Studio window during processing for monitoring
         purposes.
@@ -11703,6 +19004,231 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -12140,7 +19666,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-WithTokenTimestamps] [-TokenTimestampsSumThreshold <Single>] [-SplitOnWord] [-MaxTokensPerSegment <Int32>] [-IgnoreSilence] [-MaxDurationOfSilence <Object>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] [-TemperatureInc <Single>] [-Prompt <String>] [-SuppressRegex <String>] [-WithProgress] [-AudioContextSize <Int32>] [-DontSuppressBlank] [-MaxDuration <Object>] [-Offset <Object>] [-MaxLastTextTokens <Int32>] [-SingleSegmentOnly] [-PrintSpecialTokens] [-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <Object>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-NoContext] [-WithBeamSearchSamplingStrategy] [-SRT] [-PassThru] [-UseDesktopAudioCapture] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [<CommonParameters>]
+    Get-MediaFileAudioTranscription [-FilePath] <String> [[-LanguageIn] <String>] [[-LanguageOut] <String>] [-TokenTimestampsSumThreshold <Single>] [-MaxTokensPerSegment <Int32>] [-MaxDurationOfSilence <Object>] [-SilenceThreshold <Int32>] [-CpuThreads <Int32>] [-Temperature <Single>] [-TemperatureInc <Single>] [-Prompt <String>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-MaxDuration <Object>] [-Offset <Object>] [-MaxLastTextTokens <Int32>] [-MaxSegmentLength <Int32>] [-MaxInitialTimestamp <Object>] [-LengthPenalty <Single>] [-EntropyThreshold <Single>] [-LogProbThreshold <Single>] [-NoSpeechThreshold <Single>] [-PreferencesDatabasePath <String>] [-WithTokenTimestamps] [-SplitOnWord] [-IgnoreSilence] [-WithProgress] [-DontSuppressBlank] [-SingleSegmentOnly] [-PrintSpecialTokens] [-NoContext] [-WithBeamSearchSamplingStrategy] [-SRT] [-PassThru] [-UseDesktopAudioCapture] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -12182,16 +19708,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -WithTokenTimestamps [<SwitchParameter>]
-        Whether to include token timestamps in the output.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -TokenTimestampsSumThreshold <Single>
         Sum threshold for token timestamps, defaults to 0.5.
         
@@ -12202,32 +19718,12 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -SplitOnWord [<SwitchParameter>]
-        Whether to split on word boundaries.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -MaxTokensPerSegment <Int32>
         Maximum number of tokens per segment.
         
         Required?                    false
         Position?                    named
         Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -IgnoreSilence [<SwitchParameter>]
-        Whether to ignore silence (will mess up timestamps).
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -12302,32 +19798,12 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -WithProgress [<SwitchParameter>]
-        Whether to show progress.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -AudioContextSize <Int32>
         Size of the audio context.
         
         Required?                    false
         Position?                    named
         Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -DontSuppressBlank [<SwitchParameter>]
-        Whether to NOT suppress blank lines.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -12358,26 +19834,6 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -SingleSegmentOnly [<SwitchParameter>]
-        Whether to use single segment only.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -PrintSpecialTokens [<SwitchParameter>]
-        Whether to print special tokens.
-        
-        Required?                    false
-        Position?                    named
-        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -12438,6 +19894,86 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithTokenTimestamps [<SwitchParameter>]
+        Whether to include token timestamps in the output.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SplitOnWord [<SwitchParameter>]
+        Whether to split on word boundaries.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -IgnoreSilence [<SwitchParameter>]
+        Whether to ignore silence (will mess up timestamps).
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithProgress [<SwitchParameter>]
+        Whether to show progress.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSuppressBlank [<SwitchParameter>]
+        Whether to NOT suppress blank lines.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SingleSegmentOnly [<SwitchParameter>]
+        Whether to use single segment only.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PrintSpecialTokens [<SwitchParameter>]
+        Whether to print special tokens.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -12514,16 +20050,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -PreferencesDatabasePath <String>
-        Database path for preference data files.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -SkipSession [<SwitchParameter>]
         Dont use alternative settings stored in session for AI preferences like
         Language, Image collections, etc.
@@ -12574,7 +20100,7 @@ NAME
     Get-ScriptExecutionErrorFixPrompt
     
 SYNTAX
-    Get-ScriptExecutionErrorFixPrompt [-Script] <scriptblock> [-Temperature <double>] [-LLMQueryType {SimpleIntelligence | Knowledge | Pictures | TextTranslation | Coding | ToolUse}] [-Model <string>] [-HuggingFaceIdentifier <string>] [-MaxToken <int>] [-Cpu <int>] [-Gpu <int>] [-ApiEndpoint <string>] [-ApiKey <string>] [-TimeoutSeconds <int>] [-PreferencesDatabasePath <string>] [-Functions <hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <string[]>] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-ScriptExecutionErrorFixPrompt [-Script] <scriptblock> [-Temperature <double>] [-LLMQueryType {SimpleIntelligence | Knowledge | Pictures | TextTranslation | Coding | ToolUse}] [-Model <string>] [-HuggingFaceIdentifier <string>] [-MaxToken <int>] [-Cpu <int>] [-Gpu <int>] [-ApiEndpoint <string>] [-ApiKey <string>] [-TimeoutSeconds <int>] [-PreferencesDatabasePath <string>] [-Functions <hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <string[]>] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-SessionOnly] [-ClearSession] [-SkipSession] [-Attachments <Object>] [-ImageDetail <Object>] [-TTLSeconds <Object>] [-Monitor <Object>] [-Width <Object>] [-Height <Object>] [-SendKeyDelayMilliSeconds <Object>] [-IncludeThoughts <Object>] [-OutputMarkdownBlocksOnly <Object>] [-MarkupBlocksTypeFilter <Object>] [-ChatOnce <Object>] [-NoLMStudioInitialize <Object>] [-Unload <Object>] [-NoBorders <Object>] [-Left <Object>] [-Right <Object>] [-Bottom <Object>] [-Centered <Object>] [-FullScreen <Object>] [-RestoreFocus <Object>] [-SideBySide <Object>] [-FocusWindow <Object>] [-SetForeground <Object>] [-Maximize <Object>] [-SendKeyEscape <Object>] [-SendKeyHoldKeyboardFocus <Object>] [-SendKeyUseShiftEnter <Object>] [-MaxToolcallBackLength <Object>] [-AudioTemperature <Object>] [-TemperatureResponse <Object>] [-Language <Object>] [-CpuThreads <Object>] [-SuppressRegex <Object>] [-AudioContextSize <Object>] [-SilenceThreshold <Object>] [-LengthPenalty <Object>] [-EntropyThreshold <Object>] [-LogProbThreshold <Object>] [-NoSpeechThreshold <Object>] [-DontSpeak <Object>] [-DontSpeakThoughts <Object>] [-NoVOX <Object>] [-UseDesktopAudioCapture <Object>] [-NoContext <Object>] [-WithBeamSearchSamplingStrategy <Object>] [-OnlyResponses <Object>] [<CommonParameters>]
     
     
 PARAMETERS
@@ -12591,6 +20117,72 @@ PARAMETERS
         
     -ApiKey <string>
         The API key for authenticated AI operations
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Attachments <Object>
+        Attachments to include in the LLM query.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Object>
+        Audio context size for LLM query.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Object>
+        Temperature for audio generation.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Bottom <Object>
+        Set window position: bottom.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Centered <Object>
+        Center the window.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -ChatOnce <Object>
+        Run chat only once for the LLM query.
         
         Required?                    false
         Position?                    Named
@@ -12633,8 +20225,52 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -CpuThreads <Object>
+        Number of CPU threads to use.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -DontAddThoughtsToHistory
         Include model's thoughts in output
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -DontSpeak <Object>
+        Do not speak audio output.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts <Object>
+        Do not speak model thoughts.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Object>
+        Entropy threshold for LLM output.
         
         Required?                    false
         Position?                    Named
@@ -12655,6 +20291,17 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -FocusWindow <Object>
+        Focus the LLM Studio window.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      fw, focus
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -Force
         Force stop LM Studio before initialization
         
@@ -12663,6 +20310,17 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -FullScreen <Object>
+        Set window to fullscreen.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      fs
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -12688,6 +20346,17 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -Height <Object>
+        Height of the LLM Studio window.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -HuggingFaceIdentifier <string>
         The LM Studio specific model identifier
         
@@ -12699,8 +20368,85 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -ImageDetail <Object>
+        Level of image detail for LLM query.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -IncludeThoughts <Object>
+        Include model thoughts in the LLM response.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -LLMQueryType <string>
         The type of LLM query
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Language <Object>
+        Language for LLM query.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Left <Object>
+        Set window position: left.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Object>
+        Length penalty for LLM output.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Object>
+        Log probability threshold for LLM output.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <Object>
+        Filter for markup block types in the LLM response.
         
         Required?                    false
         Position?                    Named
@@ -12721,6 +20467,28 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -MaxToolcallBackLength <Object>
+        Maximum tool call back length for LLM query.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Maximize <Object>
+        Maximize the LLM Studio window.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -Model <string>
         The model identifier or pattern to use for AI operations
         
@@ -12729,6 +20497,28 @@ PARAMETERS
         Accept pipeline input?       false
         Parameter set name           (All)
         Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Monitor <Object>
+        Monitor to use for LLM Studio window.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      m, mon
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoBorders <Object>
+        Do not show window borders.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      nb
         Dynamic?                     false
         Accept wildcard characters?  false
         
@@ -12743,6 +20533,28 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -NoContext <Object>
+        Do not use context for LLM query.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize <Object>
+        Do not initialize LM Studio.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -NoSessionCaching
         Don't store session in session cache
         
@@ -12754,8 +20566,74 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -NoSpeechThreshold <Object>
+        No speech threshold for audio processing.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -NoVOX <Object>
+        Disable VOX for audio output.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -OnlyResponses <Object>
+        Return only responses from LLM.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly <Object>
+        Output only markup blocks from the LLM response.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -PreferencesDatabasePath <string>
         Database path for preference data files
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      DatabasePath
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -RestoreFocus <Object>
+        Restore focus to previous window.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      rf, bg
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Right <Object>
+        Set window position: right.
         
         Required?                    false
         Position?                    Named
@@ -12776,6 +20654,50 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -SendKeyDelayMilliSeconds <Object>
+        Delay in milliseconds between sending keys.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      DelayMilliSeconds
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape <Object>
+        Send Escape key to LLM Studio.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      Escape
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus <Object>
+        Hold keyboard focus when sending keys.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      HoldKeyboardFocus
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter <Object>
+        Use Shift+Enter when sending keys.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      UseShiftEnter
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -SessionOnly
         Use alternative settings stored in session for AI preferences
         
@@ -12787,8 +20709,41 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -SetForeground <Object>
+        Set LLM Studio window to foreground.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      fg
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -ShowWindow
         Show the LM Studio window
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SideBySide <Object>
+        Show LLM Studio and script side by side.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      sbs
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Object>
+        Silence threshold for audio processing.
         
         Required?                    false
         Position?                    Named
@@ -12831,6 +20786,28 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -SuppressRegex <Object>
+        Regular expression to suppress output.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Object>
+        Time-to-live in seconds for the LLM query.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -Temperature <double>
         Temperature for response randomness (0.0-1.0)
         
@@ -12842,8 +20819,63 @@ PARAMETERS
         Dynamic?                     false
         Accept wildcard characters?  false
         
+    -TemperatureResponse <Object>
+        Temperature for response generation.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
     -TimeoutSeconds <int>
         The timeout in seconds for AI operations
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Unload <Object>
+        Unload LM Studio after operation.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture <Object>
+        Use desktop audio capture.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -Width <Object>
+        Width of the LLM Studio window.
+        
+        Required?                    false
+        Position?                    Named
+        Accept pipeline input?       false
+        Parameter set name           (All)
+        Aliases                      None
+        Dynamic?                     false
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy <Object>
+        Use beam search sampling strategy.
         
         Required?                    false
         Position?                    Named
@@ -12885,7 +20917,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Get-SimularMovieTitles [-Movies] <String[]> [[-LLMQueryType] <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-Temperature <Double>] [-OpenInImdb] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Get-SimularMovieTitles [-Movies] <String[]> [[-LLMQueryType] <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-Temperature <Double>] [-OpenInImdb] [-ShowWindow] [-Language <String>] [-Monitor <String>] [-Width <Int32>] [-Height <Int32>] [-AcceptLang <String>] [-Private] [-Chrome] [-Chromium] [-Firefox] [-Left <Int32>] [-Right <Int32>] [-Bottom <Int32>] [-Centered] [-FullScreen] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-FocusWindow] [-SetForeground] [-Maximize] [-RestoreFocus] [-NewWindow] [-ReturnURL] [-ReturnOnlyURL] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [-NoBorders] [-SideBySide] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [-Instructions <String>] [-Attachments <String[]>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-SetClipboard] [-IncludeThoughts] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-TTLSeconds <Int32>] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-NoLMStudioInitialize] [-Unload] [-MaxToolcallBackLength <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -13038,6 +21070,276 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AcceptLang <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Private [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chrome [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chromium [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Firefox [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApplicationMode [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBrowserExtensions [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DisablePopupBlocker [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NewWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ReturnURL [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ReturnOnlyURL [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -Force [<SwitchParameter>]
         Force stop LM Studio before initialization.
         
@@ -13074,6 +21376,339 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Instructions <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Attachments <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDetail <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <Hashtable[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetClipboard [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -IncludeThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Speak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSessionCaching [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AllowDefaultTools [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13119,7 +21754,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-AIPowershellCommand [-Query] <String> [[-Instructions] <String>] [-Temperature <Double>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-Clipboard] [-ShowWindow] [-Force] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Invoke-AIPowershellCommand [-Query] <String> [[-Attachments] <String[]>] [-Temperature <Double>] [-ImageDetail <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-SetClipboard] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-AllowDefaultTools] [-SessionOnly] [-ClearSession] [-SkipSession] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-Monitor <String>] [-Width <Int32>] [-Height <Int32>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-SendKeyDelayMilliSeconds <Int32>] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-NoLMStudioInitialize] [-Unload] [-NoBorders] [-Left] [-Right] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-MaxToolcallBackLength <Int32>] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -13142,13 +21777,11 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Instructions <String>
-        Additional instructions for the AI model to customize command generation
-        behavior and provide context-specific guidance.
+    -Attachments <String[]>
         
         Required?                    false
-        Position?                    2
-        Default value                
+        Position?                    3
+        Default value                @()
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13164,13 +21797,49 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ImageDetail <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                low
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <Hashtable[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <ExposedCmdletDefinition[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                @()
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -LLMQueryType <String>
         The type of LLM query to perform. Determines the AI model's behavior and
         response style for different use cases.
         
         Required?                    false
         Position?                    named
-        Default value                Coding
+        Default value                SimpleIntelligence
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13196,17 +21865,6 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -MaxToken <Int32>
-        The maximum number of tokens to use in AI operations to control response
-        length and processing time.
-        
-        Required?                    false
-        Position?                    named
-        Default value                0
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
     -Cpu <Int32>
         The number of CPU cores to dedicate to AI operations for performance
         optimization.
@@ -13226,7 +21884,7 @@ PARAMETERS
         
         Required?                    false
         Position?                    named
-        Default value                -1
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13271,9 +21929,7 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -Clipboard [<SwitchParameter>]
-        When specified, copies the generated command to clipboard instead of
-        executing it directly.
+    -SetClipboard [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -13295,6 +21951,60 @@ PARAMETERS
         
     -Force [<SwitchParameter>]
         Force stop LM Studio before initialization to ensure clean startup state.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Speak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSessionCaching [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AllowDefaultTools [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -13332,6 +22042,402 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        The maximum number of tokens to use in AI operations to control response
+        length and processing time.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        Delay between different input strings in milliseconds when sending keys to
+        the PowerShell window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        Escape control characters and modifiers when sending keys to the PowerShell
+        window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        Hold keyboard focus on target window when sending keys to the PowerShell
+        window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        Use Shift+Enter instead of Enter when sending keys to the PowerShell window.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13406,7 +22512,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageFacesUpdate [[-ImageDirectories] <String>] [[-ImageName] <String>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [<CommonParameters>]
+    Invoke-ImageFacesUpdate [[-ImageDirectories] <String>] [-Recurse] [-OnlyNew] [-RetryFailed] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-ConfidenceThreshold <Double>] [-Language <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSecond <Int32>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-FacesDirectory <String>] [-PreferencesDatabasePath <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [-PassThru] [-AutoUpdateFaces] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -13424,67 +22530,6 @@ PARAMETERS
         Required?                    false
         Position?                    1
         Default value                .\
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ImageName <String>
-        Custom Docker image name to use instead of the default DeepStack image.
-        
-        Required?                    false
-        Position?                    2
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ContainerName <String>
-        The name for the Docker container. Default is "deepstack_face_recognition".
-        
-        Required?                    false
-        Position?                    3
-        Default value                deepstack_face_recognition
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -VolumeName <String>
-        The name for the Docker volume for persistent storage. Default is
-        "deepstack_face_data".
-        
-        Required?                    false
-        Position?                    4
-        Default value                deepstack_face_data
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ServicePort <Int32>
-        The port number for the DeepStack service. Default is 5000.
-        
-        Required?                    false
-        Position?                    6
-        Default value                5000
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HealthCheckTimeout <Int32>
-        Maximum time in seconds to wait for service health check. Default is 60.
-        
-        Required?                    false
-        Position?                    7
-        Default value                60
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HealthCheckInterval <Int32>
-        Interval in seconds between health check attempts. Default is 3.
-        
-        Required?                    false
-        Position?                    8
-        Default value                3
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13519,6 +22564,167 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -ContainerName <String>
+        The name for the Docker container. Default is "deepstack_face_recognition".
+        
+        Required?                    false
+        Position?                    named
+        Default value                deepstack_face_recognition
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -VolumeName <String>
+        The name for the Docker volume for persistent storage. Default is
+        "deepstack_face_data".
+        
+        Required?                    false
+        Position?                    named
+        Default value                deepstack_face_data
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ServicePort <Int32>
+        The port number for the DeepStack service. Default is 5000.
+        
+        Required?                    false
+        Position?                    named
+        Default value                5000
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckTimeout <Int32>
+        Maximum time in seconds to wait for service health check. Default is 60.
+        
+        Required?                    false
+        Position?                    named
+        Default value                60
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckInterval <Int32>
+        Interval in seconds between health check attempts. Default is 3.
+        
+        Required?                    false
+        Position?                    named
+        Default value                3
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageName <String>
+        Custom Docker image name to use instead of the default DeepStack image.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ConfidenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0.7
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                English
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       true (ByValue)
+        Aliases                      
+        Accept wildcard characters?  true
+        
+    -HuggingFaceIdentifier <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSecond <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        = 8192,
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesDirectory <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -NoDockerInitialize [<SwitchParameter>]
         Skip Docker initialization when this switch is used. Used when already called by
         parent function.
@@ -13543,6 +22749,60 @@ PARAMETERS
         
     -UseGPU [<SwitchParameter>]
         Use GPU-accelerated version when this switch is used. Requires an NVIDIA GPU.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AutoUpdateFaces [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -13593,7 +22853,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageKeywordUpdate [[-ImageDirectories] <String>] [-Language <String>] [-PreferencesDatabasePath <String>] [-Recurse] [-OnlyNew] [-RetryFailed] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Invoke-ImageKeywordUpdate [[-ImageDirectories] <String>] [-Recurse] [-OnlyNew] [-RetryFailed] [-Language <String>] [-FacesDirectory <String>] [[-Instructions] <String>] [-ResponseFormat <String>] [-Temperature <Double>] [-ImageDetail <String>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-ShowWindow] [-NoLMStudioInitialize] [-Force] [-IncludeThoughts] [-SessionOnly] [-ClearSession] [-SkipSession] [-Functions <String[]>] [-ExposedCmdLets <String[]>] [-NoConfirmationToolFunctionNames <String[]>] [-TTLSeconds <Int32>] [-Monitor <String>] [-Width <Int32>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-Height <Int32>] [-SendKeyDelayMilliSeconds <Int32>] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-ChatOnce] [-NoSessionCaching] [-Unload] [-NoBorders] [-Left] [-Right] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-MaxToolcallBackLength <Int32>] [-PassThru] [-AutoUpdateFaces] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -13611,27 +22871,6 @@ PARAMETERS
         Required?                    false
         Position?                    1
         Default value                .\
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -Language <String>
-        Specifies the language for generated descriptions and keywords. Defaults to
-        English.
-        
-        Required?                    false
-        Position?                    named
-        Default value                English
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -PreferencesDatabasePath <String>
-        Database path for preference data files.
-        
-        Required?                    false
-        Position?                    named
-        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13669,6 +22908,189 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -Language <String>
+        Specifies the language for generated descriptions and keywords. Defaults to
+        English.
+        
+        Required?                    false
+        Position?                    named
+        Default value                English
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesDirectory <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Instructions <String>
+        
+        Required?                    false
+        Position?                    3
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ResponseFormat <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Temperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0.2
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDetail <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                high
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LLMQueryType <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                Pictures
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Gpu <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        Database path for preference data files.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Force [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -IncludeThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -SessionOnly [<SwitchParameter>]
         Use alternative settings stored in session for AI preferences like Language,
         Image collections, etc.
@@ -13694,6 +23116,465 @@ PARAMETERS
     -SkipSession [<SwitchParameter>]
         Dont use alternative settings stored in session for AI preferences like
         Language, Image collections, etc.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Speak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ChatOnce [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSessionCaching [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AutoUpdateFaces [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -13743,7 +23624,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageObjectsUpdate [[-ImageDirectories] <String>] [[-ConfidenceThreshold] <Double>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [<CommonParameters>]
+    Invoke-ImageObjectsUpdate [[-ImageDirectories] <String>] [-Recurse] [-OnlyNew] [-RetryFailed] [-Language <String>] [-NoLMStudioInitialize] [-Force] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-TTLSeconds <Int32>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-ShowWindow] [-Monitor <Int32>] [-NoBorders] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-PassThru] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-KeysToSend <String[]>] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -13762,17 +23643,6 @@ PARAMETERS
         Required?                    false
         Position?                    1
         Default value                .\
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ConfidenceThreshold <Double>
-        Minimum confidence threshold (0.0-1.0) for object detection. Objects detected
-        with confidence below this threshold will be filtered out. Default is 0.5.
-        
-        Required?                    false
-        Position?                    2
-        Default value                0.5
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13810,9 +23680,16 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -NoDockerInitialize [<SwitchParameter>]
-        Skip Docker initialization when this switch is used. Used when already called
-        by parent function to avoid redundant container setup.
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                English
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -13832,9 +23709,79 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -UseGPU [<SwitchParameter>]
-        Use GPU-accelerated version when this switch is used. Requires an NVIDIA GPU
-        with appropriate drivers and CUDA support.
+    -LLMQueryType <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                SimpleIntelligence
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HuggingFaceIdentifier <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Cpu <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -13843,68 +23790,200 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -ContainerName <String>
-        The name for the Docker container running the object detection service.
-        Default is "deepstack_face_recognition".
+    -Monitor <Int32>
         
         Required?                    false
         Position?                    named
-        Default value                deepstack_face_recognition
+        Default value                -1
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -VolumeName <String>
-        The name for the Docker volume for persistent storage of detection models
-        and data. Default is "deepstack_face_data".
+    -NoBorders [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
-        Default value                deepstack_face_data
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -ServicePort <Int32>
-        The port number for the DeepStack service to listen on. Must be between
-        1 and 65535. Default is 5000.
+    -Width <Int32>
         
         Required?                    false
         Position?                    named
-        Default value                5000
+        Default value                -1
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -HealthCheckTimeout <Int32>
-        Maximum time in seconds to wait for service health check before timing out.
-        Must be between 10 and 300 seconds. Default is 60.
+    -Height <Int32>
         
         Required?                    false
         Position?                    named
-        Default value                60
+        Default value                -1
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -HealthCheckInterval <Int32>
-        Interval in seconds between health check attempts when waiting for service
-        startup. Must be between 1 and 10 seconds. Default is 3.
+    -X <Int32>
         
         Required?                    false
         Position?                    named
-        Default value                3
+        Default value                -1
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
         
-    -ImageName <String>
-        Custom Docker image name to use instead of the default DeepStack image.
-        Allows using alternative object detection models or configurations.
+    -Y <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                -1
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Top [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -KeysToSend <String[]>
         
         Required?                    false
         Position?                    named
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -13946,7 +24025,6 @@ OUTPUTS
     
     This example uses GPU acceleration with higher confidence threshold of 0.7
     for more accurate but fewer object detections.
-            ##############################################################################
     
     
     
@@ -13964,7 +24042,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-ImageScenesUpdate [[-ImageDirectories] <String>] [[-ImageName] <String>] [[-ContainerName] <String>] [[-VolumeName] <String>] [[-ServicePort] <Int32>] [[-HealthCheckTimeout] <Int32>] [[-HealthCheckInterval] <Int32>] [[-ConfidenceThreshold] <Double>] [-Recurse] [-OnlyNew] [-RetryFailed] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [<CommonParameters>]
+    Invoke-ImageScenesUpdate [[-ImageDirectories] <String>] [-Recurse] [-OnlyNew] [-RetryFailed] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-ConfidenceThreshold <Double>] [-Language <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSecond <Int32>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-FacesDirectory <String>] [-PreferencesDatabasePath <String>] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [-PassThru] [-AutoUpdateFaces] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -13983,81 +24061,6 @@ PARAMETERS
         Required?                    false
         Position?                    1
         Default value                .\
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ImageName <String>
-        Custom Docker image name to use instead of the default DeepStack image.
-        Allows using alternative scene classification models or configurations.
-        
-        Required?                    false
-        Position?                    2
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ContainerName <String>
-        The name for the Docker container running the scene classification service.
-        Default is "deepstack_face_recognition".
-        
-        Required?                    false
-        Position?                    3
-        Default value                deepstack_face_recognition
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -VolumeName <String>
-        The name for the Docker volume for persistent storage of classification models
-        and data. Default is "deepstack_face_data".
-        
-        Required?                    false
-        Position?                    4
-        Default value                deepstack_face_data
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ServicePort <Int32>
-        The port number for the DeepStack service to listen on. Must be between
-        1 and 65535. Default is 5000.
-        
-        Required?                    false
-        Position?                    5
-        Default value                5000
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HealthCheckTimeout <Int32>
-        Maximum time in seconds to wait for service health check before timing out.
-        Must be between 10 and 300 seconds. Default is 60.
-        
-        Required?                    false
-        Position?                    6
-        Default value                60
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -HealthCheckInterval <Int32>
-        Interval in seconds between health check attempts when waiting for service
-        startup. Must be between 1 and 10 seconds. Default is 3.
-        
-        Required?                    false
-        Position?                    7
-        Default value                3
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ConfidenceThreshold <Double>
-        
-        Required?                    false
-        Position?                    8
-        Default value                0.6
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -14091,6 +24094,172 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContainerName <String>
+        The name for the Docker container running the scene classification service.
+        Default is "deepstack_face_recognition".
+        
+        Required?                    false
+        Position?                    named
+        Default value                deepstack_face_recognition
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -VolumeName <String>
+        The name for the Docker volume for persistent storage of classification models
+        and data. Default is "deepstack_face_data".
+        
+        Required?                    false
+        Position?                    named
+        Default value                deepstack_face_data
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ServicePort <Int32>
+        The port number for the DeepStack service to listen on. Must be between
+        1 and 65535. Default is 5000.
+        
+        Required?                    false
+        Position?                    named
+        Default value                5000
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckTimeout <Int32>
+        Maximum time in seconds to wait for service health check before timing out.
+        Must be between 10 and 300 seconds. Default is 60.
+        
+        Required?                    false
+        Position?                    named
+        Default value                60
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -HealthCheckInterval <Int32>
+        Interval in seconds between health check attempts when waiting for service
+        startup. Must be between 1 and 10 seconds. Default is 3.
+        
+        Required?                    false
+        Position?                    named
+        Default value                3
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageName <String>
+        Custom Docker image name to use instead of the default DeepStack image.
+        Allows using alternative scene classification models or configurations.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ConfidenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0.7
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                English
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Model <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       true (ByValue)
+        Aliases                      
+        Accept wildcard characters?  true
+        
+    -HuggingFaceIdentifier <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiEndpoint <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApiKey <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TimeoutSecond <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToken <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        = 8192,
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesDirectory <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PreferencesDatabasePath <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -14129,6 +24298,51 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AutoUpdateFaces [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
         
         Required?                    false
         Position?                    named
@@ -14206,7 +24420,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Instructions] <String>] [-ResponseFormat <String>] [-Temperature <Double>] [-ImageDetail <String>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-ShowWindow] [-Force] [-IncludeThoughts] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Invoke-QueryImageContent [-Query] <String> [-ImagePath] <String> [[-Instructions] <String>] [-ResponseFormat <String>] [-Temperature <Double>] [-ImageDetail <String>] [-LLMQueryType <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-ShowWindow] [-NoLMStudioInitialize] [-Force] [-IncludeThoughts] [-SessionOnly] [-ClearSession] [-SkipSession] [-Functions <String[]>] [-ExposedCmdLets <String[]>] [-NoConfirmationToolFunctionNames <String[]>] [-TTLSeconds <Int32>] [-Monitor <String>] [-Width <Int32>] [-AudioTemperature <Double>] [-TemperatureResponse <Double>] [-Language <String>] [-CpuThreads <Int32>] [-SuppressRegex <String>] [-AudioContextSize <Int32>] [-SilenceThreshold <Double>] [-LengthPenalty <Double>] [-EntropyThreshold <Double>] [-LogProbThreshold <Double>] [-NoSpeechThreshold <Double>] [-DontSpeak] [-DontSpeakThoughts] [-NoVOX] [-UseDesktopAudioCapture] [-NoContext] [-WithBeamSearchSamplingStrategy] [-OnlyResponses] [-Height <Int32>] [-SendKeyDelayMilliSeconds <Int32>] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-OutputMarkdownBlocksOnly] [-MarkupBlocksTypeFilter <String[]>] [-ChatOnce] [-NoSessionCaching] [-Unload] [-NoBorders] [-Left] [-Right] [-Bottom] [-Centered] [-FullScreen] [-RestoreFocus] [-SideBySide] [-FocusWindow] [-SetForeground] [-Maximize] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-MaxToolcallBackLength <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -14397,6 +24611,15 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -NoLMStudioInitialize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -Force [<SwitchParameter>]
         If specified, forces LM Studio to stop before initialization.
         
@@ -14443,6 +24666,456 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Functions <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ExposedCmdLets <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoConfirmationToolFunctionNames <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TTLSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Width <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioTemperature <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -TemperatureResponse <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Language <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                English
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -CpuThreads <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SuppressRegex <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AudioContextSize <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SilenceThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LengthPenalty <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EntropyThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -LogProbThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSpeechThreshold <Double>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontSpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoVOX [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -UseDesktopAudioCapture [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoContext [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -WithBeamSearchSamplingStrategy [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyResponses [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Height <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DontAddThoughtsToHistory [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ContinueLast [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Speak [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SpeakThoughts [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OutputMarkdownBlocksOnly [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MarkupBlocksTypeFilter <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ChatOnce [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoSessionCaching [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Unload [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FullScreen [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -MaxToolcallBackLength <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -15183,7 +25856,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Save-FoundImageObjects [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-DatabaseFilePath <String>] [-Title <String>] [-Description <String>] [-Language <String>] [-PathLike <String[]>] [-InputObject <Object[]>] [-OutputDirectory <String>] [-PreferencesDatabasePath <String>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ForceIndexRebuild] [-SaveUnknownPersons] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Save-FoundImageObjects [[-Any] <String[]>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-DatabaseFilePath <String>] [-Title <String>] [-Description <String>] [-Language <String>] [-PathLike <String[]>] [-InputObject <Object[]>] [-OutputDirectory <String>] [-PreferencesDatabasePath <String>] [-ImageDirectories <String[]>] [-FacesDirectory <String>] [-EmbedImages] [-NoFallback] [-NeverRebuild] [-ShowInBrowser] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [-NoBorders] [-SideBySide] [-AcceptLang <String>] [-Monitor <Int32>] [-ShowOnlyPictures] [-Interactive] [-Private] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-ShowWindow] [-Left <Int32>] [-Right <Int32>] [-Top <Int32>] [-Bottom <Int32>] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-FocusWindow] [-SetForeground] [-Maximize] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ForceIndexRebuild] [-SaveUnknownPersons] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -15361,6 +26034,330 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageDirectories <String[]>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FacesDirectory <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -EmbedImages [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoFallback [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NeverRebuild [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowInBrowser [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AcceptLang <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Monitor <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowOnlyPictures [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Interactive [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Private [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Edge [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chrome [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Chromium [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Firefox [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ShowWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Left <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Right <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Top <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Bottom <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Centered [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ApplicationMode [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBrowserExtensions [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -DisablePopupBlocker [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -RestoreFocus [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NewWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -OnlyReturnHtml [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -15941,7 +26938,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Set-AIMetaLanguage [[-Language] <String>] [[-ImageDirectories] <String[]>] [-PreferencesDatabasePath <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Set-AIMetaLanguage [[-Language] <String>] [-PreferencesDatabasePath <String>] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -15959,18 +26956,6 @@ PARAMETERS
         
         Required?                    false
         Position?                    1
-        Default value                
-        Accept pipeline input?       false
-        Aliases                      
-        Accept wildcard characters?  false
-        
-    -ImageDirectories <String[]>
-        An optional array of directory paths where image files are located. These
-        directories will be used by GenXdev.AI functions for image discovery and
-        processing operations if provided.
-        
-        Required?                    false
-        Position?                    2
         Default value                
         Accept pipeline input?       false
         Aliases                      
@@ -16243,7 +27228,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Show-FoundImagesInBrowser [[-InputObject] <Object[]>] [-Interactive] [-Title <String>] [-Description <String>] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-Monitor <Int32>] [-FullScreen] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-AcceptLang <String>] [-RestoreFocus] [-NoNewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ShowOnlyPictures] [<CommonParameters>]
+    Show-FoundImagesInBrowser [[-InputObject] <Object[]>] [-Interactive] [-Title <String>] [-Description <String>] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-Monitor <Int32>] [-FullScreen] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-AcceptLang <String>] [-KeysToSend <String[]>] [-FocusWindow] [-SetForeground] [-Maximize] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-EmbedImages] [-ShowOnlyPictures] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [-NoBorders] [-PassThru] [-SideBySide] [-SessionOnly] [-ClearSession] [-SkipSession] [-AutoScrollPixelsPerSecond <Int32>] [-AutoAnimateRectangles] [-SingleColumnMode] [-ImageUrlPrefix <String>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -16519,6 +27504,46 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -KeysToSend <String[]>
+        Send specified keys to the browser window after opening.
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -FocusWindow [<SwitchParameter>]
+        Focus the browser window after opening.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SetForeground [<SwitchParameter>]
+        Set the browser window to foreground after opening.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -Maximize [<SwitchParameter>]
+        Maximize the browser window after positioning.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     -RestoreFocus [<SwitchParameter>]
         Restore PowerShell window focus.
         
@@ -16529,8 +27554,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -NoNewWindow [<SwitchParameter>]
-        Re-use existing browser window, instead, create a new one.
+    -NewWindow [<SwitchParameter>]
+        Create a new browser window instead of reusing existing one.
         
         Required?                    false
         Position?                    named
@@ -16570,6 +27595,142 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
+    -SendKeyEscape [<SwitchParameter>]
+        Escape control characters and modifiers when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        Prevents returning keyboard focus to PowerShell after sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        Use Shift+Enter instead of Enter when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        Delay between different input strings in milliseconds when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoBorders [<SwitchParameter>]
+        Remove window borders and title bar for a cleaner appearance.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -PassThru [<SwitchParameter>]
+        Return the browser window helper object for further manipulation.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SideBySide [<SwitchParameter>]
+        Place browser window side by side with PowerShell on the same monitor.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SessionOnly [<SwitchParameter>]
+        Use alternative settings stored in session for AI preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ClearSession [<SwitchParameter>]
+        Clear alternative settings stored in session for AI preferences.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SkipSession [<SwitchParameter>]
+        Store settings only in persistent preferences without affecting session.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AutoScrollPixelsPerSecond <Int32>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -AutoAnimateRectangles [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SingleColumnMode [<SwitchParameter>]
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -ImageUrlPrefix <String>
+        
+        Required?                    false
+        Position?                    named
+        Default value                
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
     <CommonParameters>
         This cmdlet supports the common parameters: Verbose, Debug,
         ErrorAction, ErrorVariable, WarningAction, WarningVariable,
@@ -16582,7 +27743,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > $images | Show-FoundImagesInBrowser
+    PS > Show-FoundImagesInBrowser -InputObject $images
     Displays the image results in a simple web gallery.
     
     
@@ -16592,7 +27753,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS > $images | Show-FoundImagesInBrowser -Interactive -Title "My Photos"
+    PS > Show-FoundImagesInBrowser -InputObject $images -Interactive -Title "My Photos"
     Displays images in interactive mode with edit/delete buttons.
     
     
@@ -16604,7 +27765,6 @@ OUTPUTS
     
     PS > showfoundimages $images -Private -FullScreen
     Opens the gallery in private browsing mode in fullscreen.
-    ##############################################################################
     
     
     
@@ -16624,7 +27784,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Show-GenXdevScriptErrorFixInIde [-Script] <ScriptBlock> [-Temperature <Double>] [[-LLMQueryType] <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-SessionOnly] [-ClearSession] [-SkipSession] [<CommonParameters>]
+    Show-GenXdevScriptErrorFixInIde [-Script] <ScriptBlock> [-Temperature <Double>] [[-LLMQueryType] <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-MaxToken <Int32>] [-Cpu <Int32>] [-Gpu <Int32>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-PreferencesDatabasePath <String>] [-Functions <Hashtable[]>] [-ExposedCmdLets <ExposedCmdletDefinition[]>] [-NoConfirmationToolFunctionNames <String[]>] [-ShowWindow] [-Force] [-DontAddThoughtsToHistory] [-ContinueLast] [-Speak] [-SpeakThoughts] [-NoSessionCaching] [-SessionOnly] [-ClearSession] [-SkipSession] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -16885,6 +28045,46 @@ PARAMETERS
         Required?                    false
         Position?                    named
         Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyEscape [<SwitchParameter>]
+        Escape control characters and modifiers when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyHoldKeyboardFocus [<SwitchParameter>]
+        Hold keyboard focus on target window when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyUseShiftEnter [<SwitchParameter>]
+        Use Shift+Enter instead of Enter when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -SendKeyDelayMilliSeconds <Int32>
+        Delay between different input strings in milliseconds when sending keys.
+        
+        Required?                    false
+        Position?                    named
+        Default value                0
         Accept pipeline input?       false
         Aliases                      
         Accept wildcard characters?  false
@@ -17344,7 +28544,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -SkipSession [<SwitchParameter>]
-        Dont use alternative settings stored in session for AI preferences like
+        Don't use alternative settings stored in session for AI preferences like
         Language, Image collections, etc.
         
         Required?                    false
@@ -17415,7 +28615,7 @@ SYNOPSIS
     
     
 SYNTAX
-    Update-AllImageMetaData [[-ImageDirectories] <String[]>] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-ConfidenceThreshold <Double>] [-Language <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSecond <Int32>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-FacesDirectory <String>] [-PreferencesDatabasePath <String>] [-RetryFailed] [-NoRecurse] [-RedoAll] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [-PassThru] [-AutoUpdateFaces] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
+    Update-AllImageMetaData [[-ImageDirectories] <String[]>] [-ContainerName <String>] [-VolumeName <String>] [-ServicePort <Int32>] [-HealthCheckTimeout <Int32>] [-HealthCheckInterval <Int32>] [-ImageName <String>] [-ConfidenceThreshold <Double>] [-Language <String>] [-Model <String>] [-HuggingFaceIdentifier <String>] [-ApiEndpoint <String>] [-ApiKey <String>] [-TimeoutSeconds <Int32>] [-MaxToken <Int32>] [-TTLSeconds <Int32>] [-FacesDirectory <String>] [-PreferencesDatabasePath <String>] [-RetryFailed] [-NoRecurse] [-RedoAll] [-NoLMStudioInitialize] [-NoDockerInitialize] [-Force] [-UseGPU] [-ShowWindow] [-PassThru] [-AutoUpdateFaces] [-SessionOnly] [-ClearSession] [-SkipSession] [-WhatIf] [-Confirm] [<CommonParameters>]
     
     
 DESCRIPTION
@@ -17567,7 +28767,8 @@ PARAMETERS
         Aliases                      
         Accept wildcard characters?  false
         
-    -TimeoutSecond <Int32>
+    -TimeoutSeconds <Int32>
+        Timeout in seconds for the request, defaults to 24 hours.
         
         Required?                    false
         Position?                    named
@@ -17630,6 +28831,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -NoRecurse [<SwitchParameter>]
+        Dont't recurse into subdirectories when processing images.
         
         Required?                    false
         Position?                    named
@@ -17640,6 +28842,17 @@ PARAMETERS
         
     -RedoAll [<SwitchParameter>]
         Forces reprocessing of all images regardless of previous processing status.
+        
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Aliases                      
+        Accept wildcard characters?  false
+        
+    -NoLMStudioInitialize [<SwitchParameter>]
+        Skip LM-Studio initialization when already called by parent function to avoid
+        duplicate container setup.
         
         Required?                    false
         Position?                    named
@@ -17661,7 +28874,7 @@ PARAMETERS
         
     -Force [<SwitchParameter>]
         Force rebuild of Docker container and remove existing data for clean start.
-        And force restart of LMStudio
+        And force restart of LMStudio.
         
         Required?                    false
         Position?                    named

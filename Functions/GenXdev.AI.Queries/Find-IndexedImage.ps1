@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Searches for images using an optimized SQLite database with fast indexed lookups.
@@ -83,11 +83,38 @@ Show results in a browser gallery.
 .PARAMETER PassThru
 Return image data as objects.
 
+.PARAMETER SendKeyEscape
+Escape control characters and modifiers when sending keys.
+
+.PARAMETER SendKeyHoldKeyboardFocus
+Prevents returning keyboard focus to PowerShell after sending keys.
+
+.PARAMETER SendKeyUseShiftEnter
+Use Shift+Enter instead of Enter when sending keys.
+
+.PARAMETER SendKeyDelayMilliSeconds
+Delay between different input strings in milliseconds when sending keys.
+
+.PARAMETER NoBorders
+Remove window borders and title bar for a cleaner appearance.
+
+.PARAMETER SideBySide
+Place browser window side by side with PowerShell on the same monitor.
+
 .PARAMETER Title
 Title for the image gallery.
 
 .PARAMETER Description
 Description for the image gallery.
+
+.PARAMETER FocusWindow
+Focus the browser window after opening.
+
+.PARAMETER SetForeground
+Set the browser window to foreground after opening.
+
+.PARAMETER Maximize
+Maximize the browser window after positioning.
 
 .PARAMETER AcceptLang
 Browser accept-language header.
@@ -188,6 +215,15 @@ Database path for preference data files.
 Dont use alternative settings stored in session for AI preferences like
 Language, Image collections, etc.
 
+.PARAMETER FocusWindow
+Focus the browser window when opening.
+
+.PARAMETER SetForeground
+Bring browser window to foreground.
+
+.PARAMETER KeysToSend
+Array of key combinations to send to the browser after opening (e.g., @('F11', 'Ctrl+Shift+I')).
+
 .EXAMPLE
 Find-IndexedImage -Keywords "cat","dog" -ShowInBrowser -NoNudity
 
@@ -200,407 +236,518 @@ function Find-IndexedImage {
     [CmdletBinding()]
     [OutputType([Object[]], [System.Collections.Generic.List[Object]], [string])]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'fromInput')]
-    [Alias("findindexedimages", "lii")]
+    [Alias('findindexedimages', 'lii')]
 
     param(
         ###############################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
-            HelpMessage = "Will match any of all the possible meta data types."
+            HelpMessage = 'Will match any of all the possible meta data types.'
         )]
         [string[]] $Any = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("The path to the image database file. If not " +
-                        "specified, a default path is used.")
+            HelpMessage = ('The path to the image database file. If not ' +
+                'specified, a default path is used.')
         )]
         [string] $DatabaseFilePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Array of directory paths to search for images"
+            HelpMessage = 'Array of directory paths to search for images'
         )]
-        [ValidateNotNullOrEmpty()]
-        [Alias("imagespath", "directories", "imgdirs", "imagedirectory")]
-        [string[]] $ImageDirectories,
-        ###############################################################################
+        [Alias('imagespath', 'directories', 'imgdirs', 'imagedirectory')]
+        [string[]] $ImageDirectories,        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Array of directory path-like search strings to " +
-                        "filter images by path (SQL LIKE patterns, e.g. " +
-                        "'%\\2024\\%')")
+            HelpMessage = ('Array of directory path-like search strings to ' +
+                'filter images by path (SQL LIKE patterns, e.g. ' +
+                "'%\\2024\\%')")
         )]
         [string[]] $PathLike = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Language for descriptions and keywords."
+            HelpMessage = 'Language for descriptions and keywords.'
         )]
         [ValidateSet(
-            "Afrikaans", "Akan", "Albanian", "Amharic", "Arabic", "Armenian",
-            "Azerbaijani", "Basque", "Belarusian", "Bemba", "Bengali", "Bihari",
-            "Bork, bork, bork!", "Bosnian", "Breton", "Bulgarian", "Cambodian",
-            "Catalan", "Cherokee", "Chichewa", "Chinese (Simplified)",
-            "Chinese (Traditional)", "Corsican", "Croatian", "Czech", "Danish",
-            "Dutch", "Elmer Fudd", "English", "Esperanto", "Estonian", "Ewe",
-            "Faroese", "Filipino", "Finnish", "French", "Frisian", "Ga",
-            "Galician", "Georgian", "German", "Greek", "Guarani", "Gujarati",
-            "Hacker", "Haitian Creole", "Hausa", "Hawaiian", "Hebrew", "Hindi",
-            "Hungarian", "Icelandic", "Igbo", "Indonesian", "Interlingua",
-            "Irish", "Italian", "Japanese", "Javanese", "Kannada", "Kazakh",
-            "Kinyarwanda", "Kirundi", "Klingon", "Kongo", "Korean",
-            "Krio (Sierra Leone)", "Kurdish", "Kurdish (Soranî)", "Kyrgyz",
-            "Laothian", "Latin", "Latvian", "Lingala", "Lithuanian", "Lozi",
-            "Luganda", "Luo", "Macedonian", "Malagasy", "Malay", "Malayalam",
-            "Maltese", "Maori", "Marathi", "Mauritian Creole", "Moldavian",
-            "Mongolian", "Montenegrin", "Nepali", "Nigerian Pidgin",
-            "Northern Sotho", "Norwegian", "Norwegian (Nynorsk)", "Occitan",
-            "Oriya", "Oromo", "Pashto", "Persian", "Pirate", "Polish",
-            "Portuguese (Brazil)", "Portuguese (Portugal)", "Punjabi", "Quechua",
-            "Romanian", "Romansh", "Runyakitara", "Russian", "Scots Gaelic",
-            "Serbian", "Serbo-Croatian", "Sesotho", "Setswana",
-            "Seychellois Creole", "Shona", "Sindhi", "Sinhalese", "Slovak",
-            "Slovenian", "Somali", "Spanish", "Spanish (Latin American)",
-            "Sundanese", "Swahili", "Swedish", "Tajik", "Tamil", "Tatar",
-            "Telugu", "Thai", "Tigrinya", "Tonga", "Tshiluba", "Tumbuka",
-            "Turkish", "Turkmen", "Twi", "Uighur", "Ukrainian", "Urdu", "Uzbek",
-            "Vietnamese", "Welsh", "Wolof", "Xhosa", "Yiddish", "Yoruba", "Zulu"
+            'Afrikaans', 'Akan', 'Albanian', 'Amharic', 'Arabic', 'Armenian',
+            'Azerbaijani', 'Basque', 'Belarusian', 'Bemba', 'Bengali', 'Bihari',
+            'Bork, bork, bork!', 'Bosnian', 'Breton', 'Bulgarian', 'Cambodian',
+            'Catalan', 'Cherokee', 'Chichewa', 'Chinese (Simplified)',
+            'Chinese (Traditional)', 'Corsican', 'Croatian', 'Czech', 'Danish',
+            'Dutch', 'Elmer Fudd', 'English', 'Esperanto', 'Estonian', 'Ewe',
+            'Faroese', 'Filipino', 'Finnish', 'French', 'Frisian', 'Ga',
+            'Galician', 'Georgian', 'German', 'Greek', 'Guarani', 'Gujarati',
+            'Hacker', 'Haitian Creole', 'Hausa', 'Hawaiian', 'Hebrew', 'Hindi',
+            'Hungarian', 'Icelandic', 'Igbo', 'Indonesian', 'Interlingua',
+            'Irish', 'Italian', 'Japanese', 'Javanese', 'Kannada', 'Kazakh',
+            'Kinyarwanda', 'Kirundi', 'Klingon', 'Kongo', 'Korean',
+            'Krio (Sierra Leone)', 'Kurdish', 'Kurdish (Soranî)', 'Kyrgyz',
+            'Laothian', 'Latin', 'Latvian', 'Lingala', 'Lithuanian', 'Lozi',
+            'Luganda', 'Luo', 'Macedonian', 'Malagasy', 'Malay', 'Malayalam',
+            'Maltese', 'Maori', 'Marathi', 'Mauritian Creole', 'Moldavian',
+            'Mongolian', 'Montenegrin', 'Nepali', 'Nigerian Pidgin',
+            'Northern Sotho', 'Norwegian', 'Norwegian (Nynorsk)', 'Occitan',
+            'Oriya', 'Oromo', 'Pashto', 'Persian', 'Pirate', 'Polish',
+            'Portuguese (Brazil)', 'Portuguese (Portugal)', 'Punjabi', 'Quechua',
+            'Romanian', 'Romansh', 'Runyakitara', 'Russian', 'Scots Gaelic',
+            'Serbian', 'Serbo-Croatian', 'Sesotho', 'Setswana',
+            'Seychellois Creole', 'Shona', 'Sindhi', 'Sinhalese', 'Slovak',
+            'Slovenian', 'Somali', 'Spanish', 'Spanish (Latin American)',
+            'Sundanese', 'Swahili', 'Swedish', 'Tajik', 'Tamil', 'Tatar',
+            'Telugu', 'Thai', 'Tigrinya', 'Tonga', 'Tshiluba', 'Tumbuka',
+            'Turkish', 'Turkmen', 'Twi', 'Uighur', 'Ukrainian', 'Urdu', 'Uzbek',
+            'Vietnamese', 'Welsh', 'Wolof', 'Xhosa', 'Yiddish', 'Yoruba', 'Zulu'
         )]
         [string] $Language,
         ###############################################################################
         [parameter(
             Mandatory = $false,
-            HelpMessage = ("The directory containing face images organized by " +
-                        "person folders. If not specified, uses the " +
-                        "configured faces directory preference.")
+            HelpMessage = ('The directory containing face images organized by ' +
+                'person folders. If not specified, uses the ' +
+                'configured faces directory preference.')
         )]
         [string] $FacesDirectory,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The description text to look for, wildcards allowed."
+            HelpMessage = 'The description text to look for, wildcards allowed.'
         )]
         [string[]] $DescriptionSearch = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "The keywords to look for, wildcards allowed."
+            HelpMessage = 'The keywords to look for, wildcards allowed.'
         )]
         [string[]] $Keywords = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "People to look for, wildcards allowed."
+            HelpMessage = 'People to look for, wildcards allowed.'
         )]
         [string[]] $People = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Objects to look for, wildcards allowed."
+            HelpMessage = 'Objects to look for, wildcards allowed.'
         )]
         [string[]] $Objects = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Scenes to look for, wildcards allowed."
+            HelpMessage = 'Scenes to look for, wildcards allowed.'
         )]
         [string[]] $Scenes = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Picture types to filter by, wildcards allowed."
+            HelpMessage = 'Picture types to filter by, wildcards allowed.'
         )]
         [string[]] $PictureType = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Style types to filter by, wildcards allowed."
+            HelpMessage = 'Style types to filter by, wildcards allowed.'
         )]
         [string[]] $StyleType = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Overall moods to filter by, wildcards allowed."
+            HelpMessage = 'Overall moods to filter by, wildcards allowed.'
         )]
         [string[]] $OverallMood = @(),
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             ValueFromPipeline = $true,
-            HelpMessage = ("Accepts search results from a previous -PassThru " +
-                        "call to regenerate the view.")
+            HelpMessage = ('Accepts search results from a previous -PassThru ' +
+                'call to regenerate the view.')
         )]
         [System.Object[]] $InputObject,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Embed images as base64."
+            HelpMessage = 'Embed images as base64.'
         )]
         [switch] $EmbedImages,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Force rebuild of the image index database."
+            HelpMessage = 'Force rebuild of the image index database.'
         )]
         [switch] $ForceIndexRebuild,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Switch to disable fallback behavior."
+            HelpMessage = 'Switch to disable fallback behavior.'
         )]
         [switch] $NoFallback,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Switch to skip database initialization and rebuilding."
+            HelpMessage = 'Switch to skip database initialization and rebuilding.'
         )]
         [switch] $NeverRebuild,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter images that contain nudity."
+            HelpMessage = 'Filter images that contain nudity.'
         )]
         [switch] $HasNudity,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter images that do NOT contain nudity."
+            HelpMessage = 'Filter images that do NOT contain nudity.'
         )]
         [switch] $NoNudity,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter images that contain explicit content."
+            HelpMessage = 'Filter images that contain explicit content.'
         )]
         [switch] $HasExplicitContent,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Filter images that do NOT contain explicit content."
+            HelpMessage = 'Filter images that do NOT contain explicit content.'
         )]
         [switch] $NoExplicitContent,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show results in a browser gallery."
+            HelpMessage = 'Show results in a browser gallery.'
         )]
-        [Alias("show", "s")]
+        [Alias('show', 's')]
         [switch] $ShowInBrowser,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Return image data as objects."
+            HelpMessage = 'Return image data as objects.'
         )]
-        [switch] $PassThru,
+        [Alias('pt')]
+        [switch]$PassThru,
+
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Title for the image gallery."
+            HelpMessage = 'Escape control characters and modifiers when sending keys'
+        )]
+        [Alias('Escape')]
+        [switch] $SendKeyEscape,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Prevents returning keyboard focus to PowerShell after sending keys'
+        )]
+        [Alias('HoldKeyboardFocus')]
+        [switch] $SendKeyHoldKeyboardFocus,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Use Shift+Enter instead of Enter when sending keys'
+        )]
+        [Alias('UseShiftEnter')]
+        [switch] $SendKeyUseShiftEnter,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Delay between different input strings in milliseconds when sending keys'
+        )]
+        [Alias('DelayMilliSeconds')]
+        [int] $SendKeyDelayMilliSeconds,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Remove window borders and title bar for a cleaner appearance'
+        )]
+        [Alias('nb')]
+        [switch] $NoBorders,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place browser window side by side with PowerShell on the same monitor'
+        )]
+        [Alias('sbs')]
+        [switch]$SideBySide,
+
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Title for the image gallery.'
         )]
         [string] $Title,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Description for the image gallery."
+            HelpMessage = 'Description for the image gallery.'
         )]
         [string] $Description,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Browser accept-language header."
+            HelpMessage = 'Browser accept-language header.'
         )]
+        [Alias('lang', 'locale')]
         [string] $AcceptLang,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Monitor to use for display."
+            HelpMessage = 'Monitor to use for display.'
         )]
-        [int] $Monitor,
+        [Alias('m', 'mon')]
+        [int] $Monitor = -2,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Initial width of browser window."
+            HelpMessage = 'Initial width of browser window.'
         )]
         [int] $Width,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Initial height of browser window."
+            HelpMessage = 'Initial height of browser window.'
         )]
         [int] $Height,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Initial X position of browser window."
+            HelpMessage = 'Initial X position of browser window.'
         )]
         [int] $X,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Initial Y position of browser window."
+            HelpMessage = 'Initial Y position of browser window.'
         )]
         [int] $Y,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Show only pictures in a rounded rectangle, no " +
-                        "text below.")
+            HelpMessage = ('Show only pictures in a rounded rectangle, no ' +
+                'text below.')
         )]
-        [Alias("NoMetadata", "OnlyPictures")]
+        [Alias('NoMetadata', 'OnlyPictures')]
         [switch] $ShowOnlyPictures,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Enable interactive browser features."
+            HelpMessage = 'Enable interactive browser features.'
         )]
-        [Alias("i", "editimages")]
+        [Alias('i', 'editimages')]
         [switch] $Interactive,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Open in private/incognito mode."
+            HelpMessage = 'Open in private/incognito mode.'
         )]
+        [Alias('incognito', 'inprivate')]
         [switch] $Private,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Force enable debugging port."
+            HelpMessage = 'Force enable debugging port.'
         )]
         [switch] $Force,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Open in Microsoft Edge."
+            HelpMessage = 'Open in Microsoft Edge.'
         )]
+        [Alias('e')]
         [switch] $Edge,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Open in Google Chrome."
+            HelpMessage = 'Open in Google Chrome.'
         )]
+        [Alias('ch')]
         [switch] $Chrome,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Open in Chromium-based browser."
+            HelpMessage = 'Open in Chromium-based browser.'
         )]
+        [Alias('c')]
         [switch] $Chromium,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Open in Firefox."
+            HelpMessage = 'Open in Firefox.'
         )]
+        [Alias('ff')]
         [switch] $Firefox,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Open in all browsers."
+            HelpMessage = 'Open in all browsers.'
         )]
         [switch] $All,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Open in fullscreen mode."
+            HelpMessage = 'Open in fullscreen mode.'
         )]
-        [switch] $FullScreen,
+        [Alias('sw')]
+        [switch]$ShowWindow,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Place window on left side."
+            HelpMessage = 'Place window on left side.'
         )]
         [switch] $Left,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Place window on right side."
+            HelpMessage = 'Place window on right side.'
         )]
         [switch] $Right,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Place window on top."
+            HelpMessage = 'Place window on top.'
         )]
         [switch] $Top,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Place window on bottom."
+            HelpMessage = 'Place window on bottom.'
         )]
         [switch] $Bottom,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Center the window."
+            HelpMessage = 'Center the window.'
         )]
         [switch] $Centered,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Hide browser controls."
+            HelpMessage = 'Hide browser controls.'
         )]
+        [Alias('a', 'app', 'appmode')]
         [switch] $ApplicationMode,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Disable browser extensions."
+            HelpMessage = 'Disable browser extensions.'
         )]
+        [Alias('de', 'ne', 'NoExtensions')]
         [switch] $NoBrowserExtensions,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Disable popup blocker."
+            HelpMessage = 'Disable popup blocker.'
         )]
+        [Alias('allowpopups')]
         [switch] $DisablePopupBlocker,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Restore PowerShell focus."
+            HelpMessage = 'Restore PowerShell focus.'
         )]
-        [switch] $RestoreFocus,
+        [Alias('rf', 'bg')]
+        [switch]$RestoreFocus,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Create new browser window."
+            HelpMessage = 'Create new browser window.'
         )]
+        [Alias('nw', 'new')]
         [switch] $NewWindow,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Only return HTML."
+            HelpMessage = 'Only return HTML.'
         )]
         [switch] $OnlyReturnHtml,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Use alternative settings stored in session for AI " +
-                        "preferences like Language, Image collections, etc")
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
         )]
         [switch] $SessionOnly,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Clear alternative settings stored in session for " +
-                        "AI preferences like Language, Image collections, etc")
+            HelpMessage = ('Clear alternative settings stored in session for ' +
+                'AI preferences like Language, Image collections, etc')
         )]
         [switch] $ClearSession,
         ###############################################################################
+        ###############################################################################
+        [Alias('DatabasePath')]
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Database path for preference data files"
+            HelpMessage = 'Database path for preference data files'
         )]
         [string] $PreferencesDatabasePath,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ("Dont use alternative settings stored in session " +
-                        "for AI preferences like Language, Image collections, " +
-                        "etc")
+            HelpMessage = ('Dont use alternative settings stored in session ' +
+                'for AI preferences like Language, Image collections, ' +
+                'etc')
         )]
-        [Alias("FromPreferences")]
-        [switch] $SkipSession
+        [Alias('FromPreferences')]
+        [switch] $SkipSession,
         ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Focus the browser window after opening'
+        )]
+        [Alias('fw','focus')]
+        [switch] $FocusWindow,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Set the browser window to foreground after opening'
+        )]
+        [Alias('fg')]
+        [switch] $SetForeground,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Set the window to foreground after opening'
+        )]
+        [switch] $Maximize,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Send specified keys to the browser window after opening'
+        )]
+        [string[]] $KeysToSend,
+
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Auto-scroll the page by this many pixels per second (null to disable)'
+        )]
+        [int]$AutoScrollPixelsPerSecond = $null,
+
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Animate rectangles (objects/faces) in visible range, cycling every 300ms'
+        )]
+        [switch]$AutoAnimateRectangles,
+
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Force single column layout (centered, 1/3 screen width)'
+        )]
+        [switch]$SingleColumnMode = $false,
+
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Prefix to prepend to each image path (e.g. for remote URLs)'
+        )]
+        [string]$ImageUrlPrefix = ''
     )
 
     ###############################################################################
@@ -616,13 +763,13 @@ function Find-IndexedImage {
         # copy function parameters for ai meta language retrieval
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-AIMetaLanguage" `
+            -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (
-                Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
-            )
+            Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
+        )
 
         # determine the language for metadata retrieval
-        $Language = GenXdev.AI\Get-AIMetaLanguage @params
+        $Language = Get-AIMetaLanguage @params
 
         # initialize result tracking information
         $info = @{
@@ -639,49 +786,49 @@ function Find-IndexedImage {
             # add wildcards to any terms that don't already have them
             $Any = @($Any | Microsoft.PowerShell.Core\ForEach-Object {
 
-                $entry = $_.Trim()
+                    $entry = $_.Trim()
 
-                if ($entry.IndexOfAny([char[]]@('*', '?')) -lt 0) {
+                    if ($entry.IndexOfAny([char[]]@('*', '?')) -lt 0) {
 
-                    "*$entry*"
-                }
-                else {
-                    $_
-                }
-            })
+                        "*$entry*"
+                    }
+                    else {
+                        $_
+                    }
+                })
 
             # distribute any terms across all search parameter types
             $DescriptionSearch = $null -ne $DescriptionSearch ?
                 ($DescriptionSearch + $Any) :
-                $Any
+            $Any
 
             $Keywords = $null -ne $Keywords ?
                 ($Keywords + $Any) :
-                $Any
+            $Any
 
             $People = $null -ne $People ?
                 ($People + $Any) :
-                $Any
+            $Any
 
             $Objects = $null -ne $Objects ?
                 ($Objects + $Any) :
-                $Any
+            $Any
 
             $Scenes = $null -ne $Scenes ?
                 ($Scenes + $Any) :
-                $Any
+            $Any
 
             $PictureType = $null -ne $PictureType ?
                 ($PictureType + $Any) :
-                $Any
+            $Any
 
             $StyleType = $null -ne $StyleType ?
                 ($StyleType + $Any) :
-                $Any
+            $Any
 
             $OverallMood = $null -ne $OverallMood ?
                 ($OverallMood + $Any) :
-                $Any
+            $Any
         }
         [System.Collections.Generic.List[Object]] $results = $null
 
@@ -704,12 +851,12 @@ function Find-IndexedImage {
                 }
 
                 if ($item -is [System.Collections.IEnumerable] -and
-                    (-not $InputObject.ContainsKey("Path"))) {
+                    (-not $InputObject.ContainsKey('Path'))) {
 
-                        $item | Microsoft.PowerShell.Core\ForEach-Object {
+                    $item | Microsoft.PowerShell.Core\ForEach-Object {
 
-                            $secondItem = $_ | GenXdev.Helpers\ConvertTo-HashTable
-                            if ($secondItem.ContainsKey("Path")) {
+                        $secondItem = $_ | GenXdev.Helpers\ConvertTo-HashTable
+                        if ($secondItem.ContainsKey('Path')) {
 
                             $null = $results.Add($_)
                             $Info.resultCount++
@@ -773,8 +920,8 @@ function Find-IndexedImage {
                 }
                 catch {
                     # output warning if conversion fails
-                    Microsoft.PowerShell.Utility\Write-Warning (
-                        "Failed to convert embedded image data to base64 for: " +
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Failed to convert embedded image data to base64 for: ' +
                         "$($DbResult.path) - $($_.Exception.Message)"
                     )
 
@@ -785,12 +932,12 @@ function Find-IndexedImage {
 
             # return a custom object with all image metadata
             return [System.Collections.Hashtable]@{
-                path = $imagePath
-                keywords = if ($DbResult.description_keywords) {
+                path        = $imagePath
+                keywords    = if ($DbResult.description_keywords) {
                     $DbResult.description_keywords |
                         Microsoft.PowerShell.Utility\ConvertFrom-Json
                 } else { @() }
-                people = if ($DbResult.people_json) {
+                people      = if ($DbResult.people_json) {
                     $peopleObj = $DbResult.people_json |
                         Microsoft.PowerShell.Utility\ConvertFrom-Json
 
@@ -804,8 +951,8 @@ function Find-IndexedImage {
                     $peopleObj
                 } else {
                     [PSCustomObject]@{
-                        count = $DbResult.people_count
-                        faces = if ($DbResult.people_faces) {
+                        count       = $DbResult.people_count
+                        faces       = if ($DbResult.people_faces) {
                             $DbResult.people_faces |
                                 Microsoft.PowerShell.Utility\ConvertFrom-Json
                         } else { @() }
@@ -817,33 +964,33 @@ function Find-IndexedImage {
                         Microsoft.PowerShell.Utility\ConvertFrom-Json
                 } else {
                     [PSCustomObject]@{
-                        has_explicit_content = [bool]$DbResult.has_explicit_content
-                        short_description = $DbResult.short_description
-                        long_description = $DbResult.long_description
-                        has_nudity = [bool]$DbResult.has_nudity
-                        picture_type = $DbResult.picture_type
+                        has_explicit_content  = [bool]$DbResult.has_explicit_content
+                        short_description     = $DbResult.short_description
+                        long_description      = $DbResult.long_description
+                        has_nudity            = [bool]$DbResult.has_nudity
+                        picture_type          = $DbResult.picture_type
                         overall_mood_of_image = $DbResult.overall_mood_of_image
-                        style_type = $DbResult.style_type
-                        keywords = if ($DbResult.description_keywords) {
+                        style_type            = $DbResult.style_type
+                        keywords              = if ($DbResult.description_keywords) {
                             $DbResult.description_keywords |
                                 Microsoft.PowerShell.Utility\ConvertFrom-Json
                         } else { @() }
                     }
                 }
-                scenes = if ($DbResult.scenes_json) {
+                scenes      = if ($DbResult.scenes_json) {
                     $DbResult.scenes_json |
                         Microsoft.PowerShell.Utility\ConvertFrom-Json
                 } else {
                     [PSCustomObject]@{
-                        success = $true
-                        scene = $DbResult.scene_label
-                        processed_at = $DbResult.scene_processed_at
-                        confidence = $DbResult.scene_confidence
-                        label = $DbResult.scene_label
+                        success               = $true
+                        scene                 = $DbResult.scene_label
+                        processed_at          = $DbResult.scene_processed_at
+                        confidence            = $DbResult.scene_confidence
+                        label                 = $DbResult.scene_label
                         confidence_percentage = $DbResult.scene_confidence_percentage
                     }
                 }
-                objects = if ($DbResult.objects_json) {
+                objects     = if ($DbResult.objects_json) {
                     $objectsObj = $DbResult.objects_json |
                         Microsoft.PowerShell.Utility\ConvertFrom-Json
 
@@ -857,7 +1004,7 @@ function Find-IndexedImage {
                     $objectsObj
                 } else {
                     [PSCustomObject]@{
-                        objects = if ($DbResult.objects_list) {
+                        objects       = if ($DbResult.objects_list) {
                             $DbResult.objects_list |
                                 Microsoft.PowerShell.Utility\ConvertFrom-Json
                         } else { @() }
@@ -865,7 +1012,7 @@ function Find-IndexedImage {
                             $DbResult.object_counts |
                                 Microsoft.PowerShell.Utility\ConvertFrom-Json
                         } else { @{} }
-                        count = $DbResult.objects_count
+                        count         = $DbResult.objects_count
                     }
                 }
             }
@@ -874,16 +1021,16 @@ function Find-IndexedImage {
         # determine database file path if not provided
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName "GenXdev.AI\Get-ImageDatabasePath" `
+            -FunctionName 'GenXdev.AI\Get-ImageDatabasePath' `
             -DefaultValues (
-                Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
-            )
+            Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
+        )
 
-        $DatabaseFilePath = GenXdev.AI\Get-ImageDatabasePath @params
+        $DatabaseFilePath = Get-ImageDatabasePath @params
 
         if ($null -eq $DatabaseFilePath) {
             Microsoft.PowerShell.Utility\Write-Error (
-                "Failed to retrieve database file path."
+                'Failed to retrieve database file path.'
             )
             return
         }
@@ -961,7 +1108,7 @@ function Find-IndexedImage {
         }
 
         # build the SQL query with optimized joins and indexes
-        $sqlQuery = "SELECT DISTINCT i.* FROM Images i"
+        $sqlQuery = 'SELECT DISTINCT i.* FROM Images i'
         $joinClauses = @()
         $whereClauses = @()
         $parameters = @{}
@@ -974,8 +1121,8 @@ function Find-IndexedImage {
             foreach ($description in $DescriptionSearch) {
                 $paramName = "Description$paramCounter"
                 $condition = Get-OptimizedSearchCondition `
-                    -ColumnName "short_description" `
-                    -TableAlias "i" `
+                    -ColumnName 'short_description' `
+                    -TableAlias 'i' `
                     -SearchTerm $description `
                     -ParamName $paramName `
                     -Parameters $parameters
@@ -983,15 +1130,15 @@ function Find-IndexedImage {
                 $paramCounter++
                 $paramName = "Description$paramCounter"
                 $condition = Get-OptimizedSearchCondition `
-                    -ColumnName "long_description" `
-                    -TableAlias "i" `
+                    -ColumnName 'long_description' `
+                    -TableAlias 'i' `
                     -SearchTerm $description `
                     -ParamName $paramName `
                     -Parameters $parameters
                 $descriptionConditions += $condition
                 $paramCounter++
             }
-            $whereClauses += ("(" + ($descriptionConditions -join " OR ") + ")")
+            $whereClauses += ('(' + ($descriptionConditions -join ' OR ') + ')')
         }
 
         # add keyword search with optimized indexed lookup (NO TABLE SCANS)
@@ -1000,16 +1147,16 @@ function Find-IndexedImage {
             foreach ($keyword in $Keywords) {
                 $paramName = "keyword$paramCounter"
                 $condition = Get-OptimizedSearchCondition `
-                    -ColumnName "keyword" `
-                    -TableAlias "ik" `
+                    -ColumnName 'keyword' `
+                    -TableAlias 'ik' `
                     -SearchTerm $keyword `
                     -ParamName $paramName `
                     -Parameters $parameters
                 $keywordConditions += $condition
                 $paramCounter++
             }
-            $whereClauses += ("(EXISTS (SELECT * FROM ImageKeywords ik WHERE ik.image_id = i.id AND (" +
-                ($keywordConditions -join " OR ") + ")))")
+            $whereClauses += ('(EXISTS (SELECT * FROM ImageKeywords ik WHERE ik.image_id = i.id AND (' +
+                ($keywordConditions -join ' OR ') + ')))')
         }
 
         # add people search with optimized indexed lookup (NO TABLE SCANS)
@@ -1018,16 +1165,16 @@ function Find-IndexedImage {
             foreach ($person in $People) {
                 $paramName = "person$paramCounter"
                 $condition = Get-OptimizedSearchCondition `
-                    -ColumnName "person_name" `
-                    -TableAlias "ip" `
+                    -ColumnName 'person_name' `
+                    -TableAlias 'ip' `
                     -SearchTerm $person `
                     -ParamName $paramName `
                     -Parameters $parameters
                 $peopleConditions += $condition
                 $paramCounter++
             }
-            $whereClauses += ("(EXISTS (SELECT * FROM ImagePeople ip WHERE ip.image_id = i.id AND (" +
-                ($peopleConditions -join " OR ") + ")))")
+            $whereClauses += ('(EXISTS (SELECT * FROM ImagePeople ip WHERE ip.image_id = i.id AND (' +
+                ($peopleConditions -join ' OR ') + ')))')
         }
 
         # add objects search with optimized indexed lookup (NO TABLE SCANS)
@@ -1036,16 +1183,16 @@ function Find-IndexedImage {
             foreach ($obj in $Objects) {
                 $paramName = "object$paramCounter"
                 $condition = Get-OptimizedSearchCondition `
-                    -ColumnName "object_name" `
-                    -TableAlias "io" `
+                    -ColumnName 'object_name' `
+                    -TableAlias 'io' `
                     -SearchTerm $obj `
                     -ParamName $paramName `
                     -Parameters $parameters
                 $objectConditions += $condition
                 $paramCounter++
             }
-            $whereClauses += ("(EXISTS (SELECT * FROM ImageObjects io WHERE io.image_id = i.id AND (" +
-                ($objectConditions -join " OR ") + ")))")
+            $whereClauses += ('(EXISTS (SELECT * FROM ImageObjects io WHERE io.image_id = i.id AND (' +
+                ($objectConditions -join ' OR ') + ')))')
         }
 
         # add scenes search with optimized indexed lookup (NO TABLE SCANS)
@@ -1054,16 +1201,16 @@ function Find-IndexedImage {
             foreach ($scene in $Scenes) {
                 $paramName = "scene$paramCounter"
                 $condition = Get-OptimizedSearchCondition `
-                    -ColumnName "scene_name" `
-                    -TableAlias "isc" `
+                    -ColumnName 'scene_name' `
+                    -TableAlias 'isc' `
                     -SearchTerm $scene `
                     -ParamName $paramName `
                     -Parameters $parameters
                 $sceneConditions += $condition
                 $paramCounter++
             }
-            $whereClauses += ("(EXISTS (SELECT * FROM ImageScenes isc WHERE isc.image_id = i.id AND (" +
-                ($sceneConditions -join " OR ") + ")))")
+            $whereClauses += ('(EXISTS (SELECT * FROM ImageScenes isc WHERE isc.image_id = i.id AND (' +
+                ($sceneConditions -join ' OR ') + ')))')
         }
 
         # add picture type filter with optimized indexed column (NO TABLE SCANS)
@@ -1072,15 +1219,15 @@ function Find-IndexedImage {
             foreach ($type in $PictureType) {
                 $paramName = "pictype$paramCounter"
                 $condition = Get-OptimizedSearchCondition `
-                    -ColumnName "picture_type" `
-                    -TableAlias "i" `
+                    -ColumnName 'picture_type' `
+                    -TableAlias 'i' `
                     -SearchTerm $type `
                     -ParamName $paramName `
                     -Parameters $parameters
                 $pictureTypeConditions += $condition
                 $paramCounter++
             }
-            $whereClauses += ("(" + ($pictureTypeConditions -join " OR ") + ")")
+            $whereClauses += ('(' + ($pictureTypeConditions -join ' OR ') + ')')
         }
 
         # add style type filter with optimized indexed column (NO TABLE SCANS)
@@ -1089,15 +1236,15 @@ function Find-IndexedImage {
             foreach ($style in $StyleType) {
                 $paramName = "styletype$paramCounter"
                 $condition = Get-OptimizedSearchCondition `
-                    -ColumnName "style_type" `
-                    -TableAlias "i" `
+                    -ColumnName 'style_type' `
+                    -TableAlias 'i' `
                     -SearchTerm $style `
                     -ParamName $paramName `
                     -Parameters $parameters
                 $styleTypeConditions += $condition
                 $paramCounter++
             }
-            $whereClauses += ("(" + ($styleTypeConditions -join " OR ") + ")")
+            $whereClauses += ('(' + ($styleTypeConditions -join ' OR ') + ')')
         }
 
         # add mood filter with optimized indexed column (NO TABLE SCANS)
@@ -1106,31 +1253,31 @@ function Find-IndexedImage {
             foreach ($mood in $OverallMood) {
                 $paramName = "mood$paramCounter"
                 $condition = Get-OptimizedSearchCondition `
-                    -ColumnName "overall_mood_of_image" `
-                    -TableAlias "i" `
+                    -ColumnName 'overall_mood_of_image' `
+                    -TableAlias 'i' `
                     -SearchTerm $mood `
                     -ParamName $paramName `
                     -Parameters $parameters
                 $moodConditions += $condition
                 $paramCounter++
             }
-            $whereClauses += ("(" + ($moodConditions -join " OR ") + ")")
+            $whereClauses += ('(' + ($moodConditions -join ' OR ') + ')')
         }
 
         # add nudity filters with indexed boolean columns
         if ($HasNudity) {
-            $whereClauses += "i.has_nudity = 1"
+            $whereClauses += 'i.has_nudity = 1'
         }
         if ($NoNudity) {
-            $whereClauses += "i.has_nudity = 0"
+            $whereClauses += 'i.has_nudity = 0'
         }
 
         # add explicit content filters with indexed boolean columns
         if ($HasExplicitContent) {
-            $whereClauses += "i.has_explicit_content = 1"
+            $whereClauses += 'i.has_explicit_content = 1'
         }
         if ($NoExplicitContent) {
-            $whereClauses += "i.has_explicit_content = 0"
+            $whereClauses += 'i.has_explicit_content = 0'
         }
 
         # add path-like search with optimized LIKE lookup (NO TABLE SCANS)
@@ -1156,21 +1303,21 @@ function Find-IndexedImage {
                 $paramCounter++
             }
 
-            $whereClauses += ("(" + ($pathLikeConditions -join " OR ") + ")")
+            $whereClauses += ('(' + ($pathLikeConditions -join ' OR ') + ')')
         }
 
         # build the complete query with index optimization hints
-        $sqlQuery = "SELECT DISTINCT i.* FROM Images i"
+        $sqlQuery = 'SELECT DISTINCT i.* FROM Images i'
 
         if ($joinClauses.Count -gt 0) {
-            $sqlQuery += " " + ($joinClauses -join " ")
+            $sqlQuery += ' ' + ($joinClauses -join ' ')
         }
         if ($whereClauses.Count -gt 0) {
-            $sqlQuery += " WHERE " + ($whereClauses -join " OR ")
+            $sqlQuery += ' WHERE ' + ($whereClauses -join ' OR ')
         }
 
         # use indexed ordering for optimal performance
-        $sqlQuery += " ORDER BY i.path"
+        $sqlQuery += ' ORDER BY i.path'
 
         Microsoft.PowerShell.Utility\Write-Verbose (
             "Executing NO-TABLE-SCAN optimized SQL query: $sqlQuery"
@@ -1185,16 +1332,16 @@ function Find-IndexedImage {
         # for ShowInBrowser we need to collect all results first, otherwise we stream them
         if ($ShowInBrowser) {
 
-            $dbResults = GenXdev.Data\Invoke-SQLiteQuery `
+            $dbResults = Invoke-SQLiteQuery `
                 -DatabaseFilePath $DatabaseFilePath `
                 -Queries $sqlQuery `
                 -SqlParameters $parameters
             $queryTime = (Microsoft.PowerShell.Utility\Get-Date) - $startTime
 
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Index-optimized database query completed in " +
+                'Index-optimized database query completed in ' +
                 "$($queryTime.TotalMilliseconds)ms, found $($dbResults.Count) " +
-                "results (no table scans)"
+                'results (no table scans)'
             )
 
             # convert database results to image objects compatible with Show-FoundImagesInBrowser
@@ -1213,7 +1360,7 @@ function Find-IndexedImage {
         } else {
             # stream results for memory efficiency - process each record as it comes from the database
             $Info.resultCount = 0
-            GenXdev.Data\Invoke-SQLiteQuery `
+            Invoke-SQLiteQuery `
                 -DatabaseFilePath $DatabaseFilePath `
                 -Queries $sqlQuery `
                 -SqlParameters $parameters |
@@ -1226,9 +1373,9 @@ function Find-IndexedImage {
 
             $queryTime = (Microsoft.PowerShell.Utility\Get-Date) - $startTime
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Index-optimized database query completed in " +
+                'Index-optimized database query completed in ' +
                 "$($queryTime.TotalMilliseconds)ms, streamed $resultCount " +
-                "results (no table scans)"
+                'results (no table scans)'
             )
         }
     }
@@ -1242,14 +1389,14 @@ function Find-IndexedImage {
             # copy parameters for find-image call
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "GenXdev.AI\Find-Image" `
+                -FunctionName 'GenXdev.AI\Find-Image' `
                 -DefaultValues (
-                    Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
-                )
+                Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
+            )
 
             $params.InputObject = $results
             # if InputObject is provided, convert each item to an image object
-            GenXdev.AI\Find-Image @params
+            Find-Image @params
 
             return
         }
@@ -1280,16 +1427,16 @@ function Find-IndexedImage {
                 $searchCriteria.Add("overall moods: $($OverallMood -join ', ')")
             }
             if ($HasNudity) {
-                $searchCriteria.Add("has nudity")
+                $searchCriteria.Add('has nudity')
             }
             if ($NoNudity) {
-                $searchCriteria.Add("no nudity")
+                $searchCriteria.Add('no nudity')
             }
             if ($HasExplicitContent) {
-                $searchCriteria.Add("has explicit content")
+                $searchCriteria.Add('has explicit content')
             }
             if ($NoExplicitContent) {
-                $searchCriteria.Add("no explicit content")
+                $searchCriteria.Add('no explicit content')
             }
             if ($PathLike -and $PathLike.Count -gt 0) {
                 $searchCriteria.Add("path-like: $($PathLike -join ', ')")
@@ -1297,13 +1444,13 @@ function Find-IndexedImage {
 
             if ($searchCriteria.Count -gt 0) {
                 Microsoft.PowerShell.Utility\Write-Host (
-                    "No images found matching search criteria: " +
+                    'No images found matching search criteria: ' +
                     "$($searchCriteria -join ', ')"
                 ) -ForegroundColor Yellow
             }
             else {
                 Microsoft.PowerShell.Utility\Write-Host (
-                    "No images found in database"
+                    'No images found in database'
                 ) -ForegroundColor Yellow
             }
         }
@@ -1312,27 +1459,27 @@ function Find-IndexedImage {
         if ($ShowInBrowser) {
 
             if ([String]::IsNullOrWhiteSpace($Title)) {
-                $Title = "🚀 Fast Indexed Image Search Results"
+                $Title = '🚀 Fast Indexed Image Search Results'
             }
 
             if ([String]::IsNullOrWhiteSpace($Description)) {
-                $searchInfo = "Database search completed in " +
-                    "$($queryTime.TotalMilliseconds)ms | Found $($results.Count) images"
+                $searchInfo = 'Database search completed in ' +
+                "$($queryTime.TotalMilliseconds)ms | Found $($results.Count) images"
                 $Description = "$($MyInvocation.Statement) | $searchInfo"
             }
 
             # copy all the gallery-related parameters
             $galleryParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName "GenXdev.AI\Show-FoundImagesInBrowser" `
+                -FunctionName 'GenXdev.AI\Show-FoundImagesInBrowser' `
                 -DefaultValues (
-                    Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
+                Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
             );
 
             $galleryParams.InputObject = $results
 
             # pass the results to Show-FoundImagesInBrowser
-            GenXdev.AI\Show-FoundImagesInBrowser @galleryParams
+            Show-FoundImagesInBrowser @galleryParams
 
             if ($PassThru) {
 

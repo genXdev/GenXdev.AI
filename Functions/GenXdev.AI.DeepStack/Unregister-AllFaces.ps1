@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Removes all registered faces from the DeepStack face recognition system.
@@ -58,62 +58,62 @@ Removes all registered faces without confirmation prompt.
 unregall -Force
 
 Uses alias to remove all faces without confirmation.
-        ###############################################################################>
+#>
 function Unregister-AllFaces {
 
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseSingularNouns", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
 
     param(
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Bypass confirmation prompts when removing all " +
-                         "registered faces"
+            HelpMessage = 'Bypass confirmation prompts when removing all ' +
+            'registered faces'
         )]
         [switch] $Force,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Skip Docker Desktop initialization (used when " +
-                         "already called by parent function)"
+            HelpMessage = 'Skip Docker Desktop initialization (used when ' +
+            'already called by parent function)'
         )]
         [switch] $NoDockerInitialize,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Force rebuild of Docker container and remove " +
-                         "existing data"
+            HelpMessage = 'Force rebuild of Docker container and remove ' +
+            'existing data'
         )]
         [switch] $ForceRebuild,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Use GPU-accelerated version (requires NVIDIA GPU)"
+            HelpMessage = 'Use GPU-accelerated version (requires NVIDIA GPU)'
         )]
         [switch] $UseGPU,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 0,
-            HelpMessage = "The name for the Docker container"
+            HelpMessage = 'The name for the Docker container'
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $ContainerName = "deepstack_face_recognition",
+        [string] $ContainerName = 'deepstack_face_recognition',
         ###########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 1,
-            HelpMessage = "The name for the Docker volume for persistent " +
-                         "storage"
+            HelpMessage = 'The name for the Docker volume for persistent ' +
+            'storage'
         )]
         [ValidateNotNullOrEmpty()]
-        [string] $VolumeName = "deepstack_face_data",
+        [string] $VolumeName = 'deepstack_face_data',
         ###########################################################################
         [Parameter(
             Mandatory = $false,
             Position = 2,
-            HelpMessage = "The port number for the DeepStack service"
+            HelpMessage = 'The port number for the DeepStack service'
         )]
         [ValidateRange(1, 65535)]
         [int] $ServicePort = 5000,
@@ -121,8 +121,8 @@ function Unregister-AllFaces {
         [Parameter(
             Mandatory = $false,
             Position = 3,
-            HelpMessage = "Maximum time in seconds to wait for service health " +
-                         "check"
+            HelpMessage = 'Maximum time in seconds to wait for service health ' +
+            'check'
         )]
         [ValidateRange(10, 300)]
         [int] $HealthCheckTimeout = 60,
@@ -130,7 +130,7 @@ function Unregister-AllFaces {
         [Parameter(
             Mandatory = $false,
             Position = 4,
-            HelpMessage = "Interval in seconds between health check attempts"
+            HelpMessage = 'Interval in seconds between health check attempts'
         )]
         [ValidateRange(1, 10)]
         [int] $HealthCheckInterval = 3,
@@ -138,15 +138,16 @@ function Unregister-AllFaces {
         [Parameter(
             Mandatory = $false,
             Position = 5,
-            HelpMessage = "Custom Docker image name to use"
+            HelpMessage = 'Custom Docker image name to use'
         )]
         [ValidateNotNullOrEmpty()]
         [string] $ImageName,
         ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Show Docker Desktop window during initialization"
+            HelpMessage = 'Show Docker Desktop window during initialization'
         )]
+        [Alias('sw')]
         [switch]$ShowWindow
         ###################################################################
     )
@@ -162,14 +163,14 @@ function Unregister-AllFaces {
         # initialize container name from script scope if not already set
         if (-not $script:ContainerName) {
 
-            $script:ContainerName = "deepstack_face_recognition"
+            $script:ContainerName = 'deepstack_face_recognition'
         }
 
         # ensure the deepstack face recognition service is running
         if (-not $NoDockerInitialize) {
 
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Ensuring DeepStack face recognition service is available"
+                'Ensuring DeepStack face recognition service is available'
             )
 
             # copy matching parameters from current function to ensure function
@@ -187,16 +188,16 @@ function Unregister-AllFaces {
             }
             else {
 
-                $ensureParams.Force = $PSBoundParameters.ContainsKey("ForceRebuild") ? $false : $null
+                $ensureParams.Force = $PSBoundParameters.ContainsKey('ForceRebuild') ? $false : $null
             }
 
             # ensure deepstack service is running and accessible
-            $null = GenXdev.AI\EnsureDeepStack @ensureParams
+            $null = EnsureDeepStack @ensureParams
         }
         else {
 
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Skipping Docker initialization as requested"
+                'Skipping Docker initialization as requested'
             )
         }
 
@@ -212,7 +213,7 @@ function Unregister-AllFaces {
                 # first check if container is running
                 $containerId = docker ps `
                     --filter "name=^$script:ContainerName$" `
-                    --format "{{.ID}}" 2>$null
+                    --format '{{.ID}}' 2>$null
 
                 # return false if container is not running
                 if ([string]::IsNullOrWhiteSpace($containerId)) {
@@ -228,16 +229,22 @@ function Unregister-AllFaces {
                 # ensureFaceRecognition
                 try {
 
-                    # try the documented /faces endpoint to check if service is
-                    # responding
-                    $null = Microsoft.PowerShell.Utility\Invoke-RestMethod `
-                        -Uri "$script:ApiBaseUrl/faces" `
-                        -TimeoutSec 5 `
-                        -ErrorAction Stop
+                    # construct the uri for retrieving registered faces from deepstack
+                    $uri = "$($script:ApiBaseUrl)/v1/vision/face/list"
 
+                    # output verbose information about the api request
                     Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Service health check passed using /faces endpoint"
+                        "Requesting registered faces from: $uri"
                     )
+
+                    # invoke the rest api to get registered faces using post method
+                    $response = Microsoft.PowerShell.Utility\Invoke-RestMethod `
+                        -Uri $uri `
+                        -Method Post `
+                        -ContentType 'application/json' `
+                        -Body '{}' `
+                        -TimeoutSec 30 `
+                        -ErrorAction Stop
 
                     return $true
                 }
@@ -253,7 +260,7 @@ function Unregister-AllFaces {
                             -ErrorAction Stop
 
                         Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Service health check passed using root endpoint"
+                            'Service health check passed using root endpoint'
                         )
 
                         return $true
@@ -261,8 +268,8 @@ function Unregister-AllFaces {
                     catch {
 
                         Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Service health check failed on both /faces and " +
-                            "root endpoints"
+                            'Service health check failed on both /faces and ' +
+                            'root endpoints'
                         )
 
                         return $false
@@ -271,7 +278,7 @@ function Unregister-AllFaces {
             }
             catch {
 
-                Microsoft.PowerShell.Utility\Write-Warning (
+                Microsoft.PowerShell.Utility\Write-Verbose (
                     "Container health check failed: $_"
                 )
 
@@ -289,7 +296,7 @@ function Unregister-AllFaces {
             try {
 
                 Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Ensuring faces directory structure exists"
+                    'Ensuring faces directory structure exists'
                 )
 
                 # ensure the faces directory exists with proper permissions
@@ -299,7 +306,7 @@ function Unregister-AllFaces {
                 # throw error if directory creation failed
                 if ($LASTEXITCODE -ne 0) {
 
-                    throw "Failed to create faces directory"
+                    throw 'Failed to create faces directory'
                 }
 
                 # set proper permissions
@@ -309,8 +316,8 @@ function Unregister-AllFaces {
                 # warn if permission setting failed but continue
                 if ($LASTEXITCODE -ne 0) {
 
-                    Microsoft.PowerShell.Utility\Write-Warning (
-                        "Failed to set directory permissions"
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Failed to set directory permissions'
                     )
                 }
 
@@ -321,7 +328,7 @@ function Unregister-AllFaces {
                 # throw error if directory verification failed
                 if ($LASTEXITCODE -ne 0) {
 
-                    throw "Faces directory verification failed"
+                    throw 'Faces directory verification failed'
                 }
 
                 # test write permissions
@@ -335,13 +342,13 @@ function Unregister-AllFaces {
                         rm -f /datastore/.test_write 2>$null
 
                     Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Directory is writable and ready"
+                        'Directory is writable and ready'
                     )
                 }
                 else {
 
-                    Microsoft.PowerShell.Utility\Write-Warning (
-                        "Directory write test failed"
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Directory write test failed'
                     )
                 }
 
@@ -362,12 +369,12 @@ function Unregister-AllFaces {
 
             # check if we should proceed with face removal
             $confirmMessage = (
-                "This will remove ALL registered faces from the system. " +
-                "This action cannot be undone."
+                'This will remove ALL registered faces from the system. ' +
+                'This action cannot be undone.'
             )
 
             # proceed only if force is used or user confirms the action
-            if ($Force -or $PSCmdlet.ShouldProcess("All registered faces", $confirmMessage)) {
+            if ($Force -or $PSCmdlet.ShouldProcess('All registered faces', $confirmMessage)) {
 
                 # verify container health before proceeding with operations
                 if (-not (Test-ContainerHealth)) {
@@ -375,32 +382,32 @@ function Unregister-AllFaces {
                     # handle case where docker initialization was skipped
                     if ($NoDockerInitialize) {
 
-                        Microsoft.PowerShell.Utility\Write-Warning (
-                            "Container is not accessible and Docker " +
-                            "initialization was skipped. Cannot proceed with " +
-                            "face cleanup."
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            'Container is not accessible and Docker ' +
+                            'initialization was skipped. Cannot proceed with ' +
+                            'face cleanup.'
                         )
 
                         Microsoft.PowerShell.Utility\Write-Output (
-                            "Face cleanup skipped - container not accessible"
+                            'Face cleanup skipped - container not accessible'
                         )
 
                         return
                     }
                     else {
 
-                        throw "Container is not healthy or accessible"
+                        throw 'Container is not healthy or accessible'
                     }
                 }
 
                 Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Removing all faces from: /datastore"
+                    'Removing all faces from: /datastore'
                 )
 
                 # remove all contents of faces directory using comprehensive
                 # approach first try to remove all image files specifically
                 $removeFilesResult = docker exec $script:ContainerName bash -c (
-                    "find /datastore -type f \( " +
+                    'find /datastore -type f \( ' +
                     "-name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o " +
                     "-name '*.gif' \) -delete"
                 ) 2>&1
@@ -408,46 +415,46 @@ function Unregister-AllFaces {
                 # warn if specific image file removal failed but continue
                 if ($LASTEXITCODE -ne 0) {
 
-                    Microsoft.PowerShell.Utility\Write-Warning (
+                    Microsoft.PowerShell.Utility\Write-Verbose (
                         "Failed to remove image files: $removeFilesResult"
                     )
                 }
 
                 # then remove any remaining files and subdirectories
                 $removeAllResult = docker exec $script:ContainerName bash -c (
-                    "rm -rf /datastore/* /datastore/.*"
+                    'rm -rf /datastore/* /datastore/.*'
                 ) 2>&1
 
                 # note if some hidden files could not be removed
                 if ($LASTEXITCODE -ne 0) {
 
                     Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Note: Some hidden files may not have been removed: " +
+                        'Note: Some hidden files may not have been removed: ' +
                         "$removeAllResult"
                     )
                 }
 
                 # verify the directory is empty after cleanup
                 $null = docker exec $script:ContainerName bash -c (
-                    "ls -la /datastore"
+                    'ls -la /datastore'
                 ) 2>&1
 
                 # count remaining files to verify cleanup success
                 $remainingFiles = docker exec $script:ContainerName bash -c (
-                    "find /datastore -type f | wc -l"
+                    'find /datastore -type f | wc -l'
                 ) 2>&1
 
                 # verify all files were successfully removed
                 if ($LASTEXITCODE -eq 0 -and $remainingFiles -match '^\s*0\s*$') {
 
                     Microsoft.PowerShell.Utility\Write-Verbose (
-                        "✅ All files successfully removed from faces directory"
+                        '✅ All files successfully removed from faces directory'
                     )
                 }
                 else {
 
-                    Microsoft.PowerShell.Utility\Write-Warning (
-                        "Some files may still remain in faces directory: " +
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Some files may still remain in faces directory: ' +
                         "$remainingFiles files found"
                     )
                 }
@@ -456,15 +463,15 @@ function Unregister-AllFaces {
                 if (Initialize-FacesDirectory) {
 
                     Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Faces directory structure recreated"
+                        'Faces directory structure recreated'
                     )
 
                     # restart container to reload face recognition service this
                     # ensures in-memory faces_dict is cleared and reloaded from
                     # empty directory
                     Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Restarting face recognition service to reload empty " +
-                        "faces directory..."
+                        'Restarting face recognition service to reload empty ' +
+                        'faces directory...'
                     )
 
                     # restart the docker container
@@ -474,7 +481,7 @@ function Unregister-AllFaces {
                     if ($LASTEXITCODE -eq 0) {
 
                         Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Service restarted successfully"
+                            'Service restarted successfully'
                         )
 
                         # wait for service to be ready after restart
@@ -494,7 +501,7 @@ function Unregister-AllFaces {
                                 $serviceReady = $true
 
                                 Microsoft.PowerShell.Utility\Write-Verbose (
-                                    "Service is ready after restart"
+                                    'Service is ready after restart'
                                 )
                             }
                             else {
@@ -502,7 +509,7 @@ function Unregister-AllFaces {
                                 $retryCount++
 
                                 Microsoft.PowerShell.Utility\Write-Verbose (
-                                    "Waiting for service to be ready... " +
+                                    'Waiting for service to be ready... ' +
                                     "($retryCount/$maxRetries)"
                                 )
 
@@ -513,27 +520,27 @@ function Unregister-AllFaces {
                         # warn if service is not ready after all retries
                         if (-not $serviceReady) {
 
-                            Microsoft.PowerShell.Utility\Write-Warning (
-                                "Service may not be fully ready after restart"
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                'Service may not be fully ready after restart'
                             )
                         }
                     }
                     else {
 
-                        Microsoft.PowerShell.Utility\Write-Warning (
+                        Microsoft.PowerShell.Utility\Write-Verbose (
                             "Failed to restart service: $restartResult"
                         )
                     }
 
                     Microsoft.PowerShell.Utility\Write-Output (
-                        "All faces unregistered successfully."
+                        'All faces unregistered successfully.'
                     )
                 }
                 else {
 
-                    Microsoft.PowerShell.Utility\Write-Warning (
-                        "Directory cleanup completed but structure recreation " +
-                        "failed"
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        'Directory cleanup completed but structure recreation ' +
+                        'failed'
                     )
                 }
 
@@ -542,21 +549,21 @@ function Unregister-AllFaces {
                 try {
 
                     # get list of remaining registered faces
-                    $remainingFaces = GenXdev.AI\Get-RegisteredFaces `
+                    $remainingFaces = Get-RegisteredFaces `
                         -NoDockerInitialize `
                         -ErrorAction SilentlyContinue
 
                     # warn if some faces are still registered after cleanup
                     if ($remainingFaces -and $remainingFaces.Count -gt 0) {
 
-                        Microsoft.PowerShell.Utility\Write-Warning (
-                            "Some faces may still be registered after cleanup"
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            'Some faces may still be registered after cleanup'
                         )
                     }
                     else {
 
                         Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Verified: No faces remain registered"
+                            'Verified: No faces remain registered'
                         )
                     }
                 }
@@ -570,7 +577,7 @@ function Unregister-AllFaces {
             else {
 
                 Microsoft.PowerShell.Utility\Write-Output (
-                    "Operation cancelled by user"
+                    'Operation cancelled by user'
                 )
             }
         }
@@ -584,4 +591,3 @@ function Unregister-AllFaces {
 
     }
 }
-        ###############################################################################
