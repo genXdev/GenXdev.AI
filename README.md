@@ -10,6 +10,32 @@
     A Windows PowerShell module for local AI related operations
 [![GenXdev.AI](https://img.shields.io/powershellgallery/v/GenXdev.AI.svg?style=flat-square&label=GenXdev.AI)](https://www.powershellgallery.com/packages/GenXdev.AI/) [![License](https://img.shields.io/github/license/genXdev/GenXdev.AI?style=flat-square)](./LICENSE)
 
+## MIT License
+
+```text
+MIT License
+
+Copyright (c) [year] [fullname]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+````
+
 ### FEATURES
 * ✅ Local Large Language Model (LLM) Integration
      * Perform AI operations through OpenAI-compatible chat completion endpoints with `Invoke-LLMQuery` -> `llm`, `qllm`, `qlms`
@@ -14150,8 +14176,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > ConvertFrom-CorporateSpeak -Text "I would greatly appreciate your timely
-    response" -SetClipboard
+    PS > ConvertFrom-CorporateSpeak -Text "I would greatly appreciate your timely response" -SetClipboard
     
     
     
@@ -14161,7 +14186,7 @@ OUTPUTS
     -------------------------- EXAMPLE 2 --------------------------
     
     PS > "We should circle back" | uncorporatize
-    ##############################################################################
+    ###############################################################################
     
     
     
@@ -14855,7 +14880,8 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > ConvertFrom-DiplomaticSpeak -Text "We have some concerns about your approach"
+    PS > ConvertFrom-DiplomaticSpeak -Text "We have some concerns about your
+    approach"
     
     
     
@@ -14873,8 +14899,8 @@ OUTPUTS
     
     -------------------------- EXAMPLE 3 --------------------------
     
-    PS > "We're putting you on timeout" | ConvertFrom-DiplomaticSpeak `
-        -SetClipboard -Temperature 0.2
+    PS > "We're putting you on timeout" |
+        ConvertFrom-DiplomaticSpeak -SetClipboard -Temperature 0.2
     
     
     
@@ -14907,8 +14933,8 @@ DESCRIPTION
 
 PARAMETERS
     -Text <String>
-        The input text to convert to corporate speak. If not provided, the function will
-        read from the system clipboard. Multiple lines of text are supported.
+        The input text to convert to corporate speak. If not provided, the function
+        will read from the system clipboard. Multiple lines of text are supported.
         
         Required?                    false
         Position?                    1
@@ -15013,10 +15039,10 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Gpu <Int32>
-        How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
-        all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
-        layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
-        offload to the GPU. -2 = Auto.
+        How much to offload to the GPU. If 'off', GPU offloading is disabled. If
+        'max', all layers are offloaded to GPU. If a number between 0 and 1, that
+        fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide
+        how much to offload to the GPU. -2 = Auto.
         
         Required?                    false
         Position?                    named
@@ -15581,7 +15607,8 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS > ConvertTo-CorporateSpeak -Text "That's a terrible idea" -Model "qwen" -SetClipboard
+    PS > ConvertTo-CorporateSpeak -Text "That's a terrible idea" -Model "qwen"
+        -SetClipboard
     
     
     

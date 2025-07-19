@@ -76,15 +76,17 @@ Database path for preference data files storage.
 Store settings only in persistent preferences without affecting session.
 
 .EXAMPLE
-ConvertFrom-DiplomaticSpeak -Text "We have some concerns about your approach"
+ConvertFrom-DiplomaticSpeak -Text "We have some concerns about your
+approach"
 
 .EXAMPLE
 undiplomatize "Your proposal has merit but requires further consideration"
 
 .EXAMPLE
-"We're putting you on timeout" | ConvertFrom-DiplomaticSpeak `
-    -SetClipboard -Temperature 0.2
+"We're putting you on timeout" |
+    ConvertFrom-DiplomaticSpeak -SetClipboard -Temperature 0.2
 #>
+################################################################################
 function ConvertFrom-DiplomaticSpeak {
 
     [CmdletBinding()]

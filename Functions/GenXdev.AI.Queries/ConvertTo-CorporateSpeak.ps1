@@ -11,12 +11,12 @@ clipboard. The function leverages AI models to analyze and rephrase text while
 preserving the original intent.
 
 .PARAMETER Text
-The input text to convert to corporate speak. If not provided, the function will
-read from the system clipboard. Multiple lines of text are supported.
+The input text to convert to corporate speak. If not provided, the function
+will read from the system clipboard. Multiple lines of text are supported.
 
 .PARAMETER Instructions
-Additional instructions to guide the AI model in converting the text.
-These can help fine-tune the tone and style of the corporate language.
+Additional instructions to guide the AI model in converting the text. These
+can help fine-tune the tone and style of the corporate language.
 
 .PARAMETER Temperature
 Temperature for response randomness (0.0-1.0).
@@ -37,10 +37,10 @@ The maximum number of tokens to use in AI operations.
 The number of CPU cores to dedicate to AI operations.
 
 .PARAMETER Gpu
-How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max',
-all layers are offloaded to GPU. If a number between 0 and 1, that fraction of
-layers will be offloaded to the GPU. -1 = LM Studio will decide how much to
-offload to the GPU. -2 = Auto.
+How much to offload to the GPU. If 'off', GPU offloading is disabled. If
+'max', all layers are offloaded to GPU. If a number between 0 and 1, that
+fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide
+how much to offload to the GPU. -2 = Auto.
 
 .PARAMETER ApiEndpoint
 The API endpoint URL for AI operations.
@@ -73,7 +73,8 @@ Clear alternative settings stored in session for AI preferences.
 Store settings only in persistent preferences without affecting session.
 
 .EXAMPLE
-ConvertTo-CorporateSpeak -Text "That's a terrible idea" -Model "qwen" -SetClipboard
+ConvertTo-CorporateSpeak -Text "That's a terrible idea" -Model "qwen"
+    -SetClipboard
 
 .EXAMPLE
 "This makes no sense" | corporatize

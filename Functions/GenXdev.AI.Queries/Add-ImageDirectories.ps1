@@ -53,7 +53,7 @@ function Add-ImageDirectories {
     [Alias('addimgdir')]
 
     param(
-        #
+        ###############################################################################
         [Parameter(
             Mandatory = $true,
             Position = 0,
@@ -61,7 +61,8 @@ function Add-ImageDirectories {
             HelpMessage = 'Array of directory paths to add to image directories'
         )]
         [Alias('imagespath', 'directories', 'imgdirs', 'imagedirectory')]
-        [string[]] $ImageDirectories,        ################################################################################
+        [string[]] $ImageDirectories,
+        ################################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = ('Use alternative settings stored in session for AI ' +
@@ -94,60 +95,56 @@ function Add-ImageDirectories {
     )
 
     begin {
+        try {
+            # retrieve current image directories configuration
+            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue)
 
-        # retrieve current image directories configuration
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
-            -BoundParameters $PSBoundParameters `
-            -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                -Scope Local `
-                -ErrorAction SilentlyContinue)
+            $currentConfig = Get-AIImageCollection @params
 
-        $currentConfig = Get-AIImageCollection @params
+            # initialize new collection to store all directories including existing ones
+            $newDirectories = [System.Collections.Generic.List[string]]::new()
 
-        # initialize new collection to store all directories including existing ones
-        $newDirectories = [System.Collections.Generic.List[string]]::new()
+            # populate collection with existing directories to preserve them
+            foreach ($dir in $currentConfig) {
+                $newDirectories.Add($dir)
+            }
 
-        # populate collection with existing directories to preserve them
-        foreach ($dir in $currentConfig) {
-
-            $newDirectories.Add($dir)
+            # output current configuration state for debugging purposes
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                'Current image directories: ' +
+                "[$($currentConfig -join ', ')]"
+            )
+        } catch {
+            Write-Error "Failed to retrieve current image directories: $_"
+            return
         }
-
-        # output current configuration state for debugging purposes
-        Microsoft.PowerShell.Utility\Write-Verbose (
-            'Current image directories: ' +
-            "[$($currentConfig -join ', ')]"
-        )
     }
 
     process {
-
-        # iterate through each provided directory path for processing
         foreach ($directory in $ImageDirectories) {
-
-            # expand path to resolve relative paths and environment variables
-            $expandedPath = GenXdev.FileSystem\Expand-Path $directory
-
+            try {
+                # expand path to resolve relative paths and environment variables
+                $expandedPath = GenXdev.FileSystem\Expand-Path $directory
+            } catch {
+                Write-Error "Failed to expand path '$directory': $_"
+                continue
+            }
             # search for existing directory using case-insensitive comparison
             $existingDir = $newDirectories |
                 Microsoft.PowerShell.Core\Where-Object {
                     $_.ToLower() -eq $expandedPath.ToLower()
                 }
-
-            # add directory only if it doesn't already exist in collection
             if (-not $existingDir) {
-
                 $newDirectories.Add($expandedPath)
-
-                # output verbose message about successful addition
                 Microsoft.PowerShell.Utility\Write-Verbose (
                     "Adding directory: $expandedPath"
                 )
-            }
-            else {
-
-                # output verbose message about duplicate directory skip
+            } else {
                 Microsoft.PowerShell.Utility\Write-Verbose (
                     "Directory already exists: $expandedPath"
                 )
