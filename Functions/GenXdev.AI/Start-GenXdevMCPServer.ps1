@@ -99,7 +99,7 @@ function Start-GenXdevMCPServer {
                     }
                     serverInfo      = @{
                         name    = 'GenXdev-PowerShell-MCP-Server'
-                        version = '1.212.2025'
+                        version = '1.214.2025'
                     }
                 }
             }
@@ -197,7 +197,7 @@ function Start-GenXdevMCPServer {
                             }
                             serverInfo      = @{
                                 name    = 'GenXdev-PowerShell-MCP-Server'
-                                version = '1.212.2025'
+                                version = '1.214.2025'
                             }
                         }
                     }

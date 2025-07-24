@@ -130,8 +130,7 @@ function Get-LMStudioTextEmbedding {
             HelpMessage = 'Text to get embeddings for',
             ValueFromPipeline = $true
         )]
-        [ValidateNotNullOrEmpty()]
-        [string[]]$Text,
+        [object] $InputObject,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -434,40 +433,45 @@ function Get-LMStudioTextEmbedding {
 
     process {
 
-        # write verbose message about processing text items
-        Microsoft.PowerShell.Utility\Write-Verbose ('Processing embeddings ' +
-            "request for $($Text.Length) text items")
+        $InputObject | ForEach-Object -ErrorAction SilentlyContinue {
+            $text = "$PSItem";
+            if ([string]::IsNullOrWhiteSpace($text)) { return }
 
-        # create api request payload with model and input text
-        $payload = @{
-            model = $Model
-            input = $Text
-        }
+            # write verbose message about processing text items
+            Microsoft.PowerShell.Utility\Write-Verbose ('Processing embeddings ' +
+                "request for $($Text.Length) text items")
 
-        # convert payload to compressed json with deep nesting support
-        $json = $payload |
-            Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 60 -Compress
+            # create api request payload with model and input text
+            $payload = @{
+                model = $Model
+                input = $Text
+            }
 
-        # encode json string to utf8 bytes for api transmission
-        $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
+            # convert payload to compressed json with deep nesting support
+            $json = $payload |
+                Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 60 -Compress
 
-        # invoke embeddings api with extended timeout for large requests
-        $response = Microsoft.PowerShell.Utility\Invoke-RestMethod `
-            -Uri $apiUrl `
-            -Method Post `
-            -Body $bytes `
-            -Headers $headers `
-            -OperationTimeoutSeconds (3600 * 24) `
-            -ConnectionTimeoutSeconds (3600 * 24)
+            # encode json string to utf8 bytes for api transmission
+            $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
 
-        # process each embedding result and create output objects
-        foreach ($embedding in $response.data) {
+            # invoke embeddings api with extended timeout for large requests
+            $response = Microsoft.PowerShell.Utility\Invoke-RestMethod `
+                -Uri $apiUrl `
+                -Method Post `
+                -Body $bytes `
+                -Headers $headers `
+                -OperationTimeoutSeconds (3600 * 24) `
+                -ConnectionTimeoutSeconds (3600 * 24)
 
-            # create custom object with embedding data and context
-            [PSCustomObject]@{
-                embedding = $embedding.embedding
-                index     = $embedding.index
-                text      = $Text[$embedding.index]
+            # process each embedding result and create output objects
+            foreach ($embedding in $response.data) {
+
+                # create custom object with embedding data and context
+                [PSCustomObject]@{
+                    embedding = $embedding.embedding
+                    index     = $embedding.index
+                    text      = $Text[$embedding.index]
+                }
             }
         }
     }

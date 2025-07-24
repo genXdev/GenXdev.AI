@@ -148,7 +148,7 @@ function Get-Fallacy {
             Mandatory = $true,
             HelpMessage = 'Text to parse to find Fallacies in'
         )]
-        [string[]]$Text,
+        [object] $InputObject,
         #######################################################################
         [Parameter(
             Position = 1,
@@ -710,7 +710,9 @@ Return nothing.
     process {
 
         # iterate through each text part provided for analysis
-        foreach ($textPart in $Text) {
+        $InputObject | ForEach-Object -ErrorAction SilentlyContinue {
+            $textPart = "$PSItem";
+            if ([string]::IsNullOrWhiteSpace($textPart)) { return }
 
             # output verbose information about parameter preparation
             Microsoft.PowerShell.Utility\Write-Verbose `
