@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 <#
 .SYNOPSIS
 Removes directories from the configured image directories for GenXdev.AI operations.
@@ -111,7 +111,7 @@ function Remove-ImageDirectories {
                 -ErrorAction SilentlyContinue)
 
         # retrieve the current image collection configuration
-        $currentConfig = Get-AIImageCollection @params
+        $currentConfig = GenXdev.AI\Get-AIImageCollection @params
 
         # initialize collection for tracking directories that will remain
         $remainingDirectories = [System.Collections.Generic.List[string]]::new()
@@ -234,7 +234,7 @@ function Remove-ImageDirectories {
                     -ErrorAction SilentlyContinue)
 
             # update the image collection with the remaining directories
-            Set-AIImageCollection @params `
+            GenXdev.AI\Set-AIImageCollection @params `
                 -ImageDirectories $finalDirectories
 
             # output confirmation message with summary statistics

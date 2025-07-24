@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 <#
 .SYNOPSIS
 Adds directories to the configured image directories for GenXdev.AI operations.
@@ -104,7 +104,7 @@ function Add-ImageDirectories {
                     -Scope Local `
                     -ErrorAction SilentlyContinue)
 
-            $currentConfig = Get-AIImageCollection @params
+            $currentConfig = GenXdev.AI\Get-AIImageCollection @params
 
             # initialize new collection to store all directories including existing ones
             $newDirectories = [System.Collections.Generic.List[string]]::new()
@@ -120,7 +120,7 @@ function Add-ImageDirectories {
                 "[$($currentConfig -join ', ')]"
             )
         } catch {
-            Write-Error "Failed to retrieve current image directories: $_"
+            Microsoft.PowerShell.Utility\Write-Error "Failed to retrieve current image directories: $_"
             return
         }
     }
@@ -131,7 +131,7 @@ function Add-ImageDirectories {
                 # expand path to resolve relative paths and environment variables
                 $expandedPath = GenXdev.FileSystem\Expand-Path $directory
             } catch {
-                Write-Error "Failed to expand path '$directory': $_"
+                Microsoft.PowerShell.Utility\Write-Error "Failed to expand path '$directory': $_"
                 continue
             }
             # search for existing directory using case-insensitive comparison
@@ -173,7 +173,7 @@ function Add-ImageDirectories {
                     -ErrorAction SilentlyContinue)
 
             # update configuration using the dedicated setter function
-            Set-AIImageCollection `
+            GenXdev.AI\Set-AIImageCollection `
                 -ImageDirectories $finalDirectories `
                 @setParams
 

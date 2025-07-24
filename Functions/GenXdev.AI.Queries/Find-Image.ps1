@@ -5,12 +5,21 @@ Searches for image files and metadata in specified directories with filtering
 capabilities and optional browser-based gallery display.
 
 .DESCRIPTION
-Searches for image files (jpg, jpeg, png, gif) in the specified directory and
-its subdirectories. For each image, checks associated description.json,
+Searches for image files (jpg, jpeg, png, gif, bmp, webp, tiff, tif) in the
+specified directory and its subdirectories. For each image, checks associated
+description.json,
 keywords.json, people.json, and objects.json files for metadata. Can filter
 images based on keyword matches, people recognition, and object detection, then
 return the results as objects. Use -ShowInBrowser to display results in a
 browser-based masonry layout.
+
+Parameter Logic:
+- Within each parameter type (Keywords, People, Objects, etc.): Uses OR logic
+  Example: -Keywords "cat","dog" finds images with EITHER cat OR dog
+- Between different parameter types: Uses AND logic
+  Example: -Keywords "cat" -People "John" finds images with cat AND John
+- EXIF range parameters: Provide [min, max] values for filtering ranges
+- String parameters: Support wildcard matching with * and ?
 
 The function searches through image directories and examines alternate data
 streams containing metadata in JSON format. It can match keywords using wildcard
@@ -26,7 +35,8 @@ The path to the image database file. If not specified, a default path is used.
 
 .PARAMETER ImageDirectories
 Array of directory paths to search for images. Each directory is searched
-recursively for jpg, jpeg, and png files. Relative paths are converted to
+recursively for jpg, jpeg, png, gif, bmp, webp, tiff, and tif files. Relative
+paths are converted to
 absolute paths automatically.
 
 .PARAMETER PathLike
@@ -247,6 +257,60 @@ Only return the generated HTML instead of displaying it in a browser.
 .PARAMETER ShowOnlyPictures
 Show only pictures in a rounded rectangle, no text below.
 
+.PARAMETER MetaCameraMake
+Filter by camera make in image EXIF metadata. Supports wildcards.
+Multiple values use OR logic within this parameter.
+
+.PARAMETER MetaCameraModel
+Filter by camera model in image EXIF metadata. Supports wildcards.
+Multiple values use OR logic within this parameter.
+
+.PARAMETER MetaGPSLatitude
+Filter by GPS latitude range in image EXIF metadata.
+Provide two values for range filtering [min, max].
+
+.PARAMETER MetaGPSLongitude
+Filter by GPS longitude range in image EXIF metadata.
+Provide two values for range filtering [min, max].
+
+.PARAMETER MetaGPSAltitude
+Filter by GPS altitude range in image EXIF metadata (in meters).
+Provide two values for range filtering [min, max].
+
+.PARAMETER GeoLocation
+Geographic coordinates [latitude, longitude] to search near.
+
+.PARAMETER GeoDistanceInMeters
+Maximum distance in meters from GeoLocation to search for images.
+
+.PARAMETER MetaExposureTime
+Filter by exposure time range in image EXIF metadata (in seconds).
+Provide two values for range filtering [min, max].
+
+.PARAMETER MetaFNumber
+Filter by F-number (aperture) range in image EXIF metadata.
+Provide two values for range filtering [min, max].
+
+.PARAMETER MetaISO
+Filter by ISO sensitivity range in image EXIF metadata.
+Provide two values for range filtering [min, max].
+
+.PARAMETER MetaFocalLength
+Filter by focal length range in image EXIF metadata (in mm).
+Provide two values for range filtering [min, max].
+
+.PARAMETER MetaWidth
+Filter by image width range in pixels from EXIF metadata.
+Provide two values for range filtering [min, max].
+
+.PARAMETER MetaHeight
+Filter by image height range in pixels from EXIF metadata.
+Provide two values for range filtering [min, max].
+
+.PARAMETER MetaDateTaken
+Filter by date taken from EXIF metadata. Can be a date range.
+Provide two DateTime values for range filtering [start, end].
+
 .PARAMETER SessionOnly
 Use alternative settings stored in session for AI preferences like Language,
 Image collections, etc.
@@ -262,9 +326,20 @@ Database path for preference data files.
 Dont use alternative settings stored in session for AI preferences like Language,
 Image collections, etc.
 
+.PARAMETER MinConfidenceRatio
+Minimum confidence ratio (0.0-1.0) for filtering people, scenes, and objects
+by confidence. Only returns data for people, scenes, and objects with confidence
+greater than or equal to this value. When specified, filters out low-confidence
+detection results from people, scenes, and objects data while keeping the image.
+
+.PARAMETER Append
+When used with InputObject, first outputs all InputObject content, then
+processes as if InputObject was not set. Allows appending search results to
+existing collections.
+
 .EXAMPLE
 Find-Image -Keywords "cat","dog" -ImageDirectories "C:\Photos"
-Searches for images containing 'cat' or 'dog' keywords and returns the image objects.
+Searches for images containing 'cat' OR 'dog' keywords and returns the image objects.
 
 .EXAMPLE
 findimages cat,dog "C:\Photos"
@@ -272,7 +347,17 @@ Same as above using the alias and positional parameters.
 
 .EXAMPLE
 Find-Image -People "John","Jane" -ImageDirectories "C:\Family" -ShowInBrowser
-Searches for photos containing John or Jane and displays them in a web gallery.
+Searches for photos containing John OR Jane and displays them in a web gallery.
+
+.EXAMPLE
+Find-Image -Keywords "vacation" -People "John" -Objects "beach" -ImageDirectories "C:\Photos"
+Searches for images that contain vacation keywords AND John as a person AND beach objects.
+All three criteria must be met (AND logic between parameter types).
+
+.EXAMPLE
+Find-Image -MetaISO 100,800 -MetaFNumber 1.4,2.8 -ImageDirectories "C:\Photos"
+Finds images with ISO between 100-800 AND aperture (F-number) between f/1.4-f/2.8.
+EXIF parameters use range filtering with [min, max] values.
 
 .EXAMPLE
 Find-Image -Objects "car","bicycle" -ImageDirectories "C:\Photos" -ShowInBrowser -PassThru
@@ -301,6 +386,10 @@ Searches for daylight photos with a calm/peaceful mood and returns the image obj
 .EXAMPLE
 findimages -StyleType "casual" -HasNudity -ImageDirectories "C:\Art"
 Searches for casual style images that contain nudity and returns the data objects.
+
+.EXAMPLE
+Find-Image -Scenes "beach" -MinConfidenceRatio 0.75 -ImageDirectories "C:\Photos"
+Searches for beach scenes with confidence level of 75% or higher and filters people, scenes, and objects data by confidence.
 #>
 ###############################################################################
 
@@ -447,6 +536,90 @@ function Find-Image {
                 "'cheerful', 'sad', etc). Supports wildcards.")
         )]
         [string[]] $OverallMood = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by camera make in image EXIF metadata. Supports wildcards.'
+        )]
+        [string[]] $MetaCameraMake = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by camera model in image EXIF metadata. Supports wildcards.'
+        )]
+        [string[]] $MetaCameraModel = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by GPS latitude range in image EXIF metadata.'
+        )]
+        [double[]] $MetaGPSLatitude,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by GPS longitude range in image EXIF metadata.'
+        )]
+        [double[]] $MetaGPSLongitude,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by GPS altitude range in image EXIF metadata (in meters).'
+        )]
+        [double[]] $MetaGPSAltitude,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Geographic coordinates [latitude, longitude] to search near.'
+        )]
+        [double[]] $GeoLocation,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Maximum distance in meters from GeoLocation to search for images.'
+        )]
+        [double] $GeoDistanceInMeters = 1000,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by exposure time range in image EXIF metadata (in seconds).'
+        )]
+        [double[]] $MetaExposureTime,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by F-number (aperture) range in image EXIF metadata.'
+        )]
+        [double[]] $MetaFNumber,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by ISO sensitivity range in image EXIF metadata.'
+        )]
+        [int[]] $MetaISO,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by focal length range in image EXIF metadata (in mm).'
+        )]
+        [double[]] $MetaFocalLength,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by image width range in pixels from EXIF metadata.'
+        )]
+        [int[]] $MetaWidth,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by image height range in pixels from EXIF metadata.'
+        )]
+        [int[]] $MetaHeight,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by date taken from EXIF metadata. Can be a date range.'
+        )]
+        [DateTime[]] $MetaDateTaken,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -844,7 +1017,47 @@ function Find-Image {
             Mandatory = $false,
             HelpMessage = 'Prefix to prepend to each image path (e.g. for remote URLs)'
         )]
-        [string]$ImageUrlPrefix = ''
+        [string]$ImageUrlPrefix = '',
+        ###############################################################################
+        <#
+        .PARAMETER AllDrives
+        Search across all available drives.
+        #>
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Search across all available drives'
+        )]
+
+        [switch] $AllDrives,
+        ###############################################################################
+        <#
+        .PARAMETER NoRecurse
+        Do not recurse into subdirectories.
+        #>
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Do not recurse into subdirectories'
+        )]
+        [switch] $NoRecurse,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Minimum confidence ratio (0.0-1.0) for filtering ' +
+                'people, scenes, and objects by confidence. Only returns data for ' +
+                'people, scenes, and objects with confidence greater than or equal ' +
+                'to this value.')
+        )]
+        [ValidateRange(0.0, 1.0)]
+        [double] $MinConfidenceRatio,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('When used with InputObject, first outputs all ' +
+                'InputObject content, then processes as if InputObject was not set. ' +
+                'Allows appending search results to existing collections.')
+        )]
+        [switch] $Append
+        ###############################################################################
     )
 
     begin {
@@ -865,7 +1078,8 @@ function Find-Image {
                 -Scope Local `
                 -ErrorAction SilentlyContinue)
 
-        $language = Get-AIMetaLanguage @params
+        # retrieve the language preference from ai meta language function
+        $language = GenXdev.AI\Get-AIMetaLanguage @params
 
         # enable interactive mode when interactive switch is used
         if ($Interactive) {
@@ -873,10 +1087,26 @@ function Find-Image {
             $ShowInBrowser = $true
         }
 
+        # copy parameters for resolving input object file names
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName 'GenXdev.FileSystem\ResolveInputObjectFileNames' `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+
+        # resolve input object file names and convert to full path array
+        $fileNames = @(@(GenXdev.FileSystem\ResolveInputObjectFileNames @params -InputObject $InputObject -PassThru) +
+                     @(GenXdev.FileSystem\ResolveInputObjectFileNames @params -InputObject $Any -PassThru) | Microsoft.PowerShell.Core\ForEach-Object FullName)
+
+        # filter input objects to exclude already processed file names
+        $InputObject = $null -eq $InputObject ? $InputObject : (@($InputObject | Microsoft.PowerShell.Core\Where-Object { $fileNames.IndexOf((GenXdev.FileSystem\Expand-Path $_)) -lt 0 } -ErrorAction SilentlyContinue));
+
+        # filter any parameter to exclude already processed file names
+        $Any = $null -eq $Any ? $null : (@($Any | Microsoft.PowerShell.Core\Where-Object { $fileNames.IndexOf((GenXdev.FileSystem\Expand-Path $_)) -lt 0 } -ErrorAction SilentlyContinue));
+
         # initialize results collection for all found images
         $results = [System.Collections.Generic.List[Object]] @()
 
-        # use provided directories or get from configuration
+        # copy parameters for getting ai image collection directories
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
@@ -884,46 +1114,29 @@ function Find-Image {
                 -Scope Local `
                 -ErrorAction SilentlyContinue)
 
-        $directories = Get-AIImageCollection @params
+        # get configured image directories from ai configuration
+        $directories = GenXdev.AI\Get-AIImageCollection @params
 
-        # process any parameter to expand search criteria across all metadata types
+        # process any parameter - prepare for OR-based matching across metadata types
+        $anySearchTerms = @()
         if ($null -ne $Any -and $Any.Length -gt 0) {
-
-            # add wildcards to entries that don't already have them
-            $any = @($Any | Microsoft.PowerShell.Core\ForEach-Object {
-
-                    $entry = $_.Trim()
-
-                    if ($entry.IndexOfAny([char[]]@('*', '?')) -lt 0) {
-
-                        "*$entry*"
-                    }
-                    else {
-
-                        $_
-                    }
-                })
-
-            # if any parameter is used, treat it as a set of keywords
-            $DescriptionSearch = $null -ne $DescriptionSearch ? `
-            ($DescriptionSearch + $any) : $any
-
-            $Keywords = $null -ne $Keywords ? ($Keywords + $any) : $any
-
-            $People = $null -ne $People ? ($People + $any) : $any
-
-            $Objects = $null -ne $Objects ? ($Objects + $any) : $any
-
-            $Scenes = $null -ne $Scenes ? ($Scenes + $any) : $any
-
-            $PictureType = $null -ne $PictureType ? `
-            ($PictureType + $any) : $any
-
-            $StyleType = $null -ne $StyleType ? ($StyleType + $any) : $any
-
-            $OverallMood = $null -ne $OverallMood ? `
-            ($OverallMood + $any) : $any
+            # add wildcards to entries that don't already have them for flexible matching
+            $anySearchTerms = @($Any | Microsoft.PowerShell.Core\ForEach-Object {
+                # trim whitespace from each entry
+                $entry = $_.Trim()
+                # check if entry already has wildcard characters
+                if ($entry.IndexOfAny([char[]]@('*', '?')) -lt 0) {
+                    # add wildcard wrapping for broader matching
+                    "*$entry*"
+                }
+                else {
+                    # return entry as-is if wildcards already present
+                    $_
+                }
+            })
         }
+
+        $done = @{}
     }
 
     process {
@@ -936,15 +1149,17 @@ function Find-Image {
             # get full path of current image file being processed
             $image = $PSItem.FullName
 
-            # output current image being processed for debugging
+            # output current image being processed for debugging purposes
             Microsoft.PowerShell.Utility\Write-Verbose (
                 "Processing image: $image")
 
-            # initialize metadata containers for this image
+            # initialize metadata containers for this image with empty defaults
             $keywordsFound = @()
 
+            # initialize description container
             $descriptionFound = $null
 
+            # initialize metadata file path variable
             $metadataFile = $null
 
             # try to load description metadata in requested language if not english
@@ -952,17 +1167,21 @@ function Find-Image {
                 [System.IO.File]::Exists(
                     "$($image):description.$language.json")) {
 
+                # log that language-specific metadata was found
                 Microsoft.PowerShell.Utility\Write-Verbose (
                     "Found $language metadata for $image")
 
+                # set path to language-specific description file
                 $metadataFile = "$($image):description.$language.json"
             }
             # fallback to english if language-specific file doesn't exist
             elseif ([System.IO.File]::Exists("$($image):description.json")) {
 
+                # log that english fallback metadata was found
                 Microsoft.PowerShell.Utility\Write-Verbose (
                     "Found English metadata for $image")
 
+                # set path to english description file
                 $metadataFile = "$($image):description.json"
             }
 
@@ -976,7 +1195,7 @@ function Find-Image {
                         $metadataFile) |
                         Microsoft.PowerShell.Utility\ConvertFrom-Json
 
-                    # extract keywords from description if they exist
+                    # extract keywords from description if they exist in metadata
                     $keywordsFound = ($null -eq $descriptionFound.keywords) ?
                     @() : $descriptionFound.keywords
                 }
@@ -985,6 +1204,7 @@ function Find-Image {
                     # reset description if json parsing fails
                     $descriptionFound = $null
 
+                    # log parsing failure for debugging purposes
                     Microsoft.PowerShell.Utility\Write-Verbose (
                         "Failed to parse metadata from $metadataFile")
                 }
@@ -1090,7 +1310,7 @@ function Find-Image {
                 }
             }
 
-            # determine if image has search criteria or metadata
+            # determine if image has search criteria or metadata for filtering
             $hasSearchCriteria = (($null -ne $Keywords) -and
                 ($Keywords.Length -gt 0)) -or
                 (($null -ne $People) -and ($People.Count -gt 0)) -or
@@ -1100,221 +1320,192 @@ function Find-Image {
             $NoExplicitContent -or
                 (($null -ne $PictureType) -and ($PictureType.Count -gt 0)) -or
                 (($null -ne $StyleType) -and ($StyleType.Count -gt 0)) -or
-                (($null -ne $OverallMood) -and ($OverallMood.Count -gt 0))
+                (($null -ne $OverallMood) -and ($OverallMood.Count -gt 0)) -or
+                (($null -ne $DescriptionSearch) -and ($DescriptionSearch.Count -gt 0)) -or
+                (($null -ne $MetaCameraMake) -and ($MetaCameraMake.Count -gt 0)) -or
+                (($null -ne $MetaCameraModel) -and ($MetaCameraModel.Count -gt 0)) -or
+                (($null -ne $MetaWidth) -and ($MetaWidth.Count -gt 0)) -or
+                (($null -ne $MetaHeight) -and ($MetaHeight.Count -gt 0)) -or
+                (($null -ne $MetaGPSLatitude) -and ($MetaGPSLatitude.Count -gt 0)) -or
+                (($null -ne $MetaGPSLongitude) -and ($MetaGPSLongitude.Count -gt 0)) -or
+                (($null -ne $MetaGPSAltitude) -and ($MetaGPSAltitude.Count -gt 0)) -or
+                (($null -ne $MetaExposureTime) -and ($MetaExposureTime.Count -gt 0)) -or
+                (($null -ne $MetaFNumber) -and ($MetaFNumber.Count -gt 0)) -or
+                (($null -ne $MetaISO) -and ($MetaISO.Count -gt 0)) -or
+                (($null -ne $MetaFocalLength) -and ($MetaFocalLength.Count -gt 0)) -or
+                (($null -ne $MetaDateTaken) -and ($MetaDateTaken.Count -gt 0)) -or
+                (($null -ne $GeoLocation) -and ($GeoLocation.Count -eq 2)) -or
+                ($null -ne $MinConfidenceRatio)
 
-            # assume match if no keyword search criteria specified
-            $found = (-not $hasSearchCriteria) -or
-                ($HasNudity -and ($null -ne $descriptionFound) -and
-                    ($descriptionFound.has_nudity -eq $true)) -or
-                ($NoNudity -and ($null -ne $descriptionFound) -and
-                    ($descriptionFound.has_nudity -ne $true)) -or
-                ($HasExplicitContent -and ($null -ne $descriptionFound) -and
-                    ($descriptionFound.has_explicit_content -eq $true)) -or
-                ($NoExplicitContent -and ($null -ne $descriptionFound) -and
-                    ($null -ne $descriptionFound.has_explicit_content -ne $true))
+            # assume match if no search criteria specified (return all images with metadata)
+            # if we have search criteria, start with true and set to false if any criteria fails (AND logic)
+            $found = $true
 
-            # check each required keyword against available metadata
-            if ((-not $found) -and
-                ($null -ne $descriptionFound) -and
-                ($null -ne $descriptionFound.description) -and
-                ($null -ne $DescriptionSearch) -and
-                ($DescriptionSearch.Count -gt 0)
-            ) {
+            # initialize individual criteria match results for proper AND logic between parameter types
+            $keywordMatch = $true
+            $peopleMatch = $true
+            $objectMatch = $true
+            $sceneMatch = $true
+            $descriptionMatch = $true
+            $pictureTypeMatch = $true
+            $styleTypeMatch = $true
+            $moodMatch = $true
+            $contentMatch = $true
+            $exifMatch = $true
+            $anyMatch = $true
+            $confidenceMatch = $true
 
-                # reset found flag to require keyword match
-                $found = $false
+            # check basic content filtering criteria (nudity and explicit content)
+            if ($HasNudity -or $NoNudity -or $HasExplicitContent -or $NoExplicitContent) {
+                $contentMatch = $false  # Start with false, set true if any content criteria matches
 
-                # check each required keyword against description content
-                foreach ($requiredDescriptionPhrase in $DescriptionSearch) {
+                # check if nudity is required and image has nudity flag set to true
+                if ($HasNudity -and ($null -ne $descriptionFound) -and
+                    ($descriptionFound.has_nudity -eq $true)) {
+                    $contentMatch = $true
+                }
 
-                    # use wildcard matching for flexible description search
-                    if ($descriptionFound.description.long_description -like
-                        $requiredDescriptionPhrase) {
+                # check if no nudity is required and image has nudity flag not set to true
+                if ($NoNudity -and ($null -ne $descriptionFound) -and
+                    ($descriptionFound.has_nudity -ne $true)) {
+                    $contentMatch = $true
+                }
 
-                        $found = $true
+                # check if explicit content is required and image has explicit content flag set to true
+                if ($HasExplicitContent -and ($null -ne $descriptionFound) -and
+                    ($descriptionFound.has_explicit_content -eq $true)) {
+                    $contentMatch = $true
+                }
 
-                        break
-                    }
-
-                    if ($descriptionFound.description.short_description -like
-                        $requiredDescriptionPhrase) {
-
-                        $found = $true
-
-                        break
-                    }
+                # check if no explicit content is required and image has explicit content flag not set to true
+                if ($NoExplicitContent -and ($null -ne $descriptionFound) -and
+                    ($descriptionFound.has_explicit_content -ne $true)) {
+                    $contentMatch = $true
                 }
             }
 
-            # perform keyword matching if keywords were specified for search
-            if ((-not $found) -and
-                ($null -ne $descriptionFound) -and
-                ($null -ne $descriptionFound.description) -and
-                ($null -ne $DescriptionSearch) -and
-                ($DescriptionSearch.Count -gt 0)
-            ) {
-
-                # check each required keyword against description content
-                foreach ($requiredDescriptionPhrase in $DescriptionSearch) {
-
-                    # use wildcard matching for flexible description search
-                    if ($descriptionFound.description.long_description -like
-                        $requiredDescriptionPhrase) {
-
-                        $found = $true
-
-                        break
-                    }
-
-                    if ($descriptionFound.description.short_description -like
-                        $requiredDescriptionPhrase) {
-
-                        $found = $true
-
-                        break
-                    }
-                }
-            }
-
-            # picture type filtering
-            if ((-not $found) -and ($null -ne $PictureType) -and
-                ($PictureType.Count -gt 0)) {
-
-                foreach ($requiredPictureType in $PictureType) {
-
-                    if ($descriptionFound.picture_type -like
-                        $requiredPictureType) {
-
-                        $found = $true
-
-                        break
-                    }
-                }
-            }
-
-            # style type filtering
-            if ((-not $found) -and ($null -ne $StyleType) -and
-                ($StyleType.Count -gt 0)) {
-
-                foreach ($requiredStyleType in $StyleType) {
-
-                    if ($descriptionFound.style_type -like
-                        $requiredStyleType) {
-
-                        $found = $true
-
-                        break
-                    }
-                }
-            }
-
-            # overall mood filtering
-            if ((-not $found) -and ($null -ne $OverallMood) -and
-                ($OverallMood.Count -gt 0)) {
-
-                foreach ($requiredMood in $OverallMood) {
-
-                    if ($descriptionFound.overall_mood_of_image -like
-                        $requiredMood) {
-
-                        $found = $true
-
-                        break
-                    }
-                }
-            }
-
-            # perform additional keywords filtering if keywords criteria specified
-            if ((-not $found) -and ($null -ne $Keywords) -and
-                ($Keywords.Length -gt 0)) {
-
-                # reset found flag to require keywords match
-                $found = $false
-
-                # check each found person against search criteria
-                foreach ($foundKeyword in $keywordsFound) {
-
-                    # check each searched keywords against found keyword
-                    foreach ($searchedForKeyword in $Keywords) {
-
-                        # use wildcard matching for flexible people search
-                        if ($foundKeyword -like $searchedForKeyword) {
-
-                            $found = $true
-
+            # check description search criteria against image description metadata
+            if ($null -ne $DescriptionSearch -and $DescriptionSearch.Count -gt 0) {
+                $descriptionMatch = $false  # Start with false, set true if any description matches
+                if ($null -ne $descriptionFound -and $null -ne $descriptionFound.description) {
+                    # check each required keyword against description content
+                    foreach ($requiredDescriptionPhrase in $DescriptionSearch) {
+                        # use wildcard matching for flexible description search against both long and short descriptions
+                        if ($descriptionFound.description.long_description -like
+                            $requiredDescriptionPhrase -or
+                            $descriptionFound.description.short_description -like
+                            $requiredDescriptionPhrase) {
+                            $descriptionMatch = $true
                             break
                         }
                     }
-
-                    # exit early if any person matches
-                    if ($found) { break }
                 }
             }
 
-            # perform additional people filtering if people criteria specified
-            if ((-not $found) -and ($null -ne $People) -and
-                ($People.Length -gt 0)) {
+            # perform picture type filtering against image metadata
+            if ($null -ne $PictureType -and $PictureType.Count -gt 0) {
+                $pictureTypeMatch = $false  # Start with false, set true if any picture type matches
+                if ($null -ne $descriptionFound) {
+                    # check each required picture type against image metadata
+                    foreach ($requiredPictureType in $PictureType) {
+                        # use wildcard matching for flexible picture type filtering
+                        if ($descriptionFound.picture_type -like $requiredPictureType) {
+                            $pictureTypeMatch = $true
+                            break
+                        }
+                    }
+                }
+            }
 
-                # reset found flag to require people match
-                $found = $false
+            # perform style type filtering against image metadata
+            if ($null -ne $StyleType -and $StyleType.Count -gt 0) {
+                $styleTypeMatch = $false  # Start with false, set true if any style type matches
+                if ($null -ne $descriptionFound) {
+                    # check each required style type against image metadata
+                    foreach ($requiredStyleType in $StyleType) {
+                        # use wildcard matching for flexible style type filtering
+                        if ($descriptionFound.style_type -like $requiredStyleType) {
+                            $styleTypeMatch = $true
+                            break
+                        }
+                    }
+                }
+            }
 
-                # check each found person against search criteria
+            # perform overall mood filtering against image metadata
+            if ($null -ne $OverallMood -and $OverallMood.Count -gt 0) {
+                $moodMatch = $false  # Start with false, set true if any mood matches
+                if ($null -ne $descriptionFound) {
+                    # check each required mood against image metadata
+                    foreach ($requiredMood in $OverallMood) {
+                        # use wildcard matching for flexible mood filtering
+                        if ($descriptionFound.overall_mood_of_image -like $requiredMood) {
+                            $moodMatch = $true
+                            break
+                        }
+                    }
+                }
+            }
+
+            # perform keywords filtering if keywords criteria specified
+            if ($null -ne $Keywords -and $Keywords.Length -gt 0) {
+                $keywordMatch = $false  # Start with false, set true if any keyword matches (OR within parameter)
+                # check each found keyword against search criteria using nested loops
+                foreach ($foundKeyword in $keywordsFound) {
+                    # check each searched keywords against found keyword with wildcard matching
+                    foreach ($searchedForKeyword in $Keywords) {
+                        # use wildcard matching for flexible keyword search
+                        if ($foundKeyword -like $searchedForKeyword) {
+                            $keywordMatch = $true
+                            break
+                        }
+                    }
+                    # exit early if any keyword matches to improve performance
+                    if ($keywordMatch) { break }
+                }
+            }
+
+            # perform people filtering if people criteria specified
+            if ($null -ne $People -and $People.Length -gt 0) {
+                $peopleMatch = $false  # Start with false, set true if any person matches (OR within parameter)
+                # check each found person against search criteria using nested loops
                 foreach ($foundPerson in $peopleFound.faces) {
-
-                    # check each searched person against found person
+                    # check each searched person against found person with wildcard matching
                     foreach ($searchedForPerson in $People) {
-
                         # use wildcard matching for flexible people search
                         if ($foundPerson -like $searchedForPerson) {
-
-                            $found = $true
-
+                            $peopleMatch = $true
                             break
                         }
                     }
-
-                    # exit early if any person matches
-                    if ($found) { break }
+                    # exit early if any person matches to improve performance
+                    if ($peopleMatch) { break }
                 }
             }
 
-            # perform additional objects filtering if objects criteria specified
-            if ((-not $found) -and ($null -ne $Objects) -and
-                ($Objects.Length -gt 0)) {
-
-                # reset found flag to require objects match
-                $found = $false
-
-                # check each found object against search criteria
+            # perform objects filtering if objects criteria specified
+            if ($null -ne $Objects -and $Objects.Length -gt 0) {
+                $objectMatch = $false  # Start with false, set true if any object matches (OR within parameter)
+                # check each found object against search criteria using nested loops
                 foreach ($foundObject in $objectsFound.objects) {
-
-                    # check each searched object against found object
+                    # check each searched object against found object with wildcard matching
                     foreach ($searchedForObject in $Objects) {
-
                         # use wildcard matching for flexible objects search
                         if ($foundObject.label -like $searchedForObject) {
-
-                            $found = $true
-
+                            $objectMatch = $true
                             break
                         }
                     }
-
-                    # exit early if any object matches
-                    if ($found) { break }
+                    # exit early if any object matches to improve performance
+                    if ($objectMatch) { break }
                 }
             }
 
-            # perform additional scenes filtering if scenes criteria specified
-            if ((-not $found) -and ($null -ne $Scenes) -and
-                ($Scenes.Count -gt 0)) {
-
-                # reset found flag to require scene match
-                $found = $false
-
-                # debug output for scene filtering
+            # perform scenes filtering if scenes criteria specified
+            if ($null -ne $Scenes -and $Scenes.Count -gt 0) {
+                $sceneMatch = $false  # Start with false, set true if any scene matches (OR within parameter)
+                # output debug information for scene filtering when verbose mode is enabled
                 if ($VerbosePreference -eq 'Continue') {
-
                     Microsoft.PowerShell.Utility\Write-Verbose (
                         'Scene filtering - Searching for: ' +
                         "$($Scenes -join ', ')")
@@ -1327,32 +1518,466 @@ function Find-Image {
                         "$($scenesFound.success)")
                 }
 
-                # check if the found scene matches any of the search criteria
+                # check if the found scene matches any of the search criteria with wildcard support
                 foreach ($searchedForScene in $Scenes) {
-
                     # use wildcard matching for flexible scene search
                     if ($scenesFound.scene -like $searchedForScene) {
-
-                        $found = $true
-
+                        $sceneMatch = $true
+                        # output match confirmation when verbose mode is enabled
                         if ($VerbosePreference -eq 'Continue') {
-
                             Microsoft.PowerShell.Utility\Write-Verbose (
                                 'Scene filtering - Match found: ' +
                                 "'$($scenesFound.scene)' matches " +
                                 "'$searchedForScene'")
                         }
-
                         break
                     }
                 }
 
-                if (-not $found -and $VerbosePreference -eq 'Continue') {
-
+                # output no match message when verbose mode is enabled and no matches found
+                if (-not $sceneMatch -and $VerbosePreference -eq 'Continue') {
                     Microsoft.PowerShell.Utility\Write-Verbose (
                         'Scene filtering - No match found for scene: ' +
                         "$($scenesFound.scene)")
                 }
+            }
+
+            # perform confidence filtering if minimum confidence ratio is specified
+            if ($null -ne $MinConfidenceRatio) {
+                $confidenceMatch = $false  # Start with false, set true if any confidence meets minimum threshold
+
+                # filter scenes by confidence - remove scenes below minimum threshold
+                if ($null -ne $scenesFound -and $null -ne $scenesFound.confidence) {
+                    if ($scenesFound.confidence -ge $MinConfidenceRatio) {
+                        $confidenceMatch = $true
+
+                        # output scene confidence match for debugging purposes
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Confidence filtering - Scene match: " +
+                            "scene confidence $($scenesFound.confidence) >= " +
+                            "minimum $MinConfidenceRatio for image $image")
+                    } else {
+                        # filter out the scene data by setting it to default
+                        $scenesFound = @{
+                            success = $false
+                            scene = 'unknown'
+                            label = 'unknown'
+                            confidence = 0.0
+                        }
+
+                        # output scene confidence rejection for debugging purposes
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Confidence filtering - Scene filtered out: " +
+                            "scene confidence below minimum $MinConfidenceRatio for image $image")
+                    }
+                }
+
+                # filter people by confidence - remove people predictions below minimum threshold
+                if ($null -ne $peopleFound -and $null -ne $peopleFound.predictions -and $peopleFound.predictions.Count -gt 0) {
+                    $filteredPredictions = @()
+                    foreach ($prediction in $peopleFound.predictions) {
+                        if ($null -ne $prediction.confidence -and $prediction.confidence -ge $MinConfidenceRatio) {
+                            $filteredPredictions += $prediction
+                            $confidenceMatch = $true
+
+                            # output people confidence match for debugging purposes
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                "Confidence filtering - People match: " +
+                                "person '$($prediction.label)' confidence $($prediction.confidence) >= " +
+                                "minimum $MinConfidenceRatio for image $image")
+                        } else {
+                            # output people confidence rejection for debugging purposes
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                "Confidence filtering - Person filtered out: " +
+                                "'$($prediction.label)' confidence below minimum $MinConfidenceRatio for image $image")
+                        }
+                    }
+                    $peopleFound.predictions = $filteredPredictions
+                    $peopleFound.count = $filteredPredictions.Count
+
+                    # update faces array to match filtered predictions
+                    $peopleFound.faces = $filteredPredictions | Microsoft.PowerShell.Core\ForEach-Object { $_.label }
+                }
+
+                # filter objects by confidence - remove object predictions below minimum threshold
+                if ($null -ne $objectsFound -and $null -ne $objectsFound.objects -and $objectsFound.objects.Count -gt 0) {
+                    $filteredObjects = @()
+                    $filteredCounts = @{}
+
+                    foreach ($obj in $objectsFound.objects) {
+                        if ($null -ne $obj.confidence -and $obj.confidence -ge $MinConfidenceRatio) {
+                            $filteredObjects += $obj
+                            $confidenceMatch = $true
+
+                            # update object counts for filtered objects
+                            if ($filteredCounts.ContainsKey($obj.label)) {
+                                $filteredCounts[$obj.label]++
+                            } else {
+                                $filteredCounts[$obj.label] = 1
+                            }
+
+                            # output object confidence match for debugging purposes
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                "Confidence filtering - Object match: " +
+                                "object '$($obj.label)' confidence $($obj.confidence) >= " +
+                                "minimum $MinConfidenceRatio for image $image")
+                        } else {
+                            # output object confidence rejection for debugging purposes
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                "Confidence filtering - Object filtered out: " +
+                                "'$($obj.label)' confidence below minimum $MinConfidenceRatio for image $image")
+                        }
+                    }
+
+                    $objectsFound.objects = $filteredObjects
+                    $objectsFound.count = $filteredObjects.Count
+                    $objectsFound.object_counts = $filteredCounts
+                }
+
+                # if no confidence match was found and MinConfidenceRatio is specified, skip this image
+                if (-not $confidenceMatch) {
+                    # output no confidence match for debugging purposes
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Confidence filtering - No confidence data meets minimum threshold " +
+                        "$MinConfidenceRatio for image $image")
+                }
+            }
+
+            # perform EXIF metadata filtering if criteria specified
+            $width = $null
+            $height = $null
+            $metadata = $null
+            if ($hasSearchCriteria -and (($null -ne $MetaCameraMake -and $MetaCameraMake.Count -gt 0) -or
+                ($null -ne $MetaCameraModel -and $MetaCameraModel.Count -gt 0) -or
+                ($null -ne $MetaWidth -and $MetaWidth.Count -gt 0) -or
+                ($null -ne $MetaHeight -and $MetaHeight.Count -gt 0) -or
+                ($null -ne $MetaGPSLatitude -and $MetaGPSLatitude.Count -gt 0) -or
+                ($null -ne $MetaGPSLongitude -and $MetaGPSLongitude.Count -gt 0) -or
+                ($null -ne $MetaGPSAltitude -and $MetaGPSAltitude.Count -gt 0) -or
+                ($null -ne $MetaExposureTime -and $MetaExposureTime.Count -gt 0) -or
+                ($null -ne $MetaFNumber -and $MetaFNumber.Count -gt 0) -or
+                ($null -ne $MetaISO -and $MetaISO.Count -gt 0) -or
+                ($null -ne $MetaFocalLength -and $MetaFocalLength.Count -gt 0) -or
+                ($null -ne $MetaDateTaken -and $MetaDateTaken.Count -gt 0) -or
+                ($null -ne $GeoLocation -and $GeoLocation.Count -eq 2))) {
+
+                $exifMatch = $false  # Start with false, will be set true if EXIF criteria match
+
+                try {
+                    # get metadata for EXIF filtering
+                    $metadataStream = "${image}:EXIF.json"
+                    if (Microsoft.PowerShell.Management\Test-Path -LiteralPath $metadataStream -ErrorAction SilentlyContinue) {
+                        try {
+                            $cachedMetadata = Microsoft.PowerShell.Management\Get-Content -LiteralPath $metadataStream -Raw -ErrorAction SilentlyContinue
+                            if ($cachedMetadata) {
+                                $metadata = $cachedMetadata | Microsoft.PowerShell.Utility\ConvertFrom-Json -AsHashtable -ErrorAction Stop
+                            }
+                        }
+                        catch {
+                            Microsoft.PowerShell.Utility\Write-Verbose "Failed to read cached metadata: $_"
+                            $metadata = GenXdev.Helpers\Get-ImageMetadata -ImagePath $image
+                        }
+                    }
+                    else {
+                        $metadata = GenXdev.Helpers\Get-ImageMetadata -ImagePath $image
+                    }
+
+                    if ($null -ne $metadata) {
+                        $width = $metadata.Basic.Width
+                        $height = $metadata.Basic.Height
+                        $exifMatch = $true  # Start with true for AND logic between EXIF criteria
+
+                        # check camera make filter (OR within parameter, AND with other EXIF)
+                        if ($null -ne $MetaCameraMake -and $MetaCameraMake.Count -gt 0) {
+                            $makeMatch = $false
+                            foreach ($make in $MetaCameraMake) {
+                                if ($null -ne $metadata.Camera.Make -and $metadata.Camera.Make -like $make) {
+                                    $makeMatch = $true
+                                    break
+                                }
+                            }
+                            $exifMatch = $exifMatch -and $makeMatch
+                        }
+
+                        # check camera model filter (OR within parameter, AND with other EXIF)
+                        if ($exifMatch -and $null -ne $MetaCameraModel -and $MetaCameraModel.Count -gt 0) {
+                            $modelMatch = $false
+                            foreach ($model in $MetaCameraModel) {
+                                if ($null -ne $metadata.Camera.Model -and $metadata.Camera.Model -like $model) {
+                                    $modelMatch = $true
+                                    break
+                                }
+                            }
+                            $exifMatch = $exifMatch -and $modelMatch
+                        }
+
+                        # Width filter (exact or range)
+                        if ($exifMatch -and $null -ne $MetaWidth -and $MetaWidth.Count -gt 0) {
+                            $widthMatch = $false
+                            if ($MetaWidth.Count -eq 1) {
+                                $widthMatch = $width -eq $MetaWidth[0]
+                            } elseif ($MetaWidth.Count -eq 2) {
+                                $widthMatch = $width -ge $MetaWidth[0] -and $width -le $MetaWidth[1]
+                            }
+                            $exifMatch = $exifMatch -and $widthMatch
+                        }
+
+                        # Height filter (exact or range)
+                        if ($exifMatch -and $null -ne $MetaHeight -and $MetaHeight.Count -gt 0) {
+                            $heightMatch = $false
+                            if ($MetaHeight.Count -eq 1) {
+                                $heightMatch = $height -eq $MetaHeight[0]
+                            } elseif ($MetaHeight.Count -eq 2) {
+                                $heightMatch = $height -ge $MetaHeight[0] -and $height -le $MetaHeight[1]
+                            }
+                            $exifMatch = $exifMatch -and $heightMatch
+                        }
+
+                        # GPS filtering - exclude images without GPS data when GPS parameters are specified
+                        if ($exifMatch -and (($null -ne $MetaGPSLatitude -and $MetaGPSLatitude.Count -gt 0) -or
+                            ($null -ne $MetaGPSLongitude -and $MetaGPSLongitude.Count -gt 0) -or
+                            ($null -ne $MetaGPSAltitude -and $MetaGPSAltitude.Count -gt 0) -or
+                            ($null -ne $GeoLocation -and $GeoLocation.Count -eq 2))) {
+
+                            $gpsMatch = $false
+
+                            # Check if image has GPS coordinates in metadata
+                            if ($null -ne $metadata.GPS -and
+                                $null -ne $metadata.GPS.Latitude -and
+                                $null -ne $metadata.GPS.Longitude) {
+
+                                $imageLatitude = $metadata.GPS.Latitude
+                                $imageLongitude = $metadata.GPS.Longitude
+                                $imageAltitude = $metadata.GPS.Altitude
+
+                                # GPS Latitude filter (exact or range)
+                                if ($null -ne $MetaGPSLatitude -and $MetaGPSLatitude.Count -gt 0) {
+                                    if ($MetaGPSLatitude.Count -eq 1) {
+                                        $gpsMatch = $imageLatitude -eq $MetaGPSLatitude[0]
+                                    } elseif ($MetaGPSLatitude.Count -eq 2) {
+                                        $gpsMatch = $imageLatitude -ge $MetaGPSLatitude[0] -and $imageLatitude -le $MetaGPSLatitude[1]
+                                    }
+                                }
+
+                                # GPS Longitude filter (exact or range) - AND with latitude if both specified
+                                if ($gpsMatch -and $null -ne $MetaGPSLongitude -and $MetaGPSLongitude.Count -gt 0) {
+                                    $longitudeMatch = $false
+                                    if ($MetaGPSLongitude.Count -eq 1) {
+                                        $longitudeMatch = $imageLongitude -eq $MetaGPSLongitude[0]
+                                    } elseif ($MetaGPSLongitude.Count -eq 2) {
+                                        $longitudeMatch = $imageLongitude -ge $MetaGPSLongitude[0] -and $imageLongitude -le $MetaGPSLongitude[1]
+                                    }
+                                    $gpsMatch = $gpsMatch -and $longitudeMatch
+                                } elseif ($null -ne $MetaGPSLongitude -and $MetaGPSLongitude.Count -gt 0) {
+                                    # Only longitude specified, no latitude filter
+                                    if ($MetaGPSLongitude.Count -eq 1) {
+                                        $gpsMatch = $imageLongitude -eq $MetaGPSLongitude[0]
+                                    } elseif ($MetaGPSLongitude.Count -eq 2) {
+                                        $gpsMatch = $imageLongitude -ge $MetaGPSLongitude[0] -and $imageLongitude -le $MetaGPSLongitude[1]
+                                    }
+                                }
+
+                                # GPS Altitude filter (exact or range) - AND with other GPS criteria
+                                if ($gpsMatch -and $null -ne $MetaGPSAltitude -and $MetaGPSAltitude.Count -gt 0 -and $null -ne $imageAltitude) {
+                                    $altitudeMatch = $false
+                                    if ($MetaGPSAltitude.Count -eq 1) {
+                                        $altitudeMatch = $imageAltitude -eq $MetaGPSAltitude[0]
+                                    } elseif ($MetaGPSAltitude.Count -eq 2) {
+                                        $altitudeMatch = $imageAltitude -ge $MetaGPSAltitude[0] -and $imageAltitude -le $MetaGPSAltitude[1]
+                                    }
+                                    $gpsMatch = $gpsMatch -and $altitudeMatch
+                                } elseif ($null -ne $MetaGPSAltitude -and $MetaGPSAltitude.Count -gt 0 -and $null -ne $imageAltitude) {
+                                    # Only altitude specified
+                                    if ($MetaGPSAltitude.Count -eq 1) {
+                                        $gpsMatch = $imageAltitude -eq $MetaGPSAltitude[0]
+                                    } elseif ($MetaGPSAltitude.Count -eq 2) {
+                                        $gpsMatch = $imageAltitude -ge $MetaGPSAltitude[0] -and $imageAltitude -le $MetaGPSAltitude[1]
+                                    }
+                                } elseif ($null -ne $MetaGPSAltitude -and $MetaGPSAltitude.Count -gt 0) {
+                                    # Altitude filter specified but image has no altitude data
+                                    $gpsMatch = $false
+                                }
+
+                                # GeoLocation proximity filter - AND with other GPS criteria
+                                if ($gpsMatch -and $null -ne $GeoLocation -and $GeoLocation.Count -eq 2) {
+                                    $targetLatitude = $GeoLocation[0]
+                                    $targetLongitude = $GeoLocation[1]
+                                    $maxDistance = $null -ne $MaxDistanceInMeters ? $MaxDistanceInMeters : 1000 # Default 1km
+
+                                    # Calculate distance using Haversine formula
+                                    $earthRadius = 6371000 # Earth's radius in meters
+                                    $lat1Rad = [Math]::PI * $imageLatitude / 180
+                                    $lat2Rad = [Math]::PI * $targetLatitude / 180
+                                    $deltaLatRad = [Math]::PI * ($targetLatitude - $imageLatitude) / 180
+                                    $deltaLonRad = [Math]::PI * ($targetLongitude - $imageLongitude) / 180
+
+                                    $a = [Math]::Sin($deltaLatRad / 2) * [Math]::Sin($deltaLatRad / 2) +
+                                         [Math]::Cos($lat1Rad) * [Math]::Cos($lat2Rad) *
+                                         [Math]::Sin($deltaLonRad / 2) * [Math]::Sin($deltaLonRad / 2)
+                                    $c = 2 * [Math]::Atan2([Math]::Sqrt($a), [Math]::Sqrt(1 - $a))
+                                    $distance = $earthRadius * $c
+
+                                    $proximityMatch = $distance -le $maxDistance
+                                    $gpsMatch = $gpsMatch -and $proximityMatch
+                                } elseif ($null -ne $GeoLocation -and $GeoLocation.Count -eq 2) {
+                                    # Only GeoLocation specified (no other GPS filters)
+                                    $targetLatitude = $GeoLocation[0]
+                                    $targetLongitude = $GeoLocation[1]
+                                    $maxDistance = $null -ne $MaxDistanceInMeters ? $MaxDistanceInMeters : 1000
+
+                                    # Calculate distance using Haversine formula
+                                    $earthRadius = 6371000
+                                    $lat1Rad = [Math]::PI * $imageLatitude / 180
+                                    $lat2Rad = [Math]::PI * $targetLatitude / 180
+                                    $deltaLatRad = [Math]::PI * ($targetLatitude - $imageLatitude) / 180
+                                    $deltaLonRad = [Math]::PI * ($targetLongitude - $imageLongitude) / 180
+
+                                    $a = [Math]::Sin($deltaLatRad / 2) * [Math]::Sin($deltaLatRad / 2) +
+                                         [Math]::Cos($lat1Rad) * [Math]::Cos($lat2Rad) *
+                                         [Math]::Sin($deltaLonRad / 2) * [Math]::Sin($deltaLonRad / 2)
+                                    $c = 2 * [Math]::Atan2([Math]::Sqrt($a), [Math]::Sqrt(1 - $a))
+                                    $distance = $earthRadius * $c
+
+                                    $gpsMatch = $distance -le $maxDistance
+                                }
+                            }
+                            # If GPS parameters are specified but image has no GPS data, exclude it
+                            # $gpsMatch remains $false, which will make $exifMatch false
+
+                            $exifMatch = $exifMatch -and $gpsMatch
+                        }
+                    }
+                } catch {
+                    Microsoft.PowerShell.Utility\Write-Warning ("Could not process EXIF metadata for ${image}: $_")
+                    $exifMatch = $false
+                }
+            }
+
+            # check Any parameter - match against any metadata type (OR logic within Any)
+            if ($anySearchTerms.Length -gt 0) {
+                $anyMatch = $false  # Start with false, set true if any criteria matches
+
+                foreach ($anyTerm in $anySearchTerms) {
+                    # Check file path and filename
+                    if ($image -like $anyTerm) {
+                        $anyMatch = $true
+                        break
+                    }
+
+                    # Check filename only (without path)
+                    $filename = Microsoft.PowerShell.Management\Split-Path -Leaf $image
+                    if ($filename -like $anyTerm) {
+                        $anyMatch = $true
+                        break
+                    }
+
+                    # Check description search
+                    if ($null -ne $descriptionFound -and $null -ne $descriptionFound.description) {
+                        if ($descriptionFound.description.long_description -like $anyTerm -or
+                            $descriptionFound.description.short_description -like $anyTerm) {
+                            $anyMatch = $true
+                            break
+                        }
+
+                        # Check ImageFilename from description metadata
+                        if ($descriptionFound.description.ImageFilename -like $anyTerm) {
+                            $anyMatch = $true
+                            break
+                        }
+
+                        # Check ImageCollection from description metadata
+                        if ($descriptionFound.description.ImageCollection -like $anyTerm) {
+                            $anyMatch = $true
+                            break
+                        }
+                    }
+
+                    # Check keywords
+                    foreach ($foundKeyword in $keywordsFound) {
+                        if ($foundKeyword -like $anyTerm) {
+                            $anyMatch = $true
+                            break
+                        }
+                    }
+                    if ($anyMatch) { break }
+
+                    # Check people
+                    foreach ($foundPerson in $peopleFound.faces) {
+                        if ($foundPerson -like $anyTerm) {
+                            $anyMatch = $true
+                            break
+                        }
+                    }
+                    if ($anyMatch) { break }
+
+                    # Check objects
+                    foreach ($foundObject in $objectsFound.objects) {
+                        if ($foundObject.label -like $anyTerm) {
+                            $anyMatch = $true
+                            break
+                        }
+                    }
+                    if ($anyMatch) { break }
+
+                    # Check scenes
+                    if ($scenesFound.scene -like $anyTerm -or $scenesFound.label -like $anyTerm) {
+                        $anyMatch = $true
+                        break
+                    }
+
+                    # Check picture type
+                    if ($null -ne $descriptionFound -and $descriptionFound.picture_type -like $anyTerm) {
+                        $anyMatch = $true
+                        break
+                    }
+
+                    # Check style type
+                    if ($null -ne $descriptionFound -and $descriptionFound.style_type -like $anyTerm) {
+                        $anyMatch = $true
+                        break
+                    }
+
+                    # Check overall mood
+                    if ($null -ne $descriptionFound -and $descriptionFound.overall_mood_of_image -like $anyTerm) {
+                        $anyMatch = $true
+                        break
+                    }
+
+                    # Check EXIF metadata if available
+                    if ($null -ne $metadata) {
+                        # Check camera make and model
+                        if ($metadata.Camera.Make -like $anyTerm -or $metadata.Camera.Model -like $anyTerm) {
+                            $anyMatch = $true
+                            break
+                        }
+
+                        # Check software used
+                        if ($metadata.Other.Software -like $anyTerm) {
+                            $anyMatch = $true
+                            break
+                        }
+
+                        # Check basic file information
+                        if ($metadata.Basic.FileName -like $anyTerm -or
+                            $metadata.Basic.Format -like $anyTerm -or
+                            $metadata.Basic.FileExtension -like $anyTerm) {
+                            $anyMatch = $true
+                            break
+                        }
+                    }
+                }
+            }
+
+            # combine all criteria using proper AND logic between parameter types
+            # if no search criteria specified, return all images with metadata
+            if (-not $hasSearchCriteria) {
+                $found = $true
+            } else {
+                # AND logic between different parameter types: ALL specified criteria must match
+                $found = $keywordMatch -and $peopleMatch -and $objectMatch -and
+                         $sceneMatch -and $descriptionMatch -and $pictureTypeMatch -and
+                         $styleTypeMatch -and $moodMatch -and $contentMatch -and $exifMatch -and
+                         $anyMatch -and $confidenceMatch
             }
 
             # return image data if all criteria matched
@@ -1362,33 +1987,278 @@ function Find-Image {
                 Microsoft.PowerShell.Utility\Write-Verbose (
                     "Found matching image: $image")
 
-                # return hashtable with all image metadata
-                Microsoft.PowerShell.Utility\Write-Output @{
+                # get image dimensions and metadata for output (if not already loaded by EXIF filtering)
+                if ($null -eq $metadata) {
+                    try {
+                        # try to get metadata for output purposes
+                        $metadataStream = "${image}:EXIF.json"
+                        if (Microsoft.PowerShell.Management\Test-Path -LiteralPath $metadataStream -ErrorAction SilentlyContinue) {
+                            try {
+                                $cachedMetadata = Microsoft.PowerShell.Management\Get-Content -LiteralPath $metadataStream -Raw -ErrorAction SilentlyContinue
+                                if ($cachedMetadata) {
+                                    $metadata = $cachedMetadata | Microsoft.PowerShell.Utility\ConvertFrom-Json -AsHashtable -ErrorAction Stop
+                                }
+                            }
+                            catch {
+                                Microsoft.PowerShell.Utility\Write-Verbose "Failed to read cached metadata: $_"
+                                $metadata = GenXdev.Helpers\Get-ImageMetadata -ImagePath $image
+                            }
+                        }
+                        else {
+                            $metadata = GenXdev.Helpers\Get-ImageMetadata -ImagePath $image
+                        }
+
+                        if ($null -ne $metadata) {
+                            $width = $metadata.Basic.Width
+                            $height = $metadata.Basic.Height
+                        } else {
+                            # fallback to just getting dimensions if metadata extraction fails
+                            $imageObj = [System.Drawing.Image]::FromFile($image)
+                            $width = $imageObj.Width
+                            $height = $imageObj.Height
+                            $null = $imageObj.Dispose()
+                        }
+                    } catch {
+                        Microsoft.PowerShell.Utility\Write-Warning ("Could not process image ${image}: $_")
+                        return
+                    }
+                }
+
+                # return standardized hashtable with all image metadata and processing results
+                # ensuring consistent structure with Find-IndexedImage
+                $standardizedOutput = @{
                     path        = $image
+                    width       = $width
+                    height      = $height
+                    metadata    = $metadata
                     keywords    = $keywordsFound
                     description = $descriptionFound
                     people      = $peopleFound
                     objects     = $objectsFound
                     scenes      = $scenesFound
                 }
+
+                # ensure people object has predictions property for consistency with database output
+                if ($null -ne $standardizedOutput.people -and
+                    -not $standardizedOutput.people.PSObject.Properties['predictions']) {
+
+                    # convert to PSCustomObject and add predictions array
+                    $standardizedOutput.people = [PSCustomObject]@{
+                        count = $standardizedOutput.people.count
+                        faces = $standardizedOutput.people.faces
+                        predictions = @()  # empty array for consistency
+                    }
+                }
+
+                # ensure objects object has objects property for consistency with database output
+                if ($null -ne $standardizedOutput.objects -and
+                    -not $standardizedOutput.objects.PSObject.Properties['objects']) {
+
+                    # convert to PSCustomObject and add objects array
+                    $standardizedOutput.objects = [PSCustomObject]@{
+                        count = $standardizedOutput.objects.count
+                        objects = if ($standardizedOutput.objects.objects) {
+                            $standardizedOutput.objects.objects
+                        } else { @() }
+                        object_counts = if ($standardizedOutput.objects.object_counts) {
+                            $standardizedOutput.objects.object_counts
+                        } else { @{} }
+                    }
+                }
+
+                # ensure scenes object has all required properties for consistency
+                if ($null -ne $standardizedOutput.scenes) {
+                    $standardizedOutput.scenes = [PSCustomObject]@{
+                        success = $standardizedOutput.scenes.success
+                        scene = $standardizedOutput.scenes.scene
+                        confidence = $standardizedOutput.scenes.confidence
+                        label = if ($standardizedOutput.scenes.PSObject.Properties['label']) {
+                            $standardizedOutput.scenes.label
+                        } else {
+                            $standardizedOutput.scenes.scene
+                        }
+                        confidence_percentage = if ($standardizedOutput.scenes.PSObject.Properties['confidence_percentage']) {
+                            $standardizedOutput.scenes.confidence_percentage
+                        } else {
+                            $standardizedOutput.scenes.confidence * 100
+                        }
+                        processed_at = if ($standardizedOutput.scenes.PSObject.Properties['processed_at']) {
+                            $standardizedOutput.scenes.processed_at
+                        } else {
+                            $null
+                        }
+                    }
+                }
+
+                # ensure description object has all required properties and consistent structure
+                if ($null -ne $standardizedOutput.description) {
+                    # create standardized description object structure
+                    $descObj = [PSCustomObject]@{
+                        has_explicit_content = if ($standardizedOutput.description.PSObject.Properties['has_explicit_content']) {
+                            [bool]$standardizedOutput.description.has_explicit_content
+                        } else {
+                            $false
+                        }
+                        has_nudity = if ($standardizedOutput.description.PSObject.Properties['has_nudity']) {
+                            [bool]$standardizedOutput.description.has_nudity
+                        } else {
+                            $false
+                        }
+                        picture_type = if ($standardizedOutput.description.PSObject.Properties['picture_type']) {
+                            $standardizedOutput.description.picture_type
+                        } else {
+                            ''
+                        }
+                        overall_mood_of_image = if ($standardizedOutput.description.PSObject.Properties['overall_mood_of_image']) {
+                            $standardizedOutput.description.overall_mood_of_image
+                        } else {
+                            ''
+                        }
+                        style_type = if ($standardizedOutput.description.PSObject.Properties['style_type']) {
+                            $standardizedOutput.description.style_type
+                        } else {
+                            ''
+                        }
+                        keywords = $keywordsFound
+                    }
+
+                    # add description content if available
+                    if ($standardizedOutput.description.PSObject.Properties['description']) {
+                        $descObj | Microsoft.PowerShell.Utility\Add-Member -MemberType NoteProperty -Name 'description' -Value $standardizedOutput.description.description
+                    }
+                    if ($standardizedOutput.description.PSObject.Properties['short_description']) {
+                        $descObj | Microsoft.PowerShell.Utility\Add-Member -MemberType NoteProperty -Name 'short_description' -Value $standardizedOutput.description.short_description
+                    }
+                    if ($standardizedOutput.description.PSObject.Properties['long_description']) {
+                        $descObj | Microsoft.PowerShell.Utility\Add-Member -MemberType NoteProperty -Name 'long_description' -Value $standardizedOutput.description.long_description
+                    }
+
+                    $standardizedOutput.description = $descObj
+                }
+
+                Microsoft.PowerShell.Utility\Write-Output $standardizedOutput
             }
         }
 
-        # handle input object processing from pipeline
-        if ($null -ne $InputObject) {
+        # handle input object processing from pipeline for direct file paths
+        if ($fileNames.Count -gt 0) {
 
-            $InputObject |
+            # iterate through each resolved filename from input objects
+            $fileNames |
                 Microsoft.PowerShell.Core\ForEach-Object {
 
-                    # process each input object as an image file
-                    $path = $_.Path
+                    # process each input object as an image file path
+                    $path = $_
 
+                    # skip null or empty paths
                     if ($null -eq $path) {
 
                         return
                     }
 
-                    # normalize file uri to local path
+                    # convert relative path to absolute path for consistency
+                    $path = GenXdev.FileSystem\Expand-Path $path
+
+                    # verify file exists before processing
+                    if ([IO.File]::Exists($path) -eq $false) {
+
+                        # notify user of missing file
+                        Microsoft.PowerShell.Utility\Write-Host (
+                            "The file '$path' does not exist.")
+
+                        return
+                    }
+
+                    # filter on pathlike patterns if specified for direct file input filtering
+                    if ($null -ne $PathLike -and $PathLike.Count -gt 0) {
+
+                        # assume no match until pattern is found
+                        $found = $false
+
+                        # check each path pattern against current file path
+                        foreach ($pattern in $PathLike) {
+
+                            # expand pattern to full path if needed
+                            $patternDir = GenXdev.FileSystem\Expand-Path $pattern
+
+                            # add wildcards if pattern doesn't already contain them
+                            if ($patternDir.IndexOfAny('?' + '*') -eq -1) {
+
+                                $patternDir = "*$patternDir*"
+                            }
+
+                            # check if current path matches pattern
+                            if ($path -like $patternDir) {
+
+                                $found = $true
+
+                                break
+                            }
+                        }
+
+                        # skip file if no patterns match
+                        if (-not $found) {
+
+                            return
+                        }
+                    }
+
+                    # process the image file and handle output appropriately based on display mode
+                    processImageFile $path |
+                        Microsoft.PowerShell.Core\ForEach-Object {
+
+                            if ($done."$(($_.Path))") { return }
+                            $done."$(($_.Path))" = $true;
+
+                            # output directly or add to results based on browser display setting
+                            if (-not $ShowInBrowser) {
+
+                                Microsoft.PowerShell.Utility\Write-Output $_
+                            }
+                            else {
+
+                                # add to results collection for browser display
+                                $null = $results.Add($_)
+                            }
+                        }
+                    }
+
+        }
+
+
+        # handle append mode - output InputObject first, then process as normal
+        if ($Append -and $null -ne $InputObject) {
+
+            # first, output all InputObject content using Write-Output
+            $InputObject | Microsoft.PowerShell.Utility\Write-Output
+
+            # then clear InputObject and continue processing as if it wasn't set
+            $originalInputObject = $InputObject
+            $InputObject = $null
+
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "Append mode: Output ${originalInputObject.Count} objects, " +
+                "now processing search criteria"
+            )
+        }
+
+        # handle input object processing from pipeline for complex input objects
+        if ($null -ne $InputObject) {
+
+            # process each complex input object from pipeline
+            $InputObject |
+                Microsoft.PowerShell.Core\ForEach-Object {
+
+                    # extract path from input object
+                    $path = $_.Path
+
+                    # skip objects without path property
+                    if ($null -eq $path) {
+
+                        return
+                    }
+
+                    # normalize file uri to local path if needed
                     if ($path.StartsWith('file://')) {
 
                         $path = $path.Substring(7).Replace('/', '\')
@@ -1397,8 +2267,10 @@ function Find-Image {
                     # convert relative path to absolute path for consistency
                     $path = GenXdev.FileSystem\Expand-Path $path
 
+                    # verify file exists before processing
                     if ([IO.File]::Exists($path) -eq $false) {
 
+                        # notify user of missing file
                         Microsoft.PowerShell.Utility\Write-Host (
                             "The file '$path' does not exist.")
 
@@ -1437,6 +2309,8 @@ function Find-Image {
                     processImageFile $path |
                         Microsoft.PowerShell.Core\ForEach-Object {
 
+                            if ($done."$(($_.Path))") { return }
+                            $done."$(($_.Path))" = $true;
                             if (-not $ShowInBrowser) {
 
                                 Microsoft.PowerShell.Utility\Write-Output $_
@@ -1451,11 +2325,11 @@ function Find-Image {
             return
         }
 
-        # remove duplicate directories from search list
+        # remove duplicate directories from search list for efficiency
         $directories = $directories |
             Microsoft.PowerShell.Utility\Select-Object -Unique
 
-        # iterate through each specified image directory
+        # iterate through each specified image directory to scan for images
         foreach ($imageDirectory in $directories) {
 
             # convert relative path to absolute path for consistency
@@ -1467,35 +2341,40 @@ function Find-Image {
             # validate directory exists before proceeding with search
             if (-not [System.IO.Directory]::Exists($path)) {
 
+                # notify user of missing directory and continue with next
                 Microsoft.PowerShell.Utility\Write-Host (
                     "The directory '$path' does not exist.")
 
                 continue
             }
 
-            # search for jpg/jpeg/png files and process each one found
+            # search for image files (jpg, jpeg, gif, png, bmp, webp, tiff, tif) and process each one found
             Microsoft.PowerShell.Management\Get-ChildItem `
-                -Path "$path\*.jpg", "$path\*.jpeg","$path\*.gif", "$path\*.png" `
-                -Recurse `
+                -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.gif", "$path\*.png", "$path\*.bmp", "$path\*.webp", "$path\*.tiff", "$path\*.tif" `
+                -Recurse:(!$NoRecurse) `
                 -File `
                 -ErrorAction SilentlyContinue |
                 Microsoft.PowerShell.Core\ForEach-Object {
 
-                    # filter on pathlike patterns if specified
+                    # filter on pathlike patterns if specified for directory scanning
                     if ($null -ne $PathLike -and ($PathLike.Count -gt 0)) {
 
-                        # filter on pathlike patterns
+                        # assume no match until pattern is found
                         $found = $false
 
+                        # check each path pattern against current image file
                         foreach ($pattern in $PathLike) {
 
+                            # expand pattern to full path if needed
                             $patternDir = GenXdev.FileSystem\Expand-Path $pattern
 
+                            # add wildcards if pattern doesn't already contain them
                             if ($patternDir.IndexOfAny('?' + '*') -eq -1) {
 
                                 $patternDir = "*$patternDir*"
                             }
 
+                            # check if current image path matches pattern
                             if ($PSItem.FullName -like $patternDir) {
 
                                 $found = $true
@@ -1504,22 +2383,25 @@ function Find-Image {
                             }
                         }
 
+                        # skip image if no patterns match
                         if (-not $found) {
 
                             return
                         }
                     }
 
-                    # process the image file and handle output appropriately
+                    # process the image file and handle output appropriately based on display mode
                     processImageFile $_ |
                         Microsoft.PowerShell.Core\ForEach-Object {
 
+                            # output directly or add to results based on browser display setting
                             if (-not $ShowInBrowser) {
 
                                 Microsoft.PowerShell.Utility\Write-Output $_
                             }
                             else {
 
+                                # add to results collection for browser display
                                 $null = $results.Add($_)
                             }
                         }
@@ -1529,31 +2411,32 @@ function Find-Image {
 
     end {
 
-        # if showinbrowser is requested, display the gallery
+        # if showinbrowser is requested, display the gallery using browser interface
         if ($ShowInBrowser) {
 
-            # check if any results were found
+            # check if any results were found before attempting to display
             if ((-not $results) -or ($null -eq $results) -or
                 ($results.Length -eq 0)) {
 
+                # notify user that no images matched the search criteria
                 Microsoft.PowerShell.Utility\Write-Host ('No images found')
 
                 return
             }
 
-            # set default title if empty
+            # set default title if empty to provide meaningful gallery header
             if ([String]::IsNullOrWhiteSpace($Title)) {
 
                 $Title = 'Image Search Results'
             }
 
-            # set default description if empty
+            # set default description if empty to show the original command
             if ([String]::IsNullOrWhiteSpace($Description)) {
 
                 $Description = $MyInvocation.Statement
             }
 
-            # copy parameters for show function call
+            # copy parameters for show function call using helper function
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Show-FoundImagesInBrowser' `
@@ -1561,12 +2444,13 @@ function Find-Image {
                     -Scope Local `
                     -ErrorAction SilentlyContinue)
 
-            # pass the results to show-foundimagesinbrowser
-            Show-FoundImagesInBrowser @params -InputObject $results
+            # pass the results to show-foundimagesinbrowser for display
+            GenXdev.AI\Show-FoundImagesInBrowser @params -InputObject $results
 
-            # return results if passthru is requested
+            # return results if passthru is requested for further processing
             if ($PassThru) {
 
+                # output each result object to pipeline
                 $results | Microsoft.PowerShell.Core\ForEach-Object {
 
                     Microsoft.PowerShell.Utility\Write-Output $_

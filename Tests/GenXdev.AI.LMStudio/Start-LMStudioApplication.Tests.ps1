@@ -1,4 +1,4 @@
-﻿Pester\Describe 'Start-LMStudioApplication functionality tests' {
+Pester\Describe 'Start-LMStudioApplication functionality tests' {
 
     Pester\It 'Should pass PSScriptAnalyzer rules' {
 
@@ -30,13 +30,13 @@ $message
     Pester\It 'Should successfully start LM Studio application with default settings' {
 
         # start lm studio
-        $result = Start-LMStudioApplication
+        $result = GenXdev.AI\Start-LMStudioApplication
 
         # verify process started
         $result | Pester\Should -BeNull
 
         # start lm studio
-        $result = Start-LMStudioApplication -Passthru
+        $result = GenXdev.AI\Start-LMStudioApplication -Passthru
 
         # verify process started
         $result | Pester\Should -Not -BeNullOrEmpty

@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 
 Pester\Describe 'Get-LMStudioLoadedModelList basic functionality test' {
 
@@ -31,9 +31,9 @@ $message
 
     Pester\It 'Should return loaded models from LM Studio' {
 
-        EnsureLMStudio
+        GenXdev.AI\EnsureLMStudio
 
-        $result = Get-LMStudioLoadedModelList
+        $result = GenXdev.AI\Get-LMStudioLoadedModelList
 
         # verify we get valid response
         $result | Pester\Should -Not -BeNullOrEmpty

@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Deletes a registered face by its identifier from DeepStack.
@@ -169,7 +169,7 @@ function Unregister-Face {
                     -Scope Local -ErrorAction SilentlyContinue)
 
             # initialize deepstack service with specified parameters
-            $null = EnsureDeepStack @ensureParams
+            $null = GenXdev.AI\EnsureDeepStack @ensureParams
         }
         else {
             Microsoft.PowerShell.Utility\Write-Verbose ('Skipping Docker ' +
@@ -183,7 +183,7 @@ function Unregister-Face {
 
             try {
                 # retrieve all registered faces from deepstack service
-                $registeredFaces = Get-RegisteredFaces `
+                $registeredFaces = GenXdev.AI\Get-RegisteredFaces `
                     -NoDockerInitialize -ErrorAction Stop
 
                 # check if the specified identifier exists in registered faces

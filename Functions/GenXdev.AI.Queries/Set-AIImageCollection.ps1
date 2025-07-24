@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 <#
 .SYNOPSIS
 Sets the directories and default language for image files used in GenXdev.AI
@@ -317,7 +317,7 @@ function Set-AIImageCollection {
         -BoundParameters $PSBoundParameters `
         -FunctionName 'GenXdev.Data\Set-GenXdevPreference'
 
-    $null = Set-GenXdevPreference @params `
+    $null = GenXdev.Data\Set-GenXdevPreference @params `
         -Name 'AIImageCollection' `
         -Value $Json
 

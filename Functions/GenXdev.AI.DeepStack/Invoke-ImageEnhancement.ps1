@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Enhances an image by enlarging it 4X while improving quality using DeepStack.
@@ -205,7 +205,7 @@ function Invoke-ImageEnhancement {
                     -ErrorAction SilentlyContinue)
 
             # initialize deepstack docker container if needed
-            $null = EnsureDeepStack @ensureParams
+            $null = GenXdev.AI\EnsureDeepStack @ensureParams
         }
         else {
 

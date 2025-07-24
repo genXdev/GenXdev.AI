@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Generates subtitle files for audio and video files using OpenAI Whisper.
@@ -268,8 +268,8 @@ function Save-Transcriptions {
                 -ErrorAction SilentlyContinue)
 
         # get resolved language using meta language processing
-        $LanguageIn = Get-AIMetaLanguage @params -Language $LanguageIn
-        $LanguageOut = Get-AIMetaLanguage @params -Language $LanguageOut
+        $LanguageIn = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageIn
+        $LanguageOut = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageOut
 
         # define array of supported media file extensions for processing
         $extensions = @(
@@ -541,7 +541,7 @@ function Save-Transcriptions {
                         }
 
                         # generate transcription using whisper model
-                        $transcription = Get-MediaFileAudioTranscription `
+                        $transcription = GenXdev.AI\Get-MediaFileAudioTranscription `
                             @params
                     }
                     finally {

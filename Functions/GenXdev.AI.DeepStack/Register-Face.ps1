@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Registers a new face with the DeepStack face recognition API.
@@ -173,7 +173,7 @@ function Register-Face {
                     -ErrorAction SilentlyContinue)
 
             # initialize deepstack service with matching parameters
-            $null = EnsureDeepStack @ensureParams
+            $null = GenXdev.AI\EnsureDeepStack @ensureParams
         } else {
 
             # log that docker initialization was skipped

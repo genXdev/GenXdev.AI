@@ -68,7 +68,7 @@ Find-IndexedImage -HasNudity -HasExplicitContent -ShowInBrowser -InterActive
 # you can keep the output and reuse them
 $foundImages = Find-IndexedImage -HasNudity -HasExplicitContent
 
-# all Find-IndexedImage's parameters, except -PathsLike, are inclusive
+# all Find-IndexedImage's parameters, except -PathLike, are inclusive
 # to truly filter using exclusions, chain commands using pipes |
 Set-WindowsPosition -Monitor 0 -Left
 

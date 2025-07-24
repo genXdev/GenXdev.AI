@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 <#
 .SYNOPSIS
 Gets a window helper for the LM Studio application.
@@ -424,7 +424,7 @@ function Get-LMStudioWindow {
             'LM Studio window')
 
         # get required paths for lm studio operation
-        $paths = Get-LMStudioPaths
+        $paths = GenXdev.AI\Get-LMStudioPaths
 
         # handle force restart if requested and auto-start is enabled
         if ($Force -and (-not $NoAutoStart)) {
@@ -437,7 +437,7 @@ function Get-LMStudioWindow {
                     -Scope Local -Name * -ErrorAction SilentlyContinue)
 
             # ensure lm studio is running with the specified parameters
-            $null = EnsureLMStudio @invocationArguments
+            $null = GenXdev.AI\EnsureLMStudio @invocationArguments
         }
 
         # attempt to find existing lm studio window with main window handle
@@ -515,7 +515,7 @@ function Get-LMStudioWindow {
                     -Scope Local -Name * -ErrorAction SilentlyContinue)
 
             # ensure lm studio is running with the specified parameters
-            $null = EnsureLMStudio @invocationArguments
+            $null = GenXdev.AI\EnsureLMStudio @invocationArguments
 
             # attempt to find the newly started process with main window handle
             $process = Microsoft.PowerShell.Management\Get-Process 'LM Studio' |

@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 <#
 .SYNOPSIS
 Sets the default language and optionally the image directories for GenXdev.AI
@@ -255,7 +255,7 @@ function Set-AIMetaLanguage {
         -BoundParameters $PSBoundParameters `
         -FunctionName 'GenXdev.Data\Set-GenXdevPreference'
 
-    $null = Set-GenXdevPreference @params `
+    $null = GenXdev.Data\Set-GenXdevPreference @params `
         -Name 'AIMetaLanguage' `
         -Value "$(([string]::IsNullOrWhiteSpace($Language) ? (GenXdev.Helpers\Get-DefaultWebLanguage) : $Language))"
 }

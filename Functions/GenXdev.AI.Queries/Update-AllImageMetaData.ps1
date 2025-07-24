@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Batch updates image keywords, faces, objects, and scenes across multiple system
@@ -204,7 +204,7 @@ function Update-AllImageMetaData {
             HelpMessage = 'Array of directory paths to process for image updates'
         )]
         [Alias('imagespath', 'directories', 'imgdirs', 'imagedirectory')]
-        [string[]] $ImageDirectories,        
+        [string[]] $ImageDirectories,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -578,8 +578,9 @@ function Update-AllImageMetaData {
     begin {
 
         # prepare processing variables to track current state
-        $OnlyNew = -not $RedoAll
-        $Recurse = -not $NoRecurse
+        $onlyNew = -not $RedoAll
+
+        $recurse = -not $NoRecurse
 
         # initialize lm studio service if not skipped
         if (-not $NoLMStudioInitialize) {
@@ -597,8 +598,9 @@ function Update-AllImageMetaData {
                         -ErrorAction SilentlyContinue
                 )
 
-                # ensure lm studio service is running
-                $null = Initialize-LMStudioModel @params -LLMQueryType Pictures
+                # ensure lm studio service is running with picture query type
+                $null = GenXdev.AI\Initialize-LMStudioModel @params `
+                    -LLMQueryType Pictures
 
                 # position lm studio window if show window is requested
                 if ($ShowWindow) {
@@ -606,14 +608,15 @@ function Update-AllImageMetaData {
                     try {
 
                         # get lm studio window handle
-                        $a = (GenXdev.Windows\Get-Window -ProcessName 'LM Studio')
+                        $lmStudioWindow = (GenXdev.Windows\Get-Window `
+                            -ProcessName 'LM Studio')
 
                         # skip if no window found
-                        if ($null -eq $a) { return }
+                        if ($null -eq $lmStudioWindow) { return }
 
                         # position lm studio window to right top of monitor 0
                         $null = GenXdev.Windows\Set-WindowPosition `
-                            -WindowHelper $a `
+                            -WindowHelper $lmStudioWindow `
                             -RestoreFocus `
                             -SetForeground `
                             -Monitor 0 `
@@ -635,7 +638,10 @@ function Update-AllImageMetaData {
                 Microsoft.PowerShell.Utility\Start-Sleep 2
             }
             catch {
-                # ignore lm studio initialization errors
+                # ignore lm studio initialization errors and continue processing
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    'LM Studio initialization failed, continuing without it'
+                )
             }
         }
 
@@ -659,12 +665,16 @@ function Update-AllImageMetaData {
             }
             else {
 
-                $ensureParams.Force = $PSBoundParameters.ContainsKey('ForceRebuild') ?
-                $false : $null
+                $ensureParams.Force = $PSBoundParameters.ContainsKey(
+                    'ForceRebuild') ? $false : $null
             }
 
             # ensure deepstack service is running for face recognition
-            $null = EnsureDeepStack @ensureParams
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                'Initializing DeepStack service for face recognition'
+            )
+
+            $null = GenXdev.AI\EnsureDeepStack @ensureParams
 
             # position docker windows appropriately if show window is requested
             if ($ShowWindow) {
@@ -708,22 +718,22 @@ function Update-AllImageMetaData {
         )
 
         # get the configured faces directory path
-        $facesDirectory = Get-AIKnownFacesRootpath @params
+        $facesDirectory = GenXdev.AI\Get-AIKnownFacesRootpath @params
 
         # count total files in faces directory including subdirectories
         $filecount = $AutoUpdateFaces ?(
-            @(GenXdev.FileSystem\Find-Item "$facesDirectory\*\" -PassThru) +
-            @(GenXdev.FileSystem\Find-Item "$facesDirectory\*\*.jpeg" `
+            @(GenXdev.FileSystem\Find-Item "${facesDirectory}\*\" -PassThru) +
+            @(GenXdev.FileSystem\Find-Item "${facesDirectory}\*\*.jpeg" `
                     -PassThru) +
-            @(GenXdev.FileSystem\Find-Item "$facesDirectory\*\*.png" `
+            @(GenXdev.FileSystem\Find-Item "${facesDirectory}\*\*.png" `
                     -PassThru) +
-            @(GenXdev.FileSystem\Find-Item "$facesDirectory\*\*.gif" `
+            @(GenXdev.FileSystem\Find-Item "${facesDirectory}\*\*.gif" `
                     -PassThru)
         ).Count : 0
 
         # count directories that contain image files for face recognition
         $dirCount = $AutoUpdateFaces ? (
-            @(GenXdev.FileSystem\Find-Item "$facesDirectory\*" `
+            @(GenXdev.FileSystem\Find-Item "${facesDirectory}\*" `
                     -Directory `
                     -PassThru |
                     Microsoft.PowerShell.Core\Where-Object {
@@ -739,27 +749,39 @@ function Update-AllImageMetaData {
         ) : 0
 
         # initialize registered faces count
-        $count = 0
+        $registeredFacesCount = 0
 
         try {
 
             # count total number of registered faces in the system
-            $count = $AutoUpdateFaces  ? @(Get-RegisteredFaces).Count : 0
+            $registeredFacesCount = $AutoUpdateFaces  ? @(GenXdev.AI\Get-RegisteredFaces).Count : 0
+
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "Found ${registeredFacesCount} registered faces"
+            )
         }
         catch {
 
             # if counting fails, default to 0
-            $count = 0
+            $registeredFacesCount = 0
+
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                'Unable to count registered faces, defaulting to 0'
+            )
         }
 
         # determine if face registrations need to be forced
         $forceFaceRegistrations = $forceFaceRegistrations -or (
             $AutoUpdateFaces -and
-            ($count -ne $dirCount)
+            ($registeredFacesCount -ne $dirCount)
         )
 
         # register faces if needed and files exist
         if ($forceFaceRegistrations) {
+
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                'Face registration mismatch detected, re-registering all faces'
+            )
 
             try {
 
@@ -774,10 +796,17 @@ function Update-AllImageMetaData {
                 )
 
                 # unregister all existing faces before re-registration
-                $null = Unregister-AllFaces @params -Confirm:$false
+                $null = GenXdev.AI\Unregister-AllFaces @params -Confirm:$false
+
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    'Successfully unregistered all existing faces'
+                )
             }
             catch {
-                # ignore unregistration errors
+                # ignore unregistration errors but log them
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    'Face unregistration failed, continuing with registration'
+                )
             }
 
             try {
@@ -793,10 +822,17 @@ function Update-AllImageMetaData {
                 )
 
                 # register all faces from the faces directory
-                $null = Register-AllFaces @params -Confirm:$false
+                $null = GenXdev.AI\Register-AllFaces @params -Confirm:$false
+
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    'Successfully registered all faces from directory'
+                )
             }
             catch {
-                # ignore registration errors
+                # ignore registration errors but log them
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    'Face registration failed, continuing without face recognition'
+                )
             }
         }
 
@@ -817,10 +853,15 @@ function Update-AllImageMetaData {
         )
 
         # get the configured language for ai processing
-        $language = Get-AIMetaLanguage @params
+        $language = GenXdev.AI\Get-AIMetaLanguage @params
+
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Using language '${language}' for AI processing"
+        )
 
         # prevent duplicate service initialization in child processes
         $noDockerInitialize = $true
+
         $noLMStudioInitialize = $true
     }
 
@@ -837,7 +878,11 @@ function Update-AllImageMetaData {
         )
 
         # retrieve image directories from configuration
-        $directories = Get-AIImageCollection @params
+        $directories = GenXdev.AI\Get-AIImageCollection @params
+
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Processing ${directories.Count} directories for image metadata updates"
+        )
 
         # process each directory and file individually for structured output
         Microsoft.PowerShell.Utility\Write-Verbose (
@@ -847,7 +892,31 @@ function Update-AllImageMetaData {
         # process each directory and stream results immediately
         $directories | Microsoft.PowerShell.Core\ForEach-Object {
 
-            $dir = $_
+            $currentDirectory = $_
+
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "Starting processing of directory: ${currentDirectory}"
+            )
+
+            # copy parameter values for metadata update processing
+            $metadataParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName (
+                'GenXdev.AI\Invoke-ImageMetadataUpdate'
+            ) `
+                -DefaultValues (
+                Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local `
+                    -ErrorAction SilentlyContinue
+            )
+
+            # update exif metadata for images in current directory
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "Updating EXIF metadata for directory: ${currentDirectory}"
+            )
+
+            $null = GenXdev.AI\Invoke-ImageMetadataUpdate @metadataParams `
+                -ImageDirectories $currentDirectory
 
             # copy parameter values for face update processing
             $faceParams = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -862,8 +931,12 @@ function Update-AllImageMetaData {
             )
 
             # update face recognition data for images in current directory
-            $null = Invoke-ImageFacesUpdate @faceParams `
-                -ImageDirectories $dir `
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "Updating face recognition data for directory: ${currentDirectory}"
+            )
+
+            $null = GenXdev.AI\Invoke-ImageFacesUpdate @faceParams `
+                -ImageDirectories $currentDirectory `
                 -NoDockerInitialize
 
             # copy parameter values for object detection processing
@@ -879,8 +952,12 @@ function Update-AllImageMetaData {
             )
 
             # update object detection data for images in current directory
-            $null = Invoke-ImageObjectsUpdate @objectParams `
-                -ImageDirectories $dir `
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "Updating object detection data for directory: ${currentDirectory}"
+            )
+
+            $null = GenXdev.AI\Invoke-ImageObjectsUpdate @objectParams `
+                -ImageDirectories $currentDirectory `
                 -NoLMStudioInitialize
 
             # copy parameter values for scene classification processing
@@ -896,8 +973,12 @@ function Update-AllImageMetaData {
             )
 
             # update scene classification data for images in current directory
-            $null = Invoke-ImageScenesUpdate @sceneParams `
-                -ImageDirectories $dir `
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "Updating scene classification data for directory: ${currentDirectory}"
+            )
+
+            $null = GenXdev.AI\Invoke-ImageScenesUpdate @sceneParams `
+                -ImageDirectories $currentDirectory `
                 -NoDockerInitialize
 
             # copy parameter values for keyword generation processing
@@ -913,8 +994,16 @@ function Update-AllImageMetaData {
             )
 
             # update keyword and description data for images in current directory
-            $null = Invoke-ImageKeywordUpdate @keywordParams `
-                -ImageDirectories $dir -NoLMStudioInitialize
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "Updating keywords and descriptions for directory: ${currentDirectory}"
+            )
+
+            $null = GenXdev.AI\Invoke-ImageKeywordUpdate @keywordParams `
+                -ImageDirectories $currentDirectory -NoLMStudioInitialize
+
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "Completed processing of directory: ${currentDirectory}"
+            )
         }
     }
 

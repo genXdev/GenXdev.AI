@@ -38,6 +38,139 @@ Style types to filter by, wildcards allowed.
 .PARAMETER OverallMood
 Overall moods to filter by, wildcards allowed.
 
+.PARAMETER DatabaseFilePath
+Path to the SQLite database file.
+
+.PARAMETER Title
+Title for the image gallery.
+
+.PARAMETER Description
+Description for the image gallery.
+
+.PARAMETER Language
+Language for descriptions and keywords.
+
+.PARAMETER PathLike
+Array of directory path-like search strings to filter images by path
+(SQL LIKE patterns, e.g. '%\2024\%').
+
+.PARAMETER InputObject
+Accepts search results from a previous -PassThru call to regenerate the view.
+
+.PARAMETER OutputDirectory
+Directory to save cropped object images.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER ImageDirectories
+Array of directory paths to search for images.
+
+.PARAMETER FacesDirectory
+The directory containing face images organized by person folders.
+
+.PARAMETER EmbedImages
+Embed images as base64.
+
+.PARAMETER NoFallback
+Switch to disable fallback behavior.
+
+.PARAMETER NeverRebuild
+Never rebuild the image index database.
+
+.PARAMETER ShowInBrowser
+Show results in browser.
+
+.PARAMETER SendKeyEscape
+Send Escape key to browser.
+
+.PARAMETER SendKeyHoldKeyboardFocus
+Hold keyboard focus in browser.
+
+.PARAMETER SendKeyUseShiftEnter
+Use Shift+Enter for browser input.
+
+.PARAMETER SendKeyDelayMilliSeconds
+Delay in milliseconds for sending keys.
+
+.PARAMETER NoBorders
+Show images without borders.
+
+.PARAMETER SideBySide
+Show images side by side.
+
+.PARAMETER AcceptLang
+Accept-Language header for browser.
+
+.PARAMETER Monitor
+Monitor to use for browser window.
+
+.PARAMETER ShowOnlyPictures
+Show only pictures.
+
+.PARAMETER Interactive
+Enable interactive mode.
+
+.PARAMETER Private
+Open browser in private/incognito mode.
+
+.PARAMETER Edge
+Use Microsoft Edge browser.
+
+.PARAMETER Chrome
+Use Google Chrome browser.
+
+.PARAMETER Chromium
+Use Chromium browser.
+
+.PARAMETER Firefox
+Use Mozilla Firefox browser.
+
+.PARAMETER ShowWindow
+Show browser window.
+
+.PARAMETER Left
+Set browser window left position.
+
+.PARAMETER Right
+Set browser window right position.
+
+.PARAMETER Top
+Set browser window top position.
+
+.PARAMETER Bottom
+Set browser window bottom position.
+
+.PARAMETER Centered
+Center browser window.
+
+.PARAMETER ApplicationMode
+Open browser in application mode.
+
+.PARAMETER NoBrowserExtensions
+Disable browser extensions.
+
+.PARAMETER DisablePopupBlocker
+Disable popup blocker in browser.
+
+.PARAMETER RestoreFocus
+Restore focus to previous window.
+
+.PARAMETER NewWindow
+Open browser in new window.
+
+.PARAMETER OnlyReturnHtml
+Return only HTML from browser.
+
+.PARAMETER FocusWindow
+Focus browser window.
+
+.PARAMETER SetForeground
+Set browser window to foreground.
+
+.PARAMETER Maximize
+Maximize browser window.
+
 .PARAMETER HasNudity
 Filter images that contain nudity.
 
@@ -50,27 +183,14 @@ Filter images that contain explicit content.
 .PARAMETER NoExplicitContent
 Filter images that do NOT contain explicit content.
 
-.PARAMETER DatabaseFilePath
-Path to the SQLite database file.
-
-.PARAMETER PassThru
-Return image data as objects.
-
-.PARAMETER Language
-Language for descriptions and keywords.
-
 .PARAMETER ForceIndexRebuild
 Force rebuild of the image index database.
 
-.PARAMETER PathLike
-Array of directory path-like search strings to filter images by path
-(SQL LIKE patterns, e.g. '%\2024\%').
+.PARAMETER GeoLocation
+Geographic coordinates [latitude, longitude] to search near.
 
-.PARAMETER InputObject
-Accepts search results from a previous -PassThru call to regenerate the view.
-
-.PARAMETER OutputDirectory
-Directory to save cropped object images.
+.PARAMETER GeoDistanceInMeters
+Maximum distance in meters from GeoLocation to search for images.
 
 .PARAMETER SaveUnknownPersons
 Also save unknown persons detected as objects.
@@ -82,9 +202,6 @@ Image collections, etc.
 .PARAMETER ClearSession
 Clear alternative settings stored in session for AI preferences like Language,
 Image collections, etc.
-
-.PARAMETER PreferencesDatabasePath
-Database path for preference data files.
 
 .PARAMETER SkipSession
 Dont use alternative settings stored in session for AI preferences like
@@ -357,163 +474,53 @@ function Save-FoundImageObjects {
         [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
         ###############################################################################
-        ###############################################################################
-        [Alias('imagespath','directories','imgdirs','imagedirectory')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Array of directory paths to search for images.'
         )]
+        [Alias('imagespath','directories','imgdirs','imagedirectory')]
         [string[]] $ImageDirectories,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'The directory containing face images organized by person folders.'
+            HelpMessage = ('The directory containing face images organized by ' +
+                'person folders.')
         )]
         [string] $FacesDirectory,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Embed images as base64.'
+            HelpMessage = 'Geographic coordinates [latitude, longitude] to search near.'
         )]
-        [switch] $EmbedImages,
+        [double[]] $GeoLocation,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Switch to disable fallback behavior.'
+            HelpMessage = ('Maximum distance in meters from GeoLocation to ' +
+                'search for images.')
         )]
-        [switch] $NoFallback,
+        [double] $GeoDistanceInMeters = 1000,
         ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Never rebuild the image index database.'
-        )]
-        [switch] $NeverRebuild,
-        ###############################################################################
-        ###############################################################################
-        [Alias('show','s')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Show results in browser.'
-        )]
-        [switch] $ShowInBrowser,
-        ###############################################################################
-        [Alias('Escape')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Send Escape key to browser.'
-        )]
-        [switch] $SendKeyEscape,
-        ###############################################################################
-        [Alias('HoldKeyboardFocus')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Hold keyboard focus in browser.'
-        )]
-        [switch] $SendKeyHoldKeyboardFocus,
-        ###############################################################################
-        [Alias('UseShiftEnter')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Use Shift+Enter for browser input.'
-        )]
-        [switch] $SendKeyUseShiftEnter,
-        ###############################################################################
-        [Alias('DelayMilliSeconds')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Delay in milliseconds for sending keys.'
         )]
+        [Alias('DelayMilliSeconds')]
         [int] $SendKeyDelayMilliSeconds,
         ###############################################################################
-        [Alias('nb')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Show images without borders.'
-        )]
-        [switch] $NoBorders,
-        ###############################################################################
-        [Alias('sbs')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Show images side by side.'
-        )]
-        [switch] $SideBySide,
-        ###############################################################################
-        [Alias('lang','locale')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Accept-Language header for browser.'
         )]
+        [Alias('lang','locale')]
         [string] $AcceptLang,
         ###############################################################################
-        [Alias('m','mon')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Monitor to use for browser window.'
         )]
+        [Alias('m','mon')]
         [int] $Monitor,
-        ###############################################################################
-        ###############################################################################
-        [Alias('NoMetadata','OnlyPictures')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Show only pictures.'
-        )]
-        [switch] $ShowOnlyPictures,
-        ###############################################################################
-        ###############################################################################
-        [Alias('i','editimages')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Enable interactive mode.'
-        )]
-        [switch] $Interactive,
-        ###############################################################################
-        [Alias('incognito','inprivate')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Open browser in private/incognito mode.'
-        )]
-        [switch] $Private,
-        ###############################################################################
-        ###############################################################################
-        [Alias('e')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Use Microsoft Edge browser.'
-        )]
-        [switch] $Edge,
-        ###############################################################################
-        ###############################################################################
-        [Alias('ch')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Use Google Chrome browser.'
-        )]
-        [switch] $Chrome,
-        ###############################################################################
-        ###############################################################################
-        [Alias('c')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Use Chromium browser.'
-        )]
-        [switch] $Chromium,
-        ###############################################################################
-        ###############################################################################
-        [Alias('ff')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Use Mozilla Firefox browser.'
-        )]
-        [switch] $Firefox,
-        ###############################################################################
-        [Alias('sw')]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Show browser window.'
-        )]
-        [switch] $ShowWindow,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -541,47 +548,159 @@ function Save-FoundImageObjects {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = 'Embed images as base64.'
+        )]
+        [switch] $EmbedImages,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Switch to disable fallback behavior.'
+        )]
+        [switch] $NoFallback,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Never rebuild the image index database.'
+        )]
+        [switch] $NeverRebuild,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Show results in browser.'
+        )]
+        [Alias('show','s')]
+        [switch] $ShowInBrowser,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Send Escape key to browser.'
+        )]
+        [Alias('Escape')]
+        [switch] $SendKeyEscape,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Hold keyboard focus in browser.'
+        )]
+        [Alias('HoldKeyboardFocus')]
+        [switch] $SendKeyHoldKeyboardFocus,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Use Shift+Enter for browser input.'
+        )]
+        [Alias('UseShiftEnter')]
+        [switch] $SendKeyUseShiftEnter,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Show images without borders.'
+        )]
+        [Alias('nb')]
+        [switch] $NoBorders,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Show images side by side.'
+        )]
+        [Alias('sbs')]
+        [switch] $SideBySide,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Show only pictures.'
+        )]
+        [Alias('NoMetadata','OnlyPictures')]
+        [switch] $ShowOnlyPictures,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Enable interactive mode.'
+        )]
+        [Alias('i','editimages')]
+        [switch] $Interactive,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Open browser in private/incognito mode.'
+        )]
+        [Alias('incognito','inprivate')]
+        [switch] $Private,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Use Microsoft Edge browser.'
+        )]
+        [Alias('e')]
+        [switch] $Edge,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Use Google Chrome browser.'
+        )]
+        [Alias('ch')]
+        [switch] $Chrome,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Use Chromium browser.'
+        )]
+        [Alias('c')]
+        [switch] $Chromium,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Use Mozilla Firefox browser.'
+        )]
+        [Alias('ff')]
+        [switch] $Firefox,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Show browser window.'
+        )]
+        [Alias('sw')]
+        [switch] $ShowWindow,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = 'Center browser window.'
         )]
         [switch] $Centered,
         ###############################################################################
-        [Alias('a','app','appmode')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Open browser in application mode.'
         )]
+        [Alias('a','app','appmode')]
         [switch] $ApplicationMode,
         ###############################################################################
-        ###############################################################################
-        [Alias('de','ne','NoExtensions')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Disable browser extensions.'
         )]
+        [Alias('de','ne','NoExtensions')]
         [switch] $NoBrowserExtensions,
         ###############################################################################
-        ###############################################################################
-        [Alias('allowpopups')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Disable popup blocker in browser.'
         )]
+        [Alias('allowpopups')]
         [switch] $DisablePopupBlocker,
         ###############################################################################
-        ###############################################################################
-        [Alias('rf','bg')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Restore focus to previous window.'
         )]
+        [Alias('rf','bg')]
         [switch] $RestoreFocus,
         ###############################################################################
-        ###############################################################################
-        [Alias('nw','new')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Open browser in new window.'
         )]
+        [Alias('nw','new')]
         [switch] $NewWindow,
         ###############################################################################
         [Parameter(
@@ -590,20 +709,18 @@ function Save-FoundImageObjects {
         )]
         [switch] $OnlyReturnHtml,
         ###############################################################################
-        ###############################################################################
-        [Alias('fw','focus')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Focus browser window.'
         )]
+        [Alias('fw','focus')]
         [switch] $FocusWindow,
         ###############################################################################
-        ###############################################################################
-        [Alias('fg')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Set browser window to foreground.'
         )]
+        [Alias('fg')]
         [switch] $SetForeground,
         ###############################################################################
         [Parameter(
@@ -635,7 +752,6 @@ function Save-FoundImageObjects {
             HelpMessage = 'Filter images that do NOT contain explicit content.'
         )]
         [switch] $NoExplicitContent,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -686,7 +802,7 @@ function Save-FoundImageObjects {
                 -ErrorAction SilentlyContinue)
 
         # resolve the language parameter using ai meta language function
-        $language = Get-AIMetaLanguage @params
+        $language = GenXdev.AI\Get-AIMetaLanguage @params
 
         # initialize information tracking object for processing statistics
         $info = @{
@@ -975,8 +1091,8 @@ function Save-FoundImageObjects {
                                         catch {
                                             # log warning for person processing failures
                                             Microsoft.PowerShell.Utility\Write-Verbose (
-                                                'failed to crop/save unknown person ' +
-                                                "for $($imgPath): $_")
+                                                ('failed to crop/save unknown person ' +
+                                                "for $($imgPath): $_"))
                                         }
                                     }
                                 }
@@ -991,7 +1107,7 @@ function Save-FoundImageObjects {
                         catch {
                             # log warning for general image processing failures
                             Microsoft.PowerShell.Utility\Write-Verbose (
-                                "failed to crop/save objects for $($imgPath): $_")
+                                ("failed to crop/save objects for $($imgPath): $_"))
                         }
                     }
 
@@ -1026,7 +1142,7 @@ function Save-FoundImageObjects {
                     -ErrorAction SilentlyContinue)
 
             # find indexed images and process each through save image function
-            Find-IndexedImage @params |
+            GenXdev.AI\Find-IndexedImage @params |
                 Microsoft.PowerShell.Core\ForEach-Object { saveImage $_ }
         }
     }

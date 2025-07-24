@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Retrieves a list of all registered face identifiers from DeepStack.
@@ -169,7 +169,7 @@ function Get-RegisteredFaces {
                     -ErrorAction SilentlyContinue)
 
             # initialize deepstack service with provided parameters
-            $null = EnsureDeepStack @ensureParams
+            $null = GenXdev.AI\EnsureDeepStack @ensureParams
 
         } else {
 

@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
 Gets the LLM settings for AI operations in GenXdev.AI.
 
@@ -384,7 +384,7 @@ function Get-AILLMSettings {
                     $preferenceKey = "AILLMSettings_$($llmQueryType)_$propertyName"
 
                     # attempt to retrieve preference value
-                    $preferenceValue = Get-GenXdevPreference `
+                    $preferenceValue = GenXdev.Data\Get-GenXdevPreference `
                         -PreferencesDatabasePath $PreferencesDatabasePath `
                         -Name $preferenceKey `
                         -ErrorAction SilentlyContinue

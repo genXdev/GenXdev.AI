@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 <#
 .SYNOPSIS
 Finds similar movie titles based on common properties.
@@ -66,12 +66,12 @@ Clear alternative settings stored in session for AI preferences.
 Store settings only in persistent preferences without affecting session.
 
 .EXAMPLE
-Get-SimularMovieTitles -Movies "The Matrix","Inception" -OpenInImdb
+Get-SimularMovieTitle -Movies "The Matrix","Inception" -OpenInImdb
 
 .EXAMPLE
-moremovietitles "The Matrix","Inception" -imdb
+moremovietitle "The Matrix","Inception" -imdb
 #>
-function Get-SimularMovieTitles {
+function Get-SimularMovieTitle {
     [CmdletBinding()]
     param (
         #
@@ -687,7 +687,7 @@ $(($Movies |
             Microsoft.PowerShell.Utility\Write-Verbose 'Opening results in IMDB'
 
             # open IMDB query for each recommended movie title
-            Open-IMDBQuery -Query $results
+            GenXdev.Queries\Open-IMDBQuery -Query $results
         }
     }
 

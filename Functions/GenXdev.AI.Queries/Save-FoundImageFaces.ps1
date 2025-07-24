@@ -68,6 +68,12 @@ Accepts search results from a previous -PassThru call to regenerate the view.
 .PARAMETER OutputDirectory
 Directory to save cropped face images.
 
+.PARAMETER GeoLocation
+Geographic coordinates [latitude, longitude] to search near.
+
+.PARAMETER GeoDistanceInMeters
+Maximum distance in meters from GeoLocation to search for images.
+
 .PARAMETER SaveUnknownPersons
 Also save unknown persons detected as objects.
 
@@ -101,68 +107,68 @@ function Save-FoundImageFaces {
     [Alias('saveimagefaces')]
 
     param(
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Position = 0,
             Mandatory = $false,
             HelpMessage = 'Will match any of all the possible meta data types.'
         )]
         [string[]] $Any = @(),
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The description text to look for, wildcards allowed.'
         )]
         [string[]] $DescriptionSearch = @(),
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The keywords to look for, wildcards allowed.'
         )]
         [string[]] $Keywords = @(),
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'People to look for, wildcards allowed.'
         )]
         [string[]] $People = @(),
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Objects to look for, wildcards allowed.'
         )]
         [string[]] $Objects = @(),
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Scenes to look for, wildcards allowed.'
         )]
         [string[]] $Scenes = @(),
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Picture types to filter by, wildcards allowed.'
         )]
         [string[]] $PictureType = @(),
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Style types to filter by, wildcards allowed.'
         )]
         [string[]] $StyleType = @(),
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Overall moods to filter by, wildcards allowed.'
         )]
         [string[]] $OverallMood = @(),
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Path to the SQLite database file.'
         )]
         [string] $DatabaseFilePath,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Language for descriptions and keywords.'
@@ -313,7 +319,7 @@ function Save-FoundImageFaces {
             'Yoruba',
             'Zulu')]
         [string] $Language,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = (
@@ -322,7 +328,7 @@ function Save-FoundImageFaces {
             )
         )]
         [string[]] $PathLike = @(),
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             ValueFromPipeline = $true,
@@ -330,70 +336,82 @@ function Save-FoundImageFaces {
                 'call to regenerate the view.')
         )]
         [System.Object[]] $InputObject,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Directory to save cropped face images.'
         )]
         [string] $OutputDirectory = '.\',
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Database path for preference data files'
         )]
         [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Filter images that contain nudity.'
         )]
         [switch] $HasNudity,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Filter images that do NOT contain nudity.'
         )]
         [switch] $NoNudity,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Filter images that contain explicit content.'
         )]
         [switch] $HasExplicitContent,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Filter images that do NOT contain explicit content.'
         )]
         [switch] $NoExplicitContent,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Force rebuild of the image index database.'
         )]
         [switch] $ForceIndexRebuild,
-        ###############################################################################
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Geographic coordinates [latitude, longitude] to search near.'
+        )]
+        [double[]] $GeoLocation,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Maximum distance in meters from GeoLocation to search for images.'
+        )]
+        [double] $GeoDistanceInMeters = 1000,
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Also save unknown persons detected as objects.'
         )]
         [switch] $SaveUnknownPersons,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = ('Use alternative settings stored in session for AI ' +
                 'preferences like Language, Image collections, etc')
         )]
         [switch] $SessionOnly,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = ('Clear alternative settings stored in session for AI ' +
                 'preferences like Language, Image collections, etc')
         )]
         [switch] $ClearSession,
-        ###############################################################################
+        #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = ('Dont use alternative settings stored in session for ' +
@@ -401,10 +419,10 @@ function Save-FoundImageFaces {
         )]
         [Alias('FromPreferences')]
         [switch] $SkipSession
-        ###############################################################################
+        #######################################################################
     )
 
-    ###############################################################################
+    #########################################################################
     begin {
 
         # copy identical parameter values for ai meta language function
@@ -416,7 +434,7 @@ function Save-FoundImageFaces {
                 -ErrorAction SilentlyContinue)
 
         # get ai meta language with fallback to default web language
-        $language = Get-AIMetaLanguage @params
+        $language = GenXdev.AI\Get-AIMetaLanguage @params
 
         Microsoft.PowerShell.Utility\Write-Verbose ("Using language: $language")
 
@@ -481,7 +499,7 @@ function Save-FoundImageFaces {
             $any
         }
     }
-    ###############################################################################
+    #########################################################################
     process {
 
         # ensure output directory exists and get expanded path
@@ -791,13 +809,13 @@ function Save-FoundImageFaces {
             )
 
             # find indexed images and process each through save image function
-            Find-IndexedImage @params |
+            GenXdev.AI\Find-IndexedImage @params |
                 Microsoft.PowerShell.Core\ForEach-Object {
                     saveImage $_
                 }
         }
     }
-    ###############################################################################
+    #########################################################################
     end {
 
         Microsoft.PowerShell.Utility\Write-Verbose ('Processed ' +

@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Updates face recognition metadata for image files in a specified directory.
@@ -7,11 +7,10 @@ Updates face recognition metadata for image files in a specified directory.
 This function processes images in a specified directory to identify and analyze
 faces using AI recognition technology. It creates or updates metadata files
 containing face information for each image. The metadata is stored in a
-separate file with the same name as the image but with a ':people.json' suffix.
-
+separate file with
 .PARAMETER ImageDirectories
-The directory path containing images to process. Can be relative or absolute.
-Default is the current directory.
+Array of directory paths containing images to process. Can be relative or
+absolute. Default is the current directory.
 
 .PARAMETER Recurse
 If specified, processes images in the specified directory and all subdirectories.
@@ -53,15 +52,15 @@ Interval in seconds between health check attempts. Default is 3.
 Custom Docker image name to use instead of the default DeepStack image.
 
 .EXAMPLE
-Invoke-ImageFacesUpdate -ImageDirectories "C:\Photos" -Recurse
+Invoke-ImageFacesUpdate -ImageDirectories @("C:\Photos", "D:\Pictures") -Recurse
 
 .EXAMPLE
-facerecognition "C:\Photos" -RetryFailed -OnlyNew
+facerecognition @("C:\Photos", "C:\Archive") -RetryFailed -OnlyNew
 ###############################################################################>
 function Invoke-ImageFacesUpdate {
 
     [CmdletBinding()]
-    [Alias('facerecognition')]
+    [Alias('imagepeopledetection')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
 
     param(
@@ -69,9 +68,9 @@ function Invoke-ImageFacesUpdate {
         [Parameter(
             Position = 0,
             Mandatory = $false,
-            HelpMessage = 'The directory path containing images to process'
+            HelpMessage = 'The directory paths containing images to process'
         )]
-        [string] $ImageDirectories = '.\',
+        [string[]] $ImageDirectories = @('.\'),
 
         #######################################################################
         [Parameter(
@@ -438,31 +437,53 @@ function Invoke-ImageFacesUpdate {
     )
     begin {
 
-        # convert the possibly relative path to an absolute path for reliable access
-        $path = GenXdev.FileSystem\Expand-Path $ImageDirectories
+        # process each directory provided
+        $processedDirectories = @()
+        foreach ($directory in $ImageDirectories) {
+            # convert the possibly relative path to an absolute path for reliable access
+            $path = GenXdev.FileSystem\Expand-Path $directory
 
-        # ensure the target directory exists before proceeding with any operations
-        if (-not [System.IO.Directory]::Exists($path)) {
+            # ensure the target directory exists before proceeding with any operations
+            if (-not [System.IO.Directory]::Exists($path)) {
+                Microsoft.PowerShell.Utility\Write-Warning "Directory not found: $path - skipping"
+                continue
+            }
 
-            Microsoft.PowerShell.Utility\Write-Host ("The directory '$path' " +
-                'does not exist.')
-            return
+            $processedDirectories += $path
+            Microsoft.PowerShell.Utility\Write-Verbose ('Processing images in ' +
+                "directory: $path")
         }
 
-        Microsoft.PowerShell.Utility\Write-Verbose ('Processing images in ' +
-            "directory: $path")
+        if ($processedDirectories.Count -eq 0) {
+            Microsoft.PowerShell.Utility\Write-Warning "No valid directories found to process"
+            return
+        }
     }
 
     process {
 
-        # retrieve all supported image files from the specified directory
-        # applying recursion only if the -Recurse switch was provided
-        Microsoft.PowerShell.Management\Get-ChildItem `
-            -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.gif", "$path\*.png" `
-            -Recurse:$Recurse `
-            -File `
-            -ErrorAction SilentlyContinue |
-            Microsoft.PowerShell.Core\ForEach-Object {
+        # process each validated directory
+        foreach ($path in $processedDirectories) {
+            Microsoft.PowerShell.Utility\Write-Verbose "Processing directory: $path"
+
+            # retrieve all supported image files from the specified directory
+            # applying recursion only if the -Recurse switch was provided
+            # get all supported image files from the specified directory
+            $imageTypes = @(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif")
+            $findParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName "GenXdev.FileSystem\Find-Item" `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+
+            # Add NoRecurse parameter if Recurse was not specified
+            if (-not $Recurse) {
+                $findParams['NoRecurse'] = $true
+            }
+
+            # Get all image files matching the criteria
+            GenXdev.FileSystem\Find-Item @findParams -PassThru -SearchMask "$path\*" -Directory:$false | Microsoft.PowerShell.Core\Where-Object {
+                $imageTypes.IndexOf(([IO.Path]::GetExtension($_.FullName).ToLowerInvariant())) -ge 0
+            } | Microsoft.PowerShell.Core\ForEach-Object {
 
                 # store the full path to the current image for better readability
                 $image = $PSItem.FullName
@@ -477,7 +498,8 @@ function Invoke-ImageFacesUpdate {
                     try {
                         $content = [System.IO.File]::ReadAllText($metadataFilePath)
                         $existingData = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
-                        $hasValidContent = $existingData.success
+                        # Content is valid if success is true (successful processing)
+                        $hasValidContent = $existingData.success -eq $true
                     }
                     catch {
                         # If JSON parsing fails, treat as invalid content
@@ -488,59 +510,64 @@ function Invoke-ImageFacesUpdate {
                 # determine if image should be processed based on options
                 Microsoft.PowerShell.Utility\Write-Verbose `
                 ("OnlyNew: $OnlyNew, FileExists: $fileExists, " +
-                    "HasValidContent: $hasValidContent")
+                    "HasValidContent: $hasValidContent, RetryFailed: $RetryFailed")
 
-                $shouldProcess = (-not $OnlyNew) -or (-not $fileExists) -or (-not $hasValidContent)
+                # Process if: not OnlyNew OR file doesn't exist OR (RetryFailed and no valid content)
+                $shouldProcess = (-not $OnlyNew) -or
+                                (-not $fileExists) -or
+                                ($RetryFailed -and (-not $hasValidContent))
 
                 Microsoft.PowerShell.Utility\Write-Verbose `
                     "Should process '$image': $shouldProcess"
 
                 if ($shouldProcess) {
 
-                    # obtain face recognition data using ai recognition technology
-                    $params = GenXdev.Helpers\Copy-IdenticalParamValues `
-                        -FunctionName 'GenXdev.AI\Get-ImageDetectedFaces' `
-                        -BoundParameters $PSBoundParameters `
-                        -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+                    try {
+                        # obtain face recognition data using ai recognition technology
+                        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                            -FunctionName 'GenXdev.AI\Get-ImageDetectedFaces' `
+                            -BoundParameters $PSBoundParameters `
+                            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
-                    # Set NoDockerInitialize for the first image,
-                    # then pass it as a parameter for subsequent images
-                    $faceData = Get-ImageDetectedFaces `
-                        @params `
-                        -ImagePath $image
+                        # Set NoDockerInitialize for the first image,
+                        # then pass it as a parameter for subsequent images
+                        $faceData = GenXdev.AI\Get-ImageDetectedFaces `
+                            @params `
+                            -ImagePath $image
 
-                    $NoDockerInitialize = $true;
+                        $NoDockerInitialize = $true;
 
-                    # process the returned face data into standardized format
-                    $processedData = if ($faceData -and
-                        $faceData.success -and
-                        $faceData.predictions) {
+                        # process the returned face data into standardized format
+                        $processedData = if ($faceData -and
+                            $faceData.success -and
+                            $faceData.predictions) {
 
-                        $predictions = $faceData.predictions
+                            $predictions = $faceData.predictions
 
-                        # extract unique face names from predictions data
-                        $faceNames = $predictions |
-                            Microsoft.PowerShell.Core\ForEach-Object {
+                            # extract unique face names from predictions data
+                            $faceNames = $predictions |
+                                Microsoft.PowerShell.Core\ForEach-Object {
 
-                                $name = $_.userid
-                                $lastUnderscoreIndex = $name.LastIndexOf('_')
+                                    $name = $_.userid
+                                    $lastUnderscoreIndex = $name.LastIndexOf('_')
 
-                                # remove timestamp suffix if present in face name
-                                if ($lastUnderscoreIndex -gt 0) {
-                                    $name.Substring(0, $lastUnderscoreIndex)
-                                } else {
-                                    $name
+                                    # remove timestamp suffix if present in face name
+                                    if ($lastUnderscoreIndex -gt 0) {
+                                        $name.Substring(0, $lastUnderscoreIndex)
+                                    } else {
+                                        $name
+                                    }
+                                } |
+                                Microsoft.PowerShell.Utility\Sort-Object -Unique
+
+                                # create standardized data structure for face metadata
+                                @{
+                                    success     = $true
+                                    count       = $faceNames.Count
+                                    faces       = $faceNames
+                                    predictions = $predictions
+                                    processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                                 }
-                            } |
-                            Microsoft.PowerShell.Utility\Sort-Object -Unique
-
-                            # create standardized data structure for face metadata
-                            @{
-                                success     = $true
-                                count       = $faceNames.Count
-                                faces       = $faceNames
-                                predictions = $predictions
-                            }
                         } else {
 
                             # create empty structure when no faces are detected
@@ -549,6 +576,7 @@ function Invoke-ImageFacesUpdate {
                                 count       = 0
                                 faces       = @()
                                 predictions = @()
+                                processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                             }
                         }
 
@@ -558,34 +586,49 @@ function Invoke-ImageFacesUpdate {
                                 -Depth 20 `
                                 -WarningAction SilentlyContinue
 
-                            Microsoft.PowerShell.Utility\Write-Verbose (
-                                "Received face analysis for: $image")
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Received face analysis for: $image")
 
-                            try {
+                        # reformat json to ensure consistent compressed format
+                        $newContent = ($faces |
+                                Microsoft.PowerShell.Utility\ConvertFrom-Json |
+                                Microsoft.PowerShell.Utility\ConvertTo-Json `
+                                    -Compress `
+                                    -Depth 20 `
+                                    -WarningAction SilentlyContinue)
 
-                                # reformat json to ensure consistent compressed format
-                                $newContent = ($faces |
-                                        Microsoft.PowerShell.Utility\ConvertFrom-Json |
-                                        Microsoft.PowerShell.Utility\ConvertTo-Json `
-                                            -Compress `
-                                            -Depth 20 `
-                                            -WarningAction SilentlyContinue)
+                        # save the processed face data to metadata file
+                        [System.IO.File]::WriteAllText($metadataFilePath, $newContent)
 
-                                    # save the processed face data to metadata file
-                                    [System.IO.File]::WriteAllText($metadataFilePath,
-                                        $newContent)
-
-                                    Microsoft.PowerShell.Utility\Write-Verbose (
-                                        "Successfully saved face metadata for: $image")
-                                }
-                                catch {
-
-                                    # log any errors that occur during metadata processing
-                                    Microsoft.PowerShell.Utility\Write-Verbose (
-                                        "$PSItem`r`n$faces")
-                                }
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Successfully saved face metadata for: $image")
+                    }
+                    catch {
+                        # write failure JSON to prevent infinite retries without -RetryFailed
+                        try {
+                            $failureData = @{
+                                success = $false
+                                count = 0
+                                faces = @()
+                                predictions = @()
+                                processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+                                error = "Face detection failed: $($_.Exception.Message)"
                             }
+
+                            $failureJson = $failureData | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 10
+                            [System.IO.File]::WriteAllText($metadataFilePath, $failureJson)
                         }
+                        catch {
+                            # If we can't even write the failure JSON, just log it
+                            Microsoft.PowerShell.Utility\Write-Verbose "Failed to write error metadata for ${image}: $($_.Exception.Message)"
+                        }
+
+                        Microsoft.PowerShell.Utility\Write-Warning (
+                            "Failed to process faces for $image : $($_.Exception.Message)")
+                    }
+                }
+            }
+        }
     }
 
     end {

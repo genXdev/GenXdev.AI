@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 <#
 .SYNOPSIS
 Sets the default database file path for image operations in GenXdev.AI.
@@ -224,7 +224,7 @@ function Set-ImageDatabasePath {
             )
 
             # store the configuration in module preferences for persistence
-            $null = Set-GenXdevPreference `
+            $null = GenXdev.Data\Set-GenXdevPreference `
                 -PreferencesDatabasePath $PreferencesDatabasePath `
                 -Name 'ImageDatabasePath' `
                 -Value $DatabaseFilePath

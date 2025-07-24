@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 <#
 .SYNOPSIS
 Retrieves comprehensive statistics and information about the image database.
@@ -196,7 +196,7 @@ function Get-ImageDatabaseStats {
                     -Scope Local -ErrorAction SilentlyContinue)
 
             # get the default database path without rebuilding
-            $DatabaseFilePath = Get-ImageDatabasePath @params `
+            $DatabaseFilePath = GenXdev.AI\Get-ImageDatabasePath @params `
                 -NoFallback -NeverRebuild
         }
         else {
@@ -224,7 +224,7 @@ function Get-ImageDatabaseStats {
             -PercentComplete 0
 
         # get basic table counts from the main images table
-        $imageCount = (Invoke-SQLiteQuery `
+        $imageCount = (GenXdev.Data\Invoke-SQLiteQuery `
                 -DatabaseFilePath $DatabaseFilePath `
                 -Queries 'SELECT COUNT(*) as count FROM Images').count
 
@@ -235,22 +235,22 @@ function Get-ImageDatabaseStats {
             -PercentComplete 20
 
         # count total keyword associations across all images
-        $keywordCount = (Invoke-SQLiteQuery `
+        $keywordCount = (GenXdev.Data\Invoke-SQLiteQuery `
                 -DatabaseFilePath $DatabaseFilePath `
                 -Queries 'SELECT COUNT(*) as count FROM ImageKeywords').count
 
         # count total people associations across all images
-        $peopleCount = (Invoke-SQLiteQuery `
+        $peopleCount = (GenXdev.Data\Invoke-SQLiteQuery `
                 -DatabaseFilePath $DatabaseFilePath `
                 -Queries 'SELECT COUNT(*) as count FROM ImagePeople').count
 
         # count total object associations across all images
-        $objectCount = (Invoke-SQLiteQuery `
+        $objectCount = (GenXdev.Data\Invoke-SQLiteQuery `
                 -DatabaseFilePath $DatabaseFilePath `
                 -Queries 'SELECT COUNT(*) as count FROM ImageObjects').count
 
         # count total scene associations across all images
-        $sceneCount = (Invoke-SQLiteQuery `
+        $sceneCount = (GenXdev.Data\Invoke-SQLiteQuery `
                 -DatabaseFilePath $DatabaseFilePath `
                 -Queries 'SELECT COUNT(*) as count FROM ImageScenes').count
 
@@ -261,7 +261,7 @@ function Get-ImageDatabaseStats {
             -PercentComplete 40
 
         # get content analysis grouped by picture type with counts
-        $pictureTypeStats = Invoke-SQLiteQuery `
+        $pictureTypeStats = GenXdev.Data\Invoke-SQLiteQuery `
             -DatabaseFilePath $DatabaseFilePath -Queries @'
 SELECT picture_type, COUNT(*) as count
 FROM Images
@@ -271,7 +271,7 @@ ORDER BY count DESC
 '@
 
         # get mood analysis grouped by overall mood with counts
-        $moodStats = Invoke-SQLiteQuery `
+        $moodStats = GenXdev.Data\Invoke-SQLiteQuery `
             -DatabaseFilePath $DatabaseFilePath -Queries @'
 SELECT overall_mood_of_image, COUNT(*) as count
 FROM Images
@@ -281,7 +281,7 @@ ORDER BY count DESC
 '@
 
         # get style analysis grouped by style type with counts
-        $styleStats = Invoke-SQLiteQuery `
+        $styleStats = GenXdev.Data\Invoke-SQLiteQuery `
             -DatabaseFilePath $DatabaseFilePath -Queries @'
 SELECT style_type, COUNT(*) as count
 FROM Images
@@ -297,13 +297,13 @@ ORDER BY count DESC
             -PercentComplete 60
 
         # count images flagged with explicit content
-        $explicitContentCount = (Invoke-SQLiteQuery `
+        $explicitContentCount = (GenXdev.Data\Invoke-SQLiteQuery `
                 -DatabaseFilePath $DatabaseFilePath `
                 -Queries ('SELECT COUNT(*) as count FROM ' +
                 'Images WHERE has_explicit_content = 1')).count
 
         # count images flagged with nudity content
-        $nudityCount = (Invoke-SQLiteQuery `
+        $nudityCount = (GenXdev.Data\Invoke-SQLiteQuery `
                 -DatabaseFilePath $DatabaseFilePath `
                 -Queries ('SELECT COUNT(*) as count FROM Images ' +
                 'WHERE has_nudity = 1')).count
@@ -346,7 +346,7 @@ ORDER BY count DESC
                 -PercentComplete 0
 
             # find top 20 most common keywords across all images
-            $topKeywords = Invoke-SQLiteQuery `
+            $topKeywords = GenXdev.Data\Invoke-SQLiteQuery `
                 -DatabaseFilePath $DatabaseFilePath -Queries @'
 SELECT keyword, COUNT(*) as count
 FROM ImageKeywords
@@ -362,7 +362,7 @@ LIMIT 20
                 -PercentComplete 25
 
             # find top 20 most recognized people across all images
-            $topPeople = Invoke-SQLiteQuery `
+            $topPeople = GenXdev.Data\Invoke-SQLiteQuery `
                 -DatabaseFilePath $DatabaseFilePath -Queries @'
 SELECT person_name, COUNT(*) as count
 FROM ImagePeople
@@ -378,7 +378,7 @@ LIMIT 20
                 -PercentComplete 50
 
             # find top 20 most detected objects across all images
-            $topObjects = Invoke-SQLiteQuery `
+            $topObjects = GenXdev.Data\Invoke-SQLiteQuery `
                 -DatabaseFilePath $DatabaseFilePath -Queries @'
 SELECT object_name, COUNT(*) as count
 FROM ImageObjects
@@ -394,7 +394,7 @@ LIMIT 20
                 -PercentComplete 75
 
             # find top 20 most common scenes with average confidence scores
-            $topScenes = Invoke-SQLiteQuery `
+            $topScenes = GenXdev.Data\Invoke-SQLiteQuery `
                 -DatabaseFilePath $DatabaseFilePath -Queries @'
 SELECT scene_name, COUNT(*) as count, AVG(confidence) as avg_confidence
 FROM ImageScenes
@@ -410,25 +410,25 @@ LIMIT 20
                 -PercentComplete 90
 
             # count unique keywords to show vocabulary diversity
-            $uniqueKeywords = (Invoke-SQLiteQuery `
+            $uniqueKeywords = (GenXdev.Data\Invoke-SQLiteQuery `
                     -DatabaseFilePath $DatabaseFilePath `
                     -Queries ('SELECT COUNT(DISTINCT keyword) as ' +
                     'count FROM ImageKeywords')).count
 
             # count unique people to show recognition diversity
-            $uniquePeople = (Invoke-SQLiteQuery `
+            $uniquePeople = (GenXdev.Data\Invoke-SQLiteQuery `
                     -DatabaseFilePath $DatabaseFilePath `
                     -Queries ('SELECT COUNT(DISTINCT person_name) as ' +
                     'count FROM ImagePeople')).count
 
             # count unique objects to show detection diversity
-            $uniqueObjects = (Invoke-SQLiteQuery `
+            $uniqueObjects = (GenXdev.Data\Invoke-SQLiteQuery `
                     -DatabaseFilePath $DatabaseFilePath `
                     -Queries ('SELECT COUNT(DISTINCT object_name) as ' +
                     'count FROM ImageObjects')).count
 
             # count unique scenes to show scene recognition diversity
-            $uniqueScenes = (Invoke-SQLiteQuery `
+            $uniqueScenes = (GenXdev.Data\Invoke-SQLiteQuery `
                     -DatabaseFilePath $DatabaseFilePath `
                     -Queries ('SELECT COUNT(DISTINCT scene_name) as ' +
                     'count FROM ImageScenes')).count

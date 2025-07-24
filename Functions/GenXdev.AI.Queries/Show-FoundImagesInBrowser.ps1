@@ -518,21 +518,6 @@ function Show-FoundImagesInBrowser {
     }
 
     process {
-        # Add naturalWidth/naturalHeight to each image object before passing to GenerateMasonryLayoutHtml
-        foreach ($img in $InputObject) {
-            if ($img -and $img.path) {
-                try {
-                    $imageObj = [System.Drawing.Image]::FromFile($img.path)
-                    $img | Microsoft.PowerShell.Utility\Add-Member -NotePropertyName 'naturalWidth' -NotePropertyValue $imageObj.Width -Force
-                    $img | Microsoft.PowerShell.Utility\Add-Member -NotePropertyName 'naturalHeight' -NotePropertyValue $imageObj.Height -Force
-                    $null = $imageObj.Dispose()
-                } catch {
-                    Microsoft.PowerShell.Utility\Write-Verbose ("Could not get image dimensions for $($img.path): $_")
-                    continue
-                }
-            }
-        }
-
         # iterate through each input object for processing
         $InputObject |
             Microsoft.PowerShell.Core\ForEach-Object `

@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Removes all registered faces from the DeepStack face recognition system.
@@ -192,7 +192,7 @@ function Unregister-AllFaces {
             }
 
             # ensure deepstack service is running and accessible
-            $null = EnsureDeepStack @ensureParams
+            $null = GenXdev.AI\EnsureDeepStack @ensureParams
         }
         else {
 
@@ -238,7 +238,7 @@ function Unregister-AllFaces {
                     )
 
                     # invoke the rest api to get registered faces using post method
-                    $response = Microsoft.PowerShell.Utility\Invoke-RestMethod `
+                    $null = Microsoft.PowerShell.Utility\Invoke-RestMethod `
                         -Uri $uri `
                         -Method Post `
                         -ContentType 'application/json' `
@@ -549,7 +549,7 @@ function Unregister-AllFaces {
                 try {
 
                     # get list of remaining registered faces
-                    $remainingFaces = Get-RegisteredFaces `
+                    $remainingFaces = GenXdev.AI\Get-RegisteredFaces `
                         -NoDockerInitialize `
                         -ErrorAction SilentlyContinue
 

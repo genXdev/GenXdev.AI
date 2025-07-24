@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 Pester\Describe 'Find-Image' {
 
     Pester\It 'Should pass PSScriptAnalyzer rules' {
@@ -37,12 +37,12 @@ $message
         $testImagePath = GenXdev.FileSystem\Expand-Path "$tmpPath\test-image.png" -CreateDirectory -DeleteExistingFile
         $sourceImage = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\programmer.jpg"
 
-        Copy-Item $sourceImage $testImagePath -Force
+        Microsoft.PowerShell.Management\Copy-Item $sourceImage $testImagePath -Force
 
-        $null = Remove-ImageMetaData -ImageDirectories $tmpPath -AllLanguages
+        $null = GenXdev.AI\Remove-ImageMetaData -ImageDirectories $tmpPath -AllLanguages
 
         GenXdev.Windows\Set-WindowPosition -Left -Monitor 0
-        Update-AllImageMetaData -ImageDirectories $tmpPath -ShowWindow
+        GenXdev.AI\Update-AllImageMetaData -ImageDirectories $tmpPath -ShowWindow
         Export-ImageDatabase -DatabaseFilePath $dbPath -ImageDirectories $tmpPath -ShowWindow
 
         $resultsFindImage = Find-Image -ImageDirectories @($tmpPath) | ConvertTo-HashTable | ConvertTo-Json -Depth 20

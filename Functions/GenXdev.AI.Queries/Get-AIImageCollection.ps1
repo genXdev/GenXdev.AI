@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 <#
 .SYNOPSIS
 Gets the configured directories for image files used in GenXdev.AI operations.
@@ -192,7 +192,7 @@ function Get-AIImageCollection {
         ) | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress
 
         try {
-            $result = Get-GenXdevPreference @params `
+            $result = GenXdev.Data\Get-GenXdevPreference @params `
                 -Name 'AIImageCollection' `
                 -DefaultValue $DefaultValue | Microsoft.PowerShell.Utility\ConvertFrom-Json -ErrorAction SilentlyContinue
         }

@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Retrieves a list of installed LM Studio models.
@@ -29,13 +29,13 @@ function Get-LMStudioModelList {
     begin {
 
         # check if lm studio is installed
-        if (-not (Test-LMStudioInstallation)) {
+        if (-not (GenXdev.AI\Test-LMStudioInstallation)) {
 
             throw 'LM Studio is not installed or not found in expected location'
         }
 
         # get paths for lm studio components
-        $lmPaths = Get-LMStudioPaths
+        $lmPaths = GenXdev.AI\Get-LMStudioPaths
         Microsoft.PowerShell.Utility\Write-Verbose 'Retrieved LM Studio installation paths'
     }
 

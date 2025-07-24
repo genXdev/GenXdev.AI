@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Gets text embeddings from LM Studio model.
@@ -414,7 +414,7 @@ function Get-LMStudioTextEmbedding {
             }
 
             # initialize the lm studio model and retrieve identifier
-            $modelInfo = Initialize-LMStudioModel @initParams
+            $modelInfo = GenXdev.AI\Initialize-LMStudioModel @initParams
 
             # store the model identifier for api requests
             $Model = $modelInfo.identifier

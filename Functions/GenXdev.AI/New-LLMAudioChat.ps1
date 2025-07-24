@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Creates an interactive audio chat session with an LLM model.
@@ -942,7 +942,7 @@ function New-LLMAudioChat {
                 -ErrorAction SilentlyContinue)
 
         # determine appropriate language setting for audio recognition
-        $Language = Get-AIMetaLanguage @params
+        $Language = GenXdev.AI\Get-AIMetaLanguage @params
 
         # initialize stopping flag for chat loop
         $stopping = $false
@@ -1125,7 +1125,7 @@ function New-LLMAudioChat {
                     -ErrorAction SilentlyContinue)
 
             # initialize the model and get its identifier
-            $modelInfo = Initialize-LMStudioModel `
+            $modelInfo = GenXdev.AI\Initialize-LMStudioModel `
                 @initializationParams
 
             $Model = $modelInfo.identifier

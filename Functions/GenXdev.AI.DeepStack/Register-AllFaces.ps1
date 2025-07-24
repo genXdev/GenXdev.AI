@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Updates all face recognition profiles from image files in the faces directory.
@@ -210,7 +210,7 @@ function Register-AllFaces {
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local `
                 -ErrorAction SilentlyContinue)
-        $FacesDirectory = Get-AIKnownFacesRootpath @params
+        $FacesDirectory = GenXdev.AI\Get-AIKnownFacesRootpath @params
 
         Microsoft.PowerShell.Utility\Write-Verbose `
             "Using provided faces directory: $FacesDirectory"
@@ -285,7 +285,7 @@ function Register-AllFaces {
                     }
 
                     # ensure deepstack service is running
-                    $null = EnsureDeepStack @ensureParams
+                    $null = GenXdev.AI\EnsureDeepStack @ensureParams
 
                     # verify service is responding by performing health check
                     $null = Microsoft.PowerShell.Utility\Invoke-RestMethod `
@@ -381,7 +381,7 @@ function Register-AllFaces {
                     $registerParams.Identifier = $Identifier
 
                     # register the face using the deepstack service
-                    $null = Register-Face @registerParams `
+                    $null = GenXdev.AI\Register-Face @registerParams `
                         -NoDockerInitialize -ErrorAction Stop
 
                     # add delay between successful registrations to prevent service overload
@@ -530,7 +530,7 @@ function Register-AllFaces {
             if (-not $ForceUpdate) {
 
                 # get list of existing registered faces
-                $existingFaces = Get-RegisteredFaces `
+                $existingFaces = GenXdev.AI\Get-RegisteredFaces `
                     -NoDockerInitialize `
                     -ErrorAction SilentlyContinue
 
@@ -608,7 +608,7 @@ function Register-AllFaces {
                         -ErrorAction SilentlyContinue)
 
                 # unregister all existing faces
-                $null = Unregister-AllFaces @unregisterParams
+                $null = GenXdev.AI\Unregister-AllFaces @unregisterParams
 
                 # pause to allow service to process the clearing operation
                 Microsoft.PowerShell.Utility\Start-Sleep -Seconds 5

@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Gets the configured directory for face image files used in GenXdev.AI
@@ -119,7 +119,7 @@ function Get-AIKnownFacesRootpath {
         -BoundParameters $PSBoundParameters `
         -FunctionName 'GenXdev.Data\Get-GenXdevPreference'
 
-    GenXdev.FileSystem\Expand-Path (Get-GenXdevPreference @params `
+    GenXdev.FileSystem\Expand-Path (GenXdev.Data\Get-GenXdevPreference @params `
             -Name 'AIKnownFacesRootpath' `
             -DefaultValue $FacesDirectory
     )

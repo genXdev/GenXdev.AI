@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Gets the configured default language for image metadata operations.
@@ -54,6 +54,7 @@ Uses alias to get the current language configuration.
 function Get-AIMetaLanguage {
 
     [CmdletBinding()]
+    [OutputType([string])]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
     [Alias('getimgmetalang')]
@@ -250,7 +251,7 @@ function Get-AIMetaLanguage {
         -BoundParameters $PSBoundParameters `
         -FunctionName 'GenXdev.Data\Get-GenXdevPreference'
 
-    Get-GenXdevPreference @params `
+    GenXdev.Data\Get-GenXdevPreference @params `
         -Name 'AIMetaLanguage' `
         -DefaultValue "$(([string]::IsNullOrWhiteSpace($Language) ? (GenXdev.Helpers\Get-DefaultWebLanguage) : $Language))"
 }

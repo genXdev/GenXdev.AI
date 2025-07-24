@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 
 <#
 .SYNOPSIS
@@ -354,7 +354,7 @@ function Remove-ImageMetaData {
                 -ErrorAction SilentlyContinue)
 
         # get image directories using ai preferences
-        $directories = Get-AIImageCollection @params
+        $directories = GenXdev.AI\Get-AIImageCollection @params
 
         # copy identical parameter values for language retrieval
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -365,7 +365,7 @@ function Remove-ImageMetaData {
                 -ErrorAction SilentlyContinue)
 
         # get configured language using ai preferences
-        $Language = Get-AIMetaLanguage @params
+        $Language = GenXdev.AI\Get-AIMetaLanguage @params
 
         # output verbose information about directories to process
         Microsoft.PowerShell.Utility\Write-Verbose `

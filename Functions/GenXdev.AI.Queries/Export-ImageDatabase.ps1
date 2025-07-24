@@ -1,15 +1,15 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Initializes and populates the SQLite database by discovering images directly.
 
 .DESCRIPTION
 Creates a SQLite database with optimized schema for fast image searching based on
-metadata including keywords, people, objects, scenes, and descriptions. The function
-always deletes any existing database file and creates a fresh one, discovers images
-using Find-Image from specified directories or configured image directories, and
-populates the database directly without requiring a metadata JSON file. Finally,
-it creates indexes for optimal performance.
+metadata including keywords, people, objects, scenes, and descriptions. The
+function always deletes any existing database file and creates a fresh one,
+discovers images using Find-Image from specified directories or configured image
+directories, and populates the database directly without requiring a metadata
+JSON file. Finally, it creates indexes for optimal performance.
 
 .PARAMETER InputObject
 Accepts search results from a Find-Image call to regenerate the view.
@@ -34,7 +34,7 @@ The directory containing face images organized by person folders. If not
 specified, uses the configured faces directory preference.
 
 .PARAMETER EmbedImages
-Embed images as base64.
+Embed images as base64 binary data in the database.
 
 .PARAMETER ForceIndexRebuild
 Force rebuild of the image index database.
@@ -57,8 +57,121 @@ Image collections, etc.
 Database path for preference data files.
 
 .PARAMETER SkipSession
-Dont use alternative settings stored in session for AI preferences like Language,
-Image collections, etc.
+Don't use alternative settings stored in session for AI preferences like
+Language, Image collections, etc.
+
+.PARAMETER ShowWindow
+Show LM Studio window during initialization.
+
+.PARAMETER Any
+Will match any of all the possible meta data types.
+
+.PARAMETER All
+Search all directories even when limited results would normally be returned.
+
+.PARAMETER AllDrives
+Search all drives for images.
+
+.PARAMETER NoRecurse
+Do not search subdirectories recursively.
+
+.PARAMETER Keywords
+The keywords to look for, wildcards allowed.
+
+.PARAMETER People
+People to look for, wildcards allowed.
+
+.PARAMETER Objects
+Objects to look for, wildcards allowed.
+
+.PARAMETER Scenes
+Scenes to look for, wildcards allowed.
+
+.PARAMETER Description
+Description text to search for, wildcards allowed.
+
+.PARAMETER DescriptionSearch
+The description text to look for, wildcards allowed.
+
+.PARAMETER PictureType
+Picture types to filter by, wildcards allowed.
+
+.PARAMETER StyleType
+Style types to filter by, wildcards allowed.
+
+.PARAMETER OverallMood
+Overall moods to filter by, wildcards allowed.
+
+.PARAMETER HasNudity
+Filter images that contain nudity.
+
+.PARAMETER NoNudity
+Filter images that do NOT contain nudity.
+
+.PARAMETER HasExplicitContent
+Filter images that contain explicit content.
+
+.PARAMETER NoExplicitContent
+Filter images that do NOT contain explicit content.
+
+.PARAMETER MetaCameraMake
+Filter by camera make from EXIF metadata.
+
+.PARAMETER MetaCameraModel
+Filter by camera model from EXIF metadata.
+
+.PARAMETER MetaWidth
+Filter by image width range.
+
+.PARAMETER MetaHeight
+Filter by image height range.
+
+.PARAMETER MetaGPSLatitude
+Filter by GPS latitude coordinates.
+
+.PARAMETER MetaGPSLongitude
+Filter by GPS longitude coordinates.
+
+.PARAMETER MetaGPSAltitude
+Filter by GPS altitude.
+
+.PARAMETER MetaExposureTime
+Filter by exposure time range.
+
+.PARAMETER MetaFNumber
+Filter by f-number range.
+
+.PARAMETER MetaISO
+Filter by ISO speed range.
+
+.PARAMETER MetaFocalLength
+Filter by focal length range.
+
+.PARAMETER MetaDateTaken
+Filter by date taken.
+
+.PARAMETER GeoLocation
+GPS coordinates for location-based searching.
+
+.PARAMETER GeoDistanceInMeters
+Distance in meters for location-based searching.
+
+.PARAMETER Force
+Force processing even if metadata already exists.
+
+.PARAMETER PassThru
+Return processed objects instead of displaying in browser.
+
+.PARAMETER MinConfidenceRatio
+Minimum confidence ratio (0.0-1.0) for filtering people, scenes, and objects
+by confidence. Only returns data for people, scenes, and objects with confidence
+greater than or equal to this value. When specified, filters out low-confidence
+detection results from people, scenes, and objects data while keeping the image.
+
+.PARAMETER Append
+When used with InputObject, first outputs all InputObject content, then
+processes as if InputObject was not set. Allows appending search results to
+existing collections.
 
 .EXAMPLE
 Export-ImageDatabase -DatabaseFilePath "C:\Custom\Path\images.db" `
@@ -97,7 +210,7 @@ function Export-ImageDatabase {
             HelpMessage = 'Array of directory paths to search for images'
         )]
         [Alias('imagespath', 'directories', 'imgdirs', 'imagedirectory')]
-        [string[]] $ImageDirectories,        
+        [string[]] $ImageDirectories,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -106,7 +219,7 @@ function Export-ImageDatabase {
                 "path (SQL LIKE patterns, e.g. '%\\2024\\%')"
             )
         )]
-        [string[]] $PathLike = @(),
+        [string[]] $PathLike,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -154,7 +267,7 @@ function Export-ImageDatabase {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Embed images as base64.'
+            HelpMessage = 'Embed images as base64 binary data in the database.'
         )]
         [switch] $EmbedImages,
         ###############################################################################
@@ -199,19 +312,235 @@ function Export-ImageDatabase {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ('Dont use alternative settings stored in session for ' +
+            HelpMessage = ('Don''t use alternative settings stored in session for ' +
                 'AI preferences like Language, Image collections, etc')
         )]
         [Alias('FromPreferences')]
         [switch] $SkipSession,
-        #######################################################################
+        ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ('LM Studio window during ' +
+            HelpMessage = ('Show LM Studio window during ' +
                 'initialization')
         )]
         [Alias('sw')]
-        [switch]$ShowWindow
+        [switch] $ShowWindow,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Will match any of all the possible meta data types.'
+        )]
+        [string[]] $Any,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Search all directories even when limited results would normally be returned.'
+        )]
+        [switch] $All,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Search all drives for images.'
+        )]
+        [switch] $AllDrives,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Do not search subdirectories recursively.'
+        )]
+        [switch] $NoRecurse,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The keywords to look for, wildcards allowed.'
+        )]
+        [string[]] $Keywords,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'People to look for, wildcards allowed.'
+        )]
+        [string[]] $People,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Objects to look for, wildcards allowed.'
+        )]
+        [string[]] $Objects,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Scenes to look for, wildcards allowed.'
+        )]
+        [string[]] $Scenes,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Description text to search for, wildcards allowed.'
+        )]
+        [string[]] $Description,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The description text to look for, wildcards allowed.'
+        )]
+        [string[]] $DescriptionSearch,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Picture types to filter by, wildcards allowed.'
+        )]
+        [string[]] $PictureType,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Style types to filter by, wildcards allowed.'
+        )]
+        [string[]] $StyleType,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Overall moods to filter by, wildcards allowed.'
+        )]
+        [string[]] $OverallMood,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter images that contain nudity.'
+        )]
+        [switch] $HasNudity,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter images that do NOT contain nudity.'
+        )]
+        [switch] $NoNudity,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter images that contain explicit content.'
+        )]
+        [switch] $HasExplicitContent,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter images that do NOT contain explicit content.'
+        )]
+        [switch] $NoExplicitContent,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by camera make from EXIF metadata.'
+        )]
+        [string[]] $MetaCameraMake,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by camera model from EXIF metadata.'
+        )]
+        [string[]] $MetaCameraModel,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by image width range.'
+        )]
+        [int[]] $MetaWidth,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by image height range.'
+        )]
+        [int[]] $MetaHeight,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by GPS latitude coordinates.'
+        )]
+        [decimal[]] $MetaGPSLatitude,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by GPS longitude coordinates.'
+        )]
+        [decimal[]] $MetaGPSLongitude,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by GPS altitude.'
+        )]
+        [decimal[]] $MetaGPSAltitude,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by exposure time range.'
+        )]
+        [decimal[]] $MetaExposureTime,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by f-number range.'
+        )]
+        [decimal[]] $MetaFNumber,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by ISO speed range.'
+        )]
+        [int[]] $MetaISO,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by focal length range.'
+        )]
+        [decimal[]] $MetaFocalLength,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter by date taken.'
+        )]
+        [string[]] $MetaDateTaken,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'GPS coordinates for location-based searching.'
+        )]
+        [decimal[]] $GeoLocation,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Distance in meters for location-based searching.'
+        )]
+        [int] $GeoDistanceInMeters,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Force processing even if metadata already exists.'
+        )]
+        [switch] $Force,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Return processed objects instead of displaying in browser.'
+        )]
+        [switch] $PassThru,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Minimum confidence ratio (0.0-1.0) for filtering ' +
+                'people, scenes, and objects by confidence. Only returns data for ' +
+                'people, scenes, and objects with confidence greater than or equal ' +
+                'to this value.')
+        )]
+        [ValidateRange(0.0, 1.0)]
+        [double] $MinConfidenceRatio,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('When used with InputObject, first outputs all ' +
+                'InputObject content, then processes as if InputObject was not set. ' +
+                'Allows appending search results to existing collections.')
+        )]
+        [switch] $Append
     )
 
     begin {
@@ -225,7 +554,7 @@ function Export-ImageDatabase {
                 -ErrorAction SilentlyContinue
         )
 
-        $DatabaseFilePath = Get-ImageDatabasePath @params -NeverRebuild
+        $DatabaseFilePath = GenXdev.AI\Get-ImageDatabasePath @params -NeverRebuild
 
         # retrieve configured image directories if not provided
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -236,19 +565,20 @@ function Export-ImageDatabase {
                 -ErrorAction SilentlyContinue
         )
 
-        $ImageDirectories = Get-AIImageCollection @params
+        $ImageDirectories = GenXdev.AI\Get-AIImageCollection @params
 
         # output that the image index database is being recreated
         Microsoft.PowerShell.Utility\Write-Host (
             "Recreating image index database`r`n" +
-            "Path = $DatabaseFilePath`r`n" +
+            "Path = ${DatabaseFilePath}`r`n" +
             "Image directories = $(($ImageDirectories -join ', '))`r`n"
         ) -ForegroundColor Cyan
 
         # output the directories being used for image discovery
         Microsoft.PowerShell.Utility\Write-Verbose (
             "Directories:`r`n" +
-            "$(($ImageDirectories | Microsoft.PowerShell.Utility\ConvertTo-Json))"
+            "$(($ImageDirectories |
+                Microsoft.PowerShell.Utility\ConvertTo-Json))"
         )
 
         # output whether image embedding is enabled or disabled
@@ -258,7 +588,8 @@ function Export-ImageDatabase {
                 'Image embedding: ENABLED - Images will be stored as binary ' +
                 'data in database'
             )
-        } else {
+        }
+        else {
 
             Microsoft.PowerShell.Utility\Write-Verbose (
                 'Image embedding: DISABLED - Only file paths will be stored'
@@ -266,7 +597,7 @@ function Export-ImageDatabase {
         }
 
         # define schema version constant
-        $SCHEMA_VERSION = '1.0.0.3'
+        $SCHEMA_VERSION = '1.0.0.5'
 
         # initialize info object for tracking found results
         $Info = @{
@@ -286,7 +617,7 @@ function Export-ImageDatabase {
         # attempt to shutdown existing sqlite connections
         try {
 
-            [System.Data.SQLite.SQLiteConnection]::Shutdown()
+            $null = [System.Data.SQLite.SQLiteConnection]::Shutdown()
         }
         catch {
 
@@ -297,7 +628,7 @@ function Export-ImageDatabase {
 
         # output which database file will be used
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Using image database: $DatabaseFilePath"
+            "Using image database: ${DatabaseFilePath}"
         )
 
         # expand database path and ensure directory exists, remove existing file
@@ -309,7 +640,8 @@ function Export-ImageDatabase {
         if ([IO.File]::Exists($DatabaseFilePath)) {
 
             # try to move the file to backup, swap if move fails
-            if (-not (GenXdev.FileSystem\Move-ItemWithTracking $DatabaseFilePath $DatabaseBackupFilePath -Force)) {
+            if (-not (GenXdev.FileSystem\Move-ItemWithTracking `
+                        $DatabaseFilePath $DatabaseBackupFilePath -Force)) {
 
                 $tmp = $DatabaseFilePath
                 $DatabaseFilePath = $DatabaseBackupFilePath
@@ -318,29 +650,35 @@ function Export-ImageDatabase {
             else {
 
                 # move the database journal file as well if it exists
-                $journalFilePath = "$DatabaseFilePath-journal"
+                $journalFilePath = "${DatabaseFilePath}-journal"
 
                 if ([IO.File]::Exists($journalFilePath)) {
 
                     # attempt to move journal file to backup location
-                    if (-not (GenXdev.FileSystem\Move-ItemWithTracking $journalFilePath "$DatabaseBackupFilePath-journal" -Force)) {
+                    if (-not (GenXdev.FileSystem\Move-ItemWithTracking `
+                                $journalFilePath "${DatabaseBackupFilePath}-journal" `
+                                -Force)) {
 
                         Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Failed to move journal file: $journalFilePath"
+                            "Failed to move journal file: ${journalFilePath}"
                         )
 
                         # move renamed file back if journal move failed
-                        if (-not (GenXdev.FileSystem\Move-ItemWithTracking -Path $DatabaseBackupFilePath -Destination $DatabaseFilePath -Force -ErrorAction SilentlyContinue)) {
+                        if (-not (GenXdev.FileSystem\Move-ItemWithTracking `
+                                    -Path $DatabaseBackupFilePath `
+                                    -Destination $DatabaseFilePath -Force `
+                                    -ErrorAction SilentlyContinue)) {
 
                             Microsoft.PowerShell.Utility\Write-Verbose (
                                 'Failed to restore original database file: ' +
-                                "$DatabaseFilePath"
+                                "${DatabaseFilePath}"
                             )
-                        } else {
+                        }
+                        else {
 
                             Microsoft.PowerShell.Utility\Write-Verbose (
                                 'Restored original database file: ' +
-                                "$DatabaseFilePath"
+                                "${DatabaseFilePath}"
                             )
                         }
 
@@ -355,12 +693,13 @@ function Export-ImageDatabase {
 
         # output verbose information about database and metadata paths
         Microsoft.PowerShell.Utility\Write-Verbose (
-            "Database path: $DatabaseFilePath"
+            "Database path: ${DatabaseFilePath}"
         )
 
         Microsoft.PowerShell.Utility\Write-Verbose (
             'Metadata path: ' +
-            "$(($ImageDirectories | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10))"
+            "$(($ImageDirectories |
+                Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10))"
         )
 
         # define table creation script for main images table
@@ -369,6 +708,8 @@ CREATE TABLE IF NOT EXISTS Images (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     path TEXT UNIQUE NOT NULL,
     image_data BLOB,
+    width INTEGER,
+    height INTEGER,
     has_explicit_content BOOLEAN DEFAULT 0,
     has_nudity BOOLEAN DEFAULT 0,
     short_description TEXT,
@@ -388,6 +729,45 @@ CREATE TABLE IF NOT EXISTS Images (
     scene_confidence REAL,
     scene_confidence_percentage REAL,
     scene_processed_at DATETIME,
+
+    -- Camera metadata
+    camera_make TEXT,
+    camera_model TEXT,
+    software TEXT,
+
+    -- GPS metadata
+    gps_latitude REAL,
+    gps_longitude REAL,
+    gps_altitude REAL,
+
+    -- Exposure metadata
+    exposure_time REAL,
+    f_number REAL,
+    iso_speed INTEGER,
+    focal_length REAL,
+    flash INTEGER,
+
+    -- DateTime metadata
+    date_time_original TEXT,
+    date_time_digitized TEXT,
+
+    -- Color metadata
+    color_space TEXT,
+    bits_per_sample INTEGER,
+
+    -- Author metadata
+    artist TEXT,
+    copyright TEXT,
+
+    -- Orientation and resolution
+    orientation INTEGER,
+    resolution_unit TEXT,
+    x_resolution REAL,
+    y_resolution REAL,
+
+    -- Raw metadata JSON - stores all metadata as JSON for LIKE searches
+    metadata_json TEXT,
+
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -455,6 +835,9 @@ CREATE INDEX IF NOT EXISTS idx_images_path ON Images(path);
 -- Content safety filters (very frequently used together)
 CREATE INDEX IF NOT EXISTS idx_images_nudity ON Images(has_nudity);
 CREATE INDEX IF NOT EXISTS idx_images_explicit ON Images(has_explicit_content);
+
+-- Metadata JSON for text-based searching
+CREATE INDEX IF NOT EXISTS idx_images_metadata_json ON Images(metadata_json);
 
 -- Core categorical filters
 CREATE INDEX IF NOT EXISTS idx_images_picture_type ON Images(picture_type);
@@ -549,6 +932,18 @@ CREATE INDEX IF NOT EXISTS idx_images_with_people ON Images(path, people_count, 
 CREATE INDEX IF NOT EXISTS idx_images_with_objects ON Images(path, objects_count, picture_type)
     WHERE objects_count > 0;
 
+-- Only index images with GPS coordinates
+CREATE INDEX IF NOT EXISTS idx_images_with_gps ON Images(gps_latitude, gps_longitude, path)
+    WHERE gps_latitude IS NOT NULL AND gps_longitude IS NOT NULL;
+
+-- Only index images with camera information
+CREATE INDEX IF NOT EXISTS idx_images_with_camera ON Images(camera_make, camera_model, path)
+    WHERE camera_make IS NOT NULL OR camera_model IS NOT NULL;
+
+-- Only index images with date information
+CREATE INDEX IF NOT EXISTS idx_images_with_date ON Images(date_time_original, path)
+    WHERE date_time_original IS NOT NULL;
+
 -- ===================================================================
 -- PREFIX SEARCH OPTIMIZATION (AVOID LEADING WILDCARD TABLE SCANS)
 -- ===================================================================
@@ -618,7 +1013,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
         # create new database using specialized function
         Microsoft.PowerShell.Utility\Write-Verbose 'Creating new database...'
 
-        New-SQLiteDatabase -DatabaseFilePath $DatabaseFilePath
+        $null = GenXdev.Data\New-SQLiteDatabase -DatabaseFilePath $DatabaseFilePath
 
         # create tables without indexes initially for faster inserts
         Microsoft.PowerShell.Utility\Write-Verbose 'Creating database tables...'
@@ -632,7 +1027,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             $createSchemaVersionTable
         )
 
-        Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath `
+        $null = GenXdev.Data\Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath `
             -Queries $createTablesQueries
 
         # get images using Find-Image for direct integration
@@ -649,37 +1044,59 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                 -ErrorAction SilentlyContinue
         )
 
-        $transaction = Get-SQLiteTransaction @params
+        $transaction = GenXdev.Data\Get-SQLiteTransaction @params
 
         # prepare image insertion query based on whether embedding is enabled
         $insertQuery = if ($EmbedImages) {
 
-            'INSERT INTO Images (path, image_data, has_explicit_content, ' +
+            ('INSERT INTO Images (path, image_data, width, height, ' +
+            'has_explicit_content, has_nudity, short_description, ' +
+            'long_description, picture_type, overall_mood_of_image, ' +
+            'style_type, description_keywords, people_count, people_faces, ' +
+            'people_json, objects_count, objects_list, objects_json, ' +
+            'object_counts, scene_label, scene_confidence, ' +
+            'scene_confidence_percentage, scene_processed_at, camera_make, ' +
+            'camera_model, software, gps_latitude, gps_longitude, ' +
+            'gps_altitude, exposure_time, f_number, iso_speed, focal_length, ' +
+            'flash, date_time_original, date_time_digitized, color_space, ' +
+            'bits_per_sample, artist, copyright, orientation, ' +
+            'resolution_unit, x_resolution, y_resolution, metadata_json) ' +
+            'VALUES (@path, @image_data, @width, @height, @explicit, ' +
+            '@nudity, @short_desc, @long_desc, @pic_type, @mood, @style, ' +
+            '@desc_keywords, @people_count, @people_faces, @people_json, ' +
+            '@objects_count, @objects_list, @objects_json, @object_counts, ' +
+            '@scene_label, @scene_confidence, @scene_conf_pct, ' +
+            '@scene_processed, @camera_make, @camera_model, @software, ' +
+            '@gps_latitude, @gps_longitude, @gps_altitude, @exposure_time, ' +
+            '@f_number, @iso_speed, @focal_length, @flash, ' +
+            '@date_time_original, @date_time_digitized, @color_space, ' +
+            '@bits_per_sample, @artist, @copyright, @orientation, ' +
+            '@resolution_unit, @x_resolution, @y_resolution, @metadata_json)')
+        }
+        else {
+
+            ('INSERT INTO Images (path, width, height, has_explicit_content, ' +
             'has_nudity, short_description, long_description, picture_type, ' +
             'overall_mood_of_image, style_type, description_keywords, ' +
             'people_count, people_faces, people_json, objects_count, ' +
             'objects_list, objects_json, object_counts, scene_label, ' +
             'scene_confidence, scene_confidence_percentage, ' +
-            'scene_processed_at) VALUES (@path, @image_data, @explicit, ' +
-            '@nudity, @short_desc, @long_desc, @pic_type, @mood, @style, ' +
-            '@desc_keywords, @people_count, @people_faces, @people_json, ' +
-            '@objects_count, @objects_list, @objects_json, @object_counts, ' +
-            '@scene_label, @scene_confidence, @scene_conf_pct, ' +
-            '@scene_processed)'
-        } else {
-
-            'INSERT INTO Images (path, has_explicit_content, has_nudity, ' +
-            'short_description, long_description, picture_type, ' +
-            'overall_mood_of_image, style_type, description_keywords, ' +
-            'people_count, people_faces, people_json, objects_count, ' +
-            'objects_list, objects_json, object_counts, scene_label, ' +
-            'scene_confidence, scene_confidence_percentage, ' +
-            'scene_processed_at) VALUES (@path, @explicit, @nudity, ' +
-            '@short_desc, @long_desc, @pic_type, @mood, @style, ' +
-            '@desc_keywords, @people_count, @people_faces, @people_json, ' +
-            '@objects_count, @objects_list, @objects_json, @object_counts, ' +
-            '@scene_label, @scene_confidence, @scene_conf_pct, ' +
-            '@scene_processed)'
+            'scene_processed_at, camera_make, camera_model, software, ' +
+            'gps_latitude, gps_longitude, gps_altitude, exposure_time, ' +
+            'f_number, iso_speed, focal_length, flash, date_time_original, ' +
+            'date_time_digitized, color_space, bits_per_sample, artist, ' +
+            'copyright, orientation, resolution_unit, x_resolution, ' +
+            'y_resolution, metadata_json) VALUES (@path, @width, @height, ' +
+            '@explicit, @nudity, @short_desc, @long_desc, @pic_type, @mood, ' +
+            '@style, @desc_keywords, @people_count, @people_faces, ' +
+            '@people_json, @objects_count, @objects_list, @objects_json, ' +
+            '@object_counts, @scene_label, @scene_confidence, ' +
+            '@scene_conf_pct, @scene_processed, @camera_make, @camera_model, ' +
+            '@software, @gps_latitude, @gps_longitude, @gps_altitude, ' +
+            '@exposure_time, @f_number, @iso_speed, @focal_length, @flash, ' +
+            '@date_time_original, @date_time_digitized, @color_space, ' +
+            '@bits_per_sample, @artist, @copyright, @orientation, ' +
+            '@resolution_unit, @x_resolution, @y_resolution, @metadata_json)')
         }
 
         # define internal function to import images from various sources
@@ -707,12 +1124,16 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                     -ErrorAction SilentlyContinue
             )
 
-            $findImageParams.ImageDirectories = Get-AIImageCollection @imageCollectionParams
+            $findImageParams.ImageDirectories = `
+                GenXdev.AI\Get-AIImageCollection @imageCollectionParams
 
             # prepare lookup table inserts using strongly typed collections
-            [System.Collections.Generic.List[String]] $lookupQueries = [System.Collections.Generic.List[String]]::new()
+            [System.Collections.Generic.List[String]] $lookupQueries = `
+                [System.Collections.Generic.List[String]]::new()
 
-            [System.Collections.Generic.List[System.Collections.Hashtable]] $lookupParams = [System.Collections.Generic.List[System.Collections.Hashtable]]::new()
+            [System.Collections.Generic.List[System.Collections.Hashtable]] `
+            $lookupParams = `
+                [System.Collections.Generic.List[System.Collections.Hashtable]]::new()
 
             # define internal function to insert a single image into database
             function insertImage {
@@ -736,40 +1157,214 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
 
                         # build parameters for main image record insert with null checks
                         $imageParams = @{
-                            'path'             = $image.path
-                            'explicit'         = if ($image.description -and $image.description.has_explicit_content) { 1 } else { 0 }
-                            'nudity'           = if ($image.description -and $image.description.has_nudity) { 1 } else { 0 }
-                            'short_desc'       = if ($image.description) { $image.description.short_description } else { '' }
-                            'long_desc'        = if ($image.description) { $image.description.long_description } else { '' }
-                            'pic_type'         = if ($image.description) { $image.description.picture_type } else { '' }
-                            'mood'             = if ($image.description) { $image.description.overall_mood_of_image } else { '' }
-                            'style'            = if ($image.description) { $image.description.style_type } else { '' }
-                            'desc_keywords'    = if ($image.description -and $image.description.keywords) {
+                            'path'                = $image.path
+                            'width'               = $image.width
+                            'height'              = $image.height
+                            'explicit'            = if ($image.description -and
+                                $image.description.has_explicit_content) { 1 }
+                                else { 0 }
+                            'nudity'              = if ($image.description -and
+                                $image.description.has_nudity) { 1 }
+                                else { 0 }
+                            'short_desc'          = if ($image.description) {
+                                $image.description.short_description }
+                                else { '' }
+                            'long_desc'           = if ($image.description) {
+                                $image.description.long_description }
+                                else { '' }
+                            'pic_type'            = if ($image.description) {
+                                $image.description.picture_type }
+                                else { '' }
+                            'mood'                = if ($image.description) {
+                                $image.description.overall_mood_of_image }
+                                else { '' }
+                            'style'               = if ($image.description) {
+                                $image.description.style_type }
+                                else { '' }
+                            'desc_keywords'       = if ($image.description -and
+                                $image.description.keywords) {
                                 if ($image.description.keywords.Count -gt 0) {
-                                    $image.description.keywords | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20
-                                } else { '[]' }
-                            } else { '[]' }
-                            'people_count'     = if ($image.people) { $image.people.count } else { 0 }
-                            'people_faces'     = if ($image.people -and $image.people.faces) {
+                                    ($image.description.keywords |
+                                        Microsoft.PowerShell.Utility\ConvertTo-Json `
+                                            -Compress -Depth 20)
+                                }
+                                else {
+                                    '[]'
+                                }
+                            }
+                            else {
+                                '[]'
+                            }
+                            'people_count'        = if ($image.people) {
+                                $image.people.count }
+                                else { 0 }
+                            'people_faces'        = if ($image.people -and
+                                $image.people.faces) {
                                 if ($image.people.faces.Count -gt 0) {
-                                    $image.people.faces | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20
-                                } else { '[]' }
-                            } else { '[]' }
-                            'people_json'      = if ($image.people) { $image.people | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 } else { '{}' }
-                            'objects_count'    = if ($image.objects) { $image.objects.count } else { 0 }
-                            'objects_list'     = if ($image.objects -and $image.objects.objects) {
+                                    ($image.people.faces |
+                                        Microsoft.PowerShell.Utility\ConvertTo-Json `
+                                            -Compress -Depth 20)
+                                }
+                                else {
+                                    '[]'
+                                }
+                            }
+                            else {
+                                '[]'
+                            }
+                            'people_json'         = if ($image.people) {
+                                ($image.people |
+                                    Microsoft.PowerShell.Utility\ConvertTo-Json `
+                                        -Compress -Depth 20) }
+                                else { '{}' }
+                            'objects_count'       = if ($image.objects) {
+                                $image.objects.count }
+                                else { 0 }
+                            'objects_list'        = if ($image.objects -and
+                                $image.objects.objects) {
                                 if ($image.objects.objects.Count -gt 0) {
-                                    $image.objects.objects | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20
-                                } else { '[]' }
-                            } else { '[]' }
-                            'objects_json'     = if ($image.objects) { $image.objects | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 } else { '{}' }
-                            'object_counts'    = if ($image.objects -and $image.objects.object_counts) {
-                                $image.objects.object_counts | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20
-                            } else { '{}' }
-                            'scene_label'      = if ($image.scenes) { $image.scenes.label } else { '' }
-                            'scene_confidence' = if ($image.scenes) { $image.scenes.confidence } else { 0 }
-                            'scene_conf_pct'   = if ($image.scenes) { $image.scenes.confidence_percentage } else { 0 }
-                            'scene_processed'  = if ($image.scenes) { $image.scenes.processed_at } else { '' }
+                                    ($image.objects.objects |
+                                        Microsoft.PowerShell.Utility\ConvertTo-Json `
+                                            -Compress -Depth 20)
+                                }
+                                else {
+                                    '[]'
+                                }
+                            }
+                            else {
+                                '[]'
+                            }
+                            'objects_json'        = if ($image.objects) {
+                                ($image.objects |
+                                    Microsoft.PowerShell.Utility\ConvertTo-Json `
+                                        -Compress -Depth 20) }
+                                else { '{}' }
+                            'object_counts'       = if ($image.objects -and
+                                $image.objects.object_counts) {
+                                ($image.objects.object_counts |
+                                    Microsoft.PowerShell.Utility\ConvertTo-Json `
+                                        -Compress -Depth 20)
+                            }
+                            else {
+                                '{}'
+                            }
+                            'scene_label'         = if ($image.scenes) {
+                                $image.scenes.label }
+                                else { '' }
+                            'scene_confidence'    = if ($image.scenes) {
+                                $image.scenes.confidence }
+                                else { 0 }
+                            'scene_conf_pct'      = if ($image.scenes) {
+                                $image.scenes.confidence_percentage }
+                                else { 0 }
+                            'scene_processed'     = if ($image.scenes) {
+                                $image.scenes.processed_at }
+                                else { '' }
+
+                            # Camera metadata
+                            'camera_make'         = if ($image.metadata -and
+                                $image.metadata.Camera.Make) {
+                                $image.metadata.Camera.Make }
+                                else { '' }
+                            'camera_model'        = if ($image.metadata -and
+                                $image.metadata.Camera.Model) {
+                                $image.metadata.Camera.Model }
+                                else { '' }
+                            'software'            = if ($image.metadata -and
+                                $image.metadata.Other.Software) {
+                                $image.metadata.Other.Software }
+                                else { '' }
+
+                            # GPS metadata
+                            'gps_latitude'        = if ($image.metadata -and
+                                $image.metadata.GPS.Latitude) {
+                                $image.metadata.GPS.Latitude }
+                                else { $null }
+                            'gps_longitude'       = if ($image.metadata -and
+                                $image.metadata.GPS.Longitude) {
+                                $image.metadata.GPS.Longitude }
+                                else { $null }
+                            'gps_altitude'        = if ($image.metadata -and
+                                $image.metadata.GPS.Altitude) {
+                                $image.metadata.GPS.Altitude }
+                                else { $null }
+
+                            # Exposure metadata
+                            'exposure_time'       = if ($image.metadata -and
+                                $image.metadata.Exposure.ExposureTime) {
+                                "$($image.metadata.Exposure.ExposureTime)" }
+                                else { $null }
+                            'f_number'            = if ($image.metadata -and
+                                $image.metadata.Exposure.FNumber) {
+                                "$($image.metadata.Exposure.FNumber)" }
+                                else { $null }
+                            'iso_speed'           = if ($image.metadata -and
+                                $image.metadata.Exposure.ISOSpeedRatings) {
+                                $image.metadata.Exposure.ISOSpeedRatings }
+                                else { $null }
+                            'focal_length'        = if ($image.metadata -and
+                                $image.metadata.Exposure.FocalLength) {
+                                "$($image.metadata.Exposure.FocalLength)" }
+                                else { $null }
+                            'flash'               = if ($image.metadata -and
+                                $image.metadata.Exposure.Flash) {
+                                $image.metadata.Exposure.Flash }
+                                else { $null }
+
+                            # DateTime metadata
+                            'date_time_original'  = if ($image.metadata -and
+                                $image.metadata.DateTime.DateTimeOriginal) {
+                                $image.metadata.DateTime.DateTimeOriginal }
+                                else { '' }
+                            'date_time_digitized' = if ($image.metadata -and
+                                $image.metadata.DateTime.DateTimeDigitized) {
+                                $image.metadata.DateTime.DateTimeDigitized }
+                                else { '' }
+
+                            # Color metadata
+                            'color_space'         = if ($image.metadata -and
+                                $image.metadata.Other.ColorSpace) {
+                                $image.metadata.Other.ColorSpace }
+                                else { '' }
+                            'bits_per_sample'     = if ($image.metadata -and
+                                $image.metadata.Basic.BitsPerSample) {
+                                $image.metadata.Basic.BitsPerSample }
+                                else { $null }
+
+                            # Author metadata
+                            'artist'              = if ($image.metadata -and
+                                $image.metadata.Author.Artist) {
+                                $image.metadata.Author.Artist }
+                                else { '' }
+                            'copyright'           = if ($image.metadata -and
+                                $image.metadata.Author.Copyright) {
+                                $image.metadata.Author.Copyright }
+                                else { '' }
+
+                            # Orientation and resolution
+                            'orientation'         = if ($image.metadata -and
+                                $image.metadata.Basic.Orientation) {
+                                $image.metadata.Basic.Orientation }
+                                else { $null }
+                            'resolution_unit'     = if ($image.metadata -and
+                                $image.metadata.Other.ResolutionUnit) {
+                                $image.metadata.Other.ResolutionUnit }
+                                else { '' }
+                            'x_resolution'        = if ($image.metadata -and
+                                $image.metadata.Basic.HorizontalResolution) {
+                                $image.metadata.Basic.HorizontalResolution }
+                                else { $null }
+                            'y_resolution'        = if ($image.metadata -and
+                                $image.metadata.Basic.VerticalResolution) {
+                                $image.metadata.Basic.VerticalResolution }
+                                else { $null }
+
+                            # Store complete metadata as JSON for text-based searching
+                            'metadata_json'       = if ($image.metadata) {
+                                ($image.metadata |
+                                    Microsoft.PowerShell.Utility\ConvertTo-Json `
+                                        -Compress -Depth 20) }
+                                else { '{}' }
                         }
 
                         # add image data if embedding is enabled for binary storage
@@ -778,20 +1373,23 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                             try {
 
                                 # check if image file exists before reading binary data
-                                if (Microsoft.PowerShell.Management\Test-Path $image.path -PathType Leaf) {
+                                if (Microsoft.PowerShell.Management\Test-Path `
+                                        $image.path -PathType Leaf) {
 
                                     Microsoft.PowerShell.Utility\Write-Verbose (
                                         "Reading image data from: $($image.path)"
                                     )
 
-                                    $imageBytes = [System.IO.File]::ReadAllBytes($image.path)
+                                    $imageBytes = `
+                                        [System.IO.File]::ReadAllBytes($image.path)
                                     $imageParams['image_data'] = $imageBytes
 
                                     Microsoft.PowerShell.Utility\Write-Verbose (
-                                        "Embedded $($imageBytes.Length) bytes for " +
-                                        "image: $($image.path)"
+                                        "Embedded $($imageBytes.Length) bytes " +
+                                        "for image: $($image.path)"
                                     )
-                                } else {
+                                }
+                                else {
 
                                     Microsoft.PowerShell.Utility\Write-Verbose (
                                         'Image file not found for embedding: ' +
@@ -800,7 +1398,8 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
 
                                     $imageParams['image_data'] = $null
                                 }
-                            } catch {
+                            }
+                            catch {
 
                                 Microsoft.PowerShell.Utility\Write-Verbose (
                                     'Failed to read image data for embedding: ' +
@@ -814,11 +1413,13 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                         # execute the insert and get the new ID for foreign key references
                         $queries = @($insertQuery, 'SELECT last_insert_rowid() AS newId;')
 
-                        $result = Invoke-SQLiteQuery -Transaction $transaction `
-                            -Queries $queries -SqlParameters @($imageParams)
+                        $result = GenXdev.Data\Invoke-SQLiteQuery `
+                            -Transaction $transaction -Queries $queries `
+                            -SqlParameters @($imageParams)
 
                         $imageId = $result |
-                            Microsoft.PowerShell.Utility\Select-Object -ExpandProperty newId
+                            Microsoft.PowerShell.Utility\Select-Object `
+                                -ExpandProperty newId
 
                         # clear collections for reuse with this image
                         $lookupQueries.Clear()
@@ -829,8 +1430,9 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
 
                             foreach ($keyword in $image.keywords) {
 
-                                $lookupQueries.Add('INSERT INTO ImageKeywords ' +
-                                    '(image_id, keyword) VALUES (@image_id, @keyword)')
+                                $lookupQueries.Add(
+                                    ('INSERT INTO ImageKeywords (image_id, ' +
+                                    'keyword) VALUES (@image_id, @keyword)'))
 
                                 $lookupParams.Add(@{
                                         'image_id' = $imageId;
@@ -840,21 +1442,27 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                         }
 
                         # insert people data by parsing faces string if needed
-                        if ($image.people -and $image.people.faces -and $image.people.faces -ne '' -and $image.people.faces.Count -gt 0) {
+                        if ($image.people -and $image.people.faces -and
+                            $image.people.faces -ne '' -and
+                            $image.people.faces.Count -gt 0) {
 
                             # handle both array and comma-separated string formats
                             $people = if ($image.people.faces -is [array]) {
                                 $image.people.faces
-                            } else {
+                            }
+                            else {
                                 $image.people.faces -split ',' |
-                                    Microsoft.PowerShell.Core\ForEach-Object { $_.Trim() } |
-                                    Microsoft.PowerShell.Core\Where-Object { $_ -ne '' }
+                                    Microsoft.PowerShell.Core\ForEach-Object {
+                                        $_.Trim() } |
+                                    Microsoft.PowerShell.Core\Where-Object {
+                                        $_ -ne '' }
                             }
 
                             foreach ($person in $people) {
 
-                                $lookupQueries.Add('INSERT INTO ImagePeople ' +
-                                    '(image_id, person_name) VALUES (@image_id, @person_name)')
+                                $lookupQueries.Add(
+                                    ('INSERT INTO ImagePeople (image_id, ' +
+                                    'person_name) VALUES (@image_id, @person_name)'))
 
                                 $lookupParams.Add(@{
                                         'image_id'    = $imageId;
@@ -864,21 +1472,27 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                         }
 
                         # insert objects data by parsing objects string if needed
-                        if ($image.objects -and $image.objects.objects -and $image.objects.objects -ne '' -and $image.objects.objects.Count -gt 0) {
+                        if ($image.objects -and $image.objects.objects -and
+                            $image.objects.objects -ne '' -and
+                            $image.objects.objects.Count -gt 0) {
 
                             # handle both array and comma-separated string formats
                             $objects = if ($image.objects.objects -is [array]) {
                                 $image.objects.objects
-                            } else {
+                            }
+                            else {
                                 $image.objects.objects -split ',' |
-                                    Microsoft.PowerShell.Core\ForEach-Object { $_.Trim() } |
-                                    Microsoft.PowerShell.Core\Where-Object { $_ -ne '' }
+                                    Microsoft.PowerShell.Core\ForEach-Object {
+                                        $_.Trim() } |
+                                    Microsoft.PowerShell.Core\Where-Object {
+                                        $_ -ne '' }
                             }
 
                             foreach ($obj in $objects) {
 
-                                $lookupQueries.Add('INSERT INTO ImageObjects ' +
-                                    '(image_id, object_name) VALUES (@image_id, @object_name)')
+                                $lookupQueries.Add(
+                                    ('INSERT INTO ImageObjects (image_id, ' +
+                                    'object_name) VALUES (@image_id, @object_name)'))
 
                                 $lookupParams.Add(@{
                                         'image_id'    = $imageId;
@@ -888,11 +1502,13 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                         }
 
                         # insert scenes if present with confidence data
-                        if ($image.scenes -and (-not [string]::IsNullOrWhiteSpace($image.scenes.label))) {
+                        if ($image.scenes -and
+                            (-not [string]::IsNullOrWhiteSpace($image.scenes.label))) {
 
-                            $lookupQueries.Add('INSERT INTO ImageScenes ' +
-                                '(image_id, scene_name, confidence) VALUES ' +
-                                '(@image_id, @scene_name, @confidence)')
+                            $lookupQueries.Add(
+                                ('INSERT INTO ImageScenes (image_id, scene_name, ' +
+                                'confidence) VALUES (@image_id, @scene_name, ' +
+                                '@confidence)'))
 
                             $lookupParams.Add(@{
                                     'image_id'   = $imageId;
@@ -904,16 +1520,18 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                         # execute all lookup inserts in a single batch for performance
                         if ($lookupQueries.Count -gt 0) {
 
-                            Invoke-SQLiteQuery -Transaction $transaction `
-                                -Queries $lookupQueries -SqlParameters $lookupParams
+                            $null = GenXdev.Data\Invoke-SQLiteQuery `
+                                -Transaction $transaction -Queries $lookupQueries `
+                                -SqlParameters $lookupParams
 
                             Microsoft.PowerShell.Utility\Write-Verbose (
-                                "Inserted lookup data for image ID $imageId"
+                                "Inserted lookup data for image ID ${imageId}"
                             )
-                        } else {
+                        }
+                        else {
 
                             Microsoft.PowerShell.Utility\Write-Verbose (
-                                "No lookup data to insert for image ID $imageId"
+                                "No lookup data to insert for image ID ${imageId}"
                             )
                         }
 
@@ -959,7 +1577,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             else {
 
                 # discover images using Find-Image and process each one
-                Find-Image @findImageParams |
+                GenXdev.AI\Find-Image @findImageParams |
                     Microsoft.PowerShell.Core\ForEach-Object {
 
                         $Info.FoundResults = $true
@@ -986,7 +1604,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                             -ErrorAction SilentlyContinue
                     )
 
-                    $null = Update-AllImageMetaData @params
+                    $null = GenXdev.AI\Update-AllImageMetaData @params
 
                     ImportImages $Info
                 }
@@ -1018,27 +1636,27 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                 'Creating indexes for optimal performance...'
             )
 
-            Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath `
-                -Queries $createIndexes
+            $null = GenXdev.Data\Invoke-SQLiteQuery `
+                -DatabaseFilePath $DatabaseFilePath -Queries $createIndexes
 
             # run ANALYZE to update query optimizer statistics for best performance
             Microsoft.PowerShell.Utility\Write-Verbose (
                 'Running ANALYZE to optimize query planning...'
             )
 
-            Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath `
-                -Queries 'ANALYZE;'
+            $null = GenXdev.Data\Invoke-SQLiteQuery `
+                -DatabaseFilePath $DatabaseFilePath -Queries 'ANALYZE;'
 
             # insert schema version for database versioning
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Setting schema version to $SCHEMA_VERSION..."
+                "Setting schema version to ${SCHEMA_VERSION}..."
             )
 
-            Invoke-SQLiteQuery -DatabaseFilePath $DatabaseFilePath `
+            $null = GenXdev.Data\Invoke-SQLiteQuery `
+                -DatabaseFilePath $DatabaseFilePath `
                 -Queries ('INSERT OR REPLACE INTO ImageSchemaVersion ' +
                 '(id, version) VALUES (1, @version)') `
                 -SqlParameters @{ 'version' = $SCHEMA_VERSION }
-
 
             # stop the stopwatch and output completion message with timing
             $totalTime.Stop()
@@ -1068,7 +1686,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                     -ErrorAction SilentlyContinue
             )
 
-            Get-ImageDatabaseStats @params |
+            GenXdev.AI\Get-ImageDatabaseStats @params |
                 Microsoft.PowerShell.Utility\Write-Output
         }
     }

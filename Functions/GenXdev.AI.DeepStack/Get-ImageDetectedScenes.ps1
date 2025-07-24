@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Classifies an image into one of 365 scene categories using DeepStack.
@@ -259,7 +259,7 @@ function Get-ImageDetectedScenes {
                     -ErrorAction SilentlyContinue)
 
             # initialize deepstack docker container if needed
-            $null = EnsureDeepStack @ensureParams
+            $null = GenXdev.AI\EnsureDeepStack @ensureParams
 
         } else {
 
@@ -365,6 +365,16 @@ function Get-ImageDetectedScenes {
 
             Microsoft.PowerShell.Utility\Write-Verbose "Sending request to: $uri"
 
+            # Validate image file exists before processing
+            if (-not [System.IO.File]::Exists($imagePath)) {
+                Microsoft.PowerShell.Utility\Write-Warning "Image file not found: $imagePath"
+                return @{
+                    success = $false
+                    error = "No valid image file found"
+                    duration = 0
+                } | Microsoft.PowerShell.Utility\ConvertTo-Json
+            }
+
             # create form data for deepstack api (it expects multipart form data)
             $form = @{
                 image = Microsoft.PowerShell.Management\Get-Item $imagePath
@@ -394,18 +404,26 @@ function Get-ImageDetectedScenes {
         }
         catch [System.Net.WebException] {
 
-            Microsoft.PowerShell.Utility\Write-Error `
+            Microsoft.PowerShell.Utility\Write-Warning `
                 "Network error during scene recognition: $_"
         }
         catch [System.TimeoutException] {
 
-            Microsoft.PowerShell.Utility\Write-Error `
+            Microsoft.PowerShell.Utility\Write-Warning `
                 "Timeout during scene recognition for $imagePath"
         }
         catch {
+            # Check if this is a file access issue vs actual processing failure
+            if ($_.Exception.Message -like "*Could not find item*" -or
+                $_.Exception.Message -like "*No valid image file found*") {
 
-            Microsoft.PowerShell.Utility\Write-Error `
-                "Failed to recognize scene in $imagePath`: $_"
+                Microsoft.PowerShell.Utility\Write-Verbose `
+                    "Scene detection skipped - file not accessible: $imagePath"
+            }
+            else {
+                Microsoft.PowerShell.Utility\Write-Warning `
+                    "Scene detection failed for $imagePath`: $($_.Exception.Message)"
+            }
         }
     }
 

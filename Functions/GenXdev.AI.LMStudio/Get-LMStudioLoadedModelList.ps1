@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Retrieves the list of currently loaded models from LM Studio.
@@ -21,13 +21,13 @@ function Get-LMStudioLoadedModelList {
 
         # verify lm studio is properly installed
         Microsoft.PowerShell.Utility\Write-Verbose 'Verifying LM Studio installation...'
-        if (-not (Test-LMStudioInstallation)) {
+        if (-not (GenXdev.AI\Test-LMStudioInstallation)) {
             throw 'LM Studio is not installed or accessible'
         }
 
         # get required paths for lm studio components
         Microsoft.PowerShell.Utility\Write-Verbose 'Retrieving LM Studio paths...'
-        $paths = Get-LMStudioPaths
+        $paths = GenXdev.AI\Get-LMStudioPaths
     }
 
 

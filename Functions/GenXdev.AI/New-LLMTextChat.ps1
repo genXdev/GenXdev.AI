@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Starts an interactive text chat session with AI capabilities.
@@ -921,7 +921,7 @@ $Instructions
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
             # initialize the model and get its identifier
-            $modelInfo = Initialize-LMStudioModel @initializationParams
+            $modelInfo = GenXdev.AI\Initialize-LMStudioModel @initializationParams
             $Model = $modelInfo.identifier
         }
 

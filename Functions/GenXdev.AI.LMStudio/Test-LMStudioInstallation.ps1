@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Tests if LMStudio is installed and accessible on the system.
@@ -26,7 +26,7 @@ function Test-LMStudioInstallation {
 
         # retrieve the lmstudio installation paths using helper function
         Microsoft.PowerShell.Utility\Write-Verbose 'Retrieving LMStudio installation paths...'
-        $paths = Get-LMStudioPaths
+        $paths = GenXdev.AI\Get-LMStudioPaths
     }
 
 

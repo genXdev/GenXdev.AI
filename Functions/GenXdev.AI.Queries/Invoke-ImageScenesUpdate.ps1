@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Updates scene classification metadata for image files in a specified directory.
@@ -11,8 +11,8 @@ processing with configurable confidence thresholds and can optionally skip
 existing metadata files or retry previously failed classifications.
 
 .PARAMETER ImageDirectories
-The directory path containing images to process. Can be relative or absolute
-path. Default is the current directory.
+Array of directory paths containing images to process. Can be relative or
+absolute paths. Default is the current directory.
 
 .PARAMETER Recurse
 If specified, processes images in the specified directory and all
@@ -63,14 +63,16 @@ Custom Docker image name to use instead of the default DeepStack image.
 Allows using alternative scene classification models or configurations.
 
 .EXAMPLE
-Invoke-ImageScenesUpdate -ImageDirectories "C:\Photos" -Recurse
+Invoke-ImageScenesUpdate -ImageDirectories @("C:\Photos", "D:\Pictures") -Recurse
 
-Processes all images in C:\Photos and subdirectories for scene classification.
+Processes all images in C:\Photos and D:\Pictures and subdirectories for scene
+classification.
 
 .EXAMPLE
-scenerecognition "C:\Photos" -RetryFailed -OnlyNew
+scenerecognition @("C:\Photos", "C:\Archive") -RetryFailed -OnlyNew
 
-Uses alias to retry failed classifications and only process new images.
+Uses alias to retry failed classifications and only process new images in
+multiple directories.
 
 .EXAMPLE
 Invoke-ImageScenesUpdate -ImageDirectories ".\MyImages" -Force -UseGPU
@@ -92,7 +94,7 @@ forest, kitchen, office, etc.
 function Invoke-ImageScenesUpdate {
 
     [CmdletBinding()]
-    [Alias('scenerecognition')]
+    [Alias('imagescenedetection')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
 
     param(
@@ -100,9 +102,9 @@ function Invoke-ImageScenesUpdate {
         [Parameter(
             Position = 0,
             Mandatory = $false,
-            HelpMessage = 'The directory path containing images to process'
+            HelpMessage = 'The directory paths containing images to process'
         )]
-        [string] $ImageDirectories = '.\',
+        [string[]] $ImageDirectories = @('.\'),
 
         #######################################################################
         [Parameter(
@@ -469,99 +471,127 @@ function Invoke-ImageScenesUpdate {
 
     begin {
 
-        # resolve the absolute path for the image directory
-        $path = GenXdev.FileSystem\Expand-Path $ImageDirectories
+        # process each directory provided
+        $processedDirectories = @()
+        foreach ($directory in $ImageDirectories) {
+            # resolve the absolute path for the image directory
+            $path = GenXdev.FileSystem\Expand-Path $directory
 
-        # check if the specified directory exists
-        if (-not (Microsoft.PowerShell.Management\Test-Path $path -PathType Container)) {
+            # check if the specified directory exists
+            if (-not (Microsoft.PowerShell.Management\Test-Path $path -PathType Container)) {
+                Microsoft.PowerShell.Utility\Write-Warning "Directory not found: $path - skipping"
+                continue
+            }
 
-            throw "Directory not found: $path"
+            $processedDirectories += $path
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "Processing images in directory: $path"
+            )
         }
 
-        Microsoft.PowerShell.Utility\Write-Verbose (
-            "Processing images in directory: $path"
-        )
+        if ($processedDirectories.Count -eq 0) {
+            Microsoft.PowerShell.Utility\Write-Warning "No valid directories found to process"
+            return
+        }
     }
 
     process {
 
-        # discover all image files in the specified directory path, selectively
-        # applying recursion only if the -Recurse switch was provided
-        Microsoft.PowerShell.Management\Get-ChildItem `
-            -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.gif","$path\*.png" `
-            -Recurse:$Recurse `
-            -File `
-            -ErrorAction SilentlyContinue |
-            Microsoft.PowerShell.Core\ForEach-Object {
+        # process each validated directory
+        foreach ($path in $processedDirectories) {
+            Microsoft.PowerShell.Utility\Write-Verbose "Processing directory: $path"
 
-                # store the full path to the current image for better readability
-                $image = $PSItem.FullName
-                $metadataFilePath = "$($PSItem.FullName):scenes.json"
-                # check if metadata file exists
-                $fileExists = [System.IO.File]::Exists($metadataFilePath)
-                # check if we have valid existing content
-                $hasValidContent = $false
-                if ($fileExists) {
-                    try {
-                        $content = [System.IO.File]::ReadAllText($metadataFilePath)
-                        $existingData = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
-                        $hasValidContent = $existingData.success -eq $true -or $existingData.scene -eq 'unknown'
-                    }
-                    catch {
-                        # If JSON parsing fails, treat as invalid content
-                        $hasValidContent = $false
-                    }
-                }
+            # discover all image files in the specified directory path, selectively
+            # applying recursion only if the -Recurse switch was provided
+            # get all supported image files from the specified directory
+            $imageTypes = @(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif")
+            $findParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName "GenXdev.FileSystem\Find-Item" `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
-                # determine if image should be processed based on options
-                $shouldProcess = (-not $OnlyNew) -or (-not $fileExists) -or (-not $hasValidContent)
+            # Add NoRecurse parameter if Recurse was not specified
+            if (-not $Recurse) {
+                $findParams['NoRecurse'] = $true
+            }
 
-                if ($shouldProcess) {
-
-                    # obtain scene classification data using ai recognition technology
-                    $params = GenXdev.Helpers\Copy-IdenticalParamValues `
-                        -FunctionName 'GenXdev.AI\Get-ImageDetectedScenes' `
-                        -BoundParameters $PSBoundParameters `
-                        -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-
-                    $sceneData = Get-ImageDetectedScenes `
-                        @params `
-                        -ImagePath $image
-
-                    $NoDockerInitialize = $true;
-
-                    # process the returned scene data into standardized format
-                    $processedData = if ($sceneData -and
-                        $sceneData.success -and
-                        $sceneData.scene) {
-
-                        # create standardized data structure for scene metadata
-                        @{
-                            success               = $sceneData.success
-                            scene                 = $sceneData.scene
-                            label                 = $sceneData.label
-                            confidence            = $sceneData.confidence
-                            confidence_percentage = $sceneData.confidence_percentage
-                            processed_at          = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+            # Get all image files matching the criteria
+            GenXdev.FileSystem\Find-Item @findParams -PassThru -SearchMask "$path\*" -Directory:$false | Microsoft.PowerShell.Core\Where-Object {
+                $imageTypes.IndexOf(([IO.Path]::GetExtension($_.FullName).ToLowerInvariant())) -ge 0
+            } | Microsoft.PowerShell.Core\ForEach-Object {
+                try {
+                    # store the full path to the current image for better readability
+                    $image = $PSItem.FullName
+                    $metadataFilePath = "$($PSItem.FullName):scenes.json"
+                    # check if metadata file exists
+                    $fileExists = [System.IO.File]::Exists($metadataFilePath)
+                    # check if we have valid existing content
+                    $hasValidContent = $false
+                    if ($fileExists) {
+                        try {
+                            $content = [System.IO.File]::ReadAllText($metadataFilePath)
+                            $existingData = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
+                            # Valid content means successful processing OR explicitly marked as unknown scene
+                            $hasValidContent = ($existingData.success -eq $true) -or ($existingData.scene -eq 'unknown')
                         }
-
-                    } else {
-
-                        # create error data structure when scene detection fails
-                        @{
-                            success               = $false
-                            scene                 = 'unknown'
-                            label                 = 'unknown'
-                            confidence            = 0.0
-                            confidence_percentage = 0.0
-                            processed_at          = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-                            error                 = 'Scene classification failed'
+                        catch {
+                            # If JSON parsing fails, treat as invalid content
+                            $hasValidContent = $false
                         }
                     }
 
-                    # convert the processed data to json format for storage
-                    $jsonData = $processedData |
-                        Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress
+                    # determine if image should be processed based on options
+                    # Process if: not OnlyNew OR file doesn't exist OR (RetryFailed and no valid content)
+                    $shouldProcess = (-not $OnlyNew) -or
+                                    (-not $fileExists) -or
+                                    ($RetryFailed -and (-not $hasValidContent))
+
+                    if ($shouldProcess) {
+
+                        # obtain scene classification data using ai recognition technology
+                        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                            -FunctionName 'GenXdev.AI\Get-ImageDetectedScenes' `
+                            -BoundParameters $PSBoundParameters `
+                            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+
+                        $sceneData = GenXdev.AI\Get-ImageDetectedScenes `
+                            @params `
+                            -ImagePath $image
+
+                        $NoDockerInitialize = $true;
+
+                        # process the returned scene data into standardized format
+                        $processedData = if ($sceneData -and
+                            $sceneData.success -and
+                            $sceneData.scene) {
+
+                            # create standardized data structure for scene metadata
+                            @{
+                                success               = $sceneData.success
+                                scene                 = $sceneData.scene
+                                label                 = $sceneData.label
+                                confidence            = $sceneData.confidence
+                                confidence_percentage = $sceneData.confidence_percentage
+                                processed_at          = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+                            }
+
+                        } else {
+
+                            # create error data structure when scene detection fails
+                            @{
+                                success               = $false
+                                scene                 = 'unknown'
+                                label                 = 'unknown'
+                                confidence            = 0.0
+                                confidence_percentage = 0.0
+                                processed_at          = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+                                error                 = 'Scene classification failed'
+                            }
+                        }
+
+                        # convert the processed data to json format for storage
+                        $jsonData = $processedData |
+                            Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress
 
                         # save the scene metadata to the alternative data stream
                         $null = [System.IO.File]::WriteAllText($metadataFilePath,
@@ -587,6 +617,13 @@ function Invoke-ImageScenesUpdate {
                             "Skipping already processed image: $image")
                     }
                 }
+                catch {
+                    # Handle any errors in scene processing for individual images
+                    Microsoft.PowerShell.Utility\Write-Warning (
+                        "Failed to process scenes for $image : $($_.Exception.Message)")
+                }
+            }
+        }
     }
 
     end {

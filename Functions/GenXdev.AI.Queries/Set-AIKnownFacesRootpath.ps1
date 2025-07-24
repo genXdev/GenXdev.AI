@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Sets the directory for face image files used in GenXdev.AI operations.
@@ -114,7 +114,7 @@ function Set-AIKnownFacesRootpath {
         -BoundParameters $PSBoundParameters `
         -FunctionName 'GenXdev.Data\Set-GenXdevPreference'
 
-    $null = Set-GenXdevPreference @params `
+    $null = GenXdev.Data\Set-GenXdevPreference @params `
         -Name 'AIKnownFacesRootpath' `
         -Value "$((GenXdev.FileSystem\Expand-Path ([string]::IsNullOrWhiteSpace($FacesPath) ? "$picturesPath\Faces\" : $FacesPath) -CreateDirectory))"
 }

@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Transcribes an audio or video file to text.
@@ -707,10 +707,10 @@ function Get-MediaFileAudioTranscription {
                 -Scope Local -ErrorAction SilentlyContinue)
 
         # resolve the input language to a standard format
-        $LanguageIn = Get-AIMetaLanguage @params -Language $LanguageIn
+        $LanguageIn = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageIn
 
         # resolve the output language to a standard format
-        $LanguageOut = Get-AIMetaLanguage @params -Language $LanguageOut
+        $LanguageOut = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageOut
 
         # convert maxdurationofsilence to timespan if it's not already
         if ($MyPSBoundParameters.ContainsKey('MaxDurationOfSilence') -and `
@@ -981,7 +981,7 @@ function Get-MediaFileAudioTranscription {
                     -FunctionName 'GenXdev.AI\Start-AudioTranscription'
 
                 # process each transcription segment for srt output
-                Start-AudioTranscription @invocationArguments |
+                GenXdev.AI\Start-AudioTranscription @invocationArguments |
                     Microsoft.PowerShell.Core\ForEach-Object {
 
                         $result = $PSItem
@@ -1058,7 +1058,7 @@ function Get-MediaFileAudioTranscription {
                     -FunctionName 'GenXdev.AI\Start-AudioTranscription'
 
                 # transcribe the audio file to get raw text
-                $results = Start-AudioTranscription `
+                $results = GenXdev.AI\Start-AudioTranscription `
                     @invocationArguments
 
                 # prepare parameters for text translation
@@ -1082,7 +1082,7 @@ function Get-MediaFileAudioTranscription {
                 -FunctionName 'GenXdev.AI\Start-AudioTranscription'
 
             # return transcribed text without translation
-            Start-AudioTranscription @invocationArguments
+            GenXdev.AI\Start-AudioTranscription @invocationArguments
         }
         catch {
 

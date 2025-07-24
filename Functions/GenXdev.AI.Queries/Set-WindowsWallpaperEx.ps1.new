@@ -1,0 +1,456 @@
+################################################################################
+<#
+.SYNOPSIS
+Sets a random wallpaper from a specified directory or search criteria.
+
+.DESCRIPTION
+Selects a random image file from the specified directory or search criteria and
+sets it as the Windows desktop wallpaper. Supports JPG/JPEG image formats and
+configures the wallpaper to "fit" the screen by default. Allows advanced
+filtering by metadata, language, and other properties.
+
+.PARAMETER InputObject
+The file path pattern or object to search for wallpaper images. Supports
+wildcards and recursive search. This is the path to the directory containing
+the wallpaper images. When multiple images are found, one is selected at
+random.
+
+.PARAMETER UseImageIndex
+Switch to use the indexed image search instead of direct file search.
+
+.PARAMETER Any
+Will match any of all the possible meta data types.
+
+.PARAMETER DatabaseFilePath
+The path to the image database file. If not specified, a default path is used.
+
+.PARAMETER ImageDirectories
+Array of directory paths to search for images.
+
+.PARAMETER PathLike
+Array of directory path-like search strings to filter images by path (SQL LIKE
+patterns, e.g. '%\2024\%').
+
+.PARAMETER Language
+Language for descriptions and keywords.
+
+.PARAMETER FacesDirectory
+The directory containing face images organized by person folders. If not
+specified, uses the configured faces directory preference.
+
+.PARAMETER DescriptionSearch
+The description text to look for, wildcards allowed.
+
+.PARAMETER Keywords
+The keywords to look for, wildcards allowed.
+
+.PARAMETER People
+People to look for, wildcards allowed.
+
+.PARAMETER Objects
+Objects to look for, wildcards allowed.
+
+.PARAMETER Scenes
+Scenes to look for, wildcards allowed.
+
+.PARAMETER PictureType
+Picture types to filter by, wildcards allowed.
+
+.PARAMETER StyleType
+Style types to filter by, wildcards allowed.
+
+.PARAMETER OverallMood
+Overall moods to filter by, wildcards allowed.
+
+.PARAMETER ForceIndexRebuild
+Force rebuild of the image index database.
+
+.PARAMETER NoFallback
+Switch to disable fallback behavior.
+
+.PARAMETER NeverRebuild
+Switch to skip database initialization and rebuilding.
+
+.PARAMETER HasNudity
+Filter images that contain nudity.
+
+.PARAMETER NoNudity
+Filter images that do NOT contain nudity.
+
+.PARAMETER HasExplicitContent
+Filter images that contain explicit content.
+
+.PARAMETER NoExplicitContent
+Filter images that do NOT contain explicit content.
+
+.PARAMETER GeoLocation
+Geographic coordinates [latitude, longitude] to search near.
+
+.PARAMETER GeoDistanceInMeters
+Maximum distance in meters from GeoLocation to search for images. Defaults to 1000 meters.
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences like Language,
+Image collections, etc.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER SkipSession
+Switch to not use alternative settings stored in session for AI preferences
+like Language, Image collections, etc.
+
+.EXAMPLE
+Set-WindowsWallpaperEx -InputObject "C:\Wallpapers\*.jpg"
+Sets a random wallpaper from the specified directory.
+
+.EXAMPLE
+nextwallpaper
+Sets a random wallpaper from the default wallpaper directory.
+#>
+################################################################################
+
+
+function Set-WindowsWallpaperEx {
+    [CmdLetBinding(SupportsShouldProcess = $true)]
+    [OutputType([System.Object[]])]
+    [Alias("nextwallpaper")]
+    param (
+        ###############################################################################
+        [parameter(
+            Mandatory = $false,
+            HelpMessage = 'Path to the directory containing the wallpaper images',
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [Alias('Path', 'FullName', 'FilePath', 'Input')]
+        [Object]$InputObject,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Switch to not using the indexed image search'
+        )]
+        [switch] $DontUseImageIndex,
+        ###############################################################################
+        [Parameter(
+            Position = 0,
+            Mandatory = $false,
+            HelpMessage = 'Will match any of all the possible meta data types.'
+        )]
+        [string[]] $Any = @(),
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The path to the image database file. If not specified, a default path is used.'
+        )]
+        [string] $DatabaseFilePath,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Array of directory paths to search for images.'
+        )]
+        [Alias('imagespath', 'directories', 'imgdirs', 'imagedirectory')]
+        [string[]] $ImageDirectories,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Array of directory path-like search strings to filter images by path (SQL LIKE patterns, e.g. ''%\2024\%'')'
+        )]
+        [string[]] $PathLike,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Language for descriptions and keywords.'
+        )]
+        [ValidateSet(
+            'Afrikaans', 'Akan', 'Albanian', 'Amharic', 'Arabic', 'Armenian',
+            'Azerbaijani', 'Basque', 'Belarusian', 'Bemba', 'Bengali', 'Bihari',
+            'Bork, bork, bork!', 'Bosnian', 'Breton', 'Bulgarian', 'Cambodian',
+            'Catalan', 'Cherokee', 'Chichewa', 'Chinese (Simplified)',
+            'Chinese (Traditional)', 'Corsican', 'Croatian', 'Czech', 'Danish',
+            'Dutch', 'Elmer Fudd', 'English', 'Esperanto', 'Estonian', 'Ewe',
+            'Faroese', 'Filipino', 'Finnish', 'French', 'Frisian', 'Ga',
+            'Galician', 'Georgian', 'German', 'Greek', 'Guarani', 'Gujarati',
+            'Hacker', 'Haitian Creole', 'Hausa', 'Hawaiian', 'Hebrew', 'Hindi',
+            'Hungarian', 'Icelandic', 'Igbo', 'Indonesian', 'Interlingua',
+            'Irish', 'Italian', 'Japanese', 'Javanese', 'Kannada', 'Kazakh',
+            'Kinyarwanda', 'Kirundi', 'Klingon', 'Kongo', 'Korean',
+            'Krio (Sierra Leone)', 'Kurdish', 'Kurdish (Soranî)', 'Kyrgyz',
+            'Laothian', 'Latin', 'Latvian', 'Lingala', 'Lithuanian', 'Lozi',
+            'Luganda', 'Luo', 'Macedonian', 'Malagasy', 'Malay', 'Malayalam',
+            'Maltese', 'Maori', 'Marathi', 'Mauritian Creole', 'Moldavian',
+            'Mongolian', 'Montenegrin', 'Nepali', 'Nigerian Pidgin',
+            'Northern Sotho', 'Norwegian', 'Norwegian (Nynorsk)', 'Occitan',
+            'Oriya', 'Oromo', 'Pashto', 'Persian', 'Pirate', 'Polish',
+            'Portuguese (Brazil)', 'Portuguese (Portugal)', 'Punjabi', 'Quechua',
+            'Romanian', 'Romansh', 'Runyakitara', 'Russian', 'Scots Gaelic',
+            'Serbian', 'Serbo-Croatian', 'Sesotho', 'Setswana',
+            'Seychellois Creole', 'Shona', 'Sindhi', 'Sinhalese', 'Slovak',
+            'Slovenian', 'Somali', 'Spanish', 'Spanish (Latin American)',
+            'Sundanese', 'Swahili', 'Swedish', 'Tajik', 'Tamil', 'Tatar',
+            'Telugu', 'Thai', 'Tigrinya', 'Tonga', 'Tshiluba', 'Tumbuka',
+            'Turkish', 'Turkmen', 'Twi', 'Uighur', 'Ukrainian', 'Urdu', 'Uzbek',
+            'Vietnamese', 'Welsh', 'Wolof', 'Xhosa', 'Yiddish', 'Yoruba', 'Zulu'
+        )]
+        [string] $Language,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The directory containing face images organized by person folders. If not specified, uses the configured faces directory preference.'
+        )]
+        [string] $FacesDirectory,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The description text to look for, wildcards allowed.'
+        )]
+        [string[]] $DescriptionSearch,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The keywords to look for, wildcards allowed.'
+        )]
+        [string[]] $Keywords,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'People to look for, wildcards allowed.'
+        )]
+        [string[]] $People,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Objects to look for, wildcards allowed.'
+        )]
+        [string[]] $Objects,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Scenes to look for, wildcards allowed.'
+        )]
+        [string[]] $Scenes,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Picture types to filter by, wildcards allowed.'
+        )]
+        [string[]] $PictureType,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Style types to filter by, wildcards allowed.'
+        )]
+        [string[]] $StyleType,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Overall moods to filter by, wildcards allowed.'
+        )]
+        [string[]] $OverallMood,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Force rebuild of the image index database.'
+        )]
+        [switch] $ForceIndexRebuild,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Switch to disable fallback behavior.'
+        )]
+        [switch] $NoFallback,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Geographic coordinates [latitude, longitude] to search near.'
+        )]
+        [double[]] $GeoLocation,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Maximum distance in meters from GeoLocation to search for images.'
+        )]
+        [double] $GeoDistanceInMeters = 1000,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Switch to skip database initialization and rebuilding.'
+        )]
+        [switch] $NeverRebuild,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter images that contain nudity.'
+        )]
+        [switch] $HasNudity,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter images that do NOT contain nudity.'
+        )]
+        [switch] $NoNudity,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter images that contain explicit content.'
+        )]
+        [switch] $HasExplicitContent,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Filter images that do NOT contain explicit content.'
+        )]
+        [switch] $NoExplicitContent,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
+        )]
+        [switch] $SessionOnly,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Clear alternative settings stored in session for AI preferences like Language, Image collections, etc.'
+        )]
+        [switch] $ClearSession,
+        ###############################################################################
+        [Alias('DatabasePath')]
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Database path for preference data files.'
+        )]
+        [string] $PreferencesDatabasePath,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Dont use alternative settings stored in session ' +
+                'for AI preferences like Language, Image collections, ' +
+                'etc')
+        )]
+        [Alias('FromPreferences')]
+        [switch] $SkipSession,
+        ###############################################################################
+        <#
+        .PARAMETER AllDrives
+        Search across all available drives.
+        #>
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Search across all available drives'
+        )]
+        [switch] $AllDrives,
+        ###############################################################################
+        <#
+        .PARAMETER NoRecurse
+        Do not recurse into subdirectories.
+        #>
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Do not recurse into subdirectories'
+        )]
+        [switch] $NoRecurse
+        ###############################################################################
+    )
+
+    begin {
+
+     }
+
+    process {
+
+        # copy all relevant parameters for the called GenXdev cmdlet
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName (
+                $DontUseImageIndex ? "GenXdev.AI\Find-Image" : "GenXdev.AI\Find-IndexedImage"
+            ) `
+            -DefaultValues (
+                Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue |
+                Microsoft.PowerShell.Core\Where-Object -Property -Name -ne "InputObject"
+            )
+
+        # find images using either the indexed or direct search method
+        $foundImages = @(
+            $DontUseImageIndex ? (
+                GenXdev.AI\Find-Image @params
+            ) : (
+                GenXdev.AI\Find-IndexedImage @params
+            )
+        )
+
+        # if no images are found, exit the function
+        if ((-not $foundImages) -or ($foundImages.Count -eq 0)) {
+            return
+        }
+
+        # select a random image from the found images
+        ($foundImages | ForEach-Object Path ) |
+            Microsoft.PowerShell.Utility\Get-Random |
+            Microsoft.PowerShell.Utility\Select-Object -First 1 |
+            Microsoft.PowerShell.Core\ForEach-Object {
+
+                $file = $_
+
+                # show the selected wallpaper path
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    "Selected wallpaper: $file"
+                )
+
+                # set wallpaper style to fit the screen (10 = fit, 0 = center)
+                $wallpaperStyle = '10'
+
+                # set tile wallpaper to off
+                $tileWallpaper = '0'
+
+                # update the registry with the new wallpaper path
+                Microsoft.PowerShell.Management\Set-ItemProperty -Path (
+                    'HKCU:\Control Panel\Desktop\'
+                ) `
+                    -Name Wallpaper -Value $file
+
+                # update the registry with the wallpaper style
+                Microsoft.PowerShell.Management\Set-ItemProperty -Path (
+                    'HKCU:\Control Panel\Desktop\'
+                ) `
+                    -Name WallpaperStyle -Value $wallpaperStyle
+
+                # update the registry with the tile wallpaper setting
+                Microsoft.PowerShell.Management\Set-ItemProperty -Path (
+                    'HKCU:\Control Panel\Desktop\'
+                ) `
+                    -Name TileWallpaper -Value $tileWallpaper
+
+                # define a C# class to access the Windows API for updating wallpaper
+                Microsoft.PowerShell.Utility\Add-Type -TypeDefinition @'
+        using System;
+        using System.Runtime.InteropServices;
+
+        public class Wallpaper {
+            [DllImport("user32.dll", CharSet=CharSet.Auto)]
+            public static extern int SystemParametersInfo (
+                int uAction, int uParam, string lpvParam, int fuWinIni);
+        }
+'@
+
+                # apply the wallpaper changes using the Windows API
+                # 20 = SPI_SETDESKWALLPAPER
+                # 0x1 | 0x2 = SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE
+                [Wallpaper]::SystemParametersInfo(20, 0, $file, 0x1 -bor 0x2)
+
+                # inform the user that the wallpaper has been updated
+                Microsoft.PowerShell.Utility\Write-Verbose (
+                    'Wallpaper has been updated successfully'
+                )
+            }
+    }
+
+    end {
+
+    }
+}
+################################################################################

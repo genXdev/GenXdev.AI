@@ -363,6 +363,52 @@
             color: #000000;
         }
 
+        .metadata-item.camera {
+            background-color: #d4eafd;
+            color: #0066cc;
+        }
+
+        .metadata-item.gps {
+            background-color: #e3f5e1;
+            color: #2e7d32;
+        }
+
+        .metadata-item.gps.clickable {
+            cursor: pointer;
+            text-decoration: underline;
+            transition: background-color 0.2s ease;
+        }
+
+        .metadata-item.gps.clickable:hover {
+            background-color: #c8e6c9;
+            color: #1b5e20;
+        }
+
+        .metadata-item.exposure {
+            background-color: #f3e5f5;
+            color: #6a1b9a;
+        }
+
+        .metadata-item.aperture {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
+
+        .metadata-item.iso {
+            background-color: #fff8e1;
+            color: #f57c00;
+        }
+
+        .metadata-item.focal {
+            background-color: #e0f2f1;
+            color: #00695c;
+        }
+
+        .metadata-item.date {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
         .actions {
             display: flex;
             gap: 8px;
@@ -453,6 +499,26 @@
             transform: scale(0.98);
         }
 
+        .streetview-btn {
+            background-color: #e6e6e6;
+            color: #000000;
+            border: 1px solid #999999;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-weight: 500;
+        }
+
+        .streetview-btn:hover {
+            background-color: #85c9c4;
+        }
+
+        .streetview-btn:active {
+            transform: scale(0.98);
+        }
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -528,7 +594,7 @@
             }
 
             /* Hide interactive and non-essential elements */
-            .actions, .copy-path-btn, .view-original, .edit-btn, .delete-btn, .sentinel {
+            .actions, .copy-path-btn, .view-original, .edit-btn, .delete-btn, .streetview-btn, .sentinel {
                 display: none !important;
             }
 
@@ -737,10 +803,10 @@
                     const m = /image-(\d+)/.exec(container.parentElement?.id || container.id || '');
                     if (m) imageIndex = parseInt(m[1], 10);
                     let faces = [], objects = [];
-                    // Use naturalWidth/naturalHeight from data if available, fallback to DOM, fallback to offsetWidth/offsetHeight
+                    // Use width/height from image data, fallback to browser's built-in properties as last resort
                     let imageData = (window.imageGallery && imageIndex >= 0) ? window.imageGallery.images?.[imageIndex] : null;
-                    let imageNaturalWidth = (imageData && imageData.naturalWidth) ? imageData.naturalWidth : ((typeof img.naturalWidth === 'number' && img.naturalWidth > 0) ? img.naturalWidth : (img.width || img.offsetWidth));
-                    let imageNaturalHeight = (imageData && imageData.naturalHeight) ? imageData.naturalHeight : ((typeof img.naturalHeight === 'number' && img.naturalHeight > 0) ? img.naturalHeight : (img.height || img.offsetHeight));
+                    let imageNaturalWidth = (imageData && imageData.width) ? imageData.width : (img.width || img.offsetWidth);
+                    let imageNaturalHeight = (imageData && imageData.height) ? imageData.height : (img.height || img.offsetHeight);
                     let imageDisplayWidth = img.offsetWidth;
                     let imageDisplayHeight = img.offsetHeight;
                     let scaleX = imageDisplayWidth / imageNaturalWidth;
@@ -1288,6 +1354,13 @@
                             ${sceneSuccess && scene !== 'unknown' ? `<span class="metadata-item scene">Scene: ${scene.replace(/_/g, ' ')} (${sceneConfidencePercentage}%)</span>` : ''}
                             <span class="metadata-item">${image.description?.picture_type || 'Photo'}</span>
                             <span class="metadata-item">${image.description?.style_type || 'Unknown style'}</span>
+                            ${(image.metadata?.Camera?.Make || image.camera?.make) ? `<span class="metadata-item camera">Camera: ${image.metadata?.Camera?.Make || image.camera?.make} ${image.metadata?.Camera?.Model || image.camera?.model || ''}</span>` : ''}
+                            ${((image.metadata?.GPS?.Latitude && image.metadata?.GPS?.Longitude) || (image.gps?.latitude && image.gps?.longitude)) ? `<span class="metadata-item gps clickable" onclick="imageGallery.openStreetView(${index})" title="Click to open in InstantStreetView">GPS: ${(image.metadata?.GPS?.Latitude || image.gps?.latitude).toFixed(6)}, ${(image.metadata?.GPS?.Longitude || image.gps?.longitude).toFixed(6)}</span>` : ''}
+                            ${(image.metadata?.Exposure?.ExposureTime || image.exposure?.time) ? `<span class="metadata-item exposure">⏱️ ${image.metadata?.Exposure?.ExposureTime || image.exposure?.time}s</span>` : ''}
+                            ${(image.metadata?.Exposure?.FNumber || image.exposure?.fnumber) ? `<span class="metadata-item aperture">📷 f/${image.metadata?.Exposure?.FNumber || image.exposure?.fnumber}</span>` : ''}
+                            ${(image.metadata?.Exposure?.ISOSpeedRatings || image.exposure?.iso) ? `<span class="metadata-item iso">🌟 ISO ${image.metadata?.Exposure?.ISOSpeedRatings || image.exposure?.iso}</span>` : ''}
+                            ${(image.metadata?.Exposure?.FocalLength || image.exposure?.focal_length) ? `<span class="metadata-item focal">🔍 ${image.metadata?.Exposure?.FocalLength || image.exposure?.focal_length}mm</span>` : ''}
+                            ${(image.metadata?.DateTime?.DateTimeOriginal || image.datetime?.original) ? `<span class="metadata-item date">📅 ${(image.metadata?.DateTime?.DateTimeOriginal || image.datetime?.original).replace(/:/g, '-').substring(0, 10)}</span>` : ''}
                         </div>
                         ${keywords.length > 0 ? `
                         <div class="keywords">
@@ -1330,6 +1403,7 @@
                         <div class="actions">
                             <button class="copy-path-btn" onclick="imageGallery.copyPath(${index})">Copy Path</button>
                             <a href="${this.escapeHtml(image.path)}" target="_blank" class="view-original">View Original</a>
+                            ${((image.metadata?.GPS?.Latitude && image.metadata?.GPS?.Longitude) || (image.gps?.latitude && image.gps?.longitude)) ? `<button class="streetview-btn" onclick="imageGallery.openStreetView(${index})">Street View</button>` : ''}
                             ${(typeof mydata !== 'undefined' && mydata.canEdit) ? `<button class="edit-btn" onclick="imageGallery.editImage(${index})">Edit</button>` : ''}
                             ${(typeof mydata !== 'undefined' && mydata.canDelete) ? `<button class="delete-btn" onclick="imageGallery.deleteImage(${index})">Delete</button>` : ''}
                         </div>
@@ -1638,6 +1712,31 @@
                 } else {
                     this.fallbackCopy(path, index);
                 }
+            }
+
+            openStreetView(index) {
+                const image = this.images[index];
+                let latitude, longitude;
+
+                // Get GPS coordinates from either metadata structure
+                if (image.metadata?.GPS?.Latitude && image.metadata?.GPS?.Longitude) {
+                    latitude = image.metadata.GPS.Latitude;
+                    longitude = image.metadata.GPS.Longitude;
+                } else if (image.gps?.latitude && image.gps?.longitude) {
+                    latitude = image.gps.latitude;
+                    longitude = image.gps.longitude;
+                } else {
+                    console.warn('No GPS coordinates available for this image');
+                    return;
+                }
+
+                // Construct InstantStreetView URL with coordinates
+                const coords = `${latitude},${longitude}`;
+                const encodedCoords = encodeURIComponent(coords);
+                const streetViewUrl = `https://www.instantstreetview.com/s/${encodedCoords}`;
+
+                // Open in new tab
+                window.open(streetViewUrl, '_blank');
             }            editImage(index) {
                 if (typeof mydata === 'undefined' || !mydata.canEdit) {
                     console.warn('Edit action not allowed - canEdit is false or undefined');

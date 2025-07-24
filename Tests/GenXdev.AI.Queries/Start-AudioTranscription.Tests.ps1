@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 Pester\Describe 'Start-AudioTranscription Start-AudioTranscription' {
 
     Pester\BeforeAll {
@@ -8,7 +8,7 @@ Pester\Describe 'Start-AudioTranscription Start-AudioTranscription' {
 
     Pester\It 'Should pass PSScriptAnalyzer rules' {
         # run analyzer with explicit settings
-        $Script:analyzerResults = Invoke-GenXdevScriptAnalyzer `
+        $Script:analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
             -Path $Script:scriptPath
 
         [string] $Script:message = ''

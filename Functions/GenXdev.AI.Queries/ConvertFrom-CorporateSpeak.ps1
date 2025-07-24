@@ -614,7 +614,7 @@ function ConvertFrom-CorporateSpeak {
             )
 
             # invoke the language model with corporate speak instructions
-            GenXdev.AI\Invoke-LLMTextTransformation @PSBoundParameters \
+            GenXdev.AI\Invoke-LLMTextTransformation @PSBoundParameters `
                 -Instructions $corporateInstructions
         }
 

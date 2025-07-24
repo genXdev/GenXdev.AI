@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Starts the LM Studio application if it's not already running.
@@ -35,11 +35,11 @@ function Start-LMStudioApplication {
 
         # verify lm studio installation
         Microsoft.PowerShell.Utility\Write-Verbose 'Checking LM Studio installation...'
-        if (-not (Test-LMStudioInstallation)) {
+        if (-not (GenXdev.AI\Test-LMStudioInstallation)) {
 
             if ($PSCmdlet.ShouldProcess('LM Studio', 'Install application')) {
                 Microsoft.PowerShell.Utility\Write-Verbose 'LM Studio not found, initiating installation...'
-                $null = Install-LMStudioApplication
+                $null = GenXdev.AI\Install-LMStudioApplication
             }
         }
     }
@@ -48,12 +48,12 @@ function Start-LMStudioApplication {
     process {
 
         # check if we need to start or show the process
-        if (-not (Test-LMStudioProcess -ShowWindow:$ShowWindow) -or $ShowWindow) {
+        if (-not (GenXdev.AI\Test-LMStudioProcess -ShowWindow:$ShowWindow) -or $ShowWindow) {
 
             Microsoft.PowerShell.Utility\Write-Verbose 'Preparing to start or show LM Studio...'
 
             # get installation paths
-            $paths = Get-LMStudioPaths
+            $paths = GenXdev.AI\Get-LMStudioPaths
 
             # validate executable path
             if (-not $paths.LMStudioExe) {
@@ -86,13 +86,13 @@ function Start-LMStudioApplication {
                 $timeout = 30
                 $timer = [System.Diagnostics.Stopwatch]::StartNew()
 
-                while (-not (Test-LMStudioProcess) -and
+                while (-not (GenXdev.AI\Test-LMStudioProcess) -and
                     ($timer.Elapsed.TotalSeconds -lt $timeout)) {
 
                     Microsoft.PowerShell.Utility\Start-Sleep -Seconds 1
                 }
 
-                if (-not (Test-LMStudioProcess)) {
+                if (-not (GenXdev.AI\Test-LMStudioProcess)) {
                     throw "LM Studio failed to start within $timeout seconds"
                 }
             }

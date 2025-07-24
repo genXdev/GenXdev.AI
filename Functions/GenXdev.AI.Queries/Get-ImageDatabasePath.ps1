@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Returns the path to the image database, initializing or rebuilding it if needed.
@@ -200,8 +200,8 @@ function Get-ImageDatabasePath {
 
     begin {
 
-        # define required schema version constant
-        $SCHEMA_VERSION = '1.0.0.3'
+        # define required schema version constant for database compatibility
+        $SCHEMA_VERSION = '1.0.0.5'
 
         # copy identical parameters for Get-AIMetaLanguage
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -212,13 +212,13 @@ function Get-ImageDatabasePath {
                 -ErrorAction SilentlyContinue)
 
         # get the language setting for AI operations
-        $Language = Get-AIMetaLanguage @params
+        $Language = GenXdev.AI\Get-AIMetaLanguage @params
     }
 
     process {
 
-        # check if DatabaseFilePath is null or whitespace and set from
-        # preferences/session
+        # check if database file path is null or whitespace and resolve from
+        # preferences or session
         if ([String]::IsNullOrWhiteSpace($DatabaseFilePath)) {
 
             # first check global variable for database path (unless SkipSession
@@ -235,16 +235,16 @@ function Get-ImageDatabasePath {
             }
             elseif (-not $SessionOnly) {
 
-                # fallback to preference storage
+                # fallback to preference storage when session is not required
                 try {
                     # retrieve database path from preferences
-                    $preferencePath = Get-GenXdevPreference `
+                    $preferencePath = GenXdev.Data\Get-GenXdevPreference `
                         -PreferencesDatabasePath $PreferencesDatabasePath `
                         -Name 'ImageDatabasePath' `
                         -DefaultValue $null `
                         -ErrorAction SilentlyContinue
 
-                    # use preference path if found
+                    # use preference path if found and not empty
                     if (-not [String]::IsNullOrWhiteSpace($preferencePath)) {
 
                         $DatabaseFilePath = $preferencePath
@@ -256,7 +256,7 @@ function Get-ImageDatabasePath {
                     }
                 }
                 catch {
-                    # ignore preference retrieval errors and use default
+                    # ignore preference retrieval errors and use default path
                     Microsoft.PowerShell.Utility\Write-Verbose (
                         'Failed to retrieve database path preference, ' +
                         'using default'
@@ -264,10 +264,11 @@ function Get-ImageDatabasePath {
                 }
             }
 
-            # if still no path found, use default
+            # if still no path found, use default location in local app data
             if ([String]::IsNullOrWhiteSpace($DatabaseFilePath)) {
 
-                # expand the default database file path using environment variable
+                # expand the default database file path using environment
+                # variable
                 $DatabaseFilePath = GenXdev.FileSystem\Expand-Path (
                     "$($ENV:LOCALAPPDATA)\GenXdev.PowerShell\allimages.meta.db"
                 ) -ErrorAction SilentlyContinue
@@ -278,7 +279,7 @@ function Get-ImageDatabasePath {
             }
         }
 
-        # expand the database file path
+        # expand the database file path to resolve any relative paths
         if (-not [String]::IsNullOrWhiteSpace($DatabaseFilePath)) {
 
             $DatabaseFilePath = GenXdev.FileSystem\Expand-Path (
@@ -287,6 +288,7 @@ function Get-ImageDatabasePath {
         }
 
         # if NeverRebuild is set, skip initialization and return the path
+        # immediately
         if ($NeverRebuild) {
 
             Microsoft.PowerShell.Utility\Write-Verbose (
@@ -310,11 +312,12 @@ function Get-ImageDatabasePath {
         }
 
         # if initialization is not yet required, check schema version
+        # compatibility
         if (-not $needsInitialization) {
 
             try {
-                # query the schema version from the database
-                $versionResult = Invoke-SQLiteQuery `
+                # query the schema version from the database metadata table
+                $versionResult = GenXdev.Data\Invoke-SQLiteQuery `
                     -DatabaseFilePath $DatabaseFilePath `
                     -Queries 'SELECT version FROM ImageSchemaVersion WHERE id = 1' `
                     -ErrorAction SilentlyContinue
@@ -339,19 +342,19 @@ function Get-ImageDatabasePath {
                 }
             }
             catch {
-                # if an error occurs, throw and set initialization required
+                # if an error occurs during version check, trigger rebuild
                 throw $_
 
                 $needsInitialization = $true
             }
         }
 
-        # if initialization is required, call Export-ImageDatabase
+        # if initialization is required, call Export-ImageDatabase to rebuild
         if ($needsInitialization) {
 
             try {
 
-                # copy parameter values for Export-ImageDatabase
+                # copy parameter values for Export-ImageDatabase function call
                 $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\Export-ImageDatabase' `
@@ -361,8 +364,9 @@ function Get-ImageDatabasePath {
                         -ErrorAction SilentlyContinue
                 )
 
-                # call Export-ImageDatabase to initialize or rebuild the database
-                $null = Export-ImageDatabase @params
+                # call Export-ImageDatabase to initialize or rebuild the
+                # database
+                $null = GenXdev.AI\Export-ImageDatabase @params
 
                 return $DatabaseFilePath
             }

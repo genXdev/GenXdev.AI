@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Recognizes faces in an uploaded image by comparing to known faces using
@@ -205,7 +205,7 @@ function Get-ImageDetectedFaces {
                     -ErrorAction SilentlyContinue)
 
             # initialize deepstack docker container if needed
-            $null = EnsureDeepStack @ensureParams
+            $null = GenXdev.AI\EnsureDeepStack @ensureParams
         } else {
             Microsoft.PowerShell.Utility\Write-Verbose `
                 'Skipping Docker initialization as requested'        }
@@ -231,6 +231,16 @@ function Get-ImageDetectedFaces {
             $uri = "$($script:ApiBaseUrl)/v1/vision/face/recognize"
 
             Microsoft.PowerShell.Utility\Write-Verbose "Sending request to: $uri"
+
+            # Validate image file exists before processing
+            if (-not [System.IO.File]::Exists($imagePath)) {
+                Microsoft.PowerShell.Utility\Write-Warning "Image file not found: $imagePath"
+                return @{
+                    success = $false
+                    error = "No valid image file found"
+                    duration = 0
+                } | Microsoft.PowerShell.Utility\ConvertTo-Json
+            }
 
             # create form data for DeepStack API (it expects multipart form
             # data, not JSON)
@@ -268,18 +278,27 @@ function Get-ImageDetectedFaces {
             Microsoft.PowerShell.Utility\Write-Output $response
         }
         catch [System.Net.WebException] {
-            Microsoft.PowerShell.Utility\Write-Error `
+            Microsoft.PowerShell.Utility\Write-Warning `
             ('Network error while contacting DeepStack face recognition ' +
                 "service: $_")
         }
         catch [System.TimeoutException] {
-            Microsoft.PowerShell.Utility\Write-Error `
+            Microsoft.PowerShell.Utility\Write-Warning `
             ('Timeout while waiting for DeepStack face recognition ' +
                 "response: $_")
         }
         catch {
-            Microsoft.PowerShell.Utility\Write-Error `
-                "Failed to recognize faces: $_"
+            # Check if this is a file access issue vs actual processing failure
+            if ($_.Exception.Message -like "*Could not find item*" -or
+                $_.Exception.Message -like "*No valid image file found*") {
+
+                Microsoft.PowerShell.Utility\Write-Verbose `
+                    "Face detection skipped - file not accessible: $imagePath"
+            }
+            else {
+                Microsoft.PowerShell.Utility\Write-Warning `
+                    "Face detection failed for $imagePath`: $($_.Exception.Message)"
+            }
         }
     }
 

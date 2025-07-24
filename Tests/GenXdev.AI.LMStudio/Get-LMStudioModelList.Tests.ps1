@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 
 Pester\Describe 'Get-LMStudioModelList.Tests' {
 
@@ -33,7 +33,7 @@ $message
 
         Pester\It 'Should return models with required properties' {
             # get all models
-            $result = Get-LMStudioModelList
+            $result = GenXdev.AI\Get-LMStudioModelList
 
             # verify if any models exist
             if ($null -eq $result) {

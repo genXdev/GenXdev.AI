@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Installs LM Studio application using WinGet package manager.
@@ -77,7 +77,7 @@ function Install-LMStudioApplication {
                 # reset cached paths after install
                 $script:LMStudioExe = $null
                 $script:LMSExe = $null
-                Get-LMStudioPaths
+                GenXdev.AI\Get-LMStudioPaths
                 $null = Microsoft.PowerShell.Management\Get-Process 'LM Studio' -ErrorAction SilentlyContinue | Microsoft.PowerShell.Management\Stop-Process -Force
                 $null = Microsoft.PowerShell.Management\Start-Process -FilePath ($script:LMStudioExe) -WindowStyle Maximized
             }

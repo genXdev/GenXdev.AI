@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Sets up custom command not found handling with AI assistance.
@@ -150,7 +150,7 @@ function Set-GenXdevAICommandNotFoundAction {
                         "`$ExecutionContext.InvokeCommand.CommandNotFoundAction " +
                         "with her prompt being: $userIntent")
 
-                    Invoke-AIPowershellCommand $aiPrompt
+                    GenXdev.AI\Invoke-AIPowershellCommand $aiPrompt
                 }.GetNewClosure()
 
                 $CommandLookupEventArgs.StopSearch = $true

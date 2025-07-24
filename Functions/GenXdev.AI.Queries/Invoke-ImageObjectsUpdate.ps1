@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Updates object detection metadata for image files in a specified directory.
@@ -11,8 +11,8 @@ batch processing with configurable confidence thresholds and can optionally
 skip existing metadata files or retry previously failed detections.
 
 .PARAMETER ImageDirectories
-The directory path containing images to process. Can be relative or absolute
-path. Default is the current directory.
+Array of directory paths containing images to process. Can be relative or
+absolute paths. Default is the current directory.
 
 .PARAMETER Recurse
 If specified, processes images in the specified directory and all
@@ -67,16 +67,16 @@ Custom Docker image name to use instead of the default DeepStack image.
 Allows using alternative object detection models or configurations.
 
 .EXAMPLE
-Invoke-ImageObjectsUpdate -ImageDirectories "C:\Photos" -Recurse
+Invoke-ImageObjectsUpdate -ImageDirectories @("C:\Photos", "D:\Pictures") -Recurse
 
-This example processes all images in C:\Photos and all subdirectories using
-default settings with 0.5 confidence threshold.
+This example processes all images in C:\Photos and D:\Pictures and all
+subdirectories using default settings with 0.5 confidence threshold.
 
 .EXAMPLE
-Invoke-ImageObjectsUpdate "C:\Photos" -RetryFailed -OnlyNew
+Invoke-ImageObjectsUpdate @("C:\Photos", "C:\Archive") -RetryFailed -OnlyNew
 
 This example processes only new images and retries previously failed ones
-in the C:\Photos directory using positional parameter syntax.
+in multiple directories using positional parameter syntax.
 
 .EXAMPLE
 Invoke-ImageObjectsUpdate -ImageDirectories "C:\Photos" -UseGPU `
@@ -88,7 +88,7 @@ for more accurate but fewer object detections.
 function Invoke-ImageObjectsUpdate {
 
     [CmdletBinding()]
-    [Alias('objectdetection')]
+    [Alias('imageobjectdetection')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
 
     param(
@@ -96,9 +96,9 @@ function Invoke-ImageObjectsUpdate {
         [Parameter(
             Position = 0,
             Mandatory = $false,
-            HelpMessage = 'The directory path containing images to process'
+            HelpMessage = 'The directory paths containing images to process'
         )]
-        [string] $ImageDirectories = '.\',
+        [string[]] $ImageDirectories = @('.\'),
 
         #######################################################################
         [Parameter(
@@ -518,34 +518,57 @@ function Invoke-ImageObjectsUpdate {
     )
     begin {
 
-        # convert the possibly relative path to an absolute path for reliable access
-        $path = GenXdev.FileSystem\Expand-Path $ImageDirectories
+        # process each directory provided
+        $processedDirectories = @()
+        foreach ($directory in $ImageDirectories) {
+            # convert the possibly relative path to an absolute path for reliable access
+            $path = GenXdev.FileSystem\Expand-Path $directory
 
-        # ensure the target directory exists before proceeding with any operations
-        if (-not [System.IO.Directory]::Exists($path)) {
+            # ensure the target directory exists before proceeding with any operations
+            if (-not [System.IO.Directory]::Exists($path)) {
+                Microsoft.PowerShell.Utility\Write-Warning (
+                    "The directory '$path' does not exist - skipping"
+                )
+                continue
+            }
 
-            Microsoft.PowerShell.Utility\Write-Host (
-                "The directory '$path' does not exist."
+            $processedDirectories += $path
+            # output verbose information about the processing directory
+            Microsoft.PowerShell.Utility\Write-Verbose (
+                "Processing images for object detection in directory: $path"
             )
-            return
         }
 
-        # output verbose information about the processing directory
-        Microsoft.PowerShell.Utility\Write-Verbose (
-            "Processing images for object detection in directory: $path"
-        )
+        if ($processedDirectories.Count -eq 0) {
+            Microsoft.PowerShell.Utility\Write-Warning "No valid directories found to process"
+            return
+        }
     }
 
     process {
 
-        # retrieve all supported image files from the specified directory
-        # applying recursion only if the recurse switch was provided
-        Microsoft.PowerShell.Management\Get-ChildItem `
-            -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.gif","$path\*.png" `
-            -Recurse:$Recurse `
-            -File `
-            -ErrorAction SilentlyContinue |
-            Microsoft.PowerShell.Core\ForEach-Object {
+        # process each validated directory
+        foreach ($path in $processedDirectories) {
+            Microsoft.PowerShell.Utility\Write-Verbose "Processing directory: $path"
+
+            # retrieve all supported image files from the specified directory
+            # applying recursion only if the recurse switch was provided
+            # get all supported image files from the specified directory
+            $imageTypes = @(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif")
+            $findParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName "GenXdev.FileSystem\Find-Item" `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+
+            # Add NoRecurse parameter if Recurse was not specified
+            if (-not $Recurse) {
+                $findParams['NoRecurse'] = $true
+            }
+
+            # Get all image files matching the criteria
+            GenXdev.FileSystem\Find-Item @findParams -PassThru -SearchMask "$path\*" -Directory:$false | Microsoft.PowerShell.Core\Where-Object {
+                $imageTypes.IndexOf(([IO.Path]::GetExtension($_.FullName).ToLowerInvariant())) -ge 0
+            } | Microsoft.PowerShell.Core\ForEach-Object {
 
                 try {
 
@@ -569,7 +592,8 @@ function Invoke-ImageObjectsUpdate {
                         try {
                             $content = [System.IO.File]::ReadAllText($metadataFilePath)
                             $existingData = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
-                            $hasValidContent = $existingData.success
+                            # Content is valid if success is true (successful processing)
+                            $hasValidContent = $existingData.success -eq $true
                         }
                         catch {
                             # If JSON parsing fails, treat as invalid content
@@ -578,33 +602,37 @@ function Invoke-ImageObjectsUpdate {
                     }
 
                     # determine if we should process this image based on conditions
-                    if ((-not $OnlyNew) -or (-not $fileExists) -or (-not $hasValidContent)) {
+                    # Process if: not OnlyNew OR file doesn't exist OR (RetryFailed and no valid content)
+                    if ((-not $OnlyNew) -or
+                        (-not $fileExists) -or
+                        ($RetryFailed -and (-not $hasValidContent))) {
 
-                        # obtain object detection data using ai detection technology
-                        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
-                            -BoundParameters $PSBoundParameters `
-                            -FunctionName 'GenXdev.AI\Get-ImageDetectedObjects' `
-                            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                                -Scope Local -ErrorAction SilentlyContinue)
+                            try {
+                                # obtain object detection data using ai detection technology
+                                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                                    -BoundParameters $PSBoundParameters `
+                                    -FunctionName 'GenXdev.AI\Get-ImageDetectedObjects' `
+                                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                                        -Scope Local -ErrorAction SilentlyContinue)
 
-                        $objectData = Get-ImageDetectedObjects `
-                            @params `
-                            -ImagePath $image
+                                $objectData = GenXdev.AI\Get-ImageDetectedObjects `
+                                    @params `
+                                    -ImagePath $image
 
-                        $NoDockerInitialize = $true;
-                        # process the detection results into structured data format
-                        $processedData = if ($objectData -and
-                            $objectData.success -and
-                            $objectData.predictions) {
+                                $NoDockerInitialize = $true;
+                                # process the detection results into structured data format
+                                $processedData = if ($objectData -and
+                                    $objectData.success -and
+                                    $objectData.predictions) {
 
-                            # extract predictions array from detection results
-                            $predictions = $objectData.predictions
+                                    # extract predictions array from detection results
+                                    $predictions = $objectData.predictions
 
-                            # create array of object labels from predictions
-                            $objectLabels = $predictions |
-                                Microsoft.PowerShell.Core\ForEach-Object {
-                                    $_.label
-                                }
+                                    # create array of object labels from predictions
+                                    $objectLabels = $predictions |
+                                        Microsoft.PowerShell.Core\ForEach-Object {
+                                            $_.label
+                                        }
 
                                 # group objects by label to get counts
                                 $objectCounts = $objectLabels |
@@ -618,9 +646,10 @@ function Invoke-ImageObjectsUpdate {
                                         objects       = $objectLabels
                                         predictions   = $predictions
                                         object_counts = @{}
+                                        processed_at  = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                                     }
 
-                                    # populate object counts from grouped results
+                                    # populate object counts for each unique object type
                                     $objectCounts |
                                         Microsoft.PowerShell.Core\ForEach-Object {
                                             $data.object_counts[$_.Name] = $_.Count
@@ -636,6 +665,7 @@ function Invoke-ImageObjectsUpdate {
                                             objects       = @()
                                             predictions   = @()
                                             object_counts = @{}
+                                            processed_at  = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                                         }
                                     }
 
@@ -645,61 +675,63 @@ function Invoke-ImageObjectsUpdate {
                                             -Depth 20 `
                                             -WarningAction SilentlyContinue
 
-                                        # output verbose confirmation of detection analysis completion
-                                        Microsoft.PowerShell.Utility\Write-Verbose (
-                                            "Received object detection analysis for: $image"
-                                        )
+                                    # output verbose confirmation of detection analysis completion
+                                    Microsoft.PowerShell.Utility\Write-Verbose (
+                                        "Received object detection analysis for: $image"
+                                    )
 
-                                        try {
+                                # re-parse and compress json for consistent formatting
+                                $newContent = ($objects |
+                                        Microsoft.PowerShell.Utility\ConvertFrom-Json |
+                                        Microsoft.PowerShell.Utility\ConvertTo-Json `
+                                            -Compress `
+                                            -Depth 20 `
+                                            -WarningAction SilentlyContinue)
 
-                                            # re-parse and compress json for consistent formatting
-                                            $newContent = ($objects |
-                                                    Microsoft.PowerShell.Utility\ConvertFrom-Json |
-                                                    Microsoft.PowerShell.Utility\ConvertTo-Json `
-                                                        -Compress `
-                                                        -Depth 20 `
-                                                        -WarningAction SilentlyContinue)
+                                # save the processed object data to metadata file
+                                [System.IO.File]::WriteAllText($metadataFilePath, $newContent)
 
-                                                # ensure proper empty structure format
-                                                if ($newContent -eq (
-                                                        '{"predictions":null,"count":0,"objects":[]}'
-                                                    )) {
-
-                                                    $newContent = (
-                                                        '{"success":true,"count":0,"objects":[],' +
-                                                        '"predictions":[],"object_counts":{}}'
-                                                    )
-                                                }
-
-                                                # save the processed object data to metadata file
-                                                [System.IO.File]::WriteAllText(
-                                                    $metadataFilePath,
-                                                    $newContent
-                                                )
-
-                                                # output verbose confirmation of successful save
-                                                Microsoft.PowerShell.Utility\Write-Verbose (
-                                                    "Successfully saved object metadata for: $image"
-                                                )
-                                            }
-                                            catch {
-
-                                                # log any errors that occur during metadata processing
-                                                Microsoft.PowerShell.Utility\Write-Verbose (
-                                                    "$PSItem`r`n$objects"
-                                                )
-                                            }
-                                        }
+                                Microsoft.PowerShell.Utility\Write-Verbose (
+                                    "Successfully saved object metadata for: $image"
+                                )
+                            }
+                            catch {
+                                # write failure JSON to prevent infinite retries without -RetryFailed
+                                try {
+                                    $failureData = @{
+                                        success = $false
+                                        count = 0
+                                        objects = @()
+                                        predictions = @()
+                                        object_counts = @{}
+                                        processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+                                        error = "Object detection failed: $($_.Exception.Message)"
                                     }
-                                    catch {
 
-                                        # log any errors that occur during image processing
-                                        Microsoft.PowerShell.Utility\Write-Verbose (
-                                            "Error processing image '$image': " +
-                                            "$($_.Exception.Message)"
-                                        )
-                                    }
+                                    $failureJson = $failureData | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 10
+                                    [System.IO.File]::WriteAllText($metadataFilePath, $failureJson)
                                 }
-    }    end {
+                                catch {
+                                    # If we can't even write the failure JSON, just log it
+                                    Microsoft.PowerShell.Utility\Write-Verbose "Failed to write error metadata for ${image}: $($_.Exception.Message)"
+                                }
+
+                                Microsoft.PowerShell.Utility\Write-Warning (
+                                    "Failed to process objects for $image : $($_.Exception.Message)")
+                            }
+                    }
+                }
+                catch {
+                    # log any errors that occur during image processing
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Error processing image '$image': " +
+                        "$($_.Exception.Message)"
+                    )
+                }
+            }
+        }
+    }
+
+    end {
     }
 }

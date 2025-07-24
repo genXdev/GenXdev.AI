@@ -187,6 +187,10 @@ function GenerateMasonryLayoutHtml {
                     '.gif'  { 'image/gif' }
                     '.jpeg' { 'image/jpeg' }
                     '.png'  { 'image/png' }
+                    '.bmp'   { 'image/bmp' }
+                    '.webp'  { 'image/webp' }
+                    '.tiff'  { 'image/tiff' }
+                    '.tif'   { 'image/tiff' }
                     default {
                         Microsoft.PowerShell.Utility\Write-Verbose "Unsupported image format: $extension"
                         return $null

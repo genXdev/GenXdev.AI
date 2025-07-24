@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Translates text to another language using AI.
@@ -569,7 +569,7 @@ function Get-TextTranslation {
                 -ErrorAction SilentlyContinue)
 
         # determine the target language for translation
-        $language = Get-AIMetaLanguage @params
+        $language = GenXdev.AI\Get-AIMetaLanguage @params
 
         # output verbose information about the translation process
         Microsoft.PowerShell.Utility\Write-Verbose ('Starting translation ' +

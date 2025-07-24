@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Executes a script block and analyzes errors using AI to generate fixes in IDE.
@@ -327,7 +327,7 @@ function Show-GenXdevScriptErrorFixInIde {
             'Retrieving AI prompt information for script error analysis'
         )
 
-        $llmPromptInfo = Get-ScriptExecutionErrorFixPrompt `
+        $llmPromptInfo = GenXdev.AI\Get-ScriptExecutionErrorFixPrompt `
             @PSBoundParameters
     }
 

@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Detects and classifies objects in an uploaded image using DeepStack.
@@ -234,7 +234,7 @@ function Get-ImageDetectedObjects {
             )
 
             # initialize deepstack docker container if needed
-            $null = EnsureDeepStack @ensureParams
+            $null = GenXdev.AI\EnsureDeepStack @ensureParams
         }
         else {
 
@@ -352,6 +352,16 @@ function Get-ImageDetectedObjects {
                 "Sending request to: $uri"
 
             # create form data for deepstack api
+            # Validate image file exists before processing
+            if (-not [System.IO.File]::Exists($imagePath)) {
+                Microsoft.PowerShell.Utility\Write-Warning "Image file not found: $imagePath"
+                return @{
+                    success = $false
+                    error = "No valid image file found"
+                    duration = 0
+                } | Microsoft.PowerShell.Utility\ConvertTo-Json
+            }
+
             # the 'min_confidence' parameter expects a value between 0.0 and 1.0
             $form = @{
                 image          = Microsoft.PowerShell.Management\Get-Item $imagePath
@@ -383,17 +393,17 @@ function Get-ImageDetectedObjects {
         }
         catch [System.Net.WebException] {
 
-            Microsoft.PowerShell.Utility\Write-Error `
+            Microsoft.PowerShell.Utility\Write-Warning `
                 "Network error during object detection: $_"
         }
         catch [System.TimeoutException] {
 
-            Microsoft.PowerShell.Utility\Write-Error `
+            Microsoft.PowerShell.Utility\Write-Warning `
                 "Timeout during object detection for $imagePath"
         }
         catch {
 
-            Microsoft.PowerShell.Utility\Write-Error `
+            Microsoft.PowerShell.Utility\Write-Warning `
                 "Failed to detect objects in $imagePath`: $_"
         }
     }

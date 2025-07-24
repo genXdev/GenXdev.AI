@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 <#
 .SYNOPSIS
 Ensures LM Studio is properly initialized with the specified model.
@@ -406,7 +406,7 @@ function EnsureLMStudio {
         )
 
         # initialize the model with the prepared parameter arguments
-        $null = Initialize-LMStudioModel @invocationArguments
+        $null = GenXdev.AI\Initialize-LMStudioModel @invocationArguments
     }
 
     end {

@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Sets the LLM settings for AI operations in GenXdev.AI.
@@ -400,7 +400,7 @@ function Set-AILLMSettings {
             # store each setting individually in preferences
             foreach ($key in $settings.Keys) {
                 $preferenceKey = "AILLMSettings_$($LLMQueryType)_$key"
-                $null = Set-GenXdevPreference `
+                $null = GenXdev.Data\Set-GenXdevPreference `
                     -PreferencesDatabasePath $PreferencesDatabasePath `
                     -Name $preferenceKey `
                     -Value $settings[$key]
@@ -409,7 +409,7 @@ function Set-AILLMSettings {
             # remove preferences that were marked for deletion (null values)
             foreach ($preferenceKey in $preferencesToRemove) {
                 try {
-                    $null = Remove-GenXdevPreference `
+                    $null = GenXdev.Data\Remove-GenXdevPreference `
                         -PreferencesDatabasePath $PreferencesDatabasePath `
                         -Name $preferenceKey `
                         -ErrorAction SilentlyContinue

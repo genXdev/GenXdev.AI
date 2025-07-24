@@ -38,7 +38,7 @@ function Start-GenXdevMCPServer {
         )
         Start-GenXdevMCPServer -Port 2175 -ExposedCmdLets $exposedCmdlets
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param (
         [int]$Port = 2175,
 
@@ -99,7 +99,7 @@ function Start-GenXdevMCPServer {
                     }
                     serverInfo      = @{
                         name    = 'GenXdev-PowerShell-MCP-Server'
-                        version = '1.208.2025'
+                        version = '1.212.2025'
                     }
                 }
             }
@@ -197,7 +197,7 @@ function Start-GenXdevMCPServer {
                             }
                             serverInfo      = @{
                                 name    = 'GenXdev-PowerShell-MCP-Server'
-                                version = '1.208.2025'
+                                version = '1.212.2025'
                             }
                         }
                     }
@@ -808,97 +808,10 @@ function Start-GenXdevMCPServer {
                 Confirm                              = $false
             },
             [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Now'
-                Description                          = 'Gets the current date and time in various formats. Simple utility for timestamps and time-based operations.'
-                AllowedParams                        = @(
-
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 1
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Invoke-WebbrowserEvaluation'
-                Description                          = 'Executes JavaScript in browser tabs using Chrome DevTools Protocol. Incredibly powerful for web automation, testing, and debugging.'
-                AllowedParams                        = @(
-                    'Scripts=string'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 4
-                OutputText                           = $false
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-WebbrowserTabDomNodes'
-                Description                          = 'Gets DOM elements from browser tabs using CSS selectors. Essential for web scraping, testing, and content analysis.'
-                AllowedParams                        = @(
-                    'QuerySelector=string',
-                    'ModifyScript'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 4
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
                 Name                                 = 'Get-GitChangedFiles'
                 Description                          = 'Gets files that have been changed in a Git repository. Essential for code review, commit preparation, and change tracking.'
                 AllowedParams                        = @(
 
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 3
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-GenXdevPreference'
-                Description                          = "Use this for preferences storage, use Get-GenXdevPreferenceNames to retreive previous ones you've set."
-                AllowedParams                        = @(
-                    'Name',
-                    'DefaultValue',
-                    'SessionOnly',
-                    'ClearSession',
-                    'SkipSession'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @(
-                    [GenXdev.Helpers.ExposedForcedCmdLetParameter]@{
-                        Name  = 'PreferencesDatabasePath'
-                        Value = "$ENV:LOCALAPPDATA\GenXdev.Powershell\MCPPreferences.db"
-                    }
-                )
-                JsonDepth                            = 2
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Invoke-SQLiteQuery'
-                Description                          = 'Executes SQL queries against SQLite databases. Powerful database interaction tool for data analysis and management.'
-                AllowedParams                        = @(
-                    'Queries=string',
-                    'ConnectionString',
-                    'DatabaseFilePath',
-                    'SqlParameters',
-                    'IsolationLevel'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 4
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-SQLiteTables'
-                Description                          = 'Gets table information from SQLite databases. Essential for database schema exploration and analysis.'
-                AllowedParams                        = @(
-                    'ConnectionString',
-                    'DatabaseFilePath'
                 )
                 DontShowDuringConfirmationParamNames = @()
                 ForcedParams                         = @()
@@ -931,14 +844,17 @@ function Start-GenXdevMCPServer {
                 Confirm                              = $false
             },
             [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-KnownFolderPath'
-                Description                          = 'Gets Windows known folder paths (Documents, Desktop, etc.). Essential for cross-user compatible file operations.'
+                Name                                 = 'New-GenXdevCmdlet'
                 AllowedParams                        = @(
-                    'KnownFolder=string'
+                    'CmdletName=string',
+                    'Description=string',
+                    'BaseModuleName',
+                    'ModuleName',
+                    'CmdletAliases'
                 )
                 DontShowDuringConfirmationParamNames = @()
                 ForcedParams                         = @()
-                JsonDepth                            = 2
+                JsonDepth                            = 4
                 OutputText                           = $true
                 Confirm                              = $false
             },
@@ -954,212 +870,60 @@ function Start-GenXdevMCPServer {
                 JsonDepth                            = 3
                 OutputText                           = $true
                 Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-SQLiteSchema'
-                Description                          = 'Retrieves the complete schema information from a SQLite database, including tables, views, indexes and triggers.'
-                AllowedParams                        = @(
-                    'ConnectionString',
-                    'DatabaseFilePath'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 4
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-SQLiteTableData'
-                Description                          = 'Retrieves data from a SQLite database table with optional record limiting.'
-                AllowedParams                        = @(
-                    'ConnectionString',
-                    'DatabaseFilePath',
-                    'TableName',
-                    'Count'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 4
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-SQLiteTableColumnData'
-                Description                          = 'Retrieves data from a specific column in a SQLite database table.'
-                AllowedParams                        = @(
-                    'ConnectionString',
-                    'DatabaseFilePath',
-                    'TableName',
-                    'ColumnName',
-                    'Count'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 4
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-SQLiteTableSchema'
-                Description                          = 'Retrieves the schema information for a specified SQLite table.'
-                AllowedParams                        = @(
-                    'ConnectionString',
-                    'DatabaseFilePath',
-                    'TableName'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 4
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-SQLiteViewData'
-                Description                          = 'Retrieves data from a SQLite database view with optional record limiting.'
-                AllowedParams                        = @(
-                    'ConnectionString',
-                    'DatabaseFilePath',
-                    'ViewName',
-                    'Count'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 4
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-SQLiteViewColumnData'
-                Description                          = 'Retrieves column data from a SQLite view with optional record limiting.'
-                AllowedParams                        = @(
-                    'ConnectionString',
-                    'DatabaseFilePath',
-                    'ViewName',
-                    'ColumnName',
-                    'Count'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 4
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-SQLiteViewSchema'
-                Description                          = 'Retrieves the SQL schema definition for a SQLite view.'
-                AllowedParams                        = @(
-                    'ConnectionString',
-                    'DatabaseFilePath',
-                    'ViewName'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 4
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-SQLiteViews'
-                Description                          = 'Retrieves a list of views from a SQLite database.'
-                AllowedParams                        = @(
-                    'ConnectionString',
-                    'DatabaseFilePath'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 3
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'New-SQLiteDatabase'
-                Description                          = 'Creates a new SQLite database file at the specified path.'
-                AllowedParams                        = @(
-                    'DatabaseFilePath'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 2
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Invoke-SQLiteStudio'
-                Description                          = 'Launches SQLite Studio database management application.'
-                AllowedParams                        = @(
-                    'DatabaseFilePath'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 2
-                OutputText                           = $true
-                Confirm                              = $false
-            },
-            [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-HometoolsData'
-                Description                          = 'Queries the hometools database storage table for specific data entries.'
-                AllowedParams                        = @(
-                    'Queries=string',
-                    'Count=integer',
-                    'OldestFirst',
-                    'ByKey'
-                )
-                DontShowDuringConfirmationParamNames = @()
-                ForcedParams                         = @()
-                JsonDepth                            = 4
-                OutputText                           = $true
-                Confirm                              = $false
             }
         )
     }
 
     # Stop existing server if requested
     if ($StopExisting) {
-        GenXdev.AI\Stop-GenXdevMCPServer -Port $Port
-    }
-
-    Microsoft.PowerShell.Utility\Write-Host "Starting GenXdev MCP server on port $Port..." -ForegroundColor Green
-    Microsoft.PowerShell.Utility\Write-Host "Exposed cmdlets: $($ExposedCmdLets.Name -join ', ')" -ForegroundColor Cyan
-    Microsoft.PowerShell.Utility\Write-Host "Max output length: $MaxOutputLength characters ($([math]::Round($MaxOutputLength / 1024, 1))KB)" -ForegroundColor Cyan
-
-    # Convert cmdlets to function definitions
-    $functions = GenXdev.AI\ConvertTo-LMStudioFunctionDefinition -ExposedCmdLets $ExposedCmdLets
-
-    # Create HTTP listener
-    $listener = Microsoft.PowerShell.Utility\New-Object System.Net.HttpListener
-    $listener.Prefixes.Add("http://localhost:$Port/")
-
-    while (-not [Console]::KeyAvailable) {
-        try {
-            $listener.Start()
-            Microsoft.PowerShell.Utility\Write-Host "Server started successfully at http://localhost:$Port" -ForegroundColor Green
-            Microsoft.PowerShell.Utility\Write-Host 'Available endpoints:' -ForegroundColor Yellow
-            Microsoft.PowerShell.Utility\Write-Host '  GET /mcp - List tools (normal HTTP)' -ForegroundColor Gray
-            Microsoft.PowerShell.Utility\Write-Host '  POST /mcp - MCP HTTP transport (VS Code)' -ForegroundColor Gray
-            Microsoft.PowerShell.Utility\Write-Host '  GET|POST /mcp/list-tools - List available tools' -ForegroundColor Gray
-            Microsoft.PowerShell.Utility\Write-Host '  POST /mcp/call-tool - Execute a tool' -ForegroundColor Gray
-            Microsoft.PowerShell.Utility\Write-Host '  GET /sse - SSE connection for legacy transport' -ForegroundColor Gray
-            Microsoft.PowerShell.Utility\Write-Host '  POST /messages - Legacy SSE transport POST endpoint' -ForegroundColor Gray
-            Microsoft.PowerShell.Utility\Write-Host 'Press Ctrl+C to stop the server' -ForegroundColor Yellow
-            break
-        }
-        catch {
-            Microsoft.PowerShell.Utility\Write-Verbose "Failed to start server: $($_.Exception.Message)"
-            sleep 2
+        if ($PSCmdlet.ShouldProcess("MCP Server on port $Port", "Stop existing server")) {
+            GenXdev.AI\Stop-GenXdevMCPServer -Port $Port
         }
     }
-    # Store server info globally for stop function
-    $Global:GenXdevMCPServer = @{
-        Listener                        = $listener
-        Port                            = $Port
-        Functions                       = $functions
-        ExposedCmdLets                  = $ExposedCmdLets
-        NoConfirmationToolFunctionNames = $NoConfirmationToolFunctionNames
-        MaxOutputLength                 = $MaxOutputLength
-    }
 
-    # Main server loop
-    while (-not [Console]::KeyAvailable) {
+    if ($PSCmdlet.ShouldProcess("MCP Server on port $Port", "Start server")) {
+        Microsoft.PowerShell.Utility\Write-Host "Starting GenXdev MCP server on port $Port..." -ForegroundColor Green
+        Microsoft.PowerShell.Utility\Write-Host "Exposed cmdlets: $($ExposedCmdLets.Name -join ', ')" -ForegroundColor Cyan
+        Microsoft.PowerShell.Utility\Write-Host "Max output length: $MaxOutputLength characters ($([math]::Round($MaxOutputLength / 1024, 1))KB)" -ForegroundColor Cyan
+
+        # Convert cmdlets to function definitions
+        $functions = GenXdev.AI\ConvertTo-LMStudioFunctionDefinition -ExposedCmdLets $ExposedCmdLets
+
+        # Create HTTP listener
+        $listener = Microsoft.PowerShell.Utility\New-Object System.Net.HttpListener
+        $listener.Prefixes.Add("http://localhost:$Port/")
+
+        while (-not [Console]::KeyAvailable) {
+            try {
+                $listener.Start()
+                Microsoft.PowerShell.Utility\Write-Host "Server started successfully at http://localhost:$Port" -ForegroundColor Green
+                Microsoft.PowerShell.Utility\Write-Host 'Available endpoints:' -ForegroundColor Yellow
+                Microsoft.PowerShell.Utility\Write-Host '  GET /mcp - List tools (normal HTTP)' -ForegroundColor Gray
+                Microsoft.PowerShell.Utility\Write-Host '  POST /mcp - MCP HTTP transport (VS Code)' -ForegroundColor Gray
+                Microsoft.PowerShell.Utility\Write-Host '  GET|POST /mcp/list-tools - List available tools' -ForegroundColor Gray
+                Microsoft.PowerShell.Utility\Write-Host '  POST /mcp/call-tool - Execute a tool' -ForegroundColor Gray
+                Microsoft.PowerShell.Utility\Write-Host '  GET /sse - SSE connection for legacy transport' -ForegroundColor Gray
+                Microsoft.PowerShell.Utility\Write-Host '  POST /messages - Legacy SSE transport POST endpoint' -ForegroundColor Gray
+                Microsoft.PowerShell.Utility\Write-Host 'Press Ctrl+C to stop the server' -ForegroundColor Yellow
+                break
+            }
+            catch {
+                Microsoft.PowerShell.Utility\Write-Verbose "Failed to start server: $($_.Exception.Message)"
+                Microsoft.PowerShell.Utility\Start-Sleep 2
+            }
+        }
+        # Store server info in script scope for stop function
+        $script:GenXdevMCPServer = @{
+            Listener                        = $listener
+            Port                            = $Port
+            Functions                       = $functions
+            ExposedCmdLets                  = $ExposedCmdLets
+            NoConfirmationToolFunctionNames = $NoConfirmationToolFunctionNames
+            MaxOutputLength                 = $MaxOutputLength
+        }
+
+        # Main server loop
+        while (-not [Console]::KeyAvailable) {
         try {
             while ($listener.IsListening -and (-not [Console]::KeyAvailable)) {
                 $context = $listener.GetContext()
@@ -1396,6 +1160,7 @@ function Start-GenXdevMCPServer {
             Microsoft.PowerShell.Utility\Write-Host 'Server stopped.' -ForegroundColor Yellow
         }
     }
+    }
 }
 
 function Stop-GenXdevMCPServer {
@@ -1412,18 +1177,20 @@ function Stop-GenXdevMCPServer {
     .EXAMPLE
         Stop-GenXdevMCPServer -Port 2175
     #>
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param (
         [int]$Port
     )
 
-    if ($Global:GenXdevMCPServer -and $Global:GenXdevMCPServer.Listener) {
-        if (-not $Port -or $Global:GenXdevMCPServer.Port -eq $Port) {
-            Microsoft.PowerShell.Utility\Write-Host "Stopping GenXdev MCP server on port $($Global:GenXdevMCPServer.Port)..." -ForegroundColor Yellow
-            $Global:GenXdevMCPServer.Listener.Stop()
-            $Global:GenXdevMCPServer.Listener.Close()
-            $Global:GenXdevMCPServer = $null
-            Microsoft.PowerShell.Utility\Write-Host 'Server stopped.' -ForegroundColor Green
+    if ($script:GenXdevMCPServer -and $script:GenXdevMCPServer.Listener) {
+        if (-not $Port -or $script:GenXdevMCPServer.Port -eq $Port) {
+            if ($PSCmdlet.ShouldProcess("MCP Server on port $($script:GenXdevMCPServer.Port)", "Stop server")) {
+                Microsoft.PowerShell.Utility\Write-Host "Stopping GenXdev MCP server on port $($script:GenXdevMCPServer.Port)..." -ForegroundColor Yellow
+                $script:GenXdevMCPServer.Listener.Stop()
+                $script:GenXdevMCPServer.Listener.Close()
+                $script:GenXdevMCPServer = $null
+                Microsoft.PowerShell.Utility\Write-Host 'Server stopped.' -ForegroundColor Green
+            }
         }
     }
     else {

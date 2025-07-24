@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 Pester\Describe 'Test-LMStudioInstallation function tests' {
 
     Pester\It 'Should pass PSScriptAnalyzer rules' {
@@ -31,7 +31,7 @@ $message
     Pester\It 'Should verify LM Studio is properly installed and accessible' {
 
         # attempt to detect lm studio installation
-        $result = Test-LMStudioInstallation
+        $result = GenXdev.AI\Test-LMStudioInstallation
 
         # test Should pass only if lm studio is actually installed
         $result | Pester\Should -Be $true -Because 'LM Studio Should be installed

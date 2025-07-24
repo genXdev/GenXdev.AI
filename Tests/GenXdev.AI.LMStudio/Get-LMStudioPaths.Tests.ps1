@@ -1,4 +1,4 @@
-﻿Pester\Describe 'Get-LMStudioPaths basic integration tests' {
+Pester\Describe 'Get-LMStudioPaths basic integration tests' {
 
     Pester\It 'Should pass PSScriptAnalyzer rules' {
 
@@ -29,7 +29,7 @@ $message
 
     Pester\It 'Returns valid default paths that exist on the system' {
 
-        $result = Get-LMStudioPaths
+        $result = GenXdev.AI\Get-LMStudioPaths
 
         $result | Pester\Should -Not -BeNull
         [IO.File]::Exists($result.LMStudioExe) | Pester\Should -BeTrue

@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Compares faces in two different images and returns their similarity using
@@ -205,7 +205,7 @@ function Compare-ImageFaces {
                     -ErrorAction SilentlyContinue)
 
             # initialize deepstack docker container if needed
-            $null = EnsureDeepStack @ensureParams
+            $null = GenXdev.AI\EnsureDeepStack @ensureParams
         }
         else {
 
@@ -317,8 +317,8 @@ function Compare-ImageFaces {
 
             # create form data for deepstack api (it expects multipart form data)
             $form = @{
-                image1 = Microsoft.PowerShell.Management\Get-Item $imagePath1
-                image2 = Microsoft.PowerShell.Management\Get-Item $imagePath2
+                image1 = Microsoft.PowerShell.Management\Get-Item -LiteralPath $imagePath1
+                image2 = Microsoft.PowerShell.Management\Get-Item -LiteralPath $imagePath2
             }
 
             # send the request to the deepstack face match api

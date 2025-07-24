@@ -1,4 +1,4 @@
-﻿Pester\Describe 'Test-LMStudioProcess basic functionality' {
+Pester\Describe 'Test-LMStudioProcess basic functionality' {
 
     Pester\It 'Should pass PSScriptAnalyzer rules' {
 
@@ -29,8 +29,8 @@ $message
 
     Pester\It 'Should return true when LMStudio process is running' {
 
-        $null = Start-LMStudioApplication
-        $result = Test-LMStudioProcess
+        $null = GenXdev.AI\Start-LMStudioApplication
+        $result = GenXdev.AI\Test-LMStudioProcess
         $result | Pester\Should -Be $true
     }
 }

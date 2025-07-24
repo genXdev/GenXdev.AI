@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Transcribes audio to text using various input methods and advanced configuration
@@ -579,7 +579,7 @@ function Start-AudioTranscription {
                 -ErrorAction SilentlyContinue)
 
         # get ai meta language setting or use default web language
-        $Language = Get-AIMetaLanguage @params
+        $Language = GenXdev.AI\Get-AIMetaLanguage @params
 
         # output initialization message for verbose logging
         Microsoft.PowerShell.Utility\Write-Verbose (

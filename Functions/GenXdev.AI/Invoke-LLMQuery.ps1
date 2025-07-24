@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Sends queries to an OpenAI compatible Large Language Chat completion API and
@@ -822,7 +822,7 @@ function Invoke-LLMQuery {
             }
 
             # initialize the model and get model information
-            $modelInfo = Initialize-LMStudioModel @initParams
+            $modelInfo = GenXdev.AI\Initialize-LMStudioModel @initParams
 
             # set the model identifier from initialization result
             $Model = $modelInfo.modelKey
@@ -1055,8 +1055,43 @@ function Invoke-LLMQuery {
                     $isText = $false
                     break
                 }
+                '.jpg' {
+                    $mimeType = 'image/jpeg'
+                    $isText = $false
+                    break
+                }
                 '.jpeg' {
                     $mimeType = 'image/jpeg'
+                    $isText = $false
+                    break
+                }
+                '.png' {
+                    $mimeType = 'image/png'
+                    $isText = $false
+                    break
+                }
+                '.gif' {
+                    $mimeType = 'image/gif'
+                    $isText = $false
+                    break
+                }
+                '.bmp' {
+                    $mimeType = 'image/bmp'
+                    $isText = $false
+                    break
+                }
+                '.webp' {
+                    $mimeType = 'image/webp'
+                    $isText = $false
+                    break
+                }
+                '.tiff' {
+                    $mimeType = 'image/tiff'
+                    $isText = $false
+                    break
+                }
+                '.tif' {
+                    $mimeType = 'image/tiff'
                     $isText = $false
                     break
                 }
