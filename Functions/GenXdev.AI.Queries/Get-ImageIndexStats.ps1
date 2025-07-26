@@ -50,16 +50,16 @@ Dont use alternative settings stored in session for AI preferences like
 Language, Image collections, etc.
 
 .EXAMPLE
-Get-ImageDatabaseStats
+Get-ImageIndexStats
 
 .EXAMPLE
-Get-ImageDatabaseStats -ShowDetails
+Get-ImageIndexStats -ShowDetails
 
 .EXAMPLE
 gids -ShowDetails
 #>
 ################################################################################
-function Get-ImageDatabaseStats {
+function Get-ImageIndexStats {
 
     [CmdletBinding()]
     # suppress psscriptanalyzer psusesinguralnouns rule for this function
@@ -191,12 +191,12 @@ function Get-ImageDatabaseStats {
             # copy identical parameter values for helper function call
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName 'GenXdev.AI\Get-ImageDatabasePath' `
+                -FunctionName 'GenXdev.AI\Get-ImageIndexPath' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                     -Scope Local -ErrorAction SilentlyContinue)
 
             # get the default database path without rebuilding
-            $DatabaseFilePath = GenXdev.AI\Get-ImageDatabasePath @params `
+            $DatabaseFilePath = GenXdev.AI\Get-ImageIndexPath @params `
                 -NoFallback -NeverRebuild
         }
         else {
@@ -208,7 +208,7 @@ function Get-ImageDatabaseStats {
         if (-not (Microsoft.PowerShell.Management\Test-Path $DatabaseFilePath)) {
 
             throw ("Image database not found at: $DatabaseFilePath. Please " +
-                'run Export-ImageDatabase first.')
+                'run Export-ImageIndex first.')
         }
 
         # output verbose information about database location

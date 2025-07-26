@@ -112,6 +112,8 @@ function Get-AIImageCollection {
 
     begin {
 
+        $result = $null
+
         # handle clearing session variables first if requested
         if ($ClearSession) {
 

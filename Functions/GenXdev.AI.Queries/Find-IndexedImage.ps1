@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Searches for images using an optimized SQLite database with fast indexed lookups.
@@ -969,17 +969,19 @@ function Find-IndexedImage {
             ($null -ne $MetaHeight -and $MetaHeight.Count -gt 0) -or
             ($null -ne $MetaDateTaken -and $MetaDateTaken.Count -gt 0) -or
             ($null -ne $GeoLocation -and $GeoLocation.Count -eq 2) -or
-            ($null -ne $MinConfidenceRatio)
+            ($PSBoundParameters.ContainsKey('MinConfidenceRatio'))
         )
 
         # if no selection criteria are specified, set PathLike to current directory wildcard
         if (-not $hasSelectionCriteria) {
+            # get current directory for limiting results
+            $currentDirExpanded = GenXdev.FileSystem\Expand-Path '.\'
 
-            # search current directory and all subdirectories recursively
-            $currentDir = (GenXdev.FileSystem\Expand-Path '.\*')
-            $PathLike = @("$currentDir\*");
+            # search only current directory (non-recursive)
+            $PathLike = @("$currentDirExpanded\*")
+            $ImageDirectories = @($currentDirExpanded)
             Microsoft.PowerShell.Utility\Write-Verbose (
-                'No selection/filter criteria specified, setting PathLike to @(".\**") (recursive search)'
+                "No selection criteria, searching current directory only: $currentDirExpanded"
             )
         }
 
@@ -996,13 +998,7 @@ function Find-IndexedImage {
             $done."$(($InputObject.Path))" = $true;
 
             # then clear InputObject and continue processing as if it wasn't set
-            $originalInputObject = $InputObject
             $InputObject = $null
-
-            Microsoft.PowerShell.Utility\Write-Verbose (
-                "Append mode: Output ${originalInputObject.Count} objects, " +
-                "now processing search criteria"
-            )
         }
 
         # handle input objects from pipeline
@@ -1152,66 +1148,51 @@ function Find-IndexedImage {
                 }
             }
 
-            # return standardized object with all image metadata matching Find-Image output structure
-            return [System.Collections.Hashtable]@{
-                path        = $imagePath
-                width       = $DbResult.width
-                height      = $DbResult.height
-                metadata    = $metadataObject
-                keywords    = if ($DbResult.description_keywords) {
-                    try {
-                        $DbResult.description_keywords |
-                            Microsoft.PowerShell.Utility\ConvertFrom-Json
-                    } catch {
-                        @()
-                    }
-                } else { @() }
-                people      = if ($DbResult.people_json) {
-                    try {
-                        $peopleObj = $DbResult.people_json |
-                            Microsoft.PowerShell.Utility\ConvertFrom-Json
+            # Parse keywords from database
+            $keywords = if ($DbResult.description_keywords) {
+                try {
+                    $keywordArray = $DbResult.description_keywords |
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json
+                    [string[]]$keywordArray
+                } catch {
+                    [string[]]@()
+                }
+            } else {
+                [string[]]@()
+            }
 
-                        # ensure standardized structure with all required properties
-                        [PSCustomObject]@{
-                            count = if ($peopleObj.PSObject.Properties['count']) {
-                                $peopleObj.count
-                            } else {
-                                $DbResult.people_count
-                            }
-                            faces = if ($peopleObj.PSObject.Properties['faces']) {
-                                $peopleObj.faces
-                            } elseif ($DbResult.people_faces) {
-                                try {
-                                    $DbResult.people_faces |
-                                        Microsoft.PowerShell.Utility\ConvertFrom-Json
-                                } catch {
-                                    @()
-                                }
-                            } else {
-                                @()
-                            }
-                            predictions = if ($peopleObj.PSObject.Properties['predictions']) {
-                                $peopleObj.predictions
-                            } else {
-                                @()
-                            }
+            # Build people hashtable with proper structure
+            $peopleData = if ($DbResult.people_json) {
+                try {
+                    $peopleObj = $DbResult.people_json |
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json
+
+                    @{
+                        count = if ($peopleObj.PSObject.Properties['count']) {
+                            $peopleObj.count
+                        } else {
+                            $DbResult.people_count
                         }
-                    } catch {
-                        [PSCustomObject]@{
-                            count = $DbResult.people_count
-                            faces = if ($DbResult.people_faces) {
-                                try {
-                                    $DbResult.people_faces |
-                                        Microsoft.PowerShell.Utility\ConvertFrom-Json
-                                } catch {
-                                    @()
-                                }
-                            } else { @() }
-                            predictions = @()
+                        faces = if ($peopleObj.PSObject.Properties['faces']) {
+                            $peopleObj.faces
+                        } elseif ($DbResult.people_faces) {
+                            try {
+                                $DbResult.people_faces |
+                                    Microsoft.PowerShell.Utility\ConvertFrom-Json
+                            } catch {
+                                @()
+                            }
+                        } else {
+                            @()
+                        }
+                        predictions = if ($peopleObj.PSObject.Properties['predictions']) {
+                            $peopleObj.predictions
+                        } else {
+                            @()
                         }
                     }
-                } else {
-                    [PSCustomObject]@{
+                } catch {
+                    @{
                         count = $DbResult.people_count
                         faces = if ($DbResult.people_faces) {
                             try {
@@ -1224,61 +1205,50 @@ function Find-IndexedImage {
                         predictions = @()
                     }
                 }
-                description = if ($DbResult.description_json) {
-                    try {
-                        $descObj = $DbResult.description_json |
-                            Microsoft.PowerShell.Utility\ConvertFrom-Json
+            } else {
+                @{
+                    count = $DbResult.people_count
+                    faces = @()
+                    predictions = @()
+                }
+            }
 
-                        # create standardized description object structure
-                        $standardDesc = [PSCustomObject]@{
-                            has_explicit_content = [bool]$DbResult.has_explicit_content
-                            has_nudity = [bool]$DbResult.has_nudity
-                            picture_type = if ($DbResult.picture_type) { $DbResult.picture_type } else { '' }
-                            overall_mood_of_image = if ($DbResult.overall_mood_of_image) { $DbResult.overall_mood_of_image } else { '' }
-                            style_type = if ($DbResult.style_type) { $DbResult.style_type } else { '' }
-                            keywords = if ($DbResult.description_keywords) {
-                                try {
-                                    $DbResult.description_keywords |
-                                        Microsoft.PowerShell.Utility\ConvertFrom-Json
-                                } catch {
-                                    @()
-                                }
-                            } else { @() }
-                        }
+            # Build description hashtable
+            $descriptionData = if ($DbResult.description_json) {
+                try {
+                    $descObj = $DbResult.description_json |
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json
 
-                        # add optional description content properties if available
-                        if ($descObj.PSObject.Properties['description']) {
-                            $standardDesc | Microsoft.PowerShell.Utility\Add-Member -MemberType NoteProperty -Name 'description' -Value $descObj.description
-                        }
-                        if ($descObj.PSObject.Properties['short_description'] -or $DbResult.short_description) {
-                            $standardDesc | Microsoft.PowerShell.Utility\Add-Member -MemberType NoteProperty -Name 'short_description' -Value ($descObj.short_description ?? $DbResult.short_description)
-                        }
-                        if ($descObj.PSObject.Properties['long_description'] -or $DbResult.long_description) {
-                            $standardDesc | Microsoft.PowerShell.Utility\Add-Member -MemberType NoteProperty -Name 'long_description' -Value ($descObj.long_description ?? $DbResult.long_description)
-                        }
-
-                        $standardDesc
-                    } catch {
-                        [PSCustomObject]@{
-                            has_explicit_content = [bool]$DbResult.has_explicit_content
-                            has_nudity = [bool]$DbResult.has_nudity
-                            short_description = if ($DbResult.short_description) { $DbResult.short_description } else { '' }
-                            long_description = if ($DbResult.long_description) { $DbResult.long_description } else { '' }
-                            picture_type = if ($DbResult.picture_type) { $DbResult.picture_type } else { '' }
-                            overall_mood_of_image = if ($DbResult.overall_mood_of_image) { $DbResult.overall_mood_of_image } else { '' }
-                            style_type = if ($DbResult.style_type) { $DbResult.style_type } else { '' }
-                            keywords = if ($DbResult.description_keywords) {
-                                try {
-                                    $DbResult.description_keywords |
-                                        Microsoft.PowerShell.Utility\ConvertFrom-Json
-                                } catch {
-                                    @()
-                                }
-                            } else { @() }
-                        }
+                    $desc = @{
+                        has_explicit_content = [bool]$DbResult.has_explicit_content
+                        has_nudity = [bool]$DbResult.has_nudity
+                        picture_type = if ($DbResult.picture_type) { $DbResult.picture_type } else { '' }
+                        overall_mood_of_image = if ($DbResult.overall_mood_of_image) { $DbResult.overall_mood_of_image } else { '' }
+                        style_type = if ($DbResult.style_type) { $DbResult.style_type } else { '' }
+                        keywords = if ($DbResult.description_keywords) {
+                            try {
+                                $DbResult.description_keywords |
+                                    Microsoft.PowerShell.Utility\ConvertFrom-Json
+                            } catch {
+                                @()
+                            }
+                        } else { @() }
                     }
-                } else {
-                    [PSCustomObject]@{
+
+                    # Add optional description content properties if available
+                    if ($descObj.PSObject.Properties['description']) {
+                        $desc['description'] = $descObj.description
+                    }
+                    if ($descObj.PSObject.Properties['short_description'] -or $DbResult.short_description) {
+                        $desc['short_description'] = ($descObj.short_description ?? $DbResult.short_description)
+                    }
+                    if ($descObj.PSObject.Properties['long_description'] -or $DbResult.long_description) {
+                        $desc['long_description'] = ($descObj.long_description ?? $DbResult.long_description)
+                    }
+
+                    $desc
+                } catch {
+                    @{
                         has_explicit_content = [bool]$DbResult.has_explicit_content
                         has_nudity = [bool]$DbResult.has_nudity
                         short_description = if ($DbResult.short_description) { $DbResult.short_description } else { '' }
@@ -1296,58 +1266,68 @@ function Find-IndexedImage {
                         } else { @() }
                     }
                 }
-                scenes      = if ($DbResult.scenes_json) {
-                    try {
-                        $scenesObj = $DbResult.scenes_json |
-                            Microsoft.PowerShell.Utility\ConvertFrom-Json
-
-                        # create standardized scenes object structure
-                        [PSCustomObject]@{
-                            success = if ($scenesObj.PSObject.Properties['success']) {
-                                $scenesObj.success
-                            } else {
-                                $true
-                            }
-                            scene = if ($scenesObj.PSObject.Properties['scene']) {
-                                $scenesObj.scene
-                            } else {
-                                $DbResult.scene_label ?? 'unknown'
-                            }
-                            label = if ($scenesObj.PSObject.Properties['label']) {
-                                $scenesObj.label
-                            } else {
-                                $DbResult.scene_label ?? $scenesObj.scene ?? 'unknown'
-                            }
-                            confidence = if ($scenesObj.PSObject.Properties['confidence']) {
-                                $scenesObj.confidence
-                            } else {
-                                $DbResult.scene_confidence ?? 0.0
-                            }
-                            confidence_percentage = if ($scenesObj.PSObject.Properties['confidence_percentage']) {
-                                $scenesObj.confidence_percentage
-                            } elseif ($DbResult.scene_confidence_percentage) {
-                                $DbResult.scene_confidence_percentage
-                            } else {
-                                ($DbResult.scene_confidence ?? 0.0) * 100
-                            }
-                            processed_at = if ($scenesObj.PSObject.Properties['processed_at']) {
-                                $scenesObj.processed_at
-                            } else {
-                                $DbResult.scene_processed_at
-                            }
+            } else {
+                @{
+                    has_explicit_content = [bool]$DbResult.has_explicit_content
+                    has_nudity = [bool]$DbResult.has_nudity
+                    short_description = if ($DbResult.short_description) { $DbResult.short_description } else { '' }
+                    long_description = if ($DbResult.long_description) { $DbResult.long_description } else { '' }
+                    picture_type = if ($DbResult.picture_type) { $DbResult.picture_type } else { '' }
+                    overall_mood_of_image = if ($DbResult.overall_mood_of_image) { $DbResult.overall_mood_of_image } else { '' }
+                    style_type = if ($DbResult.style_type) { $DbResult.style_type } else { '' }
+                    keywords = if ($DbResult.description_keywords) {
+                        try {
+                            $DbResult.description_keywords |
+                                Microsoft.PowerShell.Utility\ConvertFrom-Json
+                        } catch {
+                            @()
                         }
-                    } catch {
-                        [PSCustomObject]@{
-                            success = $true
-                            scene = $DbResult.scene_label ?? 'unknown'
-                            label = $DbResult.scene_label ?? 'unknown'
-                            confidence = $DbResult.scene_confidence ?? 0.0
-                            confidence_percentage = $DbResult.scene_confidence_percentage ?? (($DbResult.scene_confidence ?? 0.0) * 100)
-                            processed_at = $DbResult.scene_processed_at
+                    } else { @() }
+                }
+            }
+
+            # Build scenes hashtable
+            $scenesData = if ($DbResult.scenes_json) {
+                try {
+                    $scenesObj = $DbResult.scenes_json |
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json
+
+                    @{
+                        success = if ($scenesObj.PSObject.Properties['success']) {
+                            $scenesObj.success
+                        } else {
+                            $true
+                        }
+                        scene = if ($scenesObj.PSObject.Properties['scene']) {
+                            $scenesObj.scene
+                        } else {
+                            $DbResult.scene_label ?? 'unknown'
+                        }
+                        label = if ($scenesObj.PSObject.Properties['label']) {
+                            $scenesObj.label
+                        } else {
+                            $DbResult.scene_label ?? $scenesObj.scene ?? 'unknown'
+                        }
+                        confidence = if ($scenesObj.PSObject.Properties['confidence']) {
+                            $scenesObj.confidence
+                        } else {
+                            $DbResult.scene_confidence ?? 0.0
+                        }
+                        confidence_percentage = if ($scenesObj.PSObject.Properties['confidence_percentage']) {
+                            $scenesObj.confidence_percentage
+                        } elseif ($DbResult.scene_confidence_percentage) {
+                            $DbResult.scene_confidence_percentage
+                        } else {
+                            ($DbResult.scene_confidence ?? 0.0) * 100
+                        }
+                        processed_at = if ($scenesObj.PSObject.Properties['processed_at']) {
+                            $scenesObj.processed_at
+                        } else {
+                            $DbResult.scene_processed_at
                         }
                     }
-                } else {
-                    [PSCustomObject]@{
+                } catch {
+                    @{
                         success = $true
                         scene = $DbResult.scene_label ?? 'unknown'
                         label = $DbResult.scene_label ?? 'unknown'
@@ -1356,66 +1336,56 @@ function Find-IndexedImage {
                         processed_at = $DbResult.scene_processed_at
                     }
                 }
-                objects     = if ($DbResult.objects_json) {
-                    try {
-                        $objectsObj = $DbResult.objects_json |
-                            Microsoft.PowerShell.Utility\ConvertFrom-Json
+            } else {
+                @{
+                    success = $true
+                    scene = $DbResult.scene_label ?? 'unknown'
+                    label = $DbResult.scene_label ?? 'unknown'
+                    confidence = $DbResult.scene_confidence ?? 0.0
+                    confidence_percentage = $DbResult.scene_confidence_percentage ?? (($DbResult.scene_confidence ?? 0.0) * 100)
+                    processed_at = $DbResult.scene_processed_at
+                }
+            }
 
-                        # create standardized objects structure
-                        [PSCustomObject]@{
-                            count = if ($objectsObj.PSObject.Properties['count']) {
-                                $objectsObj.count
-                            } else {
-                                $DbResult.objects_count
-                            }
-                            objects = if ($objectsObj.PSObject.Properties['objects']) {
-                                $objectsObj.objects
-                            } elseif ($DbResult.objects_list) {
-                                try {
-                                    $DbResult.objects_list |
-                                        Microsoft.PowerShell.Utility\ConvertFrom-Json
-                                } catch {
-                                    @()
-                                }
-                            } else {
+            # Build objects hashtable
+            $objectsData = if ($DbResult.objects_json) {
+                try {
+                    $objectsObj = $DbResult.objects_json |
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json
+
+                    @{
+                        count = if ($objectsObj.PSObject.Properties['count']) {
+                            $objectsObj.count
+                        } else {
+                            $DbResult.objects_count
+                        }
+                        objects = if ($objectsObj.PSObject.Properties['objects']) {
+                            $objectsObj.objects
+                        } elseif ($DbResult.objects_list) {
+                            try {
+                                $DbResult.objects_list |
+                                    Microsoft.PowerShell.Utility\ConvertFrom-Json
+                            } catch {
                                 @()
                             }
-                            object_counts = if ($objectsObj.PSObject.Properties['object_counts']) {
-                                $objectsObj.object_counts
-                            } elseif ($DbResult.object_counts) {
-                                try {
-                                    $DbResult.object_counts |
-                                        Microsoft.PowerShell.Utility\ConvertFrom-Json
-                                } catch {
-                                    @{}
-                                }
-                            } else {
+                        } else {
+                            @()
+                        }
+                        object_counts = if ($objectsObj.PSObject.Properties['object_counts']) {
+                            $objectsObj.object_counts
+                        } elseif ($DbResult.object_counts) {
+                            try {
+                                $DbResult.object_counts |
+                                    Microsoft.PowerShell.Utility\ConvertFrom-Json
+                            } catch {
                                 @{}
                             }
-                        }
-                    } catch {
-                        [PSCustomObject]@{
-                            count = $DbResult.objects_count
-                            objects = if ($DbResult.objects_list) {
-                                try {
-                                    $DbResult.objects_list |
-                                        Microsoft.PowerShell.Utility\ConvertFrom-Json
-                                } catch {
-                                    @()
-                                }
-                            } else { @() }
-                            object_counts = if ($DbResult.object_counts) {
-                                try {
-                                    $DbResult.object_counts |
-                                        Microsoft.PowerShell.Utility\ConvertFrom-Json
-                                } catch {
-                                    @{}
-                                }
-                            } else { @{} }
+                        } else {
+                            @{}
                         }
                     }
-                } else {
-                    [PSCustomObject]@{
+                } catch {
+                    @{
                         count = $DbResult.objects_count
                         objects = if ($DbResult.objects_list) {
                             try {
@@ -1435,11 +1405,64 @@ function Find-IndexedImage {
                         } else { @{} }
                     }
                 }
+            } else {
+                @{
+                    count = $DbResult.objects_count
+                    objects = if ($DbResult.objects_list) {
+                        try {
+                            $DbResult.objects_list |
+                                Microsoft.PowerShell.Utility\ConvertFrom-Json
+                        } catch {
+                            @()
+                        }
+                    } else { @() }
+                    object_counts = if ($DbResult.object_counts) {
+                        try {
+                            $DbResult.object_counts |
+                                Microsoft.PowerShell.Utility\ConvertFrom-Json
+                        } catch {
+                            @{}
+                        }
+                    } else { @{} }
+                }
             }
+
+            # Create efficient .NET ImageSearchResult object with cached properties (no file system calls)
+            # $result = [GenXdev.Helpers.ImageSearchResult]::CreateWithCachedProperties(
+            #     $imagePath,
+            #     $DbResult.width,
+            #     $DbResult.height,
+            #     [System.Collections.Hashtable]$peopleData,
+            #     [System.Collections.Hashtable]$objectsData,
+            #     [System.Collections.Hashtable]$metadataObject,
+            #     [System.Collections.Hashtable]$descriptionData,
+            #     [System.Collections.Hashtable]$scenesData,
+            #     $keywords,
+            #     $null,  # fileSize - not available from database
+            #     $null   # lastWriteTime - not available from database
+            # )
+            $result = @{
+                Path              = $imagePath
+                Width             = $DbResult.width
+                Height            = $DbResult.height
+                People            = $peopleData
+                Objects           = $objectsData
+                Metadata          = $metadataObject
+                Description       = $descriptionData
+                Scenes            = $scenesData
+                Keywords          = $keywords
+                FileSize          = $DbResult.file_size
+                LastWriteTime     = $DbResult.last_write_time
+            }
+
+            # Apply proper type name and return formatted object
+            # $psObject = [System.Management.Automation.PSObject]::AsPSObject($result)
+            # $psObject.TypeNames.Insert(0, "GenXdev.Helpers.ImageSearchResult")
+            return $result
         }
 
-        # helper function to apply confidence filtering to image objects (matching Find-Image behavior)
-        function Apply-ConfidenceFiltering {
+    # helper function to apply confidence filtering to image objects (matching Find-Image behavior)
+    function Invoke-ConfidenceFiltering {
             param(
                 [Parameter(Mandatory)]
                 $ImageObject,
@@ -1447,19 +1470,17 @@ function Find-IndexedImage {
                 [double] $MinConfidenceRatio
             )
 
-            $confidenceMatch = $false
+            $confidenceMatch = $null -ne $MinConfidenceRatio;
 
             # filter scenes by confidence - modify the scenes object directly
-            if ($null -ne $ImageObject.scenes -and $null -ne $ImageObject.scenes.confidence) {
+            if ($null -ne $confidenceMatch -and
+                $null -ne $ImageObject.scenes -and
+                $null -ne $ImageObject.scenes.confidence) {
+
                 if ($ImageObject.scenes.confidence -ge $MinConfidenceRatio) {
                     $confidenceMatch = $true
-
-                    # output scene confidence match for debugging purposes
-                    Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Confidence filtering - Scene match: " +
-                        "scene confidence $($ImageObject.scenes.confidence) >= " +
-                        "minimum $MinConfidenceRatio for image $($ImageObject.path)")
                 } else {
+                    $confidenceMatch = $false
                     # filter out the scene data by setting it to default
                     $ImageObject.scenes = [PSCustomObject]@{
                         success = $false
@@ -1469,32 +1490,21 @@ function Find-IndexedImage {
                         confidence_percentage = 0.0
                         processed_at = $null
                     }
-
-                    # output scene confidence rejection for debugging purposes
-                    Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Confidence filtering - Scene filtered out: " +
-                        "scene confidence below minimum $MinConfidenceRatio for image $($ImageObject.path)")
                 }
-            }
+            } else  { $confidenceMatch = $true }
 
             # filter people by confidence - remove people predictions below minimum threshold
-            if ($null -ne $ImageObject.people -and $null -ne $ImageObject.people.predictions -and $ImageObject.people.predictions.Count -gt 0) {
+            $confidenceMatch = $null -ne $MinConfidenceRatio;
+            if ($null -ne $confidenceMatch -and
+            $null -ne $ImageObject.people -and
+            $null -ne $ImageObject.people.predictions -and
+            $ImageObject.people.predictions.Count -gt 0) {
+
                 $filteredPredictions = @()
                 foreach ($prediction in $ImageObject.people.predictions) {
                     if ($null -ne $prediction.confidence -and $prediction.confidence -ge $MinConfidenceRatio) {
                         $filteredPredictions += $prediction
                         $confidenceMatch = $true
-
-                        # output people confidence match for debugging purposes
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Confidence filtering - People match: " +
-                            "person '$($prediction.label)' confidence $($prediction.confidence) >= " +
-                            "minimum $MinConfidenceRatio for image $($ImageObject.path)")
-                    } else {
-                        # output people confidence rejection for debugging purposes
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Confidence filtering - Person filtered out: " +
-                            "'$($prediction.label)' confidence below minimum $MinConfidenceRatio for image $($ImageObject.path)")
                     }
                 }
                 $ImageObject.people.predictions = $filteredPredictions
@@ -1502,10 +1512,15 @@ function Find-IndexedImage {
 
                 # update faces array to match filtered predictions
                 $ImageObject.people.faces = @($filteredPredictions | Microsoft.PowerShell.Core\ForEach-Object { $_.label })
-            }
+            } else  { $confidenceMatch = $true }
 
             # filter objects by confidence - remove object predictions below minimum threshold
-            if ($null -ne $ImageObject.objects -and $null -ne $ImageObject.objects.objects -and $ImageObject.objects.objects.Count -gt 0) {
+            $confidenceMatch = $null -ne $MinConfidenceRatio;
+            if ($null -ne $confidenceMatch -and
+                $null -ne $ImageObject.objects -and
+                $null -ne $ImageObject.objects.objects -and
+                $ImageObject.objects.objects.Count -gt 0) {
+
                 $filteredObjects = @()
                 $filteredCounts = @{}
 
@@ -1520,17 +1535,6 @@ function Find-IndexedImage {
                         } else {
                             $filteredCounts[$obj.label] = 1
                         }
-
-                        # output object confidence match for debugging purposes
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Confidence filtering - Object match: " +
-                            "object '$($obj.label)' confidence $($obj.confidence) >= " +
-                            "minimum $MinConfidenceRatio for image $($ImageObject.path)")
-                    } else {
-                        # output object confidence rejection for debugging purposes
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Confidence filtering - Object filtered out: " +
-                            "'$($obj.label)' confidence below minimum $MinConfidenceRatio for image $($ImageObject.path)")
                     }
                 }
 
@@ -1546,7 +1550,7 @@ function Find-IndexedImage {
         # determine database file path if not provided
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName 'GenXdev.AI\Get-ImageDatabasePath' `
+            -FunctionName 'GenXdev.AI\Get-ImageIndexPath' `
             -DefaultValues (
             Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local `
@@ -1554,7 +1558,7 @@ function Find-IndexedImage {
         )
 
         # retrieve the database path
-        $DatabaseFilePath = GenXdev.AI\Get-ImageDatabasePath @params
+        $DatabaseFilePath = GenXdev.AI\Get-ImageIndexPath @params
 
         # validate database path exists
         if ($null -eq $DatabaseFilePath) {
@@ -1568,7 +1572,6 @@ function Find-IndexedImage {
             "Using image database: $DatabaseFilePath"
         )
 
-        # helper function to convert powershell wildcards to sqlite like patterns
         function ConvertTo-SqliteLikePattern {
             param(
                 [string]$Pattern,
@@ -1576,26 +1579,26 @@ function Find-IndexedImage {
             )
             $escaped = $Pattern
 
-            # add wildcards if requested and none exist
-            if ($ForceWildcards -and ($escaped.indexOfAny(@('*', '?')) -lt 0)) {
-
+            # Add wildcards if requested and none exist
+            if ($ForceWildcards -and ($escaped.IndexOfAny(@('*', '?')) -lt 0)) {
                 $escaped = "*$escaped*"
             }
 
-            # escape literal square brackets first
+            # Escape literal square brackets first
             $escaped = $escaped.Replace('[', '[[]')
 
-            # escape literal percent signs
+            # Escape literal percent signs
             $escaped = $escaped.Replace('%', '[%]')
 
-            # escape literal underscores
+            # Escape literal underscores
             $escaped = $escaped.Replace('_', '[_]')
 
-            # convert * to % for zero or more characters
+            # Convert * to % for zero or more characters
             $escaped = $escaped.Replace('*', '%')
 
-            # convert ? to _ for exactly one character
+            # Convert ? to _ for exactly one character
             $escaped = $escaped.Replace('?', '_')
+
             return $escaped
         }
 
@@ -2362,27 +2365,21 @@ function Find-IndexedImage {
             foreach ($dbResult in $dbResults) {
                 $imageObj = ConvertTo-ImageObject -DbResult $dbResult -EmbedImages:$EmbedImages
 
-                # apply confidence filtering if MinConfidenceRatio is specified
+                # apply confidence filtering only if MinConfidenceRatio is explicitly specified
                 $includeImage = -not $done."$(($imageObj.Path))";
                 $done."$(($imageObj.Path))" = $true;
 
-                if ($null -ne $MinConfidenceRatio) {
-                    $confidenceMatch = Apply-ConfidenceFiltering -ImageObject $imageObj -MinConfidenceRatio $MinConfidenceRatio
+                if ($PSBoundParameters.ContainsKey('MinConfidenceRatio') -and $null -ne $MinConfidenceRatio) {
+                    $confidenceMatch = Invoke-ConfidenceFiltering -ImageObject $imageObj -MinConfidenceRatio $MinConfidenceRatio
                     if (-not $confidenceMatch) {
                         $includeImage = $false
-                        # output no confidence match for debugging purposes
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Confidence filtering - No confidence data meets minimum threshold " +
-                            "$MinConfidenceRatio for image $($imageObj.path)")
                     }
                 }
 
-                if ($includeImage -and ($hasSelectionCriteria -or (-not $NoRecurse) -or ([IO.Path]::GetDirectoryName($imageObj.Path) -eq $currentDir))) {
-
+                if ($includeImage) {
                     $Info.resultCount++
 
                     if ($null -eq $results) {
-
                         # initialize results collection if not already done
                         $results = [System.Collections.Generic.List[Object]]::new()
                     }
@@ -2398,26 +2395,21 @@ function Find-IndexedImage {
                 -Queries $sqlQuery `
                 -SqlParameters $parameters |
                 Microsoft.PowerShell.Core\ForEach-Object {
-                    $Info.resultCount++
                     $imageObj = ConvertTo-ImageObject -DbResult $_ -EmbedImages:$EmbedImages
 
-                    # apply confidence filtering if MinConfidenceRatio is specified
+                    # apply confidence filtering only if MinConfidenceRatio is explicitly specified
                     $includeImage = -not $done."$(($imageObj.Path))";
                     $done."$(($imageObj.Path))" = $true;
 
-                    if ($null -ne $MinConfidenceRatio) {
-                        $confidenceMatch = Apply-ConfidenceFiltering -ImageObject $imageObj -MinConfidenceRatio $MinConfidenceRatio
+                    if ($PSBoundParameters.ContainsKey('MinConfidenceRatio') -and $null -ne $MinConfidenceRatio) {
+                        $confidenceMatch = Invoke-ConfidenceFiltering -ImageObject $imageObj -MinConfidenceRatio $MinConfidenceRatio
                         if (-not $confidenceMatch) {
                             $includeImage = $false
-                            # output no confidence match for debugging purposes
-                            Microsoft.PowerShell.Utility\Write-Verbose (
-                                "Confidence filtering - No confidence data meets minimum threshold " +
-                                "$MinConfidenceRatio for image $($imageObj.path)")
                         }
                     }
 
-                    if ($includeImage -and ($hasSelectionCriteria -or (-not $NoRecurse)-or ([IO.Path]::GetDirectoryName($imageObj.Path) -eq $currentDir))) {
-
+                    if ($includeImage) {
+                        # Add to results collection - don't convert here for performance
                         Microsoft.PowerShell.Utility\Write-Output $imageObj
                         $info.resultCount++
                     }
@@ -2426,7 +2418,7 @@ function Find-IndexedImage {
             $queryTime = (Microsoft.PowerShell.Utility\Get-Date) - $startTime
             Microsoft.PowerShell.Utility\Write-Verbose (
                 'Index-optimized database query completed in ' +
-                "$($queryTime.TotalMilliseconds)ms, streamed $resultCount " +
+                "$($queryTime.TotalMilliseconds)ms, streamed $($info.resultCount) " +
                 'results (no table scans)'
             )
         }
@@ -2589,13 +2581,9 @@ function Find-IndexedImage {
             # show the results in browser gallery
             GenXdev.AI\Show-FoundImagesInBrowser @galleryParams
 
-            # return results if passthru is requested
+            # return results if passthru is requested - objects already properly formatted
             if ($PassThru) {
-
-                $results | Microsoft.PowerShell.Core\ForEach-Object {
-
-                    Microsoft.PowerShell.Utility\Write-Output $_
-                }
+                Microsoft.PowerShell.Utility\Write-Output $results
             }
         }
     }

@@ -99,7 +99,7 @@ function Start-GenXdevMCPServer {
                     }
                     serverInfo      = @{
                         name    = 'GenXdev-PowerShell-MCP-Server'
-                        version = '1.216.2025'
+                        version = '1.218.2025'
                     }
                 }
             }
@@ -197,7 +197,7 @@ function Start-GenXdevMCPServer {
                             }
                             serverInfo      = @{
                                 name    = 'GenXdev-PowerShell-MCP-Server'
-                                version = '1.216.2025'
+                                version = '1.218.2025'
                             }
                         }
                     }
@@ -728,6 +728,23 @@ function Start-GenXdevMCPServer {
     # Default exposed cmdlets if none provided
     if ($ExposedCmdLets.Count -eq 0) {
         $ExposedCmdLets = @(
+             [GenXdev.Helpers.ExposedCmdletDefinition]@{
+                Name                                 = 'Show-GenXDevCmdlets'
+                Description                          = "Shows GenXdev PowerShell modules with their cmdlets and aliases, allow it to take a few seconds or more. Don't invoke this function without parameters, that would be too much data. Wildcards allowed like * and ?"
+                AllowedParams                        = @(
+                    'CmdletName=string',
+                    'BaseModuleName=string',
+                    'NoLocal',
+                    'OnlyPublished',
+                    'FromScripts',
+                    'OnlyReturnModuleNames'
+                )
+                DontShowDuringConfirmationParamNames = @()
+                ForcedParams                         = @()
+                OutputText                           = $true
+                JsonDepth                            = 5
+                Confirm                              = $false
+            },
             [GenXdev.Helpers.ExposedCmdletDefinition]@{
                 Name                                 = 'Get-GenXDevCmdlets'
                 Description                          = "Gets GenXdev PowerShell modules with their cmdlets and aliases, allow it to take a few seconds or more. Don't invoke this function without parameters, that would be too much data. Wildcards allowed like * and ?"

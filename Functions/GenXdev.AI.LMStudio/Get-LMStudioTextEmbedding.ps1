@@ -433,7 +433,7 @@ function Get-LMStudioTextEmbedding {
 
     process {
 
-        $InputObject | ForEach-Object -ErrorAction SilentlyContinue {
+        $InputObject | Microsoft.PowerShell.Core\ForEach-Object -ErrorAction SilentlyContinue {
             $text = "$PSItem";
             if ([string]::IsNullOrWhiteSpace($text)) { return }
 

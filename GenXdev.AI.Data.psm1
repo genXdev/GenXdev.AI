@@ -11,4 +11,4 @@ if ($major -ne 10) {
 }
 
 
-. "$PSScriptRoot\Functions\GenXdev.AI.Data\Export-ImageDatabase.ps1"
+. "$PSScriptRoot\Functions\GenXdev.AI.Data\Export-ImageIndex.ps1"

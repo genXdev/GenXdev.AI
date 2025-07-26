@@ -1,10 +1,10 @@
 ###############################################################################
-Pester\Describe 'Set-ImageDatabasePath' {
+Pester\Describe 'Get-ImageIndexPath' {
 
     Pester\It 'should pass PSScriptAnalyzer rules' {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Set-ImageDatabasePath.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Get-ImageIndexPath.ps1"
 
         # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `

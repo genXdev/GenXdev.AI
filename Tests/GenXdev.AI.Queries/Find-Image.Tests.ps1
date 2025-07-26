@@ -43,7 +43,7 @@ $message
 
         GenXdev.Windows\Set-WindowPosition -Left -Monitor 0
         GenXdev.AI\Update-AllImageMetaData -ImageDirectories $tmpPath -ShowWindow
-        Export-ImageDatabase -DatabaseFilePath $dbPath -ImageDirectories $tmpPath -ShowWindow
+        Export-ImageIndex -DatabaseFilePath $dbPath -ImageDirectories $tmpPath -ShowWindow
 
         $resultsFindImage = Find-Image -ImageDirectories @($tmpPath) | ConvertTo-HashTable | ConvertTo-Json -Depth 20
         $resultsFindIndexedImage = Find-IndexedImage -ImageDirectories @($tmpPath) -DatabaseFilePath $dbPath | ConvertTo-HashTable | ConvertTo-Json -Depth 20

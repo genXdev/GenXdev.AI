@@ -1,10 +1,10 @@
-﻿###############################################################################
-Pester\Describe 'Export-ImageDatabase' {
+###############################################################################
+Pester\Describe 'Export-ImageIndex' {
 
     Pester\It 'should pass PSScriptAnalyzer rules' {
 
         # get the script path for analysis
-        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Export-ImageDatabase.ps1"
+        $scriptPath = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\Functions\GenXdev.AI.Queries\Export-ImageIndex.ps1"
 
         # run analyzer with explicit settings
         $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `

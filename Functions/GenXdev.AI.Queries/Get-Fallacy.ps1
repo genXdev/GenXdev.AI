@@ -710,7 +710,7 @@ Return nothing.
     process {
 
         # iterate through each text part provided for analysis
-        $InputObject | ForEach-Object -ErrorAction SilentlyContinue {
+        $InputObject | Microsoft.PowerShell.Core\ForEach-Object -ErrorAction SilentlyContinue {
             $textPart = "$PSItem";
             if ([string]::IsNullOrWhiteSpace($textPart)) { return }
 

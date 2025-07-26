@@ -13,10 +13,10 @@ files, downloads, OneDrive, and personal pictures folders.
 The function processes images by going through each directory and processing files
 individually. DeepStack functions (faces, objects, scenes) are performed first,
 followed by keyword and description generation. This ensures optimal processing
-order and outputs structured objects compatible with Export-ImageDatabase.
+order and outputs structured objects compatible with Export-ImageIndex.
 
 This allows for structured data output for pipeline operations like:
-Update-AllImageMetaData | Export-ImageDatabase
+Update-AllImageMetaData | Export-ImageIndex
 
 .PARAMETER ImageDirectories
 Array of directory paths to process for image keyword and face recognition

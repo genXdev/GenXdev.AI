@@ -61,7 +61,7 @@ Set-AIImageCollection -ImageDirectories @("~\Pictures")
 
 # update
 Update-AllAIMetadata -ShowWindow
-Export-ImageDatabase
+Export-ImageIndex
 
 Find-IndexedImage -HasNudity -HasExplicitContent -ShowInBrowser -InterActive
 

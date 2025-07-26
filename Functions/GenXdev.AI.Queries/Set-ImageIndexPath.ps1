@@ -30,29 +30,29 @@ When specified, stores the setting only in persistent preferences without
 affecting the current session setting.
 
 .EXAMPLE
-Set-ImageDatabasePath -DatabaseFilePath "C:\MyProject\images.db"
+Set-ImageIndexPath -DatabaseFilePath "C:\MyProject\images.db"
 
 Sets the image database path persistently in preferences.
 
 .EXAMPLE
-Set-ImageDatabasePath "D:\Data\custom_images.db"
+Set-ImageIndexPath "D:\Data\custom_images.db"
 
 Sets the image database path persistently in preferences using positional
 parameter.
 
 .EXAMPLE
-Set-ImageDatabasePath -DatabaseFilePath "C:\Temp\temp_images.db" -SessionOnly
+Set-ImageIndexPath -DatabaseFilePath "C:\Temp\temp_images.db" -SessionOnly
 
 Sets the image database path only for the current session (Global variables).
 
 .EXAMPLE
-Set-ImageDatabasePath -ClearSession
+Set-ImageIndexPath -ClearSession
 
 Clears the session image database path setting (Global variable) without
 affecting persistent preferences.
 #>
 ################################################################################
-function Set-ImageDatabasePath {
+function Set-ImageIndexPath {
 
     [CmdletBinding(SupportsShouldProcess)]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
@@ -176,10 +176,10 @@ function Set-ImageDatabasePath {
                 )) {
 
                 # clear the global variable
-                $Global:ImageDatabasePath = $null
+                $Global:ImageIndexPath = $null
 
                 Microsoft.PowerShell.Utility\Write-Verbose (
-                    'Cleared session setting: ImageDatabasePath'
+                    'Cleared session setting: ImageIndexPath'
                 )
             }
             return
@@ -199,7 +199,7 @@ function Set-ImageDatabasePath {
                 )) {
 
                 # set global variable for session-only storage
-                $Global:ImageDatabasePath = $DatabaseFilePath
+                $Global:ImageIndexPath = $DatabaseFilePath
 
                 Microsoft.PowerShell.Utility\Write-Verbose (
                     "Set session-only image database path: $DatabaseFilePath"
@@ -220,13 +220,13 @@ function Set-ImageDatabasePath {
 
             # output verbose message about setting database path
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Setting ImageDatabasePath preference to: $DatabaseFilePath"
+                "Setting ImageIndexPath preference to: $DatabaseFilePath"
             )
 
             # store the configuration in module preferences for persistence
             $null = GenXdev.Data\Set-GenXdevPreference `
                 -PreferencesDatabasePath $PreferencesDatabasePath `
-                -Name 'ImageDatabasePath' `
+                -Name 'ImageIndexPath' `
                 -Value $DatabaseFilePath
         }
     }

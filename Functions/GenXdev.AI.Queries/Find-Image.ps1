@@ -392,9 +392,6 @@ Find-Image -Scenes "beach" -MinConfidenceRatio 0.75 -ImageDirectories "C:\Photos
 Searches for beach scenes with confidence level of 75% or higher and filters people, scenes, and objects data by confidence.
 #>
 ###############################################################################
-
-
-
 function Find-Image {
 
     [CmdletBinding()]
@@ -1147,7 +1144,13 @@ function Find-Image {
             param($item)
 
             # get full path of current image file being processed
-            $image = $PSItem.FullName
+            $image = $item
+            if ($image -is [IO.FileInfo]) { $image = $item.FullName }
+            # skip if image path is null or empty
+            if ([string]::IsNullOrEmpty($image)) {
+                Microsoft.PowerShell.Utility\Write-Warning "Skipping null or empty image path"
+                return
+            }
 
             # output current image being processed for debugging purposes
             Microsoft.PowerShell.Utility\Write-Verbose (
@@ -1335,7 +1338,7 @@ function Find-Image {
                 (($null -ne $MetaFocalLength) -and ($MetaFocalLength.Count -gt 0)) -or
                 (($null -ne $MetaDateTaken) -and ($MetaDateTaken.Count -gt 0)) -or
                 (($null -ne $GeoLocation) -and ($GeoLocation.Count -eq 2)) -or
-                ($null -ne $MinConfidenceRatio)
+                ($PSBoundParameters.ContainsKey('MinConfidenceRatio'))
 
             # assume match if no search criteria specified (return all images with metadata)
             # if we have search criteria, start with true and set to false if any criteria fails (AND logic)
@@ -1542,20 +1545,14 @@ function Find-Image {
                 }
             }
 
-            # perform confidence filtering if minimum confidence ratio is specified
-            if ($null -ne $MinConfidenceRatio) {
+            # perform confidence filtering only if minimum confidence ratio is explicitly specified
+            if ($PSBoundParameters.ContainsKey('MinConfidenceRatio') -and $null -ne $MinConfidenceRatio) {
                 $confidenceMatch = $false  # Start with false, set true if any confidence meets minimum threshold
 
                 # filter scenes by confidence - remove scenes below minimum threshold
                 if ($null -ne $scenesFound -and $null -ne $scenesFound.confidence) {
                     if ($scenesFound.confidence -ge $MinConfidenceRatio) {
                         $confidenceMatch = $true
-
-                        # output scene confidence match for debugging purposes
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Confidence filtering - Scene match: " +
-                            "scene confidence $($scenesFound.confidence) >= " +
-                            "minimum $MinConfidenceRatio for image $image")
                     } else {
                         # filter out the scene data by setting it to default
                         $scenesFound = @{
@@ -1564,11 +1561,6 @@ function Find-Image {
                             label = 'unknown'
                             confidence = 0.0
                         }
-
-                        # output scene confidence rejection for debugging purposes
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Confidence filtering - Scene filtered out: " +
-                            "scene confidence below minimum $MinConfidenceRatio for image $image")
                     }
                 }
 
@@ -1579,17 +1571,6 @@ function Find-Image {
                         if ($null -ne $prediction.confidence -and $prediction.confidence -ge $MinConfidenceRatio) {
                             $filteredPredictions += $prediction
                             $confidenceMatch = $true
-
-                            # output people confidence match for debugging purposes
-                            Microsoft.PowerShell.Utility\Write-Verbose (
-                                "Confidence filtering - People match: " +
-                                "person '$($prediction.label)' confidence $($prediction.confidence) >= " +
-                                "minimum $MinConfidenceRatio for image $image")
-                        } else {
-                            # output people confidence rejection for debugging purposes
-                            Microsoft.PowerShell.Utility\Write-Verbose (
-                                "Confidence filtering - Person filtered out: " +
-                                "'$($prediction.label)' confidence below minimum $MinConfidenceRatio for image $image")
                         }
                     }
                     $peopleFound.predictions = $filteredPredictions
@@ -1615,17 +1596,6 @@ function Find-Image {
                             } else {
                                 $filteredCounts[$obj.label] = 1
                             }
-
-                            # output object confidence match for debugging purposes
-                            Microsoft.PowerShell.Utility\Write-Verbose (
-                                "Confidence filtering - Object match: " +
-                                "object '$($obj.label)' confidence $($obj.confidence) >= " +
-                                "minimum $MinConfidenceRatio for image $image")
-                        } else {
-                            # output object confidence rejection for debugging purposes
-                            Microsoft.PowerShell.Utility\Write-Verbose (
-                                "Confidence filtering - Object filtered out: " +
-                                "'$($obj.label)' confidence below minimum $MinConfidenceRatio for image $image")
                         }
                     }
 
@@ -1636,7 +1606,7 @@ function Find-Image {
 
                 # if no confidence match was found and MinConfidenceRatio is specified, skip this image
                 if (-not $confidenceMatch) {
-                    # output no confidence match for debugging purposes
+                    # skip the image when confidence filtering is enabled but no data meets threshold
                     Microsoft.PowerShell.Utility\Write-Verbose (
                         "Confidence filtering - No confidence data meets minimum threshold " +
                         "$MinConfidenceRatio for image $image")
@@ -2042,8 +2012,8 @@ function Find-Image {
                 if ($null -ne $standardizedOutput.people -and
                     -not $standardizedOutput.people.PSObject.Properties['predictions']) {
 
-                    # convert to PSCustomObject and add predictions array
-                    $standardizedOutput.people = [PSCustomObject]@{
+                    # convert to hashtable and add predictions array
+                    $standardizedOutput.people = @{
                         count = $standardizedOutput.people.count
                         faces = $standardizedOutput.people.faces
                         predictions = @()  # empty array for consistency
@@ -2054,8 +2024,8 @@ function Find-Image {
                 if ($null -ne $standardizedOutput.objects -and
                     -not $standardizedOutput.objects.PSObject.Properties['objects']) {
 
-                    # convert to PSCustomObject and add objects array
-                    $standardizedOutput.objects = [PSCustomObject]@{
+                    # convert to hashtable and add objects array
+                    $standardizedOutput.objects = @{
                         count = $standardizedOutput.objects.count
                         objects = if ($standardizedOutput.objects.objects) {
                             $standardizedOutput.objects.objects
@@ -2068,7 +2038,7 @@ function Find-Image {
 
                 # ensure scenes object has all required properties for consistency
                 if ($null -ne $standardizedOutput.scenes) {
-                    $standardizedOutput.scenes = [PSCustomObject]@{
+                    $standardizedOutput.scenes = @{
                         success = $standardizedOutput.scenes.success
                         scene = $standardizedOutput.scenes.scene
                         confidence = $standardizedOutput.scenes.confidence
@@ -2092,8 +2062,8 @@ function Find-Image {
 
                 # ensure description object has all required properties and consistent structure
                 if ($null -ne $standardizedOutput.description) {
-                    # create standardized description object structure
-                    $descObj = [PSCustomObject]@{
+                    # create standardized description hashtable structure
+                    $descObj = @{
                         has_explicit_content = if ($standardizedOutput.description.PSObject.Properties['has_explicit_content']) {
                             [bool]$standardizedOutput.description.has_explicit_content
                         } else {
@@ -2124,13 +2094,13 @@ function Find-Image {
 
                     # add description content if available
                     if ($standardizedOutput.description.PSObject.Properties['description']) {
-                        $descObj | Microsoft.PowerShell.Utility\Add-Member -MemberType NoteProperty -Name 'description' -Value $standardizedOutput.description.description
+                        $descObj['description'] = $standardizedOutput.description.description
                     }
                     if ($standardizedOutput.description.PSObject.Properties['short_description']) {
-                        $descObj | Microsoft.PowerShell.Utility\Add-Member -MemberType NoteProperty -Name 'short_description' -Value $standardizedOutput.description.short_description
+                        $descObj['short_description'] = $standardizedOutput.description.short_description
                     }
                     if ($standardizedOutput.description.PSObject.Properties['long_description']) {
-                        $descObj | Microsoft.PowerShell.Utility\Add-Member -MemberType NoteProperty -Name 'long_description' -Value $standardizedOutput.description.long_description
+                        $descObj['long_description'] = $standardizedOutput.description.long_description
                     }
 
                     $standardizedOutput.description = $descObj
@@ -2233,12 +2203,10 @@ function Find-Image {
             $InputObject | Microsoft.PowerShell.Utility\Write-Output
 
             # then clear InputObject and continue processing as if it wasn't set
-            $originalInputObject = $InputObject
             $InputObject = $null
 
             Microsoft.PowerShell.Utility\Write-Verbose (
-                "Append mode: Output ${originalInputObject.Count} objects, " +
-                "now processing search criteria"
+                "Append mode: Output input objects, now processing search criteria"
             )
         }
 
@@ -2397,7 +2365,8 @@ function Find-Image {
                             # output directly or add to results based on browser display setting
                             if (-not $ShowInBrowser) {
 
-                                Microsoft.PowerShell.Utility\Write-Output $_
+                                # Convert to formatted ImageSearchResult object
+                                $_  #| GenXdev.Helpers\ConvertTo-ImageSearchResult
                             }
                             else {
 
@@ -2450,11 +2419,8 @@ function Find-Image {
             # return results if passthru is requested for further processing
             if ($PassThru) {
 
-                # output each result object to pipeline
-                $results | Microsoft.PowerShell.Core\ForEach-Object {
-
-                    Microsoft.PowerShell.Utility\Write-Output $_
-                }
+                # output each result object to pipeline with formatting
+                $results | Microsoft.PowerShell.Core\ForEach-Object { $_ } # GenXdev.Helpers\ConvertTo-ImageSearchResult
             }
         }
     }

@@ -54,7 +54,7 @@ Dont use alternative settings stored in session for AI preferences like
 Language, Image collections, etc.
 
 .EXAMPLE
-Get-ImageDatabasePath -DatabaseFilePath "C:\\Temp\\mydb.db" `
+Get-ImageIndexPath -DatabaseFilePath "C:\\Temp\\mydb.db" `
     -ImageDirectories "C:\\Images" `
     -PathLike '%\\2024\\%' `
     -Language 'English' `
@@ -62,9 +62,9 @@ Get-ImageDatabasePath -DatabaseFilePath "C:\\Temp\\mydb.db" `
     -ForceIndexRebuild
 
 .EXAMPLE
-Get-ImageDatabasePath
+Get-ImageIndexPath
 #>
-function Get-ImageDatabasePath {
+function Get-ImageIndexPath {
 
     [CmdletBinding()]
     [OutputType([string])]
@@ -224,10 +224,10 @@ function Get-ImageDatabasePath {
             # first check global variable for database path (unless SkipSession
             # is specified)
             if ((-not $SkipSession) -and `
-                (-not [String]::IsNullOrWhiteSpace($Global:ImageDatabasePath))) {
+                (-not [String]::IsNullOrWhiteSpace($Global:ImageIndexPath))) {
 
                 # use global variable if available
-                $DatabaseFilePath = $Global:ImageDatabasePath
+                $DatabaseFilePath = $Global:ImageIndexPath
 
                 Microsoft.PowerShell.Utility\Write-Verbose (
                     "Using session image database path: $DatabaseFilePath"
@@ -240,7 +240,7 @@ function Get-ImageDatabasePath {
                     # retrieve database path from preferences
                     $preferencePath = GenXdev.Data\Get-GenXdevPreference `
                         -PreferencesDatabasePath $PreferencesDatabasePath `
-                        -Name 'ImageDatabasePath' `
+                        -Name 'ImageIndexPath' `
                         -DefaultValue $null `
                         -ErrorAction SilentlyContinue
 
@@ -328,7 +328,7 @@ function Get-ImageDatabasePath {
                     ($versionResult.Version -ne $SCHEMA_VERSION)) {
 
                     Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Schema version mismatch: found '$currentVersion', " +
+                        "Schema version mismatch: found '$($versionResult.Version)', " +
                         "required '$SCHEMA_VERSION'. Initialization required."
                     )
 
@@ -337,36 +337,101 @@ function Get-ImageDatabasePath {
                 else {
 
                     Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Schema version '$currentVersion' is compatible."
+                        "Schema version '$($versionResult.Version)' is compatible."
                     )
                 }
             }
             catch {
-                # if an error occurs during version check, trigger rebuild
-                throw $_
+                # check if the error is due to file being locked and try backup if NoFallback is not set
+                $isFileLocked = $_.Exception.Message -like "*database is locked*" -or
+                               $_.Exception.Message -like "*being used by another process*" -or
+                               $_.Exception.Message -like "*cannot access the file*"
 
-                $needsInitialization = $true
+                if ($isFileLocked -and (-not $NoFallback)) {
+
+                    # define backup file path
+                    $backupFilePath = "${DatabaseFilePath}.backup.db"
+
+                    if ([IO.File]::Exists($backupFilePath)) {
+
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Database file is locked, attempting to use backup: ${backupFilePath}"
+                        )
+
+                        try {
+                            # try to query the backup file version
+                            $versionResult = GenXdev.Data\Invoke-SQLiteQuery `
+                                -DatabaseFilePath $backupFilePath `
+                                -Queries 'SELECT version FROM ImageSchemaVersion WHERE id = 1' `
+                                -ErrorAction SilentlyContinue
+
+                            # if backup version is compatible, use it
+                            if (($null -ne $versionResult) -and `
+                                ($versionResult.Version -eq $SCHEMA_VERSION)) {
+
+                                Microsoft.PowerShell.Utility\Write-Verbose (
+                                    "Using backup database with compatible schema version '$($versionResult.Version)'"
+                                )
+
+                                # update the database path to use backup
+                                $DatabaseFilePath = $backupFilePath
+                            }
+                            else {
+
+                                Microsoft.PowerShell.Utility\Write-Verbose (
+                                    "Backup database schema version mismatch or missing, initialization required."
+                                )
+
+                                $needsInitialization = $true
+                            }
+                        }
+                        catch {
+
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                "Failed to access backup database, initialization required: $($_.Exception.Message)"
+                            )
+
+                            $needsInitialization = $true
+                        }
+                    }
+                    else {
+
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Database file is locked and no backup found, initialization required."
+                        )
+
+                        $needsInitialization = $true
+                    }
+                }
+                else {
+                    # if an error occurs during version check and it's not a file lock or NoFallback is set, trigger rebuild
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Database access error (NoFallback: ${NoFallback}): $($_.Exception.Message)"
+                    )
+
+                    $needsInitialization = $true
+                }
             }
         }
 
-        # if initialization is required, call Export-ImageDatabase to rebuild
+        # if initialization is required, call Export-ImageIndex to rebuild
         if ($needsInitialization) {
 
             try {
 
-                # copy parameter values for Export-ImageDatabase function call
+                # copy parameter values for Export-ImageIndex function call
                 $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
-                    -FunctionName 'GenXdev.AI\Export-ImageDatabase' `
+                    -FunctionName 'GenXdev.AI\Export-ImageIndex' `
                     -DefaultValues (
                     Microsoft.PowerShell.Utility\Get-Variable `
                         -Scope Local `
                         -ErrorAction SilentlyContinue
                 )
 
-                # call Export-ImageDatabase to initialize or rebuild the
+                # call Export-ImageIndex to initialize or rebuild the
                 # database
-                $null = GenXdev.AI\Export-ImageDatabase @params
+                $null = GenXdev.AI\Export-ImageIndex @params
 
                 return $DatabaseFilePath
             }

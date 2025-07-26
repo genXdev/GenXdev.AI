@@ -174,17 +174,17 @@ processes as if InputObject was not set. Allows appending search results to
 existing collections.
 
 .EXAMPLE
-Export-ImageDatabase -DatabaseFilePath "C:\Custom\Path\images.db" `
+Export-ImageIndex -DatabaseFilePath "C:\Custom\Path\images.db" `
     -ImageDirectories @("C:\Photos", "D:\Images") -EmbedImages
 
 .EXAMPLE
 indexcachedimages
 #>
 ###############################################################################
-function Export-ImageDatabase {
+function Export-ImageIndex {
 
     [CmdletBinding()]
-    [Alias('indexcachedimages', 'Inititalize-ImageDatabase', 'Recreate-ImageIndex')]
+    [Alias('indeximages')]
 
     param(
         ###############################################################################
@@ -548,13 +548,13 @@ function Export-ImageDatabase {
         # determine database file path if not provided
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName 'GenXdev.AI\Get-ImageDatabasePath' `
+            -FunctionName 'GenXdev.AI\Get-ImageIndexPath' `
             -DefaultValues (
             Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
                 -ErrorAction SilentlyContinue
         )
 
-        $DatabaseFilePath = GenXdev.AI\Get-ImageDatabasePath @params -NeverRebuild
+        $DatabaseFilePath = GenXdev.AI\Get-ImageIndexPath @params -NeverRebuild -NoFallback
 
         # retrieve configured image directories if not provided
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -635,6 +635,9 @@ function Export-ImageDatabase {
         $DatabaseFilePath = GenXdev.FileSystem\Expand-Path (
             $DatabaseFilePath
         ) -CreateDirectory -DeleteExistingFile -ErrorAction SilentlyContinue
+
+        # define backup file path for database
+        $DatabaseBackupFilePath = "${DatabaseFilePath}.backup.db"
 
         # check if the database file exists after expansion and handle backup
         if ([IO.File]::Exists($DatabaseFilePath)) {
@@ -1680,13 +1683,13 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
 
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
-                -FunctionName 'GenXdev.AI\Get-ImageDatabaseStats' `
+                -FunctionName 'GenXdev.AI\Get-ImageIndexStats' `
                 -DefaultValues (
                 Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
                     -ErrorAction SilentlyContinue
             )
 
-            GenXdev.AI\Get-ImageDatabaseStats @params |
+            GenXdev.AI\Get-ImageIndexStats @params |
                 Microsoft.PowerShell.Utility\Write-Output
         }
     }
