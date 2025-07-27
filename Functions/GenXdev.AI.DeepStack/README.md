@@ -11,7 +11,7 @@ This module provides PowerShell functions to interact with DeepStack's face reco
 ```text
 MIT License
 
-Copyright (c) [year] [fullname]
+Copyright (c) 2025 GenXdev
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,6 @@ Set-AIImageCollection -ImageDirectories @("~\Pictures")
 # update
 Update-AllAIMetadata -ShowWindow
 Export-ImageIndex
-
 Find-IndexedImage -HasNudity -HasExplicitContent -ShowInBrowser -InterActive
 
 # you can keep the output and reuse them

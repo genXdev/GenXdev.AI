@@ -71,8 +71,9 @@ Get-SimularMovieTitle -Movies "The Matrix","Inception" -OpenInImdb
 .EXAMPLE
 moremovietitle "The Matrix","Inception" -imdb
 #>
-function Get-SimularMovieTitle {
+function Get-SimularMovieTitles {
     [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
     param (
         #
         [Parameter(
