@@ -111,65 +111,65 @@ Update-Module
 ### GenXdev.AI
 | Command | Aliases | Description |
 | --- | --- | --- |
-| [Approve-NewTextFileContent](#approve-newtextfilecontent) |  | Interactive file content comparison and approval using WinMerge. |
-| [Convert-DotNetTypeToLLMType](#convert-dotnettypetollmtype) |  | Converts .NET type names to LLM (Language Model) type names. |
-| [ConvertTo-LMStudioFunctionDefinition](#convertto-lmstudiofunctiondefinition) |  | Converts PowerShell functions to LMStudio function definitions. |
-| [EnsureGithubCLIInstalled](#ensuregithubcliinstalled) |  | Ensures GitHub CLI is properly installed and configured on the system. |
-| [EnsurePaintNet](#ensurepaintnet) |  | Ensures Paint.NET is properly installed and accessible on the system. |
-| [EnsureWinMergeInstalled](#ensurewinmergeinstalled) |  | Ensures WinMerge is installed and available for file comparison operations. |
+| [Approve-NewTextFileContent](#approve-newtextfilecontent) | &nbsp; | Interactive file content comparison and approval using WinMerge. |
+| [Convert-DotNetTypeToLLMType](#convert-dotnettypetollmtype) | &nbsp; | Converts .NET type names to LLM (Language Model) type names. |
+| [ConvertTo-LMStudioFunctionDefinition](#convertto-lmstudiofunctiondefinition) | &nbsp; | Converts PowerShell functions to LMStudio function definitions. |
+| [EnsureGithubCLIInstalled](#ensuregithubcliinstalled) | &nbsp; | Ensures GitHub CLI is properly installed and configured on the system. |
+| [EnsurePaintNet](#ensurepaintnet) | &nbsp; | Ensures Paint.NET is properly installed and accessible on the system. |
+| [EnsureWinMergeInstalled](#ensurewinmergeinstalled) | &nbsp; | Ensures WinMerge is installed and available for file comparison operations. |
 | [GenerateMasonryLayoutHtml](#generatemasonrylayouthtml) | nometadata, onlypictures | Generates a responsive masonry layout HTML gallery from image data. |
-| [Get-AIDefaultLLMSettings](#get-aidefaultllmsettings) |  | Gets all available default LLM settings configurations for AI operations in GenXdev.AI. |
-| [Get-AILLMSettings](#get-aillmsettings) |  | Gets the LLM settings for AI operations in GenXdev.AI. |
-| [Get-CpuCore](#get-cpucore) |  | Calculates and returns the total number of logical CPU cores in the system. |
-| [Get-HasCapableGpu](#get-hascapablegpu) |  | Determines if a CUDA-capable GPU with sufficient memory is present. |
-| [Get-NumberOfCpuCores](#get-numberofcpucores) |  | Calculates and returns the total number of logical CPU cores in the system. |
+| [Get-AIDefaultLLMSettings](#get-aidefaultllmsettings) | &nbsp; | Gets all available default LLM settings configurations for AI operations in GenXdev.AI. |
+| [Get-AILLMSettings](#get-aillmsettings) | &nbsp; | Gets the LLM settings for AI operations in GenXdev.AI. |
+| [Get-CpuCore](#get-cpucore) | &nbsp; | Calculates and returns the total number of logical CPU cores in the system. |
+| [Get-HasCapableGpu](#get-hascapablegpu) | &nbsp; | Determines if a CUDA-capable GPU with sufficient memory is present. |
+| [Get-NumberOfCpuCores](#get-numberofcpucores) | &nbsp; | Calculates and returns the total number of logical CPU cores in the system. |
 | [Get-TextTranslation](#get-texttranslation) | translate | Translates text to another language using AI. |
-| [Get-VectorSimilarity](#get-vectorsimilarity) |  |  |
-| [Invoke-CommandFromToolCall](#invoke-commandfromtoolcall) |  | Executes a tool call function with validation and parameter filtering. |
+| [Get-VectorSimilarity](#get-vectorsimilarity) | &nbsp; |  |
+| [Invoke-CommandFromToolCall](#invoke-commandfromtoolcall) | &nbsp; | Executes a tool call function with validation and parameter filtering. |
 | [Invoke-LLMBooleanEvaluation](#invoke-llmbooleanevaluation) | equalstrue | Evaluates a statement using AI to determine if it's true or false. |
-| [Invoke-LLMQuery](#invoke-llmquery) | qllm, llm, invoke-lmstudioquery, qlms |  |
-| [Invoke-LLMStringListEvaluation](#invoke-llmstringlistevaluation) | getlist |  |
+| [Invoke-LLMQuery](#invoke-llmquery) | qllm, llm, invoke-lmstudioquery, qlms | &nbsp; |
+| [Invoke-LLMStringListEvaluation](#invoke-llmstringlistevaluation) | getlist | &nbsp; |
 | [Invoke-LLMTextTransformation](#invoke-llmtexttransformation) | spellcheck | Transforms text using AI-powered processing. |
-| [Invoke-WinMerge](#invoke-winmerge) |  | Launches WinMerge to compare two files side by side. |
+| [Invoke-WinMerge](#invoke-winmerge) | &nbsp; | Launches WinMerge to compare two files side by side. |
 | [New-LLMAudioChat](#new-llmaudiochat) | llmaudiochat | Creates an interactive audio chat session with an LLM model. |
 | [New-LLMTextChat](#new-llmtextchat) | llmchat | Starts an interactive text chat session with AI capabilities. |
-| [Set-AILLMSettings](#set-aillmsettings) |  | Sets the LLM settings for AI operations in GenXdev.AI. |
-| [Set-GenXdevAICommandNotFoundAction](#set-genxdevaicommandnotfoundaction) |  | Sets up custom command not found handling with AI assistance. |
-| [Start-GenXdevMCPServer](#start-genxdevmcpserver) |  | Starts the GenXdev MCP server that exposes PowerShell cmdlets as tools. |
-| [Test-DeepLinkImageFile](#test-deeplinkimagefile) |  | Tests if the specified file path is a valid image file with a supported format. |
+| [Set-AILLMSettings](#set-aillmsettings) | &nbsp; | Sets the LLM settings for AI operations in GenXdev.AI. |
+| [Set-GenXdevAICommandNotFoundAction](#set-genxdevaicommandnotfoundaction) | &nbsp; | Sets up custom command not found handling with AI assistance. |
+| [Start-GenXdevMCPServer](#start-genxdevmcpserver) | &nbsp; | Starts the GenXdev MCP server that exposes PowerShell cmdlets as tools. |
+| [Test-DeepLinkImageFile](#test-deeplinkimagefile) | &nbsp; | Tests if the specified file path is a valid image file with a supported format. |
 
 ### GenXdev.AI.DeepStack
 | Command | Aliases | Description |
 | --- | --- | --- |
 
 | [Compare-ImageFaces](#compare-imagefaces) | comparefaces | Processes the face match result from DeepStack API. |
-| [EnsureDeepStack](#ensuredeepstack) |  | Ensures DeepStack face recognition service is installed and running. |
-| [Get-ImageDetectedFaces](#get-imagedetectedfaces) |  |  |
-| [Get-ImageDetectedObjects](#get-imagedetectedobjects) |  | Detects and classifies objects in an uploaded image using DeepStack. |
-| [Get-ImageDetectedScenes](#get-imagedetectedscenes) |  | Classifies an image into one of 365 scene categories using DeepStack. |
-| [Get-RegisteredFaces](#get-registeredfaces) |  | Retrieves a list of all registered face identifiers from DeepStack. |
+| [EnsureDeepStack](#ensuredeepstack) | &nbsp; | Ensures DeepStack face recognition service is installed and running. |
+| [Get-ImageDetectedFaces](#get-imagedetectedfaces) | &nbsp; |  |
+| [Get-ImageDetectedObjects](#get-imagedetectedobjects) | &nbsp; | Detects and classifies objects in an uploaded image using DeepStack. |
+| [Get-ImageDetectedScenes](#get-imagedetectedscenes) | &nbsp; | Classifies an image into one of 365 scene categories using DeepStack. |
+| [Get-RegisteredFaces](#get-registeredfaces) | &nbsp; | Retrieves a list of all registered face identifiers from DeepStack. |
 | [Invoke-ImageEnhancement](#invoke-imageenhancement) | enhanceimage | Enhances an image by enlarging it 4X while improving quality using DeepStack. |
 | [Register-AllFaces](#register-allfaces) | updatefaces | Updates all face recognition profiles from image files in the faces directory. |
-| [Register-Face](#register-face) |  | Registers a new face with the DeepStack face recognition API. |
-| [Unregister-AllFaces](#unregister-allfaces) |  | Removes all registered faces from the DeepStack face recognition system. |
-| [Unregister-Face](#unregister-face) |  | Deletes a registered face by its identifier from DeepStack. |
+| [Register-Face](#register-face) | &nbsp; | Registers a new face with the DeepStack face recognition API. |
+| [Unregister-AllFaces](#unregister-allfaces) | &nbsp; | Removes all registered faces from the DeepStack face recognition system. |
+| [Unregister-Face](#unregister-face) | &nbsp; | Deletes a registered face by its identifier from DeepStack. |
 
 ### GenXdev.AI.LMStudio
 | Command | Aliases | Description |
 | --- | --- | --- |
 
-| [Add-GenXdevMCPServerToLMStudio](#add-genxdevmcpservertolmstudio) |  |  |
-| [EnsureLMStudio](#ensurelmstudio) |  | Ensures LM Studio is properly initialized with the specified model. |
-| [Get-LMStudioLoadedModelList](#get-lmstudioloadedmodellist) |  | Retrieves the list of currently loaded models from LM Studio. |
-| [Get-LMStudioModelList](#get-lmstudiomodellist) |  | Retrieves a list of installed LM Studio models. |
-| [Get-LMStudioPaths](#get-lmstudiopaths) |  | Retrieves file paths for LM Studio executables. |
+| [Add-GenXdevMCPServerToLMStudio](#add-genxdevmcpservertolmstudio) | &nbsp; |  |
+| [EnsureLMStudio](#ensurelmstudio) | &nbsp; | Ensures LM Studio is properly initialized with the specified model. |
+| [Get-LMStudioLoadedModelList](#get-lmstudioloadedmodellist) | &nbsp; | Retrieves the list of currently loaded models from LM Studio. |
+| [Get-LMStudioModelList](#get-lmstudiomodellist) | &nbsp; | Retrieves a list of installed LM Studio models. |
+| [Get-LMStudioPaths](#get-lmstudiopaths) | &nbsp; | Retrieves file paths for LM Studio executables. |
 | [Get-LMStudioTextEmbedding](#get-lmstudiotextembedding) | embed-text, get-textembedding | Gets text embeddings from LM Studio model. |
 | [Get-LMStudioWindow](#get-lmstudiowindow) | lmstudiowindow, setlmstudiowindow | Gets a window helper for the LM Studio application. |
 | [Initialize-LMStudioModel](#initialize-lmstudiomodel) | initlmstudio | Initializes and loads an AI model in LM Studio. |
-| [Install-LMStudioApplication](#install-lmstudioapplication) |  | Installs LM Studio application using WinGet package manager. |
-| [Start-LMStudioApplication](#start-lmstudioapplication) |  | Starts the LM Studio application if it's not already running. |
-| [Test-LMStudioInstallation](#test-lmstudioinstallation) |  | Tests if LMStudio is installed and accessible on the system. |
-| [Test-LMStudioProcess](#test-lmstudioprocess) |  | Tests if LM Studio process is running and configures its window state. |
+| [Install-LMStudioApplication](#install-lmstudioapplication) | &nbsp; | Installs LM Studio application using WinGet package manager. |
+| [Start-LMStudioApplication](#start-lmstudioapplication) | &nbsp; | Starts the LM Studio application if it's not already running. |
+| [Test-LMStudioInstallation](#test-lmstudioinstallation) | &nbsp; | Tests if LMStudio is installed and accessible on the system. |
+| [Test-LMStudioProcess](#test-lmstudioprocess) | &nbsp; | Tests if LM Studio process is running and configures its window state. |
 
 ### GenXdev.AI.Queries
 | Command | Aliases | Description |
@@ -178,21 +178,21 @@ Update-Module
 | [Add-EmoticonsToText](#add-emoticonstotext) | emojify | Enhances text by adding contextually appropriate emoticons using AI. |
 | [Add-ImageDirectories](#add-imagedirectories) | addimgdir | Adds directories to the configured image directories for GenXdev.AI operations. |
 | [ConvertFrom-CorporateSpeak](#convertfrom-corporatespeak) | uncorporatize | Converts polite, professional corporate speak into direct, clear language using AI. |
-| [ConvertFrom-DiplomaticSpeak](#convertfrom-diplomaticspeak) | undiplomatize |  |
+| [ConvertFrom-DiplomaticSpeak](#convertfrom-diplomaticspeak) | undiplomatize | &nbsp; |
 | [ConvertTo-CorporateSpeak](#convertto-corporatespeak) | corporatize | Converts direct or blunt text into polite, professional corporate speak using AI. |
 | [ConvertTo-DiplomaticSpeak](#convertto-diplomaticspeak) | diplomatize | Converts direct or blunt text into polite, tactful diplomatic language. |
 | [Export-ImageIndex](#export-imageindex) | indeximages | Initializes and populates the SQLite database by discovering images directly. |
-| [Find-Image](#find-image) | findimages, li |  |
+| [Find-Image](#find-image) | findimages, li | &nbsp; |
 | [Find-IndexedImage](#find-indexedimage) | findindexedimages, lii | Searches for images using an optimized SQLite database with fast indexed lookups. |
 | [Get-AIImageCollection](#get-aiimagecollection) | getimgdirs | Gets the configured directories for image files used in GenXdev.AI operations. |
-| [Get-AIKnownFacesRootpath](#get-aiknownfacesrootpath) |  |  |
+| [Get-AIKnownFacesRootpath](#get-aiknownfacesrootpath) | &nbsp; |  |
 | [Get-AIMetaLanguage](#get-aimetalanguage) | getimgmetalang | Gets the configured default language for image metadata operations. |
 | [Get-Fallacy](#get-fallacy) | dispicetext | Analyzes text to identify logical fallacies using AI-powered detection. |
-| [Get-ImageIndexPath](#get-imageindexpath) |  | Returns the path to the image database, initializing or rebuilding it if needed. |
+| [Get-ImageIndexPath](#get-imageindexpath) | &nbsp; | Returns the path to the image database, initializing or rebuilding it if needed. |
 | [Get-ImageIndexStats](#get-imageindexstats) | getimagedbstats, gids | Retrieves comprehensive statistics and information about the image database. |
 | [Get-MediaFileAudioTranscription](#get-mediafileaudiotranscription) | transcribefile | Transcribes an audio or video file to text. |
 | [Get-ScriptExecutionErrorFixPrompt](#get-scriptexecutionerrorfixprompt) | getfixprompt | Captures error messages from various streams and uses LLM to suggest fixes. |
-| [Get-SimularMovieTitles](#get-simularmovietitles) |  | Finds similar movie titles based on common properties. |
+| [Get-SimularMovieTitles](#get-simularmovietitles) | &nbsp; | Finds similar movie titles based on common properties. |
 | [Invoke-AIPowershellCommand](#invoke-aipowershellcommand) | hint | Converts AI command suggestions to JSON format for processing. |
 | [Invoke-ImageFacesUpdate](#invoke-imagefacesupdate) | imagepeopledetection | Updates face recognition metadata for image files in a specified directory. |
 | [Invoke-ImageKeywordUpdate](#invoke-imagekeywordupdate) | imagekeywordgeneration | Updates image metadata with AI-generated descriptions and keywords. |
@@ -204,103 +204,101 @@ Update-Module
 | [Remove-ImageMetaData](#remove-imagemetadata) | removeimagedata | Removes image metadata files from image directories. |
 | [Save-FoundImageFaces](#save-foundimagefaces) | saveimagefaces | Saves cropped face images from indexed image search results. |
 | [Save-FoundImageObjects](#save-foundimageobjects) | saveimageobjects | Saves cropped object images from indexed image search results to files. |
-| [Save-Transcriptions](#save-transcriptions) |  | Generates subtitle files for audio and video files using OpenAI Whisper. |
-| [Set-AIImageCollection](#set-aiimagecollection) |  |  |
-| [Set-AIKnownFacesRootpath](#set-aiknownfacesrootpath) |  | Sets the directory for face image files used in GenXdev.AI operations. |
-| [Set-AIMetaLanguage](#set-aimetalanguage) |  |  |
-| [Set-ImageIndexPath](#set-imageindexpath) |  | Sets the default database file path for image operations in GenXdev.AI. |
+| [Save-Transcriptions](#save-transcriptions) | &nbsp; | Generates subtitle files for audio and video files using OpenAI Whisper. |
+| [Set-AIImageCollection](#set-aiimagecollection) | &nbsp; |  |
+| [Set-AIKnownFacesRootpath](#set-aiknownfacesrootpath) | &nbsp; | Sets the directory for face image files used in GenXdev.AI operations. |
+| [Set-AIMetaLanguage](#set-aimetalanguage) | &nbsp; |  |
+| [Set-ImageIndexPath](#set-imageindexpath) | &nbsp; | Sets the default database file path for image operations in GenXdev.AI. |
 | [Set-WindowsWallpaperEx](#set-windowswallpaperex) | nextwallpaper | Sets a random wallpaper from a specified directory or search criteria. |
 | [Show-FoundImagesInBrowser](#show-foundimagesinbrowser) | showfoundimages | Displays image search results in a masonry layout web gallery. |
 | [Show-GenXdevScriptErrorFixInIde](#show-genxdevscripterrorfixinide) | letsfixthis | Executes a script block and analyzes errors using AI to generate fixes in IDE. |
-| [Start-AudioTranscription](#start-audiotranscription) | transcribe, recordandtranscribe |  |
-| [Update-AllImageMetaData](#update-allimagemetadata) | updateallimages |  |
+| [Start-AudioTranscription](#start-audiotranscription) | transcribe, recordandtranscribe | &nbsp; |
+| [Update-AllImageMetaData](#update-allimagemetadata) | updateallimages | &nbsp; |
 
 # Cmdlet Index
 ### GenXdev.AI<hr/>
+### GenXdev.AI
 | Command | Aliases | Description |
 | --- | --- | --- |
-| [Approve-NewTextFileContent](#approve-newtextfilecontent) |  | Interactive file content comparison and approval using WinMerge. |
-| [Convert-DotNetTypeToLLMType](#convert-dotnettypetollmtype) |  | Converts .NET type names to LLM (Language Model) type names. |
-| [ConvertTo-LMStudioFunctionDefinition](#convertto-lmstudiofunctiondefinition) |  | Converts PowerShell functions to LMStudio function definitions. |
-| [EnsureGithubCLIInstalled](#ensuregithubcliinstalled) |  | Ensures GitHub CLI is properly installed and configured on the system. |
-| [EnsurePaintNet](#ensurepaintnet) |  | Ensures Paint.NET is properly installed and accessible on the system. |
-| [EnsureWinMergeInstalled](#ensurewinmergeinstalled) |  | Ensures WinMerge is installed and available for file comparison operations. |
+| [Approve-NewTextFileContent](#approve-newtextfilecontent) | &nbsp; | Interactive file content comparison and approval using WinMerge. |
+| [Convert-DotNetTypeToLLMType](#convert-dotnettypetollmtype) | &nbsp; | Converts .NET type names to LLM (Language Model) type names. |
+| [ConvertTo-LMStudioFunctionDefinition](#convertto-lmstudiofunctiondefinition) | &nbsp; | Converts PowerShell functions to LMStudio function definitions. |
+| [EnsureGithubCLIInstalled](#ensuregithubcliinstalled) | &nbsp; | Ensures GitHub CLI is properly installed and configured on the system. |
+| [EnsurePaintNet](#ensurepaintnet) | &nbsp; | Ensures Paint.NET is properly installed and accessible on the system. |
+| [EnsureWinMergeInstalled](#ensurewinmergeinstalled) | &nbsp; | Ensures WinMerge is installed and available for file comparison operations. |
 | [GenerateMasonryLayoutHtml](#generatemasonrylayouthtml) | nometadata, onlypictures | Generates a responsive masonry layout HTML gallery from image data. |
-| [Get-AIDefaultLLMSettings](#get-aidefaultllmsettings) |  | Gets all available default LLM settings configurations for AI operations in GenXdev.AI. |
-| [Get-AILLMSettings](#get-aillmsettings) |  | Gets the LLM settings for AI operations in GenXdev.AI. |
-| [Get-CpuCore](#get-cpucore) |  | Calculates and returns the total number of logical CPU cores in the system. |
-| [Get-HasCapableGpu](#get-hascapablegpu) |  | Determines if a CUDA-capable GPU with sufficient memory is present. |
-| [Get-NumberOfCpuCores](#get-numberofcpucores) |  | Calculates and returns the total number of logical CPU cores in the system. |
+| [Get-AIDefaultLLMSettings](#get-aidefaultllmsettings) | &nbsp; | Gets all available default LLM settings configurations for AI operations in GenXdev.AI. |
+| [Get-AILLMSettings](#get-aillmsettings) | &nbsp; | Gets the LLM settings for AI operations in GenXdev.AI. |
+| [Get-CpuCore](#get-cpucore) | &nbsp; | Calculates and returns the total number of logical CPU cores in the system. |
+| [Get-HasCapableGpu](#get-hascapablegpu) | &nbsp; | Determines if a CUDA-capable GPU with sufficient memory is present. |
+| [Get-NumberOfCpuCores](#get-numberofcpucores) | &nbsp; | Calculates and returns the total number of logical CPU cores in the system. |
 | [Get-TextTranslation](#get-texttranslation) | translate | Translates text to another language using AI. |
-| [Get-VectorSimilarity](#get-vectorsimilarity) |  |  |
-| [Invoke-CommandFromToolCall](#invoke-commandfromtoolcall) |  | Executes a tool call function with validation and parameter filtering. |
+| [Get-VectorSimilarity](#get-vectorsimilarity) | &nbsp; |  |
+| [Invoke-CommandFromToolCall](#invoke-commandfromtoolcall) | &nbsp; | Executes a tool call function with validation and parameter filtering. |
 | [Invoke-LLMBooleanEvaluation](#invoke-llmbooleanevaluation) | equalstrue | Evaluates a statement using AI to determine if it's true or false. |
-| [Invoke-LLMQuery](#invoke-llmquery) | qllm, llm, invoke-lmstudioquery, qlms |  |
-| [Invoke-LLMStringListEvaluation](#invoke-llmstringlistevaluation) | getlist |  |
+| [Invoke-LLMQuery](#invoke-llmquery) | qllm, llm, invoke-lmstudioquery, qlms | &nbsp; |
+| [Invoke-LLMStringListEvaluation](#invoke-llmstringlistevaluation) | getlist | &nbsp; |
 | [Invoke-LLMTextTransformation](#invoke-llmtexttransformation) | spellcheck | Transforms text using AI-powered processing. |
-| [Invoke-WinMerge](#invoke-winmerge) |  | Launches WinMerge to compare two files side by side. |
+| [Invoke-WinMerge](#invoke-winmerge) | &nbsp; | Launches WinMerge to compare two files side by side. |
 | [New-LLMAudioChat](#new-llmaudiochat) | llmaudiochat | Creates an interactive audio chat session with an LLM model. |
 | [New-LLMTextChat](#new-llmtextchat) | llmchat | Starts an interactive text chat session with AI capabilities. |
-| [Set-AILLMSettings](#set-aillmsettings) |  | Sets the LLM settings for AI operations in GenXdev.AI. |
-| [Set-GenXdevAICommandNotFoundAction](#set-genxdevaicommandnotfoundaction) |  | Sets up custom command not found handling with AI assistance. |
-| [Start-GenXdevMCPServer](#start-genxdevmcpserver) |  | Starts the GenXdev MCP server that exposes PowerShell cmdlets as tools. |
-| [Test-DeepLinkImageFile](#test-deeplinkimagefile) |  | Tests if the specified file path is a valid image file with a supported format. |
+| [Set-AILLMSettings](#set-aillmsettings) | &nbsp; | Sets the LLM settings for AI operations in GenXdev.AI. |
+| [Set-GenXdevAICommandNotFoundAction](#set-genxdevaicommandnotfoundaction) | &nbsp; | Sets up custom command not found handling with AI assistance. |
+| [Start-GenXdevMCPServer](#start-genxdevmcpserver) | &nbsp; | Starts the GenXdev MCP server that exposes PowerShell cmdlets as tools. |
+| [Test-DeepLinkImageFile](#test-deeplinkimagefile) | &nbsp; | Tests if the specified file path is a valid image file with a supported format. |
 
 ### GenXdev.AI.DeepStack
 | Command | Aliases | Description |
 | --- | --- | --- |
-
 | [Compare-ImageFaces](#compare-imagefaces) | comparefaces | Processes the face match result from DeepStack API. |
-| [EnsureDeepStack](#ensuredeepstack) |  | Ensures DeepStack face recognition service is installed and running. |
-| [Get-ImageDetectedFaces](#get-imagedetectedfaces) |  |  |
-| [Get-ImageDetectedObjects](#get-imagedetectedobjects) |  | Detects and classifies objects in an uploaded image using DeepStack. |
-| [Get-ImageDetectedScenes](#get-imagedetectedscenes) |  | Classifies an image into one of 365 scene categories using DeepStack. |
-| [Get-RegisteredFaces](#get-registeredfaces) |  | Retrieves a list of all registered face identifiers from DeepStack. |
+| [EnsureDeepStack](#ensuredeepstack) | &nbsp; | Ensures DeepStack face recognition service is installed and running. |
+| [Get-ImageDetectedFaces](#get-imagedetectedfaces) | &nbsp; |  |
+| [Get-ImageDetectedObjects](#get-imagedetectedobjects) | &nbsp; | Detects and classifies objects in an uploaded image using DeepStack. |
+| [Get-ImageDetectedScenes](#get-imagedetectedscenes) | &nbsp; | Classifies an image into one of 365 scene categories using DeepStack. |
+| [Get-RegisteredFaces](#get-registeredfaces) | &nbsp; | Retrieves a list of all registered face identifiers from DeepStack. |
 | [Invoke-ImageEnhancement](#invoke-imageenhancement) | enhanceimage | Enhances an image by enlarging it 4X while improving quality using DeepStack. |
 | [Register-AllFaces](#register-allfaces) | updatefaces | Updates all face recognition profiles from image files in the faces directory. |
-| [Register-Face](#register-face) |  | Registers a new face with the DeepStack face recognition API. |
-| [Unregister-AllFaces](#unregister-allfaces) |  | Removes all registered faces from the DeepStack face recognition system. |
-| [Unregister-Face](#unregister-face) |  | Deletes a registered face by its identifier from DeepStack. |
+| [Register-Face](#register-face) | &nbsp; | Registers a new face with the DeepStack face recognition API. |
+| [Unregister-AllFaces](#unregister-allfaces) | &nbsp; | Removes all registered faces from the DeepStack face recognition system. |
+| [Unregister-Face](#unregister-face) | &nbsp; | Deletes a registered face by its identifier from DeepStack. |
 
 ### GenXdev.AI.LMStudio
 | Command | Aliases | Description |
 | --- | --- | --- |
-
-| [Add-GenXdevMCPServerToLMStudio](#add-genxdevmcpservertolmstudio) |  |  |
-| [EnsureLMStudio](#ensurelmstudio) |  | Ensures LM Studio is properly initialized with the specified model. |
-| [Get-LMStudioLoadedModelList](#get-lmstudioloadedmodellist) |  | Retrieves the list of currently loaded models from LM Studio. |
-| [Get-LMStudioModelList](#get-lmstudiomodellist) |  | Retrieves a list of installed LM Studio models. |
-| [Get-LMStudioPaths](#get-lmstudiopaths) |  | Retrieves file paths for LM Studio executables. |
+| [Add-GenXdevMCPServerToLMStudio](#add-genxdevmcpservertolmstudio) | &nbsp; |  |
+| [EnsureLMStudio](#ensurelmstudio) | &nbsp; | Ensures LM Studio is properly initialized with the specified model. |
+| [Get-LMStudioLoadedModelList](#get-lmstudioloadedmodellist) | &nbsp; | Retrieves the list of currently loaded models from LM Studio. |
+| [Get-LMStudioModelList](#get-lmstudiomodellist) | &nbsp; | Retrieves a list of installed LM Studio models. |
+| [Get-LMStudioPaths](#get-lmstudiopaths) | &nbsp; | Retrieves file paths for LM Studio executables. |
 | [Get-LMStudioTextEmbedding](#get-lmstudiotextembedding) | embed-text, get-textembedding | Gets text embeddings from LM Studio model. |
 | [Get-LMStudioWindow](#get-lmstudiowindow) | lmstudiowindow, setlmstudiowindow | Gets a window helper for the LM Studio application. |
 | [Initialize-LMStudioModel](#initialize-lmstudiomodel) | initlmstudio | Initializes and loads an AI model in LM Studio. |
-| [Install-LMStudioApplication](#install-lmstudioapplication) |  | Installs LM Studio application using WinGet package manager. |
-| [Start-LMStudioApplication](#start-lmstudioapplication) |  | Starts the LM Studio application if it's not already running. |
-| [Test-LMStudioInstallation](#test-lmstudioinstallation) |  | Tests if LMStudio is installed and accessible on the system. |
-| [Test-LMStudioProcess](#test-lmstudioprocess) |  | Tests if LM Studio process is running and configures its window state. |
+| [Install-LMStudioApplication](#install-lmstudioapplication) | &nbsp; | Installs LM Studio application using WinGet package manager. |
+| [Start-LMStudioApplication](#start-lmstudioapplication) | &nbsp; | Starts the LM Studio application if it's not already running. |
+| [Test-LMStudioInstallation](#test-lmstudioinstallation) | &nbsp; | Tests if LMStudio is installed and accessible on the system. |
+| [Test-LMStudioProcess](#test-lmstudioprocess) | &nbsp; | Tests if LM Studio process is running and configures its window state. |
 
 ### GenXdev.AI.Queries
 | Command | Aliases | Description |
 | --- | --- | --- |
-
 | [Add-EmoticonsToText](#add-emoticonstotext) | emojify | Enhances text by adding contextually appropriate emoticons using AI. |
 | [Add-ImageDirectories](#add-imagedirectories) | addimgdir | Adds directories to the configured image directories for GenXdev.AI operations. |
 | [ConvertFrom-CorporateSpeak](#convertfrom-corporatespeak) | uncorporatize | Converts polite, professional corporate speak into direct, clear language using AI. |
-| [ConvertFrom-DiplomaticSpeak](#convertfrom-diplomaticspeak) | undiplomatize |  |
+| [ConvertFrom-DiplomaticSpeak](#convertfrom-diplomaticspeak) | undiplomatize | &nbsp; |
 | [ConvertTo-CorporateSpeak](#convertto-corporatespeak) | corporatize | Converts direct or blunt text into polite, professional corporate speak using AI. |
 | [ConvertTo-DiplomaticSpeak](#convertto-diplomaticspeak) | diplomatize | Converts direct or blunt text into polite, tactful diplomatic language. |
 | [Export-ImageIndex](#export-imageindex) | indeximages | Initializes and populates the SQLite database by discovering images directly. |
-| [Find-Image](#find-image) | findimages, li |  |
+| [Find-Image](#find-image) | findimages, li | &nbsp; |
 | [Find-IndexedImage](#find-indexedimage) | findindexedimages, lii | Searches for images using an optimized SQLite database with fast indexed lookups. |
 | [Get-AIImageCollection](#get-aiimagecollection) | getimgdirs | Gets the configured directories for image files used in GenXdev.AI operations. |
-| [Get-AIKnownFacesRootpath](#get-aiknownfacesrootpath) |  |  |
+| [Get-AIKnownFacesRootpath](#get-aiknownfacesrootpath) | &nbsp; |  |
 | [Get-AIMetaLanguage](#get-aimetalanguage) | getimgmetalang | Gets the configured default language for image metadata operations. |
 | [Get-Fallacy](#get-fallacy) | dispicetext | Analyzes text to identify logical fallacies using AI-powered detection. |
-| [Get-ImageIndexPath](#get-imageindexpath) |  | Returns the path to the image database, initializing or rebuilding it if needed. |
+| [Get-ImageIndexPath](#get-imageindexpath) | &nbsp; | Returns the path to the image database, initializing or rebuilding it if needed. |
 | [Get-ImageIndexStats](#get-imageindexstats) | getimagedbstats, gids | Retrieves comprehensive statistics and information about the image database. |
 | [Get-MediaFileAudioTranscription](#get-mediafileaudiotranscription) | transcribefile | Transcribes an audio or video file to text. |
 | [Get-ScriptExecutionErrorFixPrompt](#get-scriptexecutionerrorfixprompt) | getfixprompt | Captures error messages from various streams and uses LLM to suggest fixes. |
-| [Get-SimularMovieTitles](#get-simularmovietitles) |  | Finds similar movie titles based on common properties. |
+| [Get-SimularMovieTitles](#get-simularmovietitles) | &nbsp; | Finds similar movie titles based on common properties. |
 | [Invoke-AIPowershellCommand](#invoke-aipowershellcommand) | hint | Converts AI command suggestions to JSON format for processing. |
 | [Invoke-ImageFacesUpdate](#invoke-imagefacesupdate) | imagepeopledetection | Updates face recognition metadata for image files in a specified directory. |
 | [Invoke-ImageKeywordUpdate](#invoke-imagekeywordupdate) | imagekeywordgeneration | Updates image metadata with AI-generated descriptions and keywords. |
@@ -312,16 +310,16 @@ Update-Module
 | [Remove-ImageMetaData](#remove-imagemetadata) | removeimagedata | Removes image metadata files from image directories. |
 | [Save-FoundImageFaces](#save-foundimagefaces) | saveimagefaces | Saves cropped face images from indexed image search results. |
 | [Save-FoundImageObjects](#save-foundimageobjects) | saveimageobjects | Saves cropped object images from indexed image search results to files. |
-| [Save-Transcriptions](#save-transcriptions) |  | Generates subtitle files for audio and video files using OpenAI Whisper. |
-| [Set-AIImageCollection](#set-aiimagecollection) |  |  |
-| [Set-AIKnownFacesRootpath](#set-aiknownfacesrootpath) |  | Sets the directory for face image files used in GenXdev.AI operations. |
-| [Set-AIMetaLanguage](#set-aimetalanguage) |  |  |
-| [Set-ImageIndexPath](#set-imageindexpath) |  | Sets the default database file path for image operations in GenXdev.AI. |
+| [Save-Transcriptions](#save-transcriptions) | &nbsp; | Generates subtitle files for audio and video files using OpenAI Whisper. |
+| [Set-AIImageCollection](#set-aiimagecollection) | &nbsp; |  |
+| [Set-AIKnownFacesRootpath](#set-aiknownfacesrootpath) | &nbsp; | Sets the directory for face image files used in GenXdev.AI operations. |
+| [Set-AIMetaLanguage](#set-aimetalanguage) | &nbsp; |  |
+| [Set-ImageIndexPath](#set-imageindexpath) | &nbsp; | Sets the default database file path for image operations in GenXdev.AI. |
 | [Set-WindowsWallpaperEx](#set-windowswallpaperex) | nextwallpaper | Sets a random wallpaper from a specified directory or search criteria. |
 | [Show-FoundImagesInBrowser](#show-foundimagesinbrowser) | showfoundimages | Displays image search results in a masonry layout web gallery. |
 | [Show-GenXdevScriptErrorFixInIde](#show-genxdevscripterrorfixinide) | letsfixthis | Executes a script block and analyzes errors using AI to generate fixes in IDE. |
-| [Start-AudioTranscription](#start-audiotranscription) | transcribe, recordandtranscribe |  |
-| [Update-AllImageMetaData](#update-allimagemetadata) | updateallimages |  |
+| [Start-AudioTranscription](#start-audiotranscription) | transcribe, recordandtranscribe | &nbsp; |
+| [Update-AllImageMetaData](#update-allimagemetadata) | updateallimages | &nbsp; |
 
 <br/><hr/><hr/><br/>
 
