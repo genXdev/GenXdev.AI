@@ -389,7 +389,7 @@ function Set-WindowsWallpaperEx {
         }
 
         # select a random image from the found images
-        ($foundImages | ForEach-Object Path ) |
+        ($foundImages | Microsoft.PowerShell.Core\ForEach-Object Path ) |
             Microsoft.PowerShell.Utility\Get-Random |
             Microsoft.PowerShell.Utility\Select-Object -First 1 |
             Microsoft.PowerShell.Core\ForEach-Object {

@@ -514,7 +514,7 @@ function Show-FoundImagesInBrowser {
     begin {
 
         # initialize collection to accumulate all input objects
-        [System.Collections.Generic.List[Object]] $results = @()
+        [System.Collections.Generic.List[[GenXdev.Helpers.ImageSearchResult]]] $results = @()
     }
 
     process {

@@ -395,7 +395,7 @@ Searches for beach scenes with confidence level of 75% or higher and filters peo
 function Find-Image {
 
     [CmdletBinding()]
-    [OutputType([Object[]], [System.Collections.Generic.List[Object]], [string])]
+    [OutputType([GenXdev.Helpers.ImageSearchResult], [string])]
     [Alias('findimages', 'li')]
 
     param(
@@ -818,7 +818,6 @@ function Find-Image {
         )]
         [Alias('sbs')]
         [switch]$SideBySide,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -1148,7 +1147,7 @@ function Find-Image {
             if ($image -is [IO.FileInfo]) { $image = $item.FullName }
             # skip if image path is null or empty
             if ([string]::IsNullOrEmpty($image)) {
-                Microsoft.PowerShell.Utility\Write-Warning "Skipping null or empty image path"
+                Microsoft.PowerShell.Utility\Write-Verbose "Skipping null or empty image path"
                 return
             }
 
@@ -1203,13 +1202,12 @@ function Find-Image {
                     @() : $descriptionFound.keywords
                 }
                 catch {
-
                     # reset description if json parsing fails
                     $descriptionFound = $null
-
                     # log parsing failure for debugging purposes
                     Microsoft.PowerShell.Utility\Write-Verbose (
                         "Failed to parse metadata from $metadataFile")
+                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
                 }
             }
 
@@ -1224,7 +1222,13 @@ function Find-Image {
                     # read and parse people json from alternate data stream
                     $peopleFound = [System.IO.File]::ReadAllText(
                         "$($image):people.json") |
-                        Microsoft.PowerShell.Utility\ConvertFrom-Json
+                        Microsoft.PowerShell.Utility\ConvertFrom-Json |
+                        GenXdev.Helpers\ConvertTo-HashTable
+
+                    if ($peopleFound.faces -is [string]) {
+
+                        $peopleFound.faces = @($peopleFound.faces)
+                    }
 
                     # ensure people data has proper structure or reset to default
                     $peopleFound = (($null -eq $peopleFound) -or
@@ -1232,9 +1236,9 @@ function Find-Image {
                     @{count = 0; faces = @() } : $peopleFound
                 }
                 catch {
-
                     # reset people data if json parsing fails
                     $peopleFound = @{count = 0; faces = @() }
+                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
                 }
             }
 
@@ -1255,6 +1259,12 @@ function Find-Image {
                         "$($image):objects.json") |
                         Microsoft.PowerShell.Utility\ConvertFrom-Json
 
+
+                    if ($parsedObjects.objects -is [string]) {
+
+                        $parsedObjects.objects = @($parsedObjects.objects)
+                    }
+
                     # if parsed data is not null and has predictions
                     if ($null -ne $parsedObjects -and
                         $null -ne $parsedObjects.predictions) {
@@ -1268,13 +1278,13 @@ function Find-Image {
                     }
                 }
                 catch {
-
                     # reset objects data if json parsing fails
                     $objectsFound = @{
                         count         = 0;
                         objects       = @();
                         object_counts = @{}
                     }
+                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
                 }
             }
 
@@ -1303,13 +1313,13 @@ function Find-Image {
                     }
                 }
                 catch {
-
                     # reset scenes data if json parsing fails
                     $scenesFound = @{
                         success    = $false;
                         scene      = 'unknown';
                         confidence = 0.0
                     }
+                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
                 }
             }
 
@@ -1577,7 +1587,7 @@ function Find-Image {
                     $peopleFound.count = $filteredPredictions.Count
 
                     # update faces array to match filtered predictions
-                    $peopleFound.faces = $filteredPredictions | Microsoft.PowerShell.Core\ForEach-Object { $_.label }
+                    $peopleFound.faces = @($filteredPredictions | Microsoft.PowerShell.Core\ForEach-Object { $_.label })
                 }
 
                 # filter objects by confidence - remove object predictions below minimum threshold
@@ -1645,6 +1655,7 @@ function Find-Image {
                         }
                         catch {
                             Microsoft.PowerShell.Utility\Write-Verbose "Failed to read cached metadata: $_"
+                            Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
                             $metadata = GenXdev.Helpers\Get-ImageMetadata -ImagePath $image
                         }
                     }
@@ -1818,7 +1829,8 @@ function Find-Image {
                         }
                     }
                 } catch {
-                    Microsoft.PowerShell.Utility\Write-Warning ("Could not process EXIF metadata for ${image}: $_")
+                    Microsoft.PowerShell.Utility\Write-Verbose ("Could not process EXIF metadata for ${image}: $_")
+                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
                     $exifMatch = $false
                 }
             }
@@ -1971,11 +1983,18 @@ function Find-Image {
                             }
                             catch {
                                 Microsoft.PowerShell.Utility\Write-Verbose "Failed to read cached metadata: $_"
+                                Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
                                 $metadata = GenXdev.Helpers\Get-ImageMetadata -ImagePath $image
+                                # save
+                                $null = $metadata | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 |
+                                    Microsoft.PowerShell.Management\Set-Content -LiteralPath $metadataStream -ErrorAction SilentlyContinue
                             }
                         }
                         else {
                             $metadata = GenXdev.Helpers\Get-ImageMetadata -ImagePath $image
+                            # save
+                            $null = $metadata | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 |
+                                Microsoft.PowerShell.Management\Set-Content -LiteralPath $metadataStream -ErrorAction SilentlyContinue
                         }
 
                         if ($null -ne $metadata) {
@@ -1989,122 +2008,24 @@ function Find-Image {
                             $null = $imageObj.Dispose()
                         }
                     } catch {
-                        Microsoft.PowerShell.Utility\Write-Warning ("Could not process image ${image}: $_")
+                        Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
                         return
                     }
                 }
 
                 # return standardized hashtable with all image metadata and processing results
                 # ensuring consistent structure with Find-IndexedImage
-                $standardizedOutput = @{
-                    path        = $image
-                    width       = $width
-                    height      = $height
-                    metadata    = $metadata
-                    keywords    = $keywordsFound
-                    description = $descriptionFound
-                    people      = $peopleFound
-                    objects     = $objectsFound
-                    scenes      = $scenesFound
-                }
-
-                # ensure people object has predictions property for consistency with database output
-                if ($null -ne $standardizedOutput.people -and
-                    -not $standardizedOutput.people.PSObject.Properties['predictions']) {
-
-                    # convert to hashtable and add predictions array
-                    $standardizedOutput.people = @{
-                        count = $standardizedOutput.people.count
-                        faces = $standardizedOutput.people.faces
-                        predictions = @()  # empty array for consistency
-                    }
-                }
-
-                # ensure objects object has objects property for consistency with database output
-                if ($null -ne $standardizedOutput.objects -and
-                    -not $standardizedOutput.objects.PSObject.Properties['objects']) {
-
-                    # convert to hashtable and add objects array
-                    $standardizedOutput.objects = @{
-                        count = $standardizedOutput.objects.count
-                        objects = if ($standardizedOutput.objects.objects) {
-                            $standardizedOutput.objects.objects
-                        } else { @() }
-                        object_counts = if ($standardizedOutput.objects.object_counts) {
-                            $standardizedOutput.objects.object_counts
-                        } else { @{} }
-                    }
-                }
-
-                # ensure scenes object has all required properties for consistency
-                if ($null -ne $standardizedOutput.scenes) {
-                    $standardizedOutput.scenes = @{
-                        success = $standardizedOutput.scenes.success
-                        scene = $standardizedOutput.scenes.scene
-                        confidence = $standardizedOutput.scenes.confidence
-                        label = if ($standardizedOutput.scenes.PSObject.Properties['label']) {
-                            $standardizedOutput.scenes.label
-                        } else {
-                            $standardizedOutput.scenes.scene
-                        }
-                        confidence_percentage = if ($standardizedOutput.scenes.PSObject.Properties['confidence_percentage']) {
-                            $standardizedOutput.scenes.confidence_percentage
-                        } else {
-                            $standardizedOutput.scenes.confidence * 100
-                        }
-                        processed_at = if ($standardizedOutput.scenes.PSObject.Properties['processed_at']) {
-                            $standardizedOutput.scenes.processed_at
-                        } else {
-                            $null
-                        }
-                    }
-                }
-
-                # ensure description object has all required properties and consistent structure
-                if ($null -ne $standardizedOutput.description) {
-                    # create standardized description hashtable structure
-                    $descObj = @{
-                        has_explicit_content = if ($standardizedOutput.description.PSObject.Properties['has_explicit_content']) {
-                            [bool]$standardizedOutput.description.has_explicit_content
-                        } else {
-                            $false
-                        }
-                        has_nudity = if ($standardizedOutput.description.PSObject.Properties['has_nudity']) {
-                            [bool]$standardizedOutput.description.has_nudity
-                        } else {
-                            $false
-                        }
-                        picture_type = if ($standardizedOutput.description.PSObject.Properties['picture_type']) {
-                            $standardizedOutput.description.picture_type
-                        } else {
-                            ''
-                        }
-                        overall_mood_of_image = if ($standardizedOutput.description.PSObject.Properties['overall_mood_of_image']) {
-                            $standardizedOutput.description.overall_mood_of_image
-                        } else {
-                            ''
-                        }
-                        style_type = if ($standardizedOutput.description.PSObject.Properties['style_type']) {
-                            $standardizedOutput.description.style_type
-                        } else {
-                            ''
-                        }
-                        keywords = $keywordsFound
-                    }
-
-                    # add description content if available
-                    if ($standardizedOutput.description.PSObject.Properties['description']) {
-                        $descObj['description'] = $standardizedOutput.description.description
-                    }
-                    if ($standardizedOutput.description.PSObject.Properties['short_description']) {
-                        $descObj['short_description'] = $standardizedOutput.description.short_description
-                    }
-                    if ($standardizedOutput.description.PSObject.Properties['long_description']) {
-                        $descObj['long_description'] = $standardizedOutput.description.long_description
-                    }
-
-                    $standardizedOutput.description = $descObj
-                }
+                [GenXdev.Helpers.ImageSearchResult] $standardizedOutput = [GenXdev.Helpers.ImageSearchResult]::FromJson((@{
+                    Path        = $image
+                    Width       = $width
+                    Height      = $height
+                    Metadata    = $metadata
+                    Keywords    = $keywordsFound
+                    Description = $descriptionFound
+                    People      = $peopleFound
+                    Objects     = $objectsFound
+                    Scenes      = $scenesFound
+                } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress));
 
                 Microsoft.PowerShell.Utility\Write-Output $standardizedOutput
             }

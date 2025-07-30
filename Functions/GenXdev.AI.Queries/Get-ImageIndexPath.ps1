@@ -350,7 +350,7 @@ function Get-ImageIndexPath {
                 if ($isFileLocked -and (-not $NoFallback)) {
 
                     # define backup file path
-                    $backupFilePath = "${DatabaseFilePath}.backup.db"
+                    $backupFilePath = GenXdev.FileSystem\Expand-Path "${DatabaseFilePath}.backup.db" -DeleteExistingFile -CreateDirectory
 
                     if ([IO.File]::Exists($backupFilePath)) {
 

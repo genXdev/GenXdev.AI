@@ -184,6 +184,7 @@ indexcachedimages
 function Export-ImageIndex {
 
     [CmdletBinding()]
+    [OutputType([GenXdev.Helpers.ImageSearchResult[]], [GenXdev.Helpers.ImageSearchResult])]
     [Alias('indeximages')]
 
     param(
@@ -637,7 +638,7 @@ function Export-ImageIndex {
         ) -CreateDirectory -DeleteExistingFile -ErrorAction SilentlyContinue
 
         # define backup file path for database
-        $DatabaseBackupFilePath = "${DatabaseFilePath}.backup.db"
+        $DatabaseBackupFilePath = GenXdev.FileSystem\Expand-Path "${DatabaseFilePath}.backup.db" -DeleteExistingFile -CreateDirectory
 
         # check if the database file exists after expansion and handle backup
         if ([IO.File]::Exists($DatabaseFilePath)) {
@@ -1109,19 +1110,20 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             # set found results to true when images are found
             $Info.FoundResults = $true
 
-            # copy identical parameter values for Find-Image function call
-            $findImageParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-                -BoundParameters $PSBoundParameters `
-                -FunctionName 'GenXdev.AI\Find-Image' `
-                -DefaultValues (
-                Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
-                    -ErrorAction SilentlyContinue
-            )
 
             # set image directories for Find-Image from configured sources
             $imageCollectionParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
+                -DefaultValues (
+                Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
+                    -ErrorAction SilentlyContinue
+            )
+
+            # copy identical parameter values for Find-Image function call
+            $findImageParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName 'GenXdev.AI\Find-Image' `
                 -DefaultValues (
                 Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
                     -ErrorAction SilentlyContinue
@@ -1140,9 +1142,10 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
 
             # define internal function to insert a single image into database
             function insertImage {
-                param($image, $Info)
+                param([GenXdev.Helpers.ImageSearchResult] $image, $Info)
 
                 process {
+
 
                     # clear previous lookup data for this image
                     $lookupQueries.Clear()
@@ -1150,11 +1153,6 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                     $Info.FoundResults = $true
 
                     try {
-
-                        # convert image object to json and back for deep copy to prevent modification
-                        $image = $image |
-                            Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 20 |
-                            Microsoft.PowerShell.Utility\ConvertFrom-Json
 
                         $Info.TotalImages++
 
@@ -1429,9 +1427,9 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                         $lookupParams.Clear()
 
                         # insert keywords if present for searchable metadata
-                        if ($image.keywords -and $image.keywords.Count -gt 0) {
+                        if ($image.description -and $image.description.keywords -and $image.description.keywords.Count -gt 0) {
 
-                            foreach ($keyword in $image.keywords) {
+                            foreach ($keyword in $image.description.keywords) {
 
                                 $lookupQueries.Add(
                                     ('INSERT INTO ImageKeywords (image_id, ' +
@@ -1573,8 +1571,13 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                 $InputObject |
                     Microsoft.PowerShell.Core\ForEach-Object {
 
-                        $Info.FoundResults = $true
-                        insertImage $PSItem $Info
+                        try {
+                            insertImage $PSItem $Info
+                            $Info.FoundResults = $true
+                        }
+                        catch {
+                            Microsoft.PowerShell.Utility\Write-Verbose "[Export-ImageIndex] Exception: $($_.Exception.Message)"
+                        }
                     }
             }
             else {
@@ -1583,8 +1586,13 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                 GenXdev.AI\Find-Image @findImageParams |
                     Microsoft.PowerShell.Core\ForEach-Object {
 
-                        $Info.FoundResults = $true
-                        insertImage $PSItem $Info
+                        try {
+                            insertImage $PSItem $Info
+                            $Info.FoundResults = $true
+                        }
+                        catch {
+                            Microsoft.PowerShell.Utility\Write-Verbose "[Export-ImageIndex] Exception: $($_.Exception.Message)"
+                        }
                     }
             }
         }
@@ -1622,15 +1630,13 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
 
             }
             catch {
-
                 # rollback on error to maintain database integrity
                 $transaction.Rollback()
-
                 Microsoft.PowerShell.Utility\Write-Verbose (
                     'Transaction rolled back due to error: ' +
                     "$($_.Exception.Message)"
                 )
-
+                Microsoft.PowerShell.Utility\Write-Verbose "[Export-ImageIndex] Exception: $($_.Exception.Message)"
                 throw $_
             }
 

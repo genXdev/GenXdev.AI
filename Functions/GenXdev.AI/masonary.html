@@ -1336,7 +1336,7 @@
                 }
                 item.innerHTML = `
                     <div class="image-container">
-                        <img src="${this.escapeHtml(image.path)}"
+                        <img src="${this.escapeHtml(image.path.replace('\\', '/'))}"
                              alt="${this.escapeHtml(mydata.showOnlyPictures ? altTitle : (image.description?.short_description || 'Image'))}"
                              title="${this.escapeHtml(mydata.showOnlyPictures ? altTitle : '')}"
                              loading="lazy"
@@ -1698,7 +1698,8 @@
                     container.appendChild(overlay);
                     console.log(`Added object overlay for ${prediction.label} at (${left.toFixed(1)}, ${top.toFixed(1)}) with size ${width.toFixed(1)}x${height.toFixed(1)}`);
                 });
-            }            copyPath(index) {
+            }
+            copyPath(index) {
                 const image = this.images[index];
                 const path = `"${image.originalPath || image.path}"`;
 

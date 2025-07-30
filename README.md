@@ -818,7 +818,7 @@ EnsureWinMergeInstalled [<CommonParameters>]
 
 ### SYNTAX 
 ````PowerShell 
-GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [-Title <String>] [-Description <String>] [-CanEdit] [-CanDelete] [-EmbedImages] [-ShowOnlyPictures] [-AutoScrollPixelsPerSecond <Int32>] [-AutoAnimateRectangles] [-SingleColumnMode] [-ImageUrlPrefix <String>] [-PageSize <Int32>] [-MaxPrintImages <Int32>] [-RootMargin <String>] [-Threshold <Double>] [<CommonParameters>] 
+GenerateMasonryLayoutHtml [-Images] <IEnumerable`1> [[-FilePath] <String>] [-Title <String>] [-Description <String>] [-CanEdit] [-CanDelete] [-EmbedImages] [-ShowOnlyPictures] [-AutoScrollPixelsPerSecond <Int32>] [-AutoAnimateRectangles] [-SingleColumnMode] [-ImageUrlPrefix <String>] [-PageSize <Int32>] [-MaxPrintImages <Int32>] [-RootMargin <String>] [-Threshold <Double>] [<CommonParameters>] 
 ```` 
 
 ### DESCRIPTION 
@@ -830,7 +830,7 @@ GenerateMasonryLayoutHtml [-Images] <Array> [[-FilePath] <String>] [-Title <Stri
     - Clean modern styling with hover effects  
 
 ### PARAMETERS 
-    -Images <Array>  
+    -Images <IEnumerable`1>  
         Array of image objects containing metadata. Each object requires:  
         - path: String with full filesystem path to image  
         - keywords: String array of descriptive tags  
