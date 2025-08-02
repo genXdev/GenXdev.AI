@@ -344,7 +344,7 @@ function Approve-NewTextFileContent {
         if ($result.approved) {
 
             # check if content was modified during comparison
-            $content = Microsoft.PowerShell.Management\Get-Content -Path $contentPath -Raw
+            $content = Microsoft.PowerShell.Management\Get-Content -LiteralPath $contentPath -Raw
             $changed = $content.Trim() -ne $NewContent.Trim()
 
             $result.approvedAsIs = -not $changed

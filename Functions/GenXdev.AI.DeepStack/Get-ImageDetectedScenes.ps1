@@ -377,7 +377,7 @@ function Get-ImageDetectedScenes {
 
             # create form data for deepstack api (it expects multipart form data)
             $form = @{
-                image = Microsoft.PowerShell.Management\Get-Item $imagePath
+                image = Microsoft.PowerShell.Management\Get-Item -LiteralPath $imagePath
             }
 
             # send the request to the deepstack scene recognition api

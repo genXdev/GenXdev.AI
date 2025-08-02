@@ -40,7 +40,7 @@ function Invoke-WinMerge {
             HelpMessage = 'Path to the source file to compare'
         )]
         [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Microsoft.PowerShell.Management\Test-Path $_ -PathType Leaf })]
+        [ValidateScript({ Microsoft.PowerShell.Management\Test-Path -LiteralPath $_ -PathType Leaf })]
         [string]$SourcecodeFilePath,
         ########################################################################
         [Parameter(
@@ -49,7 +49,7 @@ function Invoke-WinMerge {
             HelpMessage = 'Path to the target file to compare against'
         )]
         [ValidateNotNullOrEmpty()]
-        [ValidateScript({ Microsoft.PowerShell.Management\Test-Path $_ -PathType Leaf })]
+        [ValidateScript({ Microsoft.PowerShell.Management\Test-Path -LiteralPath $_ -PathType Leaf })]
         [string]$TargetcodeFilePath,
         ########################################################################
         [Parameter(

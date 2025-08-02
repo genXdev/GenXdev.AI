@@ -576,7 +576,7 @@ function Show-FoundImagesInBrowser {
         try {
 
             $null = Microsoft.PowerShell.Management\Set-ItemProperty `
-                -Path $filePath `
+                -LiteralPath $filePath `
                 -Name Attributes `
                 -Value ([System.IO.FileAttributes]::Temporary -bor `
                     [System.IO.FileAttributes]::Hidden) `
@@ -626,7 +626,7 @@ function Show-FoundImagesInBrowser {
 
             # read the generated html file content
             $html = Microsoft.PowerShell.Management\Get-Content `
-                -Path $filePath `
+                -LiteralPath $filePath `
                 -Raw
 
             # delete the temporary file
@@ -1001,7 +1001,7 @@ function Show-FoundImagesInBrowser {
 
                                     # handle delete action by moving to recycle bin
                                     $null = GenXdev.FileSystem\Move-ToRecycleBin `
-                                        -Path $imagePath
+                                       -LiteralPath $imagePath
                                 }
                             }
                         }

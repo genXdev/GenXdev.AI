@@ -139,7 +139,7 @@ function Invoke-ImageMetadataUpdate {
             $path = GenXdev.FileSystem\Expand-Path $directory
 
             # check if the specified directory exists
-            if (-not (Microsoft.PowerShell.Management\Test-Path $path -PathType Container)) {
+            if (-not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $path -PathType Container)) {
                 Microsoft.PowerShell.Utility\Write-Warning "Directory not found: $path - skipping"
                 continue
             }
@@ -168,7 +168,7 @@ function Invoke-ImageMetadataUpdate {
             # discover all image files in the specified directory path, selectively
             # applying recursion only if the -Recurse switch was provided
             # get all supported image files from the specified directory
-            $imageTypes = @(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif")
+            $imageTypes = @(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif")
             $findParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.FileSystem\Find-Item" `
@@ -254,7 +254,6 @@ function Invoke-ImageMetadataUpdate {
                             $failureMetadata = @{
                                 success = $false
                                 has_metadata = $false
-                                processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                                 error = "Metadata extraction failed: $($_.Exception.Message)"
                             }
                             $failureJson = $failureMetadata | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress
@@ -272,7 +271,6 @@ function Invoke-ImageMetadataUpdate {
                         $emptyMetadata = @{
                             success = $true
                             has_metadata = $false
-                            processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                             error = "No EXIF metadata found"
                         }
                         $emptyJson = $emptyMetadata | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress
@@ -330,7 +328,6 @@ function Invoke-ImageMetadataUpdate {
                         $failureData = @{
                             success = $false
                             has_metadata = $false
-                            processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                             error = "Metadata extraction failed: $($_.Exception.Message)"
                         }
 

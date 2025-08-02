@@ -748,7 +748,7 @@ function Get-MediaFileAudioTranscription {
 
         # locate the ffmpeg executable path in winget installation directory
         $ffmpegPath = (Microsoft.PowerShell.Management\Get-ChildItem `
-                "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" `
+                -LiteralPath "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" `
                 -File -rec -ErrorAction SilentlyContinue |
                 Microsoft.PowerShell.Utility\Select-Object -First 1 |
                 Microsoft.PowerShell.Core\ForEach-Object FullName)
@@ -830,7 +830,7 @@ function Get-MediaFileAudioTranscription {
 
                 # update the ffmpeg path after installation
                 $ffmpegPath = (Microsoft.PowerShell.Management\Get-ChildItem `
-                        "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" `
+                        -LiteralPath "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" `
                         -File -rec -ErrorAction SilentlyContinue |
                         Microsoft.PowerShell.Utility\Select-Object -First 1).FullName
             }
@@ -857,7 +857,7 @@ function Get-MediaFileAudioTranscription {
 
             # locate ffmpeg path in case it's not passed correctly
             $ffmpegPath = (Microsoft.PowerShell.Management\Get-ChildItem `
-                    "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" `
+                    -LiteralPath "${env:LOCALAPPDATA}\Microsoft\WinGet\ffmpeg.exe" `
                     -File -rec -ErrorAction SilentlyContinue |
                     Microsoft.PowerShell.Utility\Select-Object -First 1 |
                     Microsoft.PowerShell.Core\ForEach-Object FullName)
@@ -899,7 +899,7 @@ function Get-MediaFileAudioTranscription {
             if ([System.IO.File]::Exists($outputFile)) {
 
                 $null = Microsoft.PowerShell.Management\Remove-Item `
-                    -Path $outputFile -Force
+                    -LiteralPath $outputFile -Force
             }
 
             return
@@ -1098,7 +1098,7 @@ function Get-MediaFileAudioTranscription {
             if ([System.IO.File]::Exists($outputFile)) {
 
                 $null = Microsoft.PowerShell.Management\Remove-Item `
-                    -Path $outputFile -Force
+                    -LiteralPath $outputFile -Force
             }
         }
     }

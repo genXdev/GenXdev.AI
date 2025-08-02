@@ -478,7 +478,7 @@ function Invoke-ImageScenesUpdate {
             $path = GenXdev.FileSystem\Expand-Path $directory
 
             # check if the specified directory exists
-            if (-not (Microsoft.PowerShell.Management\Test-Path $path -PathType Container)) {
+            if (-not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $path -PathType Container)) {
                 Microsoft.PowerShell.Utility\Write-Warning "Directory not found: $path - skipping"
                 continue
             }
@@ -572,7 +572,6 @@ function Invoke-ImageScenesUpdate {
                                 label                 = $sceneData.label
                                 confidence            = $sceneData.confidence
                                 confidence_percentage = $sceneData.confidence_percentage
-                                processed_at          = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                             }
 
                         } else {
@@ -584,7 +583,6 @@ function Invoke-ImageScenesUpdate {
                                 label                 = 'unknown'
                                 confidence            = 0.0
                                 confidence_percentage = 0.0
-                                processed_at          = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                                 error                 = 'Scene classification failed'
                             }
                         }

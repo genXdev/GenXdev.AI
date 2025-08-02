@@ -245,7 +245,7 @@ function Get-ImageDetectedFaces {
             # create form data for DeepStack API (it expects multipart form
             # data, not JSON)
             $form = @{
-                image = Microsoft.PowerShell.Management\Get-Item $imagePath
+                image = Microsoft.PowerShell.Management\Get-Item -LiteralPath $imagePath
             }
 
             # send the request to the DeepStack face recognition API

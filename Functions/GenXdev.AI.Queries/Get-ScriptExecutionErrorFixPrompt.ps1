@@ -681,7 +681,7 @@ function Get-ScriptExecutionErrorFixPrompt {
             $ExposedCmdLets = @(
                 @{
                     Name          = 'Microsoft.PowerShell.Management\Get-ChildItem'
-                    AllowedParams = @('Path=string')
+                    AllowedParams = @('LiteralPath=string')
                     ForcedParams  = @(@{
                             Name  = 'Force'
                             Value = $true
@@ -692,7 +692,7 @@ function Get-ScriptExecutionErrorFixPrompt {
                 },
                 @{
                     Name          = 'Microsoft.PowerShell.Management\Get-Content'
-                    AllowedParams = @('Path=string')
+                    AllowedParams = @('LiteralPath=string')
                     OutputText    = $true
                     Confirm       = $false
                     JsonDepth     = 2

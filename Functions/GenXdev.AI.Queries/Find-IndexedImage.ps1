@@ -1,4 +1,4 @@
-###############################################################################
+<#  #>###############################################################################
 <#
 .SYNOPSIS
 Searches for images using an optimized SQLite database with fast indexed lookups.
@@ -172,6 +172,9 @@ Open in all browsers.
 
 .PARAMETER FullScreen
 Open in fullscreen mode.
+
+.PARAMETER ShowWindow
+Show LM Studio window during initialization.
 
 .PARAMETER Left
 Place window on left side.
@@ -620,10 +623,18 @@ function Find-IndexedImage {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Open in fullscreen mode.'
+            HelpMessage = 'Opens in fullscreen mode'
+        )]
+        [Alias('fs', 'f')]
+        [switch] $FullScreen,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Show LM Studio window during ' +
+                'initialization')
         )]
         [Alias('sw')]
-        [switch]$ShowWindow,
+        [switch] $ShowWindow,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -933,10 +944,7 @@ function Find-IndexedImage {
         }
 
         # create results collection for browser display mode
-        [System.Collections.Generic.List[Object]] $results = @()
-
-        # initialize results collection
-        [System.Collections.Generic.List[Object]] $results = $null
+        [System.Collections.Generic.List[GenXdev.Helpers.ImageSearchResult]] $results = $null
 
         # initialize input tracking flag
         [bool] $fromInput = $false
@@ -1098,13 +1106,12 @@ function Find-IndexedImage {
             if (($null -ne $DbResult.file_extension) -and ($DbResult.file_extension -ne [DBNull]::Value)) { $result.Metadata.Basic.FileExtension = $DbResult.file_extension }
             if (($null -ne $DbResult.pixel_format) -and ($DbResult.pixel_format -ne [DBNull]::Value)) { $result.Metadata.Basic.PixelFormat = $DbResult.pixel_format }
             if (($null -ne $DbResult.format) -and ($DbResult.format -ne [DBNull]::Value)) { $result.Metadata.Basic.Format = $DbResult.format }
-            if (($null -ne $DbResult.width) -and ($DbResult.width -ne [DBNull]::Value)) { $result.Metadata.Basic.Width = $DbResult.width }
-            if (($null -ne $DbResult.height) -and ($DbResult.height -ne [DBNull]::Value)) { $result.Metadata.Basic.Height = $DbResult.height }
+            if (($null -ne $DbResult.width) -and ($DbResult.width -ne [DBNull]::Value)) { $result.Width = $DbResult.width; $result.Metadata.Basic.Width = $DbResult.width }
+            if (($null -ne $DbResult.height) -and ($DbResult.height -ne [DBNull]::Value)) { $result.Height = $DbResult.height; $result.Metadata.Basic.Height = $DbResult.height }
 
             if (($null -ne $DbResult.artist) -and ($DbResult.artist -ne [DBNull]::Value)) { $result.Metadata.Author.Artist = $DbResult.artist }
             if (($null -ne $DbResult.copyright) -and ($DbResult.copyright -ne [DBNull]::Value)) { $result.Metadata.Author.Copyright = $DbResult.copyright }
 
-            if (($null -ne $DbResult.date_time) -and ($DbResult.date_time -ne [DBNull]::Value)) { $result.Metadata.DateTime.DateTime = $DbResult.date_time }
             if (($null -ne $DbResult.date_time_original) -and ($DbResult.date_time_original -ne [DBNull]::Value)) { $result.Metadata.DateTime.DateTimeOriginal = $DbResult.date_time_original }
             if (($null -ne $DbResult.date_time_digitized) -and ($DbResult.date_time_digitized -ne [DBNull]::Value)) { $result.Metadata.DateTime.DateTimeDigitized = $DbResult.date_time_digitized }
 
@@ -1228,12 +1235,6 @@ function Find-IndexedImage {
                 elseif (($null -ne $scenesObj.confidence_percentage)) {
                     $result.Scene.Confidence_Percentage = $scenesObj.confidence_percentage
                 }
-                if (($null -ne $DbResult.scene_processed_at) -and ($DbResult.scene_processed_at -ne [DBNull]::Value)) {
-                    $result.Scene.Processed_At = $DbResult.scene_processed_at
-                }
-                elseif (($null -ne $scenesObj.processed_at)) {
-                    $result.Scene.Processed_At = $scenesObj.processed_at
-                }
                 if (($null -ne $DbResult.scene) -and ($DbResult.scene -ne [DBNull]::Value)) {
                     $result.Scene.Scene = $DbResult.scene
                 }
@@ -1249,42 +1250,31 @@ function Find-IndexedImage {
                     $objectsObj = $DbResult.objects_json |
                         Microsoft.PowerShell.Utility\ConvertFrom-Json
 
-                    $result.Objects.object_counts = @(if ($objectsObj.PSObject.Properties['object_counts']) {
-                            $objectsObj.object_counts
-                        } elseif ($DbResult.object_counts) {
-                            try {
-                                $DbResult.object_counts |
-                                    Microsoft.PowerShell.Utility\ConvertFrom-Json
-                            } catch {
-                                Microsoft.PowerShell.Utility\Write-Verbose "[Find-IndexedImage] Exception: $($_.Exception.Message)"
-                                @()
-                            }
-                        }
-                    )
-
-                    $result.Objects.Count  = if ($objectsObj.PSObject.Properties['count']) {
-                            $objectsObj.count
-                        } else {
-                            $DbResult.objects_count
-                        };
+                    $result.Objects.Count = $DbResult.objects_count;
 
                     if ($objectsObj.PSObject.Properties['predictions']) {
-
-                        $result.Objects.Predictions = @(
-                            $objectsObj.predictions | Microsoft.PowerShell.Core\ForEach-Object {
-                                [GenXdev.Helpers.ImageSearchResultObject] $pr = [GenXdev.Helpers.ImageSearchResultObject]::new();
-                                if ($_.Confidence) { $pr.Confidence = $_.Confidence; }
-                                if ($_.Y_Min) { $pr.Y_Min = $_.Y_Min; }
-                                if ($_.X_Min) { $pr.X_Min = $_.X_Min; }
-                                if ($_.Y_Max) { $pr.Y_Max = $_.Y_Max; }
-                                if ($_.X_Max) { $pr.X_Max = $_.X_Max; }
-                                if ($_.Label) { $pr.Label = $_.Label; }
+É
+                        $objectsObj.predictions | Microsoft.PowerShell.Core\ForEach-Object {
+                            [GenXdev.Helpers.ImageSearchResultObject] $pr = [GenXdev.Helpers.ImageSearchResultObject]::new();
+                            if ($_.Confidence) { $pr.Confidence = $_.Confidence; }
+                            if ($_.Y_Min) { $pr.Y_Min = $_.Y_Min; }
+                            if ($_.X_Min) { $pr.X_Min = $_.X_Min; }
+                            if ($_.Y_Max) { $pr.Y_Max = $_.Y_Max; }
+                            if ($_.X_Max) { $pr.X_Max = $_.X_Max; }
+                            if ($_.Label) { $pr.Label = $_.Label; }
+                            $null = $result.Objects.objects.Add(
                                 $pr
-                            }
-                        )
+                            )
+                        }
                     }
 
-                    $result.Objects.Success = $objectsObj.Success;
+                    if ($objectsObj.object_counts -and ($objectsObj.object_counts.Count -gt 0)) {
+
+                        $objectsObj.object_counts.PSObject.Properties | Microsoft.PowerShell.Core\ForEach-Object {
+
+                            $result.Objects.object_counts["$($_.Name)"] = $_.Value
+                        }
+                    }
                 }
                 catch
                 {
@@ -1306,85 +1296,82 @@ function Find-IndexedImage {
                 [double] $MinConfidenceRatio
             )
 
-            $confidenceMatch = $null -ne $MinConfidenceRatio;
+           $confidenceMatch = $null -ne $MinConfidenceRatio;
 
-            # filter scenes by confidence - modify the scenes object directly
-            if (($null -ne $confidenceMatch) -and
-                ($null -ne $ImageObject.scenes) -and
-                ($null -ne $ImageObject.scenes.confidence)) {
+           # filter scenes by confidence - modify the scenes object directly
+           if (($confidenceMatch) -and
+               ($null -ne $ImageObject.Scenes) -and
+               ($null -ne $ImageObject.Scenes.Confidence)) {
+                if ($ImageObject.Scenes.Confidence -le $MinConfidenceRatio) {
 
-                if ($ImageObject.scenes.confidence -ge $MinConfidenceRatio) {
-                    $confidenceMatch = $true
-                } else {
-                    $confidenceMatch = $false
-                    # filter out the scene data by setting it to default
-                    $ImageObject.scenes = [PSCustomObject]@{
-                        success = $false
-                        scene = 'unknown'
-                        label = 'unknown'
-                        confidence = 0.0
-                        confidence_percentage = 0.0
-                        processed_at = $null
-                    }
-                }
-            } else  { $confidenceMatch = $true }
+                   $ImageObject.Scenes.Success = $False
+                   $ImageObject.Scenes.Scene = 'unknown'
+                   $ImageObject.Scenes.Label = 'unknown'
+                   $ImageObject.Scenes.Confidence = 0.0
+                   $ImageObject.Scenes.Confidence_Percentage = 0.0
+               }
+            }
 
             # filter people by confidence - remove people predictions below minimum threshold
-            $confidenceMatch = $null -ne $MinConfidenceRatio;
             if (
-                ($null -ne $confidenceMatch) -and
-                ($null -ne $ImageObject.people) -and
-                ($null -ne $ImageObject.people.predictions) -and
-                ($ImageObject.people.predictions.Count -gt 0)
+                ($confidenceMatch) -and
+                ($null -ne $ImageObject.People) -and
+                ($null -ne $ImageObject.People.Predictions) -and
+                ($ImageObject.People.Predictions.Count -gt 0)
             ) {
 
                 [System.Collections.Generic.List[GenXdev.Helpers.ImageSearchResultFacePrediction]] $filteredPredictions = @()
-                foreach ($prediction in $ImageObject.people.predictions) {
-                    if ((($null -ne $prediction.confidence) -and ($prediction.confidence -ge $MinConfidenceRatio))) {
+                foreach ($prediction in $ImageObject.People.Predictions) {
+                    if ((($null -ne $prediction.Confidence) -and ($prediction.Confidence -ge $MinConfidenceRatio))) {
                         $null = $filteredPredictions.Add($prediction)
-                        $confidenceMatch = $true
                     }
                 }
-                $ImageObject.people.predictions = $filteredPredictions
-                $ImageObject.people.count = $filteredPredictions.Count
+                $ImageObject.People.Predictions = $filteredPredictions
+                $ImageObject.People.Count = $filteredPredictions.Count
 
                 # update faces array to match filtered predictions
-                $ImageObject.people.faces = @($filteredPredictions | Microsoft.PowerShell.Core\ForEach-Object { $_.userid })
-            } else  { $confidenceMatch = $true }
+                $ImageObject.People.Faces = @($filteredPredictions | Microsoft.PowerShell.Core\ForEach-Object { $_.UserId })
+            }
 
-            # filter objects by confidence - remove object predictions below minimum threshold
-            $confidenceMatch = $null -ne $MinConfidenceRatio;
             if (
-                ($null -ne $confidenceMatch) -and
-                ($null -ne $ImageObject.objects) -and
-                ($null -ne $ImageObject.objects.objects) -and
-                ($ImageObject.objects.objects.Count -gt 0)
+                ($confidenceMatch) -and
+                ($null -ne $ImageObject.Objects) -and
+                ($null -ne $ImageObject.Objects.objects) -and
+                ($ImageObject.Objects.objects.Count -gt 0)
             ) {
 
-                [System.Collections.Generic.List[GenXdev.Helpers.ImageSearchResultObject]] $filteredObjects = @()
+                [System.Collections.Generic.List[GenXdev.Helpers.ImageSearchResultObject]] $filteredPredictions = @()
+
+                foreach ($prediction in $ImageObject.Objects.objects) {
+                    if ((($null -ne $prediction.Confidence) -and ($prediction.Confidence -ge $MinConfidenceRatio))) {
+                        $null = $filteredPredictions.Add($prediction)
+                    }
+                }
+                $ImageObject.Objects.objects = $filteredPredictions
+                $ImageObject.Objects.Count = $filteredPredictions.Count
+
+                foreach ($obj in $ImageObject.Objects.objects) {
+
+                    $null = $ImageObject.Objects.objects.Add($obj)
+                }
+
                 [System.Collections.Generic.Dictionary[string, int]] $filteredCounts = @{}
 
-                foreach ($obj in $ImageObject.objects.objects) {
-                    if ((($null -ne $obj.confidence) -and ($obj.confidence -ge $MinConfidenceRatio))) {
-                        $null = $filteredObjects.Add($obj)
-                        $confidenceMatch = $true
+                foreach ($obj in $ImageObject.Objects.objects) {
 
-                        # update object counts for filtered objects
-                        if ($filteredCounts.ContainsKey($obj.label)) {
-                            $filteredCounts."$($obj.label)"++
-                        } else {
-                            $filteredCounts."$($obj.label)" = 1
-                        }
+                    # update object counts for filtered objects
+                    if ($filteredCounts.ContainsKey($obj.label)) {
+
+                        $filteredCounts."$($obj.label)"++
+                    } else {
+                        $filteredCounts."$($obj.label)" = 1
                     }
                 }
 
-                $ImageObject.objects.objects = $filteredObjects
-                $ImageObject.objects.count = $filteredObjects.Count
-                $ImageObject.objects.object_counts = $filteredCounts
+                $ImageObject.Objects.objects = $filteredObjects
+                $ImageObject.Objects.object_counts = $filteredCounts
+                $ImageObject.Objects.Count = $filteredObjects.Count
             }
-
-            # return whether any confidence match was found
-            return $confidenceMatch
         }
 
         # determine database file path if not provided
@@ -1401,7 +1388,8 @@ function Find-IndexedImage {
         $DatabaseFilePath = GenXdev.AI\Get-ImageIndexPath @params
 
         # validate database path exists
-        if ($null -eq $DatabaseFilePath) {
+        if ([string]::IsNullOrWhiteSpace($DatabaseFilePath)) {
+
             Microsoft.PowerShell.Utility\Write-Error (
                 'Failed to retrieve database file path.'
             )
@@ -2211,21 +2199,21 @@ function Find-IndexedImage {
                     $done."$(($imageObj.Path))" = $true;
 
                     if ($PSBoundParameters.ContainsKey('MinConfidenceRatio') -and ($null -ne $MinConfidenceRatio)) {
-                        $confidenceMatch = Invoke-ConfidenceFiltering -ImageObject $imageObj -MinConfidenceRatio $MinConfidenceRatio
-                        if (-not $confidenceMatch) {
-                            $includeImage = $false
-                        }
+
+                        Invoke-ConfidenceFiltering -ImageObject $imageObj -MinConfidenceRatio $MinConfidenceRatio
                     }
 
                     if ($includeImage) {
+
                         $Info.resultCount++
 
                         if ($null -eq $results) {
+
                             # initialize results collection if not already done
-                            $results = [System.Collections.Generic.List[Object]]::new()
+                            $results = [System.Collections.Generic.List[GenXdev.Helpers.ImageSearchResult]]::new()
                         }
 
-                        $null = $result.Add($imageObj)
+                        $null = $results.Add($imageObj)
                     }
                 } catch {
                 }
@@ -2246,10 +2234,8 @@ function Find-IndexedImage {
                         $done."$(($imageObj.Path))" = $true;
 
                         if ($PSBoundParameters.ContainsKey('MinConfidenceRatio') -and ($null -ne $MinConfidenceRatio)) {
-                            $confidenceMatch = Invoke-ConfidenceFiltering -ImageObject $imageObj -MinConfidenceRatio $MinConfidenceRatio
-                            if (-not $confidenceMatch) {
-                                $includeImage = $false
-                            }
+
+                            Invoke-ConfidenceFiltering -ImageObject $imageObj -MinConfidenceRatio $MinConfidenceRatio
                         }
 
                         if ($includeImage) {
@@ -2276,7 +2262,7 @@ function Find-IndexedImage {
     end {
 
         # handle input object processing from pipeline
-        if ((($null -ne $results -and ($null -ne $InputObject))) -or ($filenames.Count -gt 0)) {
+        if ( ($null -ne $InputObject -and ($InputObject.Count -gt 0)) -or ($filenames.Count -gt 0)) {
 
             # copy parameters for find-image call
             $params = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -2289,21 +2275,39 @@ function Find-IndexedImage {
             )
 
             # pass results as input object
-            $params.InputObject = @(
-                @($results) + @($InputObject) + ($fileNames) | Microsoft.PowerShell.Utility\ForEach-Object {
-
-                    if ($null -ne $PSItem) { $PSItem }
-                } | Microsoft.PowerShell.Utility\Select-Object -Unique
-            )
+            $params.InputObject = $results;
 
             # delegate to find-image for pipeline input processing
-            GenXdev.AI\Find-Image @params
+            GenXdev.AI\Find-Image @params | Microsoft.PowerShell.Core\ForEach-Object -ErrorAction SilentlyContinue {
 
-            return
+                $includeImage = -not $done."$(($imageObj.Path))";
+                if (-not $includeImage) { return; }
+                $done."$(($imageObj.Path))" = $true;
+
+                if ($ShowInBrowser) {
+
+                    # convert to image object for browser display
+                    if ($null -eq $results) {
+
+                        $results = [System.Collections.Generic.List[GenXdev.Helpers.ImageSearchResult]]::new()
+                    }
+
+                    $Info.resultCount++
+
+                    $null = $results.Add($imageObj)
+                } else {
+
+                    $Info.resultCount++
+
+                    # output raw results for further processing
+                    Microsoft.PowerShell.Utility\Write-Output $_
+                }
+            }
         }
 
         # provide appropriate message if no results were found
         if ($Info.resultCount -eq 0) {
+
             $searchCriteria = [System.Collections.Generic.List[string]]::new()
 
             # collect search criteria for user feedback

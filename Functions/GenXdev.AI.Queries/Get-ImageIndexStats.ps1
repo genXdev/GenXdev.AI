@@ -205,7 +205,7 @@ function Get-ImageIndexStats {
         }
 
         # check if database exists before proceeding
-        if (-not (Microsoft.PowerShell.Management\Test-Path $DatabaseFilePath)) {
+        if (-not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $DatabaseFilePath)) {
 
             throw ("Image database not found at: $DatabaseFilePath. Please " +
                 'run Export-ImageIndex first.')
@@ -309,7 +309,7 @@ ORDER BY count DESC
                 'WHERE has_nudity = 1')).count
 
         # get file statistics for database size and modification time
-        $dbFileInfo = Microsoft.PowerShell.Management\Get-Item $DatabaseFilePath
+        $dbFileInfo = Microsoft.PowerShell.Management\Get-Item -LiteralPath $DatabaseFilePath
 
         # calculate database size in megabytes rounded to 2 decimal places
         $dbSizeMB = [Math]::Round($dbFileInfo.Length / 1MB, 2)

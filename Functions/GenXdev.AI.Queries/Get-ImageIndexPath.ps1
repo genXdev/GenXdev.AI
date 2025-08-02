@@ -201,7 +201,7 @@ function Get-ImageIndexPath {
     begin {
 
         # define required schema version constant for database compatibility
-        $SCHEMA_VERSION = '1.0.0.5'
+        $SCHEMA_VERSION = '1.0.0.6'
 
         # copy identical parameters for Get-AIMetaLanguage
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -302,7 +302,7 @@ function Get-ImageIndexPath {
         $needsInitialization = $ForceIndexRebuild
 
         # check if the database file exists; if not, initialization is required
-        if (-not (Microsoft.PowerShell.Management\Test-Path $DatabaseFilePath)) {
+        if (-not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $DatabaseFilePath)) {
 
             Microsoft.PowerShell.Utility\Write-Verbose (
                 'Database file not found, initialization required.'
@@ -334,67 +334,62 @@ function Get-ImageIndexPath {
 
                     $needsInitialization = $true
                 }
-                else {
-
-                    Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Schema version '$($versionResult.Version)' is compatible."
-                    )
-                }
+                    else {
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Schema version '$($versionResult.Version)' is compatible."
+                        )
+                    }
             }
             catch {
-                # check if the error is due to file being locked and try backup if NoFallback is not set
+                # check if the error is due to file being locked and try 4 if NoFallback is not set
                 $isFileLocked = $_.Exception.Message -like "*database is locked*" -or
                                $_.Exception.Message -like "*being used by another process*" -or
                                $_.Exception.Message -like "*cannot access the file*"
 
                 if ($isFileLocked -and (-not $NoFallback)) {
 
-                    # define backup file path
-                    $backupFilePath = GenXdev.FileSystem\Expand-Path "${DatabaseFilePath}.backup.db" -DeleteExistingFile -CreateDirectory
+                    $backupFilePath = "";
+                    $idx = 0;
 
-                    if ([IO.File]::Exists($backupFilePath)) {
-
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Database file is locked, attempting to use backup: ${backupFilePath}"
-                        )
-
+                    while ($true) {
                         try {
-                            # try to query the backup file version
+                            $backupFilePath = GenXdev.FileSystem\Expand-Path "${DatabaseFilePath}.backup.$(($idx -gt 0 ? '.$idx' : ''))db" -FileMustExist -CreateDirectory
+
+                            if (-not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $backupFilePath -ErrorAction SilentlyContinue)) {
+
+                                break;
+                            }
+
+                            # query the schema version from the database metadata table
                             $versionResult = GenXdev.Data\Invoke-SQLiteQuery `
                                 -DatabaseFilePath $backupFilePath `
                                 -Queries 'SELECT version FROM ImageSchemaVersion WHERE id = 1' `
                                 -ErrorAction SilentlyContinue
 
-                            # if backup version is compatible, use it
-                            if (($null -ne $versionResult) -and `
-                                ($versionResult.Version -eq $SCHEMA_VERSION)) {
+                            # if version is missing or does not match, initialization is
+                            # required
+                            if (($null -eq $versionResult) -or `
+                                ($versionResult.Version -ne $SCHEMA_VERSION)) {
 
-                                Microsoft.PowerShell.Utility\Write-Verbose (
-                                    "Using backup database with compatible schema version '$($versionResult.Version)'"
-                                )
-
-                                # update the database path to use backup
-                                $DatabaseFilePath = $backupFilePath
+                                $backupFilePath = "";
+                                continue;
                             }
-                            else {
 
-                                Microsoft.PowerShell.Utility\Write-Verbose (
-                                    "Backup database schema version mismatch or missing, initialization required."
-                                )
-
-                                $needsInitialization = $true
-                            }
+                            $DatabaseFilePath = $backupFilePath
+                            break;
                         }
                         catch {
+                            if (-not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $backupFilePath -ErrorAction SilentlyContinue)) {
 
-                            Microsoft.PowerShell.Utility\Write-Verbose (
-                                "Failed to access backup database, initialization required: $($_.Exception.Message)"
-                            )
+                                break;
+                            }
 
-                            $needsInitialization = $true
+                            $backupFilePath = "";
+                            $idx++;
                         }
                     }
-                    else {
+
+                    if (-not [IO.File]::Exists($backupFilePath)) {
 
                         Microsoft.PowerShell.Utility\Write-Verbose (
                             "Database file is locked and no backup found, initialization required."
@@ -446,7 +441,12 @@ function Get-ImageIndexPath {
             }
         }
 
-        return $DatabaseFilePath
+            # Always return a value (database path or $null)
+            if (-not [String]::IsNullOrWhiteSpace($DatabaseFilePath)) {
+                return $DatabaseFilePath
+            } else {
+                return $null
+            }
     }
 
     end {

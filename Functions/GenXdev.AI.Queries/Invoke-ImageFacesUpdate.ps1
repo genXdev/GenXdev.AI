@@ -566,7 +566,6 @@ function Invoke-ImageFacesUpdate {
                                     count       = $faceNames.Count
                                     faces       = $faceNames
                                     predictions = $predictions
-                                    processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                                 }
                         } else {
 
@@ -576,7 +575,6 @@ function Invoke-ImageFacesUpdate {
                                 count       = 0
                                 faces       = @()
                                 predictions = @()
-                                processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                             }
                         }
 
@@ -611,7 +609,6 @@ function Invoke-ImageFacesUpdate {
                                 count = 0
                                 faces = @()
                                 predictions = @()
-                                processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                                 error = "Face detection failed: $($_.Exception.Message)"
                             }
 

@@ -304,7 +304,7 @@ function Get-AIDefaultLLMSettings {
 
             # read and parse JSON content
             $jsonContent = Microsoft.PowerShell.Management\Get-Content `
-                -Path $defaultsPath `
+                -LiteralPath $defaultsPath `
                 -Raw `
                 -ErrorAction Stop
 

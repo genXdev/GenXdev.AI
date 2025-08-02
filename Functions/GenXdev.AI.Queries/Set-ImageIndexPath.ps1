@@ -138,7 +138,7 @@ function Set-ImageIndexPath {
 
             # validate that the parent directory exists or can be created
             if (-not [String]::IsNullOrWhiteSpace($parentDir) -and
-                -not (Microsoft.PowerShell.Management\Test-Path $parentDir)) {
+                -not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $parentDir)) {
 
                 try {
                     # create parent directory if it doesn't exist

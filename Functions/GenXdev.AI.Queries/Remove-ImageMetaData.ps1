@@ -394,12 +394,56 @@ function Remove-ImageMetaData {
             Microsoft.PowerShell.Utility\Write-Verbose `
                 "Processing directory: $path"
 
+            # "$path\*.bmp", "$path\*.webp", "$path\*.tiff", "$path\*.tif"
             # get all supported image files from the specified directory
-            Microsoft.PowerShell.Management\Get-ChildItem `
-                -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.gif","$path\*.png" `
+            (@(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path
+                -Filter "*.bmp" `
                 -Recurse:$Recurse `
                 -File `
-                -ErrorAction SilentlyContinue |
+                -ErrorAction SilentlyContinue) +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path
+                -Filter "*.webp" `
+                -Recurse:$Recurse `
+                -File `
+                -ErrorAction SilentlyContinue) +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path
+                -Filter "*.tif" `
+                -Recurse:$Recurse `
+                -File `
+                -ErrorAction SilentlyContinue) +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path
+                -Filter "*.tiff" `
+                -Recurse:$Recurse `
+                -File `
+                -ErrorAction SilentlyContinue) +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path
+                -Filter "*.jpg" `
+                -Recurse:$Recurse `
+                -File `
+                -ErrorAction SilentlyContinue) +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path
+                -Filter "*.jpeg" `
+                -Recurse:$Recurse `
+                -File `
+                -ErrorAction SilentlyContinue) + +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path
+                -Filter "*.gif" `
+                -Recurse:$Recurse `
+                -File `
+                -ErrorAction SilentlyContinue) +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path
+                -Filter "*.png" `
+                -Recurse:$Recurse `
+                -File `
+                -ErrorAction SilentlyContinue)) |
                 Microsoft.PowerShell.Core\ForEach-Object {
 
                     # store the full path of the current image

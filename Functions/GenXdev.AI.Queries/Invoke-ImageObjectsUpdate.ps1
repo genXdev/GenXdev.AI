@@ -646,7 +646,6 @@ function Invoke-ImageObjectsUpdate {
                                         objects       = $objectLabels
                                         predictions   = $predictions
                                         object_counts = @{}
-                                        processed_at  = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                                     }
 
                                     # populate object counts for each unique object type
@@ -665,7 +664,6 @@ function Invoke-ImageObjectsUpdate {
                                             objects       = @()
                                             predictions   = @()
                                             object_counts = @{}
-                                            processed_at  = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                                         }
                                     }
 
@@ -704,7 +702,6 @@ function Invoke-ImageObjectsUpdate {
                                         objects = @()
                                         predictions = @()
                                         object_counts = @{}
-                                        processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                                         error = "Object detection failed: $($_.Exception.Message)"
                                     }
 

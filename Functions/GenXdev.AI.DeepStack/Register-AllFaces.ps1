@@ -221,7 +221,7 @@ function Register-AllFaces {
         $script:SkippedRegistrations = 0
 
         # validate that the faces directory exists before proceeding
-        if (-not (Microsoft.PowerShell.Management\Test-Path $FacesDirectory `
+        if (-not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $FacesDirectory `
                     -PathType Container)) {
 
             throw "Faces directory does not exist: $FacesDirectory"
@@ -418,7 +418,7 @@ function Register-AllFaces {
 
                                 # rename the failed image file
                                 Microsoft.PowerShell.Management\Rename-Item `
-                                    -Path $imagePath `
+                                    -LiteralPath $imagePath `
                                     -NewName $newPath `
                                     -ErrorAction Stop
 
@@ -509,7 +509,7 @@ function Register-AllFaces {
 
             # get all image files in the person's directory excluding failed files
             $imageFiles = Microsoft.PowerShell.Management\Get-ChildItem `
-                -Path $PersonDirectory.FullName `
+                -LiteralPath $PersonDirectory.FullName `
                 -File |
                 Microsoft.PowerShell.Core\Where-Object {
                     $_.Extension -match '\.(jpg|jpeg|png|gif)$' -and
@@ -620,10 +620,10 @@ function Register-AllFaces {
             try {
 
                 # change to the faces directory for processing
-                Microsoft.PowerShell.Management\Set-Location -Path $FacesDirectory
+                Microsoft.PowerShell.Management\Set-Location -LiteralPath $FacesDirectory
 
                 # get all person directories from the faces directory
-                $personDirectories = @(Microsoft.PowerShell.Management\Get-ChildItem  "$FacesDirectory\*" `
+                $personDirectories = @(Microsoft.PowerShell.Management\Get-ChildItem -LiteralPath "$FacesDirectory" -Filter "*" `
                         -Directory)
 
                 # check if any person directories were found
@@ -651,7 +651,7 @@ function Register-AllFaces {
             finally {
 
                 # restore original location regardless of success or failure
-                Microsoft.PowerShell.Management\Set-Location -Path $originalLocation
+                Microsoft.PowerShell.Management\Set-Location -LiteralPath $originalLocation
             }
 
             # report final results to user

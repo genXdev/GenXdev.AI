@@ -989,7 +989,6 @@ $json`r`n
                                     overall_mood_of_image = ""
                                     picture_type = ""
                                     style_type = ""
-                                    processed_at = (Microsoft.PowerShell.Utility\Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                                     error = "Keyword generation failed: $($_.Exception.Message)"
                                 }
 

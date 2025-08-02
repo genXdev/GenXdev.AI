@@ -131,7 +131,7 @@ function Get-AIImageCollection {
 
         # check if user provided specific directories to use as default
         if ($null -ne $ImageDirectories -and
-            $ImageDirectories.Count -gt 0) {
+            ($ImageDirectories.Count -gt 0)) {
 
             # use provided directories if available
             $result = $ImageDirectories

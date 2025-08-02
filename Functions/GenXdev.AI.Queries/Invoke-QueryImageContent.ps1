@@ -745,7 +745,7 @@ function Invoke-QueryImageContent {
 
         # ensure the specified image file exists before proceeding with the
         # analysis
-        if (-not (Microsoft.PowerShell.Management\Test-Path $imagePath)) {
+        if (-not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $imagePath)) {
 
             # if the file doesn't exist, throw a terminating error
             throw "Image file not found: $imagePath"

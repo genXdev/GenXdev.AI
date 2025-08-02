@@ -37,7 +37,7 @@ $message
         $testImagePath = GenXdev.FileSystem\Expand-Path "$tmpPath\test-image.png" -CreateDirectory -DeleteExistingFile
         $sourceImage = GenXdev.FileSystem\Expand-Path "$PSScriptRoot\..\..\programmer.jpg"
 
-        Microsoft.PowerShell.Management\Copy-Item $sourceImage $testImagePath -Force
+        Microsoft.PowerShell.Management\Copy-Item -LiteralPath $sourceImage -Destination $testImagePath -Force
 
         $null = GenXdev.AI\Remove-ImageMetaData -ImageDirectories $tmpPath -AllLanguages
 

@@ -219,7 +219,10 @@ Opens in Firefox.
 Opens in all registered modern browsers.
 
 .PARAMETER FullScreen
-Opens in fullscreen mode.
+Open in fullscreen mode.
+
+.PARAMETER ShowWindow
+Show LM Studio window during initialization.
 
 .PARAMETER Left
 Place browser window on the left side of the screen.
@@ -886,6 +889,14 @@ function Find-Image {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = ('Show LM Studio window during ' +
+                'initialization')
+        )]
+        [Alias('sw')]
+        [switch] $ShowWindow,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = 'Place browser window on the left side of the screen'
         )]
         [switch] $Left,
@@ -1207,7 +1218,7 @@ function Find-Image {
                     # log parsing failure for debugging purposes
                     Microsoft.PowerShell.Utility\Write-Verbose (
                         "Failed to parse metadata from $metadataFile")
-                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
+                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception 1111: $($_.Exception.Message)"
                 }
             }
 
@@ -1238,7 +1249,7 @@ function Find-Image {
                 catch {
                     # reset people data if json parsing fails
                     $peopleFound = @{count = 0; faces = @() }
-                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
+                    Microsoft.PowerShell.Utility\Write-Verbose " [Find-Image] Exception 2: $($_.Exception.Message)"
                 }
             }
 
@@ -1267,24 +1278,25 @@ function Find-Image {
 
                     # if parsed data is not null and has predictions
                     if ($null -ne $parsedObjects -and
-                        $null -ne $parsedObjects.predictions) {
+                        $null -ne $parsedObjects.objects) {
 
                         # remap to the structure the script expects
                         $objectsFound = @{
-                            count         = $parsedObjects.predictions.Count
-                            objects       = $parsedObjects.predictions
+                            count         = $parsedObjects.objects.Count
+                            objects       = $parsedObjects.predictions || $parsedObjects.objects
                             object_counts = $parsedObjects.object_counts
                         }
                     }
                 }
                 catch {
+
                     # reset objects data if json parsing fails
                     $objectsFound = @{
                         count         = 0;
                         objects       = @();
                         object_counts = @{}
                     }
-                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
+                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception 3: $($_.Exception.Message)"
                 }
             }
 
@@ -1319,7 +1331,7 @@ function Find-Image {
                         scene      = 'unknown';
                         confidence = 0.0
                     }
-                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
+                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception 4: $($_.Exception.Message)"
                 }
             }
 
@@ -1533,8 +1545,11 @@ function Find-Image {
 
                 # check if the found scene matches any of the search criteria with wildcard support
                 foreach ($searchedForScene in $Scenes) {
+
                     # use wildcard matching for flexible scene search
-                    if ($scenesFound.scene -like $searchedForScene) {
+                    if ($scenesFound.scene -like $searchedForScene -and (
+                        $scenesFound.scene -notlike "unknown")) {
+
                         $sceneMatch = $true
                         # output match confirmation when verbose mode is enabled
                         if ($VerbosePreference -eq 'Continue') {
@@ -1655,7 +1670,7 @@ function Find-Image {
                         }
                         catch {
                             Microsoft.PowerShell.Utility\Write-Verbose "Failed to read cached metadata: $_"
-                            Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
+                            Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: 5 $($_.Exception.Message)"
                             $metadata = GenXdev.Helpers\Get-ImageMetadata -ImagePath $image
                         }
                     }
@@ -1830,7 +1845,7 @@ function Find-Image {
                     }
                 } catch {
                     Microsoft.PowerShell.Utility\Write-Verbose ("Could not process EXIF metadata for ${image}: $_")
-                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
+                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception 6: $($_.Exception.Message)"
                     $exifMatch = $false
                 }
             }
@@ -1983,7 +1998,7 @@ function Find-Image {
                             }
                             catch {
                                 Microsoft.PowerShell.Utility\Write-Verbose "Failed to read cached metadata: $_"
-                                Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
+                                Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception 7: $($_.Exception.Message)"
                                 $metadata = GenXdev.Helpers\Get-ImageMetadata -ImagePath $image
                                 # save
                                 $null = $metadata | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 |
@@ -2008,24 +2023,57 @@ function Find-Image {
                             $null = $imageObj.Dispose()
                         }
                     } catch {
-                        Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception: $($_.Exception.Message)"
-                        return
+                        Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception 8: $($_.Exception.Message)"
                     }
+                }
+
+                if ($null -ne $objectsFound -and $null -ne $objectsFound.objects -and
+                    $objectsFound.objects -isnot [System.Collections.IEnumerable]) {
+                    $objectsFound.objects = @($objectsFound.objects)
+                }
+                elseif ($null -ne $objectsFound -and $null -ne $objectsFound.objects -and
+                    $objectsFound.objects -is [string]) {
+                    $objectsFound.objects = @($objectsFound.objects)
+                }
+                elseif ($null -ne $objectsFound -and $null -eq $objectsFound.objects) {
+                    $objectsFound.objects = @()
+                }
+
+                if ($null -ne $peopleFound -and $null -ne $peopleFound.faces -and $peopleFound.faces -isnot [System.Collections.IEnumerable]) {
+                    $peopleFound.faces = @($peopleFound.faces)
+                }
+                if ($null -ne $peopleFound -and $null -ne $peopleFound.predictions -and $peopleFound.predictions -isnot [System.Collections.IEnumerable]) {
+                    $peopleFound.predictions = @($peopleFound.predictions)
+                }
+                if ($null -ne $keywordsFound -and $keywordsFound -isnot [System.Collections.IEnumerable]) {
+                    $keywordsFound = @($keywordsFound)
                 }
 
                 # return standardized hashtable with all image metadata and processing results
                 # ensuring consistent structure with Find-IndexedImage
-                [GenXdev.Helpers.ImageSearchResult] $standardizedOutput = [GenXdev.Helpers.ImageSearchResult]::FromJson((@{
+                $obj = @{
                     Path        = $image
-                    Width       = $width
-                    Height      = $height
+                    Width       = $metadata.Basic.Width
+                    Height      = $metadata.Basic.Height
                     Metadata    = $metadata
                     Keywords    = $keywordsFound
                     Description = $descriptionFound
                     People      = $peopleFound
                     Objects     = $objectsFound
                     Scenes      = $scenesFound
-                } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress));
+                }
+                [GenXdev.Helpers.ImageSearchResult] $standardizedOutput = $null
+                $json = $obj | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress;
+                try {
+                    $standardizedOutput = [GenXdev.Helpers.ImageSearchResult]::FromJson((
+                        $json)
+                    );
+                }
+                catch {
+                    $msg = "[Find-Image] Exception 9: $($_.Exception.Message)";
+                    Microsoft.PowerShell.Utility\Write-Verbose $msg;
+                    throw;
+                }
 
                 Microsoft.PowerShell.Utility\Write-Output $standardizedOutput
             }
@@ -2115,7 +2163,6 @@ function Find-Image {
                     }
 
         }
-
 
         # handle append mode - output InputObject first, then process as normal
         if ($Append -and $null -ne $InputObject) {
@@ -2215,8 +2262,8 @@ function Find-Image {
         }
 
         # remove duplicate directories from search list for efficiency
-        $directories = $directories |
-            Microsoft.PowerShell.Utility\Select-Object -Unique
+        $directories = @($directories |
+            Microsoft.PowerShell.Utility\Select-Object -Unique)
 
         # iterate through each specified image directory to scan for images
         foreach ($imageDirectory in $directories) {
@@ -2238,11 +2285,54 @@ function Find-Image {
             }
 
             # search for image files (jpg, jpeg, gif, png, bmp, webp, tiff, tif) and process each one found
-            Microsoft.PowerShell.Management\Get-ChildItem `
-                -Path "$path\*.jpg", "$path\*.jpeg", "$path\*.gif", "$path\*.png", "$path\*.bmp", "$path\*.webp", "$path\*.tiff", "$path\*.tif" `
-                -Recurse:(!$NoRecurse) `
+            (@(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path `
+                -Filter "*.bmp" `
+                -Recurse:$(!$NoRecurse) `
                 -File `
-                -ErrorAction SilentlyContinue |
+                -ErrorAction SilentlyContinue) +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path `
+                -Filter "*.webp" `
+                -Recurse:$(!$NoRecurse) `
+                -File `
+                -ErrorAction SilentlyContinue) +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path `
+                -Filter "*.tif" `
+                -Recurse:$(!$NoRecurse) `
+                -File `
+                -ErrorAction SilentlyContinue) +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path `
+                -Filter "*.tiff" `
+                -Recurse:$(!$NoRecurse) `
+                -File `
+                -ErrorAction SilentlyContinue) +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path `
+                -Filter "*.jpg" `
+                -Recurse:$(!$NoRecurse) `
+                -File `
+                -ErrorAction SilentlyContinue) +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path `
+                -Filter "*.jpeg" `
+                -Recurse:$(!$NoRecurse) `
+                -File `
+                -ErrorAction SilentlyContinue) +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path `
+                -Filter "*.gif" `
+                -Recurse:$(!$NoRecurse) `
+                -File `
+                -ErrorAction SilentlyContinue) +
+                @(Microsoft.PowerShell.Management\Get-ChildItem `
+                -LiteralPath $path `
+                -Filter "*.png" `
+                -Recurse:$(!$NoRecurse) `
+                -File `
+                -ErrorAction SilentlyContinue)) |
                 Microsoft.PowerShell.Core\ForEach-Object {
 
                     # filter on pathlike patterns if specified for directory scanning

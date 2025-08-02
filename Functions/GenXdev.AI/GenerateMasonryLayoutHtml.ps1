@@ -162,7 +162,8 @@ function GenerateMasonryLayoutHtml {
         Microsoft.PowerShell.Utility\Write-Verbose "Starting HTML generation for $($Images.Count) images using template: $templatePath"
 
         # Verify template file exists
-        if (-not (Microsoft.PowerShell.Management\Test-Path $templatePath)) {
+        if (-not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $templatePath)) {
+
             throw "Template file not found: $templatePath"
         }
 
@@ -175,7 +176,8 @@ function GenerateMasonryLayoutHtml {
 
             try {
                 # Check if file exists
-                if (-not (Microsoft.PowerShell.Management\Test-Path $ImagePath)) {
+                if (-not (Microsoft.PowerShell.Management\Test-Path -LiteralPath $ImagePath)) {
+
                     Microsoft.PowerShell.Utility\Write-Verbose "Image file not found: $ImagePath"
                     return $null
                 }
@@ -218,7 +220,8 @@ function GenerateMasonryLayoutHtml {
     process {
         # Read the HTML template
         Microsoft.PowerShell.Utility\Write-Verbose "Reading HTML template from: $templatePath"
-        $html = Microsoft.PowerShell.Management\Get-Content -Path $templatePath -Raw -Encoding UTF8
+        $html = Microsoft.PowerShell.Management\Get-Content -LiteralPath $templatePath -Raw -Encoding UTF8
+
         # Convert image paths for browser compatibility
         if ($EmbedImages) {
             Microsoft.PowerShell.Utility\Write-Verbose 'Converting image paths to base64 data URLs'

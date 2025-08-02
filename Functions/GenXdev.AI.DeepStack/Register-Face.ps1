@@ -271,7 +271,7 @@ function Register-Face {
 
                 # add image file to form data
                 $form[$imageKey] = Microsoft.PowerShell.Management\Get-Item `
-                    $validatedImagePaths[$i]
+                    -LiteralPath $validatedImagePaths[$i]
             }
 
             # send the http request to the deepstack face recognition api

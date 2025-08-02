@@ -155,6 +155,10 @@
             opacity: 1;
         }
 
+        .gallery-item.auto-animate .face-overlay {
+            opacity: 1;
+        }
+
         .face-label {
             background-color: rgba(0, 0, 0, 0.7);
             color: white;
@@ -194,6 +198,10 @@
         }
 
         .gallery-item:hover .object-overlay {
+            opacity: 1;
+        }
+
+        .gallery-item.auto-animate .object-overlay {
             opacity: 1;
         }
 
@@ -765,287 +773,68 @@
 
         // --- AutoAnimateRectangles functionality ---
         if (mydata.AutoAnimateRectangles) {
-            // Animation state for overlays
-            let lastOverlayUpdate;
-            // Minimal, robust rectangle animation: overlays match detected bounding boxes
-            const pastelColors = [
-                'lavender', 'thistle', 'plum', 'lightpink', 'mistyrose', 'honeydew', 'azure', 'aliceblue',
-                'lightcyan', 'palegreen', 'lightyellow', 'lemonchiffon', 'mintcream', 'beige', 'seashell',
-                'lightgoldenrodyellow', 'powderblue', 'paleturquoise', 'lightblue', 'lightsteelblue',
-                'wheat', 'cornsilk', 'oldlace', 'linen', 'blanchedalmond', 'papayawhip', 'peachpuff',
-                'moccasin', 'navajowhite', 'lavenderblush', 'floralwhite', 'ghostwhite', 'gainsboro',
-                'whitesmoke', 'snow', 'ivory', 'antiquewhite', 'khaki', 'lightgreen', 'aquamarine',
-                'palegoldenrod', 'palevioletred', 'lightcoral', 'lightsalmon', 'lightseagreen', 'mediumaquamarine'
-            ];
-            let overlays = [];
-            let idx = 0;
-            let lastCycle = 0;
-            let running = false;
-            // Overlay management: create overlays for each face/object in visible images, clean up old ones
-            let prevOverlayElements = [];
-            function getOrCreateOverlays() {
-                const overlays = [];
-                const visibleImages = Array.from(document.querySelectorAll('.gallery-item img'))
-                    .filter(img => {
-                        const rect = img.getBoundingClientRect();
-                        let bottomIsBelowViewportTop = rect.bottom > 0;
-                        let topIsAboveViewportBottom = rect.top < (window.innerHeight || document.documentElement.clientHeight);
-                        return bottomIsBelowViewportTop && topIsAboveViewportBottom;
-                    });
-                visibleImages.forEach((img, i) => {
-                    const container = img.parentElement;
-                    // Ensure container is relative and overlays are above the image
-                    container.style.position = 'relative';
-                    img.style.position = 'relative';
-                    img.style.zIndex = 0; // Lower z-index so overlays are above
-                    // Find face/object data for this image
-                    let imageIndex = -1;
-                    const m = /image-(\d+)/.exec(container.parentElement?.id || container.id || '');
-                    if (m) imageIndex = parseInt(m[1], 10);
-                    let faces = [], objects = [];
-                    // Use width/height from image data, fallback to browser's built-in properties as last resort
-                    let imageData = (window.imageGallery && imageIndex >= 0) ? window.imageGallery.images?.[imageIndex] : null;
-                    let imageNaturalWidth = (imageData && imageData.width) ? imageData.width : (img.width || img.offsetWidth);
-                    let imageNaturalHeight = (imageData && imageData.height) ? imageData.height : (img.height || img.offsetHeight);
-                    let imageDisplayWidth = img.offsetWidth;
-                    let imageDisplayHeight = img.offsetHeight;
-                    let scaleX = imageDisplayWidth / imageNaturalWidth;
-                    let scaleY = imageDisplayHeight / imageNaturalHeight;
-                    if (window.imageGallery && imageIndex >= 0) {
-                        const image = window.imageGallery.images?.[imageIndex];
-                        if (image) {
-                            faces = Array.isArray(image.people?.predictions) ? image.people.predictions : parsePsObjectArray(image.people?.predictions);
-                            objects = Array.isArray(image.objects?.objects) ? image.objects.objects : [];
-                        }
-                    }
-                    // If no faces/objects, just make one overlay for the image
-                    if ((!faces || faces.length === 0) && (!objects || objects.length === 0)) {
-                        let overlay = container.querySelector('.face-overlay[data-anim="true"]');
-                        if (!overlay) {
-                            overlay = document.createElement('div');
-                            overlay.className = 'face-overlay';
-                            overlay.setAttribute('data-anim', 'true');
-                            overlay.style.position = 'absolute';
-                            overlay.style.zIndex = 2;
-                            overlay.style.left = 0;
-                            overlay.style.top = 0;
-                            overlay.style.width = imageDisplayWidth + 'px';
-                            overlay.style.height = imageDisplayHeight + 'px';
-                            overlay.style.pointerEvents = 'none';
-                            container.style.position = 'relative';
-                            container.appendChild(overlay);
-                        }
-                        overlay.style.display = '';
-                        overlays.push(overlay);
-                    } else {
-                        // For each face, create overlay using bounding box if available
-                        faces.forEach((face, j) => {
-                            // Expect face to have bounding box: {x_min, y_min, x_max, y_max} in pixels or relative [0,1]
-                            let overlay = container.querySelector('.face-overlay[data-face-idx="' + j + '"][data-anim="true"]');
-                            if (!overlay) {
-                                overlay = document.createElement('div');
-                                overlay.className = 'face-overlay';
-                                overlay.setAttribute('data-face-idx', j);
-                                overlay.setAttribute('data-anim', 'true');
-                                overlay.style.position = 'absolute';
-                                overlay.style.zIndex = 2;
-                                container.style.position = 'relative';
-                                container.appendChild(overlay);
-                            }
-                            // Use bounding box if present (x_min, y_min, x_max, y_max)
-                            let l = 0, t = 0, w = imageDisplayWidth, h = imageDisplayHeight;
-                            if (face && typeof face === 'object' && 'x_min' in face && 'y_min' in face && 'x_max' in face && 'y_max' in face) {
-                                let x_min = face.x_min, y_min = face.y_min, x_max = face.x_max, y_max = face.y_max;
-                                // If values are 0-1, treat as relative
-                                if (x_min < 1 && y_min < 1 && x_max <= 1 && y_max <= 1) {
-                                    l = x_min * imageDisplayWidth;
-                                    t = y_min * imageDisplayHeight;
-                                    w = (x_max - x_min) * imageDisplayWidth;
-                                    h = (y_max - y_min) * imageDisplayHeight;
-                                } else {
-                                    l = x_min * scaleX;
-                                    t = y_min * scaleY;
-                                    w = (x_max - x_min) * scaleX;
-                                    h = (y_max - y_min) * scaleY;
-                                }
-                            }
-                            overlay.style.left = l + 'px';
-                            overlay.style.top = t + 'px';
-                            overlay.style.width = w + 'px';
-                            overlay.style.height = h + 'px';
-                            overlay.style.pointerEvents = 'none';
-                            overlay.style.display = '';
-                            overlays.push(overlay);
-                        });
-                        // For each object, create overlay using bounding box if available
-                        objects.forEach((obj, k) => {
-                            let overlay = container.querySelector('.object-overlay[data-object-idx="' + k + '"][data-anim="true"]');
-                            if (!overlay) {
-                                overlay = document.createElement('div');
-                                overlay.className = 'object-overlay';
-                                overlay.setAttribute('data-object-idx', k);
-                                overlay.setAttribute('data-anim', 'true');
-                                overlay.style.position = 'absolute';
-                                overlay.style.zIndex = 2;
-                                container.style.position = 'relative';
-                                container.appendChild(overlay);
-                            }
-                            let l = 0, t = 0, w = imageDisplayWidth, h = imageDisplayHeight;
-                            if (obj && typeof obj === 'object' && 'x_min' in obj && 'y_min' in obj && 'x_max' in obj && 'y_max' in obj) {
-                                let x_min = obj.x_min, y_min = obj.y_min, x_max = obj.x_max, y_max = obj.y_max;
-                                if (x_min < 1 && y_min < 1 && x_max <= 1 && y_max <= 1) {
-                                    l = x_min * imageDisplayWidth;
-                                    t = y_min * imageDisplayHeight;
-                                    w = (x_max - x_min) * imageDisplayWidth;
-                                    h = (y_max - y_min) * imageDisplayHeight;
-                                } else {
-                                    l = x_min * scaleX;
-                                    t = y_min * scaleY;
-                                    w = (x_max - x_min) * scaleX;
-                                    h = (y_max - y_min) * scaleY;
-                                }
-                            }
-                            overlay.style.left = l + 'px';
-                            overlay.style.top = t + 'px';
-                            overlay.style.width = w + 'px';
-                            overlay.style.height = h + 'px';
-                            overlay.style.pointerEvents = 'none';
-                            overlay.style.display = '';
-                            overlays.push(overlay);
-                        });
+            // --- AutoAnimateRectangles implementation ---
+            // Helper: get all visible .gallery-item images in viewport
+            function getVisibleGalleryItems() {
+                const items = Array.from(document.querySelectorAll('.gallery-item'));
+                const visible = items.filter(item => {
+                    const rect = item.getBoundingClientRect();
+                    return rect.bottom > 0 && rect.top < window.innerHeight;
+                });
+                return visible;
+            }
+
+            // Helper: find the most centered image in the viewport
+            function getMostCenteredGalleryItem() {
+                const visible = getVisibleGalleryItems();
+                if (visible.length === 0) return null;
+                const viewportCenter = window.innerHeight / 2;
+                let minDist = Infinity;
+                let centered = null;
+                visible.forEach(item => {
+                    const rect = item.getBoundingClientRect();
+                    const itemCenter = rect.top + rect.height / 2;
+                    const dist = Math.abs(itemCenter - viewportCenter);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        centered = item;
                     }
                 });
-                // Clean up overlays that are no longer needed (only those created by animation)
-                prevOverlayElements.forEach(el => {
-                    if (el.getAttribute && el.getAttribute('data-anim') === 'true' && !overlays.includes(el)) {
-                        if (el.parentElement) el.parentElement.removeChild(el);
-                    }
-                });
-                prevOverlayElements = overlays;
-                return overlays;
+                return centered;
             }
-            function animateOverlaysRAF(ts) {
-                if (!running) return;
-                requestAnimationFrame(animateOverlaysRAF);
-                // Repopulate overlays every 2 seconds, but only if changed
-                if (typeof lastOverlayUpdate === 'undefined') lastOverlayUpdate = ts;
-                let overlaysChanged = false;
-                if (ts - lastOverlayUpdate > 1400) {
-                    const newOverlays = getOrCreateOverlays();
-                    if (newOverlays.length !== overlays.length || newOverlays.some((el, i) => el !== overlays[i])) {
-                        overlays = newOverlays;
-                        idx = 0; // Reset idx so animation always starts with a visible overlay
-                        overlaysChanged = true;
-                    }
-                    lastOverlayUpdate = ts;
-                }
-                if (overlays.length === 0) {
-                    idx = 0;
-                    lastCycle = ts;
-                    return;
-                }
-                if (!lastCycle) lastCycle = ts;
-                if (ts - lastCycle > 1500 || overlaysChanged) {
-                    overlays.forEach((el, i) => {
-                        el.style.transition = 'opacity 0.2s, border-color 0.2s, background-color 0.2s, color 0.2s';
-                        if (i === idx) {
-                            const color = pastelColors[i % pastelColors.length];
-                            el.style.opacity = '1';
-                            el.style.borderColor = color;
-                            el.style.backgroundColor = color;
-                            el.style.color = 'black';
-                            el.style.backgroundColor = color;
-                            el.style.mixBlendMode = 'normal';
-                            el.style.zIndex = 2;
-                            el.style.display = '';
-                            el.style.pointerEvents = 'none';
-                            el.style.backgroundColor = color;
-                            el.style.opacity = '0.5';
-                            // Add label if not present
-                            let label = el.querySelector('.overlay-label');
-                            if (!label) {
-                                label = document.createElement('div');
-                                label.className = 'overlay-label';
-                                label.style.position = 'absolute';
-                                label.style.left = '0';
-                                label.style.top = '0';
-                                label.style.width = '100%';
-                                label.style.textAlign = 'center';
-                                label.style.fontWeight = 'bold';
-                                label.style.fontSize = '13px';
-                                label.style.color = 'black';
-                                label.style.background = 'rgba(255,255,255,0.7)';
-                                label.style.pointerEvents = 'none';
-                                label.style.zIndex = 3;
-                                el.appendChild(label);
-                            }
-                            // Set label text
-                            let labelText = '';
-                            if (el.classList.contains('face-overlay') && el.hasAttribute('data-face-idx')) {
-                                const faceIdx = parseInt(el.getAttribute('data-face-idx'), 10);
-                                const container = el.parentElement;
-                                const m = /image-(\d+)/.exec(container.parentElement?.id || container.id || '');
-                                if (m && window.imageGallery) {
-                                    const imageIndex = parseInt(m[1], 10);
-                                    const image = window.imageGallery.images?.[imageIndex];
-                                    if (image && Array.isArray(image.people?.faces) && image.people.faces[faceIdx]) {
-                                        labelText = image.people.faces[faceIdx];
-                                    }
-                                }
-                                if (!labelText) labelText = 'Face';
-                            } else if (el.classList.contains('object-overlay') && el.hasAttribute('data-object-idx')) {
-                                const objIdx = parseInt(el.getAttribute('data-object-idx'), 10);
-                                const container = el.parentElement;
-                                const m = /image-(\d+)/.exec(container.parentElement?.id || container.id || '');
-                                if (m && window.imageGallery) {
-                                    const imageIndex = parseInt(m[1], 10);
-                                    const image = window.imageGallery.images?.[imageIndex];
-                                    if (image && Array.isArray(image.objects?.objects) && image.objects.objects[objIdx] && image.objects.objects[objIdx].label) {
-                                        labelText = image.objects.objects[objIdx].label;
-                                    }
-                                }
-                                if (!labelText) labelText = 'Object';
-                            }
-                            label.textContent = labelText;
-                        } else {
-                            el.style.opacity = '0';
-                            el.style.borderColor = '';
-                            el.style.backgroundColor = '';
-                            el.style.color = '';
-                            el.style.display = '';
-                            // Hide label if present
-                            let label = el.querySelector('.overlay-label');
-                            if (label) label.textContent = '';
-                        }
-                    });
-                    idx = overlays.length ? (idx + 1) % overlays.length : 0;
-                    lastCycle = ts;
+
+            // Helper: remove overlays and .auto-animate from all images
+            function removeAllOverlaysAndClasses() {
+                document.querySelectorAll('.face-overlay, .object-overlay').forEach(el => el.remove());
+                document.querySelectorAll('.gallery-item.auto-animate').forEach(item => item.classList.remove('auto-animate'));
+            }
+
+            // Helper: trigger overlays for a given image index and add .auto-animate
+            function showOverlaysForImage(item) {
+                if (!item) return;
+                item.classList.add('auto-animate');
+                const img = item.querySelector('img');
+                if (img && img.complete && img.naturalWidth > 0) {
+                    imageGallery.addFaceOverlays(img, parseInt(item.id.replace('image-', '')));
+                    imageGallery.addObjectOverlays(img, parseInt(item.id.replace('image-', '')));
                 }
             }
-            function startOverlayAnimation() {
-                if (running) return;
-                running = true;
-                overlays = getOrCreateOverlays();
-                overlays.forEach(el => {
-                    el.style.transition = 'opacity 0.2s, border-color 0.2s, background-color 0.2s, color 0.2s';
-                    el.style.opacity = '0';
-                    el.style.borderColor = '';
-                    el.style.backgroundColor = '';
-                    el.style.color = '';
-                });
-                idx = 0;
-                lastCycle = 0;
-                lastOverlayUpdate = undefined;
-                requestAnimationFrame(animateOverlaysRAF);
+
+            // Track the currently animated image
+            let lastAnimatedItem = null;
+
+            function animateMostCenteredImage() {
+                const centered = getMostCenteredGalleryItem();
+                if (centered !== lastAnimatedItem) {
+                    removeAllOverlaysAndClasses();
+                    showOverlaysForImage(centered);
+                    lastAnimatedItem = centered;
+                }
             }
-            function stopOverlayAnimation() {
-                running = false;
-            }
-            window.addEventListener('DOMContentLoaded', startOverlayAnimation);
-            window.addEventListener('visibilitychange', () => {
-                if (document.hidden) stopOverlayAnimation();
-                else startOverlayAnimation();
-            });
+
+            window.addEventListener('scroll', animateMostCenteredImage, { passive: true });
+            window.addEventListener('resize', animateMostCenteredImage, { passive: true });
+            setTimeout(animateMostCenteredImage, 500);
         }
 
         function parsePsObject(str) {
@@ -1378,14 +1167,14 @@
                                 return `<button type="button"${clickHandler}>${this.escapeHtml(faceName)}</button>`;
                             }).join('')}
                         </div>                        ` : ''}
-                        ${Object.keys(objectCounts).length > 0 ? `
+                        ${objects.length > 0 ? `
                         <div class="detected-objects">
                             <div class="objects-label">Detected objects:</div>
-                            ${Object.entries(objectCounts).map(([objectName, count]) => {
+                            ${objects.map((obj, objIdx) => {
                                 const clickHandler = (typeof mydata !== 'undefined' && mydata.canEdit)
-                                    ? ` onclick="imageGallery.editObject(${index}, '${this.escapeHtml(objectName)}', ${count})" class="object-name-tag clickable"`
+                                    ? ` onclick=\"imageGallery.editObject(${index}, '${this.escapeHtml(obj.label)}', ${objIdx})\" class=\"object-name-tag clickable\"`
                                     : ' class="object-name-tag"';
-                                return `<span${clickHandler}>${this.escapeHtml(objectName)} (${count})</span>`;
+                                return `<span${clickHandler}>${this.escapeHtml(obj.label)}</span>`;
                             }).join('')}
                         </div>
                         ` : ''}

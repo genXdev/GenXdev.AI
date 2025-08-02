@@ -286,7 +286,7 @@ function Invoke-ImageEnhancement {
                         -Parent
 
                     if (-not (Microsoft.PowerShell.Management\Test-Path `
-                                $outputDir)) {
+                                -LiteralPath $outputDir)) {
 
                         $null = Microsoft.PowerShell.Management\New-Item `
                             -Path $outputDir `
@@ -343,7 +343,7 @@ function Invoke-ImageEnhancement {
 
             # create form data for DeepStack API (it expects multipart form data)
             $form = @{
-                image = Microsoft.PowerShell.Management\Get-Item $imagePath
+                image = Microsoft.PowerShell.Management\Get-Item -LiteralPath $imagePath
             }
 
             # send the request to the DeepStack image enhancement API

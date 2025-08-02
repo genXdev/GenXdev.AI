@@ -38,7 +38,9 @@ function Get-LMStudioPaths {
             '~\.cache\lm-studio\bin\lms.exe',
             "${env:LOCALAPPDATA}\LM-Studio\lms.exe",
             "${env:LOCALAPPDATA}\Programs\LM-Studio\lms.exe",
-            "${env:LOCALAPPDATA}\Programs\LM Studio\lms.exe"
+            "${env:LOCALAPPDATA}\Programs\LM Studio\lms.exe",
+            "${env:LOCALAPPDATA}\Programs\LM Studio\resources\app\.webpack\lms.exe"
+
         )
     }
 
@@ -52,7 +54,7 @@ function Get-LMStudioPaths {
 
             # find main LM Studio executable
             $script:LMStudioExe = Microsoft.PowerShell.Management\Get-ChildItem `
-                -Path $searchPathsLMStudio `
+                -LiteralPath $searchPathsLMStudio `
                 -File `
                 -Recurse `
                 -ErrorAction SilentlyContinue |
@@ -61,7 +63,7 @@ function Get-LMStudioPaths {
 
             # find LMS command-line executable
             $script:LMSExe = Microsoft.PowerShell.Management\Get-ChildItem `
-                -Path $searchPathsLMSexe `
+                -LiteralPath $searchPathsLMSexe `
                 -File `
                 -Recurse `
                 -ErrorAction SilentlyContinue |

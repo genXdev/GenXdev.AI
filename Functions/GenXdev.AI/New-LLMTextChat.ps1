@@ -723,7 +723,7 @@ function New-LLMTextChat {
                 $ExposedCmdLets = @(
                     @{
                         Name          = 'Microsoft.PowerShell.Management\Get-ChildItem'
-                        AllowedParams = @('Path=string', 'Recurse=boolean', 'Filter=array', 'Include=array', 'Exclude=array', 'Force')
+                        AllowedParams = @('LiteralPath=string', 'Recurse=boolean', 'Filter=array', 'Include=array', 'Exclude=array', 'Force')
                         OutputText    = $false
                         Confirm       = $false
                         JsonDepth     = 3
@@ -737,7 +737,7 @@ function New-LLMTextChat {
                     },
                     @{
                         Name          = 'Microsoft.PowerShell.Management\Get-Content'
-                        AllowedParams = @('Path=string')
+                        AllowedParams = @('LiteralPath=string')
                         OutputText    = $false
                         Confirm       = $false
                         JsonDepth     = 2
@@ -801,18 +801,6 @@ function New-LLMTextChat {
                         AllowedParams = @('Value=string')
                         OutputText    = $true
                         Confirm       = $false
-                    },
-                    @{
-                        Name       = 'GenXdev.AI\Get-LMStudioModelList'
-                        OutputText = $false
-                        Confirm    = $false
-                        JsonDepth  = 2
-                    },
-                    @{
-                        Name       = 'GenXdev.AI\Get-LMStudioLoadedModelList'
-                        OutputText = $false
-                        Confirm    = $false
-                        JsonDepth  = 2
                     }
                 );
 

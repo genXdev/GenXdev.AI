@@ -60,6 +60,9 @@ Database path for preference data files.
 Don't use alternative settings stored in session for AI preferences like
 Language, Image collections, etc.
 
+.PARAMETER FullScreen
+Open in fullscreen mode.
+
 .PARAMETER ShowWindow
 Show LM Studio window during initialization.
 
@@ -321,6 +324,13 @@ function Export-ImageIndex {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = 'Opens in fullscreen mode'
+        )]
+        [Alias('fs', 'f')]
+        [switch] $FullScreen,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = ('Show LM Studio window during ' +
                 'initialization')
         )]
@@ -568,6 +578,15 @@ function Export-ImageIndex {
 
         $ImageDirectories = GenXdev.AI\Get-AIImageCollection @params
 
+        # copy identical parameter values for Find-Image function call
+        $findImageParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName 'GenXdev.AI\Find-Image' `
+            -DefaultValues (
+            Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
+                -ErrorAction SilentlyContinue
+        )
+
         # output that the image index database is being recreated
         Microsoft.PowerShell.Utility\Write-Host (
             "Recreating image index database`r`n" +
@@ -598,7 +617,7 @@ function Export-ImageIndex {
         }
 
         # define schema version constant
-        $SCHEMA_VERSION = '1.0.0.5'
+        $SCHEMA_VERSION = '1.0.0.6'
 
         # initialize info object for tracking found results
         $Info = @{
@@ -638,7 +657,17 @@ function Export-ImageIndex {
         ) -CreateDirectory -DeleteExistingFile -ErrorAction SilentlyContinue
 
         # define backup file path for database
-        $DatabaseBackupFilePath = GenXdev.FileSystem\Expand-Path "${DatabaseFilePath}.backup.db" -DeleteExistingFile -CreateDirectory
+        $DatabaseBackupFilePath = "";
+        $idx = 0;
+        while ($true) {
+            try {
+                $DatabaseBackupFilePath = GenXdev.FileSystem\Expand-Path "${DatabaseFilePath}.backup.$(($idx -gt 0 ? '.$idx' : ''))db" -DeleteExistingFile -CreateDirectory
+                break;
+            }
+            catch {
+                $idx++;
+            }
+        }
 
         # check if the database file exists after expansion and handle backup
         if ([IO.File]::Exists($DatabaseFilePath)) {
@@ -732,7 +761,6 @@ CREATE TABLE IF NOT EXISTS Images (
     scene_label TEXT,
     scene_confidence REAL,
     scene_confidence_percentage REAL,
-    scene_processed_at DATETIME,
 
     -- Camera metadata
     camera_make TEXT,
@@ -1005,13 +1033,13 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
         $totalTime = [System.Diagnostics.Stopwatch]::StartNew()
 
         # always delete existing database file to ensure clean rebuild
-        if (Microsoft.PowerShell.Management\Test-Path $DatabaseFilePath) {
+        if (Microsoft.PowerShell.Management\Test-Path -LiteralPath $DatabaseFilePath) {
 
             Microsoft.PowerShell.Utility\Write-Verbose (
                 'Deleting existing database file for clean rebuild...'
             )
 
-            Microsoft.PowerShell.Management\Remove-Item $DatabaseFilePath -Force
+            Microsoft.PowerShell.Management\Remove-Item -LiteralPath $DatabaseFilePath -Force
         }
 
         # create new database using specialized function
@@ -1059,7 +1087,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             'style_type, description_keywords, people_count, people_faces, ' +
             'people_json, objects_count, objects_list, objects_json, ' +
             'object_counts, scene_label, scene_confidence, ' +
-            'scene_confidence_percentage, scene_processed_at, camera_make, ' +
+            'scene_confidence_percentage, camera_make, ' +
             'camera_model, software, gps_latitude, gps_longitude, ' +
             'gps_altitude, exposure_time, f_number, iso_speed, focal_length, ' +
             'flash, date_time_original, date_time_digitized, color_space, ' +
@@ -1070,7 +1098,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             '@desc_keywords, @people_count, @people_faces, @people_json, ' +
             '@objects_count, @objects_list, @objects_json, @object_counts, ' +
             '@scene_label, @scene_confidence, @scene_conf_pct, ' +
-            '@scene_processed, @camera_make, @camera_model, @software, ' +
+            '@camera_make, @camera_model, @software, ' +
             '@gps_latitude, @gps_longitude, @gps_altitude, @exposure_time, ' +
             '@f_number, @iso_speed, @focal_length, @flash, ' +
             '@date_time_original, @date_time_digitized, @color_space, ' +
@@ -1085,7 +1113,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             'people_count, people_faces, people_json, objects_count, ' +
             'objects_list, objects_json, object_counts, scene_label, ' +
             'scene_confidence, scene_confidence_percentage, ' +
-            'scene_processed_at, camera_make, camera_model, software, ' +
+            'camera_make, camera_model, software, ' +
             'gps_latitude, gps_longitude, gps_altitude, exposure_time, ' +
             'f_number, iso_speed, focal_length, flash, date_time_original, ' +
             'date_time_digitized, color_space, bits_per_sample, artist, ' +
@@ -1095,7 +1123,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             '@style, @desc_keywords, @people_count, @people_faces, ' +
             '@people_json, @objects_count, @objects_list, @objects_json, ' +
             '@object_counts, @scene_label, @scene_confidence, ' +
-            '@scene_conf_pct, @scene_processed, @camera_make, @camera_model, ' +
+            '@scene_conf_pct, @camera_make, @camera_model, ' +
             '@software, @gps_latitude, @gps_longitude, @gps_altitude, ' +
             '@exposure_time, @f_number, @iso_speed, @focal_length, @flash, ' +
             '@date_time_original, @date_time_digitized, @color_space, ' +
@@ -1111,26 +1139,6 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             $Info.FoundResults = $true
 
 
-            # set image directories for Find-Image from configured sources
-            $imageCollectionParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-                -BoundParameters $PSBoundParameters `
-                -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
-                -DefaultValues (
-                Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
-                    -ErrorAction SilentlyContinue
-            )
-
-            # copy identical parameter values for Find-Image function call
-            $findImageParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-                -BoundParameters $PSBoundParameters `
-                -FunctionName 'GenXdev.AI\Find-Image' `
-                -DefaultValues (
-                Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
-                    -ErrorAction SilentlyContinue
-            )
-
-            $findImageParams.ImageDirectories = `
-                GenXdev.AI\Get-AIImageCollection @imageCollectionParams
 
             # prepare lookup table inserts using strongly typed collections
             [System.Collections.Generic.List[String]] $lookupQueries = `
@@ -1258,9 +1266,6 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                             'scene_conf_pct'      = if ($image.scenes) {
                                 $image.scenes.confidence_percentage }
                                 else { 0 }
-                            'scene_processed'     = if ($image.scenes) {
-                                $image.scenes.processed_at }
-                                else { '' }
 
                             # Camera metadata
                             'camera_make'         = if ($image.metadata -and
@@ -1375,7 +1380,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
 
                                 # check if image file exists before reading binary data
                                 if (Microsoft.PowerShell.Management\Test-Path `
-                                        $image.path -PathType Leaf) {
+                                        -LiteralPath $image.path -PathType Leaf) {
 
                                     Microsoft.PowerShell.Utility\Write-Verbose (
                                         "Reading image data from: $($image.path)"

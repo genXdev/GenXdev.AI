@@ -429,7 +429,7 @@ function Save-Transcriptions {
 
         # change to target directory for file processing
         Microsoft.PowerShell.Management\Set-Location `
-        (GenXdev.FileSystem\Expand-Path $DirectoryPath)
+        -LiteralPath (GenXdev.FileSystem\Expand-Path $DirectoryPath)
 
         Microsoft.PowerShell.Utility\Write-Verbose ('Changed working ' +
             "directory to: $DirectoryPath")
@@ -475,14 +475,14 @@ function Save-Transcriptions {
                     if ([io.file]::Exists($nlPath)) {
 
                         $null = Microsoft.PowerShell.Management\Remove-Item `
-                            $nlPathOld `
+                            -LiteralPath $nlPathOld `
                             -Force
                     }
                     else {
 
                         $null = Microsoft.PowerShell.Management\Move-Item `
-                            $nlPathOld `
-                            $nlPath `
+                            -LiteralPath $nlPathOld `
+                            -Destination $nlPath `
                             -Force
                     }
                 }
@@ -493,14 +493,14 @@ function Save-Transcriptions {
                     if ([io.file]::Exists($enPath)) {
 
                         $null = Microsoft.PowerShell.Management\Remove-Item `
-                            $enPathOld `
+                            -LiteralPath $enPathOld `
                             -Force
                     }
                     else {
 
                         $null = Microsoft.PowerShell.Management\Move-Item `
-                            $enPathOld `
-                            $enPath `
+                            -LiteralPath $enPathOld `
+                            -Destination $enPath `
                             -Force
                     }
                 }

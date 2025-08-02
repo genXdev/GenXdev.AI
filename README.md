@@ -12488,7 +12488,7 @@ ConvertTo-DiplomaticSpeak [[-Text] <String>] [[-Attachments] <String[]>] [-Tempe
 
 ### SYNTAX 
 ````PowerShell 
-Export-ImageIndex [[-InputObject] <Object[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [-ShowWindow] [-Any <String[]>] [-All] [-AllDrives] [-NoRecurse] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-Description <String[]>] [-DescriptionSearch <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-MetaCameraMake <String[]>] [-MetaCameraModel <String[]>] [-MetaWidth <Int32[]>] [-MetaHeight <Int32[]>] [-MetaGPSLatitude <Decimal[]>] [-MetaGPSLongitude <Decimal[]>] [-MetaGPSAltitude <Decimal[]>] [-MetaExposureTime <Decimal[]>] [-MetaFNumber <Decimal[]>] [-MetaISO <Int32[]>] [-MetaFocalLength <Decimal[]>] [-MetaDateTaken <String[]>] [-GeoLocation <Decimal[]>] [-GeoDistanceInMeters <Int32>] [-Force] [-PassThru] [-MinConfidenceRatio <Double>] [-Append] [<CommonParameters>] 
+Export-ImageIndex [[-InputObject] <Object[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [-FullScreen] [-ShowWindow] [-Any <String[]>] [-All] [-AllDrives] [-NoRecurse] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-Description <String[]>] [-DescriptionSearch <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-MetaCameraMake <String[]>] [-MetaCameraModel <String[]>] [-MetaWidth <Int32[]>] [-MetaHeight <Int32[]>] [-MetaGPSLatitude <Decimal[]>] [-MetaGPSLongitude <Decimal[]>] [-MetaGPSAltitude <Decimal[]>] [-MetaExposureTime <Decimal[]>] [-MetaFNumber <Decimal[]>] [-MetaISO <Int32[]>] [-MetaFocalLength <Decimal[]>] [-MetaDateTaken <String[]>] [-GeoLocation <Decimal[]>] [-GeoDistanceInMeters <Int32>] [-Force] [-PassThru] [-MinConfidenceRatio <Double>] [-Append] [<CommonParameters>] 
 ```` 
 
 ### DESCRIPTION 
@@ -12613,6 +12613,14 @@ Export-ImageIndex [[-InputObject] <Object[]>] [[-DatabaseFilePath] <String>] [-I
     -SkipSession [<SwitchParameter>]  
         Do not use alternative settings stored in session for AI preferences like  
         Language, Image collections, etc.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -FullScreen [<SwitchParameter>]  
+        Open in fullscreen mode.  
         Required?                    false  
         Position?                    named  
         Default value                False  
@@ -12933,7 +12941,7 @@ Export-ImageIndex [[-InputObject] <Object[]>] [[-DatabaseFilePath] <String>] [-I
 
 ### SYNTAX 
 ````PowerShell 
-Find-Image [[-Any] <String[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-InputObject <Object[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-MetaCameraMake <String[]>] [-MetaCameraModel <String[]>] [-MetaGPSLatitude <Double[]>] [-MetaGPSLongitude <Double[]>] [-MetaGPSAltitude <Double[]>] [-GeoLocation <Double[]>] [-GeoDistanceInMeters <Double>] [-MetaExposureTime <Double[]>] [-MetaFNumber <Double[]>] [-MetaISO <Int32[]>] [-MetaFocalLength <Double[]>] [-MetaWidth <Int32[]>] [-MetaHeight <Int32[]>] [-MetaDateTaken <DateTime[]>] [-Title <String>] [-Description <String>] [-AcceptLang <String>] [-KeysToSend <String[]>] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [-FocusWindow] [-SetForeground] [-Maximize] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-PreferencesDatabasePath <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-NoBorders] [-SideBySide] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-ShowOnlyPictures] [-SessionOnly] [-ClearSession] [-SkipSession] [-AutoScrollPixelsPerSecond <Int32>] [-AutoAnimateRectangles] [-SingleColumnMode] [-ImageUrlPrefix <String>] [-AllDrives] [-NoRecurse] [-MinConfidenceRatio <Double>] [-Append] [<CommonParameters>] 
+Find-Image [[-Any] <String[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-InputObject <Object[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-MetaCameraMake <String[]>] [-MetaCameraModel <String[]>] [-MetaGPSLatitude <Double[]>] [-MetaGPSLongitude <Double[]>] [-MetaGPSAltitude <Double[]>] [-GeoLocation <Double[]>] [-GeoDistanceInMeters <Double>] [-MetaExposureTime <Double[]>] [-MetaFNumber <Double[]>] [-MetaISO <Int32[]>] [-MetaFocalLength <Double[]>] [-MetaWidth <Int32[]>] [-MetaHeight <Int32[]>] [-MetaDateTaken <DateTime[]>] [-Title <String>] [-Description <String>] [-AcceptLang <String>] [-KeysToSend <String[]>] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [-FocusWindow] [-SetForeground] [-Maximize] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-PreferencesDatabasePath <String>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-NoBorders] [-SideBySide] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-ShowWindow] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-ShowOnlyPictures] [-SessionOnly] [-ClearSession] [-SkipSession] [-AutoScrollPixelsPerSecond <Int32>] [-AutoAnimateRectangles] [-SingleColumnMode] [-ImageUrlPrefix <String>] [-AllDrives] [-NoRecurse] [-MinConfidenceRatio <Double>] [-Append] [<CommonParameters>] 
 ```` 
 
 ### DESCRIPTION 
@@ -13531,7 +13539,15 @@ Find-Image [[-Any] <String[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories
         Aliases                        
         Accept wildcard characters?  false  
     -FullScreen [<SwitchParameter>]  
-        Opens in fullscreen mode.  
+        Open in fullscreen mode.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
+    -ShowWindow [<SwitchParameter>]  
+        Show LM Studio window during initialization.  
         Required?                    false  
         Position?                    named  
         Default value                False  
@@ -13744,7 +13760,7 @@ Find-Image [[-Any] <String[]>] [[-DatabaseFilePath] <String>] [-ImageDirectories
 
 ### SYNTAX 
 ````PowerShell 
-Find-IndexedImage [[-Any] <String[]>] [-DatabaseFilePath <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-InputObject <Object[]>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [-NoBorders] [-SideBySide] [-Title <String>] [-Description <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-ShowOnlyPictures] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-ShowWindow] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [-FocusWindow] [-SetForeground] [-Maximize] [-KeysToSend <String[]>] [-AutoScrollPixelsPerSecond <Int32>] [-AutoAnimateRectangles] [-SingleColumnMode] [-ImageUrlPrefix <String>] [-AllDrives] [-NoRecurse] [-MetaCameraMake <String[]>] [-MetaCameraModel <String[]>] [-MetaGPSLatitude <Double[]>] [-MetaGPSLongitude <Double[]>] [-MetaGPSAltitude <Double[]>] [-MetaExposureTime <Double[]>] [-MetaFNumber <Double[]>] [-MetaISO <Int32[]>] [-MetaFocalLength <Double[]>] [-MetaWidth <Int32[]>] [-MetaHeight <Int32[]>] [-MetaDateTaken <DateTime[]>] [-GeoLocation <Double[]>] [-GeoDistanceInMeters <Double>] [-MinConfidenceRatio <Double>] [-Append] [<CommonParameters>] 
+Find-IndexedImage [[-Any] <String[]>] [-DatabaseFilePath <String>] [-ImageDirectories <String[]>] [-PathLike <String[]>] [-Language <String>] [-FacesDirectory <String>] [-DescriptionSearch <String[]>] [-Keywords <String[]>] [-People <String[]>] [-Objects <String[]>] [-Scenes <String[]>] [-PictureType <String[]>] [-StyleType <String[]>] [-OverallMood <String[]>] [-InputObject <Object[]>] [-EmbedImages] [-ForceIndexRebuild] [-NoFallback] [-NeverRebuild] [-HasNudity] [-NoNudity] [-HasExplicitContent] [-NoExplicitContent] [-ShowInBrowser] [-PassThru] [-SendKeyEscape] [-SendKeyHoldKeyboardFocus] [-SendKeyUseShiftEnter] [-SendKeyDelayMilliSeconds <Int32>] [-NoBorders] [-SideBySide] [-Title <String>] [-Description <String>] [-AcceptLang <String>] [-Monitor <Int32>] [-Width <Int32>] [-Height <Int32>] [-X <Int32>] [-Y <Int32>] [-ShowOnlyPictures] [-Interactive] [-Private] [-Force] [-Edge] [-Chrome] [-Chromium] [-Firefox] [-All] [-FullScreen] [-ShowWindow] [-Left] [-Right] [-Top] [-Bottom] [-Centered] [-ApplicationMode] [-NoBrowserExtensions] [-DisablePopupBlocker] [-RestoreFocus] [-NewWindow] [-OnlyReturnHtml] [-SessionOnly] [-ClearSession] [-PreferencesDatabasePath <String>] [-SkipSession] [-FocusWindow] [-SetForeground] [-Maximize] [-KeysToSend <String[]>] [-AutoScrollPixelsPerSecond <Int32>] [-AutoAnimateRectangles] [-SingleColumnMode] [-ImageUrlPrefix <String>] [-AllDrives] [-NoRecurse] [-MetaCameraMake <String[]>] [-MetaCameraModel <String[]>] [-MetaGPSLatitude <Double[]>] [-MetaGPSLongitude <Double[]>] [-MetaGPSAltitude <Double[]>] [-MetaExposureTime <Double[]>] [-MetaFNumber <Double[]>] [-MetaISO <Int32[]>] [-MetaFocalLength <Double[]>] [-MetaWidth <Int32[]>] [-MetaHeight <Int32[]>] [-MetaDateTaken <DateTime[]>] [-GeoLocation <Double[]>] [-GeoDistanceInMeters <Double>] [-MinConfidenceRatio <Double>] [-Append] [<CommonParameters>] 
 ```` 
 
 ### DESCRIPTION 
@@ -14150,7 +14166,16 @@ Find-IndexedImage [[-Any] <String[]>] [-DatabaseFilePath <String>] [-ImageDirect
         Accept pipeline input?       false  
         Aliases                        
         Accept wildcard characters?  false  
+    -FullScreen [<SwitchParameter>]  
+        Open in fullscreen mode.  
+        Required?                    false  
+        Position?                    named  
+        Default value                False  
+        Accept pipeline input?       false  
+        Aliases                        
+        Accept wildcard characters?  false  
     -ShowWindow [<SwitchParameter>]  
+        Show LM Studio window during initialization.  
         Required?                    false  
         Position?                    named  
         Default value                False  
