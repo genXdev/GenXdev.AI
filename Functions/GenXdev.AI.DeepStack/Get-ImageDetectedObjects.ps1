@@ -364,7 +364,7 @@ function Get-ImageDetectedObjects {
 
             # the 'min_confidence' parameter expects a value between 0.0 and 1.0
             $form = @{
-                image          = Microsoft.PowerShell.Management\Get-Item -LiteralPath $imagePath
+                image          = Microsoft.PowerShell.Management\Get-ChildItem -LiteralPath $imagePath
                 min_confidence = $ConfidenceThreshold
             }
 
