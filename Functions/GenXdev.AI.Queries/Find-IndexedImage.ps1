@@ -1182,29 +1182,22 @@ function Find-IndexedImage {
                 {
                 }
             }
-
-            # Build description hashtable
-            if ($DbResult.description_json) {
-                $result.Description.has_explicit_content = [bool]$DbResult.has_explicit_content
-                $result.Description.has_nudity = [bool]$DbResult.has_nudity
-                $result.Description.picture_type = if ($DbResult.picture_type) { $DbResult.picture_type } else { '' }
-                $result.Description.overall_mood_of_image = if ($DbResult.overall_mood_of_image) { $DbResult.overall_mood_of_image } else { '' }
-                $result.Description.style_type = if ($DbResult.style_type) { $DbResult.style_type } else { '' }
-                $result.Description.keywords = @(if ($DbResult.description_keywords) {
-                        try {
-                            $DbResult.description_keywords |
-                                Microsoft.PowerShell.Utility\ConvertFrom-Json
-                        } catch {
-                            Microsoft.PowerShell.Utility\Write-Verbose "[Find-IndexedImage] Exception: $($_.Exception.Message)"
-                            @()
-                        }
-                    }
-                )
-
-                # Add optional description content properties if available
-                $result.Description.short_description = $DbResult.short_description;
-                $result.Description.long_description = $DbResult.long_description;
+            # Build description hashtable (always assign if fields are present)
+            $result.Description.Has_Explicit_Content = [bool]$DbResult.has_explicit_content
+            $result.Description.Has_Nudity = [bool]$DbResult.has_nudity
+            $result.Description.Picture_Type = if ($DbResult.picture_type) { $DbResult.picture_type } else { '' }
+            $result.Description.Overall_MoodOf_Image = if ($DbResult.overall_mood_of_image) { $DbResult.overall_mood_of_image } else { '' }
+            $result.Description.Style_Type = if ($DbResult.style_type) { $DbResult.style_type } else { '' }
+            $result.Description.Keywords = @()
+            if ($DbResult.description_keywords) {
+                try {
+                    $result.Description.Keywords = $DbResult.description_keywords | Microsoft.PowerShell.Utility\ConvertFrom-Json
+                } catch {
+                    $result.Description.Keywords = @($DbResult.description_keywords)
+                }
             }
+            $result.Description.Short_Description = [string]::IsNullOrWhiteSpace($DbResult.short_description) ? '' : $DbResult.short_description
+            $result.Description.Long_Description = [string]::IsNullOrWhiteSpace($DbResult.long_description) ? '' : $DbResult.long_description
 
             # Build scenes hashtable
             if ($DbResult.scenes_json) {
