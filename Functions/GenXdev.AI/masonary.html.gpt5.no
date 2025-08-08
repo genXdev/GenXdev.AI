@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Image Gallery - Masonry Layout</title>
+        <meta name="description" content="Masonry photo gallery scaffold - responsive, virtualized infinite scroll, actions API">
+        <!-- Theme variables -->
+        <style>
+    :root{
+      --bg: #0f1724;
+      --panel: #0b1220;
+      --card: #0f1724;
+      --text: #e6eef8;
+      --muted: #9fb0c8;
+      --accent: #3ea0ff;
+      --tag-bg: rgba(255,255,255,0.04);
+      --success: #28a745;
+      --danger: #dc3545;
+      --radius: 12px;
+      --gap: 16px;
+      --max-column-width: 420px;
+      --transition: 180ms ease-in-out;
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg: #f6f8fb;
+        --panel: #ffffff;
+        --card: #ffffff;
+        --text: #0b1720;
+        --muted: #475569;
+        --accent: #0b6cff;
+        --tag-bg: rgba(11,17,32,0.06);
+      }
+    }
+
+    /* Basic page layout */
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; background:var(--bg); color:var(--text);}
+    .app{
+      max-width:1400px;margin:24px auto;padding:16px;box-sizing:border-box;
+    }
+    header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    header h1{font-size:1.2rem;margin:0}
+    header p{margin:0;color:var(--muted);font-size:0.9rem}
+
+    /* Controls */
+    .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:6px 10px;border-radius:8px;color:var(--text);cursor:pointer;transition:all var(--transition);}
+    .btn:hover,.btn:focus{transform:translateY(-1px);box-shadow:0 6px 18px rgba(11,17,32,0.25)}
+
+    /* Collection area */
+    .gallery-wrap{display:block;margin-top:16px}
+    /* Masonry using CSS columns */
+    .masonry{
+      column-gap:var(--gap);
+      width:100%;
+      transition:all var(--transition);
+    }
+    /* Column counts change on breakpoints */
+    @media (max-width:599px){ .masonry{column-count:1} }
+    @media (min-width:600px) and (max-width:899px){ .masonry{column-count:2} }
+    @media (min-width:900px) and (max-width:1199px){ .masonry{column-count:3} }
+    @media (min-width:1200px){ .masonry{column-count:4} }
+
+    /* Single column centered at 1/3 width when enabled */
+    .single-column-mode .masonry{column-count:1;max-width:33.333vw;margin:0 auto}
+    /* Portrait override: full width in single-column mode (handled by JS using orientation detection) */
+
+    /* Card */
+    .card{display:inline-block;width:100%;margin:0 0 var(--gap);background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:0 6px 20px rgba(2,6,23,0.5);transition:transform var(--transition),box-shadow var(--transition)}
+    .card:focus-within,.card:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(2,6,23,0.65)}
+
+    .card img{display:block;width:100%;height:auto;border-radius:8px 8px 0 0;transition:filter var(--transition),transform var(--transition)}
+    .card .meta{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+    .card .tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{background:var(--tag-bg);padding:4px 8px;border-radius:999px;font-size:12px;color:var(--muted);}
+
+    /* Action bar */
+    .action-bar{display:flex;gap:8px;align-items:center}
+    .icon-btn{background:transparent;border:0;padding:6px;border-radius:8px;cursor:pointer;color:var(--muted)}
+    .icon-btn:focus,.icon-btn:hover{color:var(--text);outline:2px solid rgba(11,17,32,0.06)}
+
+    /* Overlays for faces/objects */
+    .overlay-layer{position:relative}
+    .overlay-rect{position:absolute;border:2px solid rgba(255,255,255,0.7);pointer-events:none;border-radius:4px;transition:all 220ms cubic-bezier(.2,.8,.2,1);}
+    .overlay-label{position:absolute;background:rgba(0,0,0,0.6);color:#fff;padding:2px 6px;border-radius:6px;font-size:12px;transform:translateY(-110%);white-space:nowrap}
+
+    /* Loading / placeholders */
+    .placeholder{display:flex;align-items:center;justify-content:center;height:180px;background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.04));color:var(--muted)}
+
+    /* Print mode (reduced) */
+    @media print{
+      body{background:#fff;color:#000}
+      .masonry{column-count:3}
+      .action-bar,.controls,header{display:none}
+      .card{box-shadow:none;border-radius:2px}
+    }
+
+    /* Accessibility focus ring */
+    :focus{outline:2px dashed var(--accent);outline-offset:2px}
+        </style>
+    </head>
+    <body>
+        <div class="app" id="app">
+            <header>
+                <div>
+                    <h1 id="galleryTitle">Photo Gallery</h1>
+                    <p id="galleryDescription">Hover over images to see face recognition data</p>
+                </div>
+                <div style="flex:1"></div>
+                <div class="controls" aria-hidden="false">
+                    <button id="toggleOnlyPictures" class="btn" title="Toggle show only pictures">Only pictures</button>
+                    <button id="toggleSingleColumn" class="btn" title="Toggle single column mode">Single column</button>
+                    <button id="toggleAutoScroll" class="btn" title="Toggle auto-scroll">Auto-scroll</button>
+                    <button id="toggleAutoAnimate" class="btn" title="Toggle auto-animate overlays">Auto-animate</button>
+                    <button id="btnGetActions" class="btn" title="Get queued actions">Get actions</button>
+                </div>
+            </header>
+            <div class="gallery-wrap">
+                <div id="statusLine" aria-live="polite" style="color:var(--muted);padding:6px 0">Loading...</div>
+                <div
+                    id="masonry"
+                    class="masonry"
+                    role="list"
+                    aria-label="Photo gallery"
+                ></div>
+                <div id="sentinel" style="height:32px"></div>
+            </div>
+        </div>
+        <script>
+
+
+  /*
+    Masonry Gallery Scaffold
+    - Single-file HTML/JS/CSS scaffold implementing required features.
+    - Data injection via window.mydata (see specification).
+
+    Notes:
+    - This scaffold focuses on correctness, modularity and the core features.
+    - Extend face/object overlay rendering and editing hooks as necessary.
+  */
+
+  (function(){
+    'use strict';
+
+    window.mydata = {
+        images: JSON.parse("[]"),
+        showOnlyPictures: false,
+        title: "Photo Gallery",
+        description: "Hover over images to see face recognition data",
+        actions: [],
+        canEdit: false,
+        canDelete: false,
+        // --- injected below ---
+        AutoScrollPixelsPerSecond: null,
+        AutoAnimateRectangles: false,
+        SingleColumnMode: false
+    };
+
+    // Public actions API (will be filled by user interactions)
+    window.getActions = function(){ const a = (window.mydata.actions||[]).slice(); window.mydata.actions = []; return a };
+
+    // Sanitize text for insertion into DOM - no HTML allowed
+    function escapeText(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]}); }
+
+    // Utility: safe create element with class
+    function el(tag, cls){ const e=document.createElement(tag); if(cls) e.className=cls; return e }
+
+    // State
+    const state = {
+      images: [], // validated and normalized image objects
+      pool: [],   // DOM nodes currently in the DOM
+      page: 0,
+      randomized: [],
+      gifs: [],
+      isAutoScroll:false,
+      autoScrollRaf:null,
+      autoScrollLast: null,
+      isAutoAnimate:false,
+      animateIntervalId:null,
+      singleColumn:false,
+      pageSize: window.mydata.pageSize || 24,
+      prefetchPages: window.mydata.pagePrefetch || 1,
+      unloadingDistancePx: 2000, // how far offscreen before unload
+      observer: null,
+      sentinelObserver: null
+    };
+
+    const app = document.getElementById('app');
+    const masonry = document.getElementById('masonry');
+    const statusLine = document.getElementById('statusLine');
+    const sentinel = document.getElementById('sentinel');
+
+    // Basic validation & normalization
+    function normalizeImage(raw, idx){
+      const img = {
+        idx: idx,
+        Path: raw.Path || raw.path || null,
+        Description: raw.Description||{},
+        Metadata: raw.Metadata||{},
+        Keywords: raw.Keywords||raw.Description&&raw.Description.Keywords||[],
+        People: raw.People||{Faces:[],Predictions:[],Count:0},
+        Objects: raw.Objects||{objects:[],Count:0},
+        Width: raw.Width||raw.Metadata&&raw.Metadata.Basic&&raw.Metadata.Basic.Width||null,
+        Height: raw.Height||raw.Metadata&&raw.Metadata.Basic&&raw.Metadata.Basic.Height||null
+      };
+      // alt text
+      img.alt = img.Description && (img.Description.Short_Description || (img.Keywords && img.Keywords.join(', '))) || img.Path || 'image';
+      return img;
+    }
+
+    function initFromWindowData(){
+      try{
+        if(!window.mydata || !Array.isArray(window.mydata.images)){
+          throw new Error('Invalid or missing window.mydata.images array');
+        }
+        state.pageSize = window.mydata.pageSize || state.pageSize;
+        state.prefetchPages = window.mydata.pagePrefetch || state.prefetchPages;
+        state.singleColumn = !!window.mydata.SingleColumnMode;
+        state.isAutoAnimate = !!window.mydata.AutoAnimateRectangles;
+        state.isAutoScroll = !!window.mydata.AutoScrollPixelsPerSecond;
+        // copy and randomize
+        const arr = window.mydata.images.slice();
+
+        // separate gifs
+        state.gifs = arr.filter(x=>/\.gif$/i.test(x.Path||x.path||'')).map((x,i)=>({raw:x,origIndex:i}));
+        const nonGif = arr.filter(x=>!/\.gif$/i.test(x.Path||x.path||''));
+
+        // randomize; stable shuffle
+        function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} }
+        shuffle(nonGif);
+        // reinsert gifs at random positions
+        state.randomized = nonGif.slice();
+        state.gifs.forEach(g=>{ const pos = Math.floor(Math.random()*(state.randomized.length+1)); state.randomized.splice(pos,0,g.raw); });
+
+        state.images = state.randomized.map((r,i)=>normalizeImage(r,i));
+
+        // title/description
+        document.getElementById('galleryTitle').textContent = window.mydata.title || 'Photo Gallery';
+        document.getElementById('galleryDescription').textContent = window.mydata.description || '';
+
+        statusLine.textContent = `${state.images.length} images ready`;
+      }catch(err){
+        statusLine.textContent = 'Error loading gallery data: '+err.message;
+        console.error(err);
+      }
+    }
+
+    // Create card DOM (but does not attach overlays yet) - lightweight
+    function createCard(img){
+      const card = el('article','card');
+      card.setAttribute('role','listitem');
+      card.setAttribute('tabindex','0');
+      card.dataset.idx = img.idx;
+
+      const overlayWrap = el('div','overlay-layer');
+
+      // image element
+      const imgEl = el('img');
+      imgEl.loading = 'lazy';
+      imgEl.alt = escapeText(img.alt);
+      imgEl.dataset.path = img.Path;
+      // set src lazily when inserted
+      imgEl.addEventListener('error',()=>{
+        imgEl.replaceWith(placeholderNode('Image failed to load'));
+        console.error('Failed to load image:', img.Path);
+      });
+
+      overlayWrap.appendChild(imgEl);
+
+      // meta area
+      const meta = el('div','meta');
+
+      const tags = el('div','tags');
+      // keywords -> tags
+      (img.Keywords||[]).slice(0,6).forEach(k=>{ const t = el('span','tag'); t.textContent = k; t.title = k; tags.appendChild(t); });
+      meta.appendChild(tags);
+
+      // action bar
+      const actionBar = el('div','action-bar');
+
+      const copyBtn = el('button','icon-btn'); copyBtn.title='Copy path'; copyBtn.innerHTML='📋'; copyBtn.setAttribute('aria-label','Copy path');
+      copyBtn.addEventListener('click',()=>{ copyPath(img); });
+
+      const viewBtn = el('button','icon-btn'); viewBtn.title='View original'; viewBtn.innerHTML='🔍'; viewBtn.setAttribute('aria-label','View original');
+      viewBtn.addEventListener('click',()=>{ viewOriginal(img); });
+
+      const streetBtn = el('button','icon-btn'); streetBtn.title='StreetView'; streetBtn.innerHTML='🗺️'; streetBtn.setAttribute('aria-label','StreetView');
+      streetBtn.addEventListener('click',()=>{ openStreetView(img); });
+
+      const editBtn = el('button','icon-btn'); editBtn.title='Edit'; editBtn.innerHTML='✏️'; editBtn.disabled = !window.mydata.canEdit; editBtn.setAttribute('aria-label','Edit image');
+      editBtn.addEventListener('click',()=>{ pushAction('edit',img); showFeedback(editBtn,'Edit queued'); });
+
+      const delBtn = el('button','icon-btn'); delBtn.title='Delete'; delBtn.innerHTML='🗑️'; delBtn.disabled = !window.mydata.canDelete; delBtn.setAttribute('aria-label','Delete image');
+      delBtn.addEventListener('click',()=>{ pushAction('delete',img); showFeedback(delBtn,'Delete queued'); });
+
+      actionBar.append(copyBtn,viewBtn,streetBtn,editBtn,delBtn);
+      meta.appendChild(actionBar);
+
+      card.append(overlayWrap,meta);
+
+      // store references
+      card._imgEl = imgEl;
+      card._overlayLayer = overlayWrap;
+      card._meta = meta;
+
+      // hover effect
+      card.addEventListener('mouseenter',()=>{ if(card._imgEl) card._imgEl.style.filter='brightness(1.06)'; });
+      card.addEventListener('mouseleave',()=>{ if(card._imgEl) card._imgEl.style.filter=''; });
+
+      // keyboard accessible actions: Enter = view
+      card.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ viewOriginal(img); } });
+
+      return card;
+    }
+
+    function placeholderNode(text){ const p = el('div','placeholder'); p.textContent = text; return p }
+
+    // Attach card into masonry and set src
+    function attachCard(card, img){
+      // set src with possible prefix
+      const path = resolvePath(img.Path);
+      // lazy load: set src when appended
+      card._imgEl.src = path;
+      card._imgEl.dataset.original = img.Path;
+      // alt already set
+      masonry.appendChild(card);
+      state.pool.push({card:card,img:img});
+    }
+
+    function resolvePath(p){ if(!p) return ''; // support base64 or remote prefix
+      // if path looks like data: already
+      if(/^data:/i.test(p)) return p;
+      // allow prefix injection
+      if(window.mydata.urlPrefix) return (window.mydata.urlPrefix.replace(/\/$/,'') + '/' + p.replace(/^\\/,'').replace(/^\//,''));
+      return p;
+    }
+
+    // Action helpers
+    function pushAction(actionType,img,extras){ window.mydata.actions = window.mydata.actions || []; const obj = Object.assign({action:actionType,path:img.Path,timestamp:new Date().toISOString()},extras||{}); window.mydata.actions.push(obj); }
+    function copyPath(img){ navigator.clipboard.writeText(img.Path).then(()=>{ pushAction('copy',img); showStatus('Copied path to clipboard') },(err)=>{ console.error(err); showStatus('Copy failed') }); }
+    function viewOriginal(img){ const url = resolvePath(img.Path); pushAction('view',img); window.open(url,'_blank'); }
+    function openStreetView(img){ const gps = img.Metadata && img.Metadata.Gps; if(gps && gps.Latitude && gps.Longitude){ const url = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${gps.Latitude},${gps.Longitude}`; pushAction('streetview',img,{gps:gps}); window.open(url,'_blank'); } else { showStatus('No GPS data'); } }
+
+    function showStatus(t){ statusLine.textContent = t; setTimeout(()=>{ statusLine.textContent = `${state.images.length} images ready` },2000); }
+    function showFeedback(btn,msg){ const prev = btn.innerText; btn.innerText = '✔'; setTimeout(()=>btn.innerText = prev,1000); pushAction('feedback',{msg:msg,path:btn.closest('.card')?.dataset?.path||''}); showStatus(msg); }
+
+    // Virtualization: unload cards that are far out of view
+    function unloadFarAway(){
+      const viewportTop = window.scrollY;
+      const viewportBottom = viewportTop + window.innerHeight;
+      const toRemove = [];
+      for(let i=0;i<state.pool.length;i++){
+        const rect = state.pool[i].card.getBoundingClientRect();
+        const absTop = rect.top + window.scrollY;
+        const absBottom = absTop + rect.height;
+        if(absBottom < viewportTop - state.unloadingDistancePx || absTop > viewportBottom + state.unloadingDistancePx){
+          // remove
+          toRemove.push(i);
+        }
+      }
+      // remove in reverse order
+      for(let j=toRemove.length-1;j>=0;j--){ const i = toRemove[j]; const item = state.pool[i]; item.card.remove(); state.pool.splice(i,1); }
+    }
+
+    // Populate next page
+    function loadNextPage(){
+      const start = state.page * state.pageSize;
+      if(start >= state.images.length) return false;
+      const end = Math.min(state.images.length, start + state.pageSize);
+      for(let i=start;i<end;i++){
+        const img = state.images[i];
+        const card = createCard(img);
+        attachCard(card,img);
+        // schedule overlays / annotations
+        scheduleOverlayRender(card,img);
+      }
+      state.page++;
+      return true;
+    }
+
+    // Prefetch pages as needed (no visible delay strategy)
+    function ensurePrefetch(){
+      for(let p=0;p<state.prefetchPages;p++){
+        const nextPage = state.page + p;
+        const start = nextPage * state.pageSize;
+        if(start < state.images.length){ // precreate but not attach yet - for simplicity we keep attaching on loadNextPage
+          // no-op: loadNextPage handles smooth load; the browser will lazy load images so this is efficient
+        }
+      }
+    }
+
+    // IntersectionObserver sentinel to load more
+    function setupSentinelObserver(){
+      if(state.sentinelObserver) state.sentinelObserver.disconnect();
+      state.sentinelObserver = new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{
+          if(entry.isIntersecting){
+            const added = loadNextPage();
+            if(!added){ statusLine.textContent = 'No more images'; }
+            // also unload far away after load
+            requestAnimationFrame(unloadFarAway);
+          }
+        });
+      },{root:null,rootMargin:'800px',threshold:0.01});
+      state.sentinelObserver.observe(sentinel);
+    }
+
+    // Overlay rendering (faces/objects) - simplified. Expects Predictions containing X_Min,Y_Min,X_Max,Y_Max relative to image pixel coords
+    function scheduleOverlayRender(card,img){
+      // wait until image is loaded to compute overlays
+      const imgEl = card._imgEl;
+      function render(){
+        // clear previous overlays
+        const existing = card._overlayLayer.querySelectorAll('.overlay-rect'); existing.forEach(n=>n.remove());
+        // faces
+        const preds = (img.People && img.People.Predictions) || [];
+        preds.forEach((p,pi)=>{
+          // compute scaling from natural size to displayed size
+          const natW = img.Width || (img.Metadata && img.Metadata.Basic && img.Metadata.Basic.Width) || imgEl.naturalWidth || 1;
+          const natH = img.Height || (img.Metadata && img.Metadata.Basic && img.Metadata.Basic.Height) || imgEl.naturalHeight || 1;
+          const rect = el('div','overlay-rect');
+          const label = el('div','overlay-label'); label.textContent = p.UserId || ('face'+pi);
+          // compute css coords
+          const x = (p.X_Min||0)/natW * imgEl.clientWidth; const y = (p.Y_Min||0)/natH * imgEl.clientHeight;
+          const w = ((p.X_Max||0) - (p.X_Min||0))/natW * imgEl.clientWidth; const h = ((p.Y_Max||0) - (p.Y_Min||0))/natH * imgEl.clientHeight;
+          rect.style.left = x + 'px'; rect.style.top = y + 'px'; rect.style.width = Math.max(8,w)+'px'; rect.style.height = Math.max(8,h)+'px';
+          rect.appendChild(label);
+          card._overlayLayer.style.position = 'relative';
+          card._overlayLayer.appendChild(rect);
+        });
+      }
+      if(imgEl.complete && imgEl.naturalWidth>0){ render(); }
+      else imgEl.addEventListener('load',render,{once:true});
+    }
+
+    // Auto animation: cycle the opacity of overlays
+    function startAutoAnimate(){ if(state.animateIntervalId) clearInterval(state.animateIntervalId); state.animateIntervalId = setInterval(()=>{
+        document.querySelectorAll('.overlay-rect').forEach((r,idx)=>{ r.style.opacity = 0.3 + 0.7 * Math.abs(Math.sin((Date.now()/300) + idx)); });
+      },300);
+    }
+    function stopAutoAnimate(){ if(state.animateIntervalId) clearInterval(state.animateIntervalId); state.animateIntervalId = null; document.querySelectorAll('.overlay-rect').forEach(r=>r.style.opacity=''); }
+
+    // Auto-scroll using requestAnimationFrame
+    function startAutoScroll(){
+      if(state.autoScrollRaf) cancelAnimationFrame(state.autoScrollRaf);
+      state.autoScrollLast = performance.now();
+      function step(now){
+        const dt = (now - state.autoScrollLast)/1000; state.autoScrollLast = now;
+        const pxPerSec = window.mydata.AutoScrollPixelsPerSecond || 30;
+        window.scrollBy(0, pxPerSec * dt);
+        state.autoScrollRaf = requestAnimationFrame(step);
+      }
+      state.autoScrollRaf = requestAnimationFrame(step);
+    }
+    function stopAutoScroll(){ if(state.autoScrollRaf) cancelAnimationFrame(state.autoScrollRaf); state.autoScrollRaf = null; }
+
+    // Setup UI toggles
+    function setupUI(){
+      document.getElementById('toggleOnlyPictures').addEventListener('click',()=>{
+        window.mydata.showOnlyPictures = !window.mydata.showOnlyPictures;
+        document.getElementById('toggleOnlyPictures').classList.toggle('active',window.mydata.showOnlyPictures);
+        // rebuild (quick approach)
+        rebuildGallery();
+      });
+      document.getElementById('toggleSingleColumn').addEventListener('click',()=>{
+        state.singleColumn = !state.singleColumn; document.body.classList.toggle('single-column-mode',state.singleColumn); document.getElementById('toggleSingleColumn').classList.toggle('active',state.singleColumn);
+      });
+      document.getElementById('toggleAutoScroll').addEventListener('click',()=>{
+        state.isAutoScroll = !state.isAutoScroll; document.getElementById('toggleAutoScroll').classList.toggle('active', state.isAutoScroll);
+        if(state.isAutoScroll) startAutoScroll(); else stopAutoScroll();
+      });
+      document.getElementById('toggleAutoAnimate').addEventListener('click',()=>{
+        state.isAutoAnimate = !state.isAutoAnimate; document.getElementById('toggleAutoAnimate').classList.toggle('active', state.isAutoAnimate);
+        if(state.isAutoAnimate) startAutoAnimate(); else stopAutoAnimate();
+      });
+      document.getElementById('btnGetActions').addEventListener('click',()=>{ const a = window.getActions(); console.log('Actions retrieved:', a); showStatus(`Retrieved ${a.length} actions (logged to console)`); });
+    }
+
+    // Rebuild gallery from scratch (keeps state.images)
+    function rebuildGallery(){
+      // clear
+      masonry.innerHTML = '';
+      state.pool = [];
+      state.page = 0;
+      // optionally filter
+      if(window.mydata.showOnlyPictures){ state.images = (state.randomized||[]).filter(i=>true).map((r,i)=>normalizeImage(r,i)); /* for now same as full */ }
+      // load first page
+      loadNextPage();
+    }
+
+    // Initialization
+    function init(){
+      initFromWindowData();
+      setupUI();
+      // apply single column
+      if(state.singleColumn) document.body.classList.add('single-column-mode');
+
+      // load first two pages for responsive feel
+      loadNextPage();
+      loadNextPage();
+      setupSentinelObserver();
+
+      // unload periodic cleanup
+      setInterval(()=>{ unloadFarAway(); },2000);
+
+      // start auto features based on mydata
+      if(window.mydata.AutoAnimateRectangles) startAutoAnimate();
+      if(window.mydata.AutoScrollPixelsPerSecond) startAutoScroll();
+
+      // keyboard: space toggles auto-scroll
+      window.addEventListener('keydown',(e)=>{ if(e.code==='Space'){ e.preventDefault(); state.isAutoScroll = !state.isAutoScroll; if(state.isAutoScroll) startAutoScroll(); else stopAutoScroll(); } });
+
+      statusLine.textContent = `Ready — ${state.images.length} images`;
+    }
+
+    // Expose debug helpers
+    window.__gallery = {state:state,reload:rebuildGallery,loadNextPage:loadNextPage};
+
+    // DOMContentLoaded init
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+
+  })();
+        </script>
+    </body>
+</html>

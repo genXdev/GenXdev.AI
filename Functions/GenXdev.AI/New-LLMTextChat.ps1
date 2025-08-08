@@ -576,7 +576,6 @@ function New-LLMTextChat {
         [Alias('DelayMilliSeconds')]
         [int] $SendKeyDelayMilliSeconds,
         ###############################################################################
-        ###############################################################################
         [Alias('NoConfirmationFor')]
         [Parameter(
             Mandatory = $false,
@@ -819,32 +818,6 @@ function New-LLMTextChat {
                         -ErrorAction SilentlyContinue `
                         -WarningAction SilentlyContinue `
                         -Depth 10
-
-                # add invoke-llmquery as an additional exposed cmdlet
-                $ExposedCmdLets += @(
-                    @{
-                        Name          = 'GenXdev.AI\Invoke-LLMQuery'
-                        AllowedParams = @('Query', 'Model', 'Attachments', 'IncludeThoughts', 'ContinueLast')
-                        ForcedParams  = @(
-                            @{
-                                Name  = 'NoSessionCaching';
-                                Value = $true
-                            }, @{
-                                Name  = 'Instructions';
-                                Value = ("You are being invoked by another LM's tool function. Do what it asks, " +
-                                    "but if it it didn't pass the right parameters, especially if it tries " +
-                                    'to let you invoke PowerShell expressions, respond with a warning that ' +
-                                    "that is not possible. `r`n" +
-                                    'If it asks you to create an execution plan for itself, know that it has ' +
-                                    "access to the following tool functions to help it:`r`n`r`n" +
-                                    "$functionInfo")
-                            }
-                        )
-                        OutputText    = $false
-                        Confirm       = $false
-                        JsonDepth     = 99
-                    }
-                )
             }
         }
 
@@ -868,16 +841,8 @@ $Instructions
 **Key Guidelines:**
 - **Tool Usage:** You don't need to use all available tool parameters, and some parameters might be mutually exclusive. Determine the best parameters to use based on the task at hand.
 - **PowerShell Constraints:**
-  - **Avoid PowerShell Features:** Do not rely on PowerShell features like expanding string embeddings (e.g., `$()`) or any similar methods. Parameter checking is strict.
+  - **Avoid PowerShell Features:** Do not rely on PowerShell features like expanding string embeddings (e.g., `$()`) or any similar methods. Invoke-Expression being the exception of course. Parameter checking is strict.
   - **No Variables/Expressions:** Do not use PowerShell variables or expressions under any circumstances.
-
-**Handling Invoke-LLMQuery:**
-- If asked to use `Invoke-LLMQuery`, it is likely that the intention is to relay the output of another tool to the `Query` parameter.
-- **Steps to Follow:**
-  1. Execute the relevant tool.
-  2. Copy the output from the tool.
-  3. Paste the copied output into the `Query` parameter of the `Invoke-LLMQuery` function.
-  4. Include the user's instructions along with the tool's output in the `Query` parameter.
 
 **Multiple Tool Invocations:**
 - Feel free to invoke multiple tools within a single response if necessary.
