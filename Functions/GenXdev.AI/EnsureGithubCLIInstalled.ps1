@@ -37,8 +37,8 @@ function EnsureGithubCLIInstalled {
         function IsWinGetInstalled {
             try {
                 Microsoft.PowerShell.Core\Import-Module 'Microsoft.WinGet.Client' -ErrorAction Stop
-                $module = Microsoft.PowerShell.Core\Get-Module 'Microsoft.WinGet.Client' -ErrorAction Stop
-                return $null -ne $module
+                $ModuleObj = Microsoft.PowerShell.Core\Get-Module 'Microsoft.WinGet.Client' -ErrorAction Stop
+                return $null -ne $ModuleObj
             }
             catch [System.IO.FileNotFoundException] {
                 Microsoft.PowerShell.Utility\Write-Verbose 'WinGet module not found'

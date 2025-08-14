@@ -811,13 +811,6 @@ function New-LLMTextChat {
                     Microsoft.PowerShell.Core\ForEach-Object {
                         $null = $_.function.Remove('callback')
                     }
-
-                # serialize function definitions to json for instructions
-                $functionInfo = $functionInfoObj |
-                    Microsoft.PowerShell.Utility\ConvertTo-Json `
-                        -ErrorAction SilentlyContinue `
-                        -WarningAction SilentlyContinue `
-                        -Depth 10
             }
         }
 

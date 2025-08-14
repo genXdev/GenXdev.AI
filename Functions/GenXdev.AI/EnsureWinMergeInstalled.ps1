@@ -38,10 +38,10 @@ function EnsureWinMergeInstalled {
                 -ErrorAction SilentlyContinue
 
             # verify if module was loaded successfully
-            $module = Microsoft.PowerShell.Core\Get-Module 'Microsoft.WinGet.Client' `
+            $ModuleObj = Microsoft.PowerShell.Core\Get-Module 'Microsoft.WinGet.Client' `
                 -ErrorAction SilentlyContinue
 
-            return $null -ne $module
+            return $null -ne $ModuleObj
         }
 
         ########################################################################

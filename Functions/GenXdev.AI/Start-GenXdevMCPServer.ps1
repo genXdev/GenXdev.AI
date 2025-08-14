@@ -99,7 +99,7 @@ function Start-GenXdevMCPServer {
                     }
                     serverInfo      = @{
                         name    = 'GenXdev-PowerShell-MCP-Server'
-                        version = '1.236.2025'
+                        version = '1.238.2025'
                     }
                 }
             }
@@ -197,7 +197,7 @@ function Start-GenXdevMCPServer {
                             }
                             serverInfo      = @{
                                 name    = 'GenXdev-PowerShell-MCP-Server'
-                                version = '1.236.2025'
+                                version = '1.238.2025'
                             }
                         }
                     }
@@ -733,7 +733,7 @@ function Start-GenXdevMCPServer {
                 Description                          = "Shows GenXdev PowerShell modules with their cmdlets and aliases, allow it to take a few seconds or more. Don't invoke this function without parameters, that would be too much data. Wildcards allowed like * and ?"
                 AllowedParams                        = @(
                     'CmdletName=string',
-                    'BaseModuleName=string',
+                    'ModuleName=string',
                     'NoLocal',
                     'OnlyPublished',
                     'FromScripts',
@@ -750,7 +750,7 @@ function Start-GenXdevMCPServer {
                 Description                          = "Gets GenXdev PowerShell modules with their cmdlets and aliases, allow it to take a few seconds or more. Don't invoke this function without parameters, that would be too much data. Wildcards allowed like * and ?"
                 AllowedParams                        = @(
                     'CmdletName=string',
-                    'BaseModuleName=string',
+                    'ModuleName=string',
                     'NoLocal',
                     'OnlyPublished',
                     'FromScripts',
@@ -865,7 +865,7 @@ function Start-GenXdevMCPServer {
                 AllowedParams                        = @(
                     'CmdletName=string',
                     'Description=string',
-                    'BaseModuleName',
+                    'ModuleName',
                     'ModuleName',
                     'CmdletAliases'
                 )

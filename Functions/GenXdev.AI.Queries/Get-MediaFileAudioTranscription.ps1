@@ -764,10 +764,10 @@ function Get-MediaFileAudioTranscription {
                 -ErrorAction SilentlyContinue
 
             # check if the module was successfully loaded
-            $module = Microsoft.PowerShell.Core\Get-Module `
+            $ModuleObj = Microsoft.PowerShell.Core\Get-Module `
                 'Microsoft.WinGet.Client' -ErrorAction SilentlyContinue
 
-            if ($null -eq $module) {
+            if ($null -eq $ModuleObj) {
 
                 return $false
             }

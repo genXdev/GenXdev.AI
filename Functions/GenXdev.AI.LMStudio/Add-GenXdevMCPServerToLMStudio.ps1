@@ -1,31 +1,117 @@
+################################################################################
+<#
+.SYNOPSIS
+Adds the GenXdev MCP server to LM Studio using a deeplink configuration.
+
+.DESCRIPTION
+This function creates an MCP (Model Context Protocol) server configuration
+for GenXdev and launches LM Studio with a deeplink to automatically add the
+server. The function encodes the server configuration as a Base64 string and
+constructs an appropriate LM Studio deeplink URL for seamless integration.
+
+.PARAMETER ServerName
+The name to assign to the MCP server in LM Studio. This name will be displayed
+in the LM Studio interface when managing MCP servers.
+
+.PARAMETER Url
+The HTTP URL where the GenXdev MCP server is listening for connections. This
+should include the protocol, host, port, and path components.
+
+.EXAMPLE
+Add-GenXdevMCPServerToLMStudio -ServerName "GenXdev" -Url "http://localhost:2175/mcp"
+
+Opens LM Studio and adds a new MCP server named "GenXdev" pointing to the
+default GenXdev MCP server endpoint.
+
+.EXAMPLE
+Add-GenXdevMCPServerToLMStudio "MyGenXdev" "http://192.168.1.100:2175/mcp"
+
+Opens LM Studio and adds a new MCP server named "MyGenXdev" pointing to a
+remote GenXdev MCP server instance.
+#>
 function Add-GenXdevMCPServerToLMStudio {
+
+    [CmdletBinding()]
+
     param(
-        [string]$ServerName = 'GenXdev',
-        [string]$Url = 'http://localhost:2175/mcp'
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 0,
+            HelpMessage = "The name to assign to the MCP server in LM Studio"
+        )]
+        [string] $ServerName = 'GenXdev',
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 1,
+            HelpMessage = "The HTTP URL where the GenXdev MCP server is listening"
+        )]
+        [string] $Url = 'http://localhost:2175/mcp'
+        ###############################################################################
     )
 
-    # PowerShell script to launch LM Studio with a deeplink to add GenXdev MCP server
+    begin {
 
-    # Define the MCP server configuration as a JSON string
-    $mcpConfig = @"
+        # output verbose information about the operation being performed
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Preparing to add GenXdev MCP server '${ServerName}' at '${Url}' to " +
+            "LM Studio"
+        )
+    }
+
+    process {
+
+        # create the mcp server configuration as a json string for lm studio
+        $mcpConfig = @"
     {
         "servers": {
-            "ServerName": {
+            "${ServerName}": {
                 "type": "http",
-                "url": "$Url"
+                "url": "${Url}"
             }
         }
     }
 "@
 
-    # Encode the JSON configuration for the deeplink
-    $encodedConfig = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($mcpConfig))
+        # output verbose information about the configuration being created
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Created MCP configuration JSON for server registration"
+        )
 
-    # Construct the LM Studio deeplink
-    $deeplink = "lmstudio://mcp?config=$encodedConfig"
+        # encode the json configuration as base64 for deeplink transmission
+        $encodedConfig = [Convert]::ToBase64String(
+            [System.Text.Encoding]::UTF8.GetBytes($mcpConfig)
+        )
 
-    # Launch LM Studio with the deeplink using Start-Process
-    Microsoft.PowerShell.Management\Start-Process -FilePath $deeplink
+        # output verbose information about the encoding process
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Encoded configuration as Base64 string for deeplink URL"
+        )
 
-    Microsoft.PowerShell.Utility\Write-Host 'Launched LM Studio with deeplink to add GenXdev MCP server.'
+        # construct the lm studio deeplink url with encoded configuration
+        $deeplink = "lmstudio://mcp?config=${encodedConfig}"
+
+        # output verbose information about the deeplink construction
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Constructed LM Studio deeplink: ${deeplink}"
+        )
+
+        # launch lm studio application with the deeplink using start-process
+        Microsoft.PowerShell.Management\Start-Process -FilePath $deeplink
+
+        # output confirmation message to the user about the operation
+        Microsoft.PowerShell.Utility\Write-Host (
+            "Launched LM Studio with deeplink to add GenXdev MCP server."
+        )
+    }
+
+    end {
+
+        # output verbose information about the completion of the operation
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Successfully completed GenXdev MCP server addition to LM Studio"
+        )
+    }
 }
+################################################################################

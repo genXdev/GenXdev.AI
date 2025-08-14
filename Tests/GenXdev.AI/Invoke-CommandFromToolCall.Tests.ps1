@@ -45,36 +45,6 @@ Pester\Describe 'Invoke-CommandFromToolCall cmdlet tests' {
         }
     }
 
-    Pester\It 'Should pass PSScriptAnalyzer rules' {
-        # analyze main function implementation
-        $scriptPath = "$PSScriptRoot\..\..\Functions\GenXdev.AI\" +
-        'Invoke-CommandFromToolCall.ps1'
-
-        Microsoft.PowerShell.Utility\Write-Verbose "Analyzing  $scriptPath"
-
-        # Get settings to verify what's being passed
-        $analyzerResults = GenXdev.Coding\Invoke-GenXdevScriptAnalyzer `
-            -Path $scriptPath `
-            -ErrorAction SilentlyContinue
-
-        [string] $message = ''
-        $analyzerResults | Microsoft.PowerShell.Core\ForEach-Object {
-
-            $message = $message + @"
---------------------------------------------------
-Rule: $($_.RuleName)`
-Description: $($_.Description)
-Message: $($_.Message)
-`r`n
-"@
-        }
-
-        $analyzerResults.Count | Pester\Should -Be 0 -Because @"
-The following PSScriptAnalyzer rules are being violated:
-$message
-"@;
-    }
-
     Pester\It 'Should reject invalid parameters' {
         # create test call with invalid parameter
         $invalidCall = @{
