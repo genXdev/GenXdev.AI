@@ -11,6 +11,7 @@ if ($major -ne 10) {
 }
 
 
+
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Add-EmoticonsToText.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Add-ImageDirectories.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\ConvertFrom-CorporateSpeak.ps1"
