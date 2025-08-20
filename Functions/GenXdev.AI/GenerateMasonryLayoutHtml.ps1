@@ -95,56 +95,48 @@ function GenerateMasonryLayoutHtml {
         )]
         [Alias('NoMetadata', 'OnlyPictures')]
         [switch] $ShowOnlyPictures,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Auto-scroll the page by this many pixels per second (null to disable)'
         )]
         [int]$AutoScrollPixelsPerSecond = $null,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Animate rectangles (objects/faces) in visible range, cycling every 300ms'
         )]
         [switch]$AutoAnimateRectangles,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Force single column layout (centered, 1/3 screen width)'
         )]
         [switch]$SingleColumnMode = $false,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Prefix to prepend to each image path (e.g. for remote URLs)'
         )]
         [string]$ImageUrlPrefix = '',
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Number of images to load per page (for dynamic loading)'
         )]
         [int]$PageSize = 20,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Maximum number of images to load for print mode'
         )]
         [int]$MaxPrintImages = 50,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'IntersectionObserver rootMargin for infinite scroll trigger (e.g. "1200px")'
         )]
         [string]$RootMargin = '1200px',
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,

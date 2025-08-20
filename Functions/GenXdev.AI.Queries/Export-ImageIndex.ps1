@@ -637,7 +637,7 @@ function Export-ImageIndex {
         # attempt to shutdown existing sqlite connections
         try {
 
-            $null = [System.Data.SQLite.SQLiteConnection]::Shutdown()
+            $null = [System.Data.Sqlite.SQLiteConnection]::Shutdown()
         }
         catch {
 

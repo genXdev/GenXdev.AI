@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Analyzes image content using AI vision capabilities through the LM-Studio API.
@@ -272,7 +272,6 @@ function Invoke-QueryImageContent {
         )]
         [Alias('FromPreferences')]
         [switch] $SkipSession,
-        ########################################################################
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -299,7 +298,7 @@ function Invoke-QueryImageContent {
         )]
         [int] $TTLSeconds,
         ###############################################################################
-        [Alias('m','mon')]
+        [Alias('m', 'mon')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Specifies the monitor to use for display.'
@@ -672,7 +671,7 @@ function Invoke-QueryImageContent {
         )]
         [switch] $FullScreen,
         ###############################################################################
-        [Alias('rf','bg')]
+        [Alias('rf', 'bg')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Restore focus to the window.'
@@ -686,7 +685,7 @@ function Invoke-QueryImageContent {
         )]
         [switch] $SideBySide,
         ###############################################################################
-        [Alias('fw','focus')]
+        [Alias('fw', 'focus')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Focus the window.'
@@ -750,6 +749,8 @@ function Invoke-QueryImageContent {
             # if the file doesn't exist, throw a terminating error
             throw "Image file not found: $imagePath"
         }
+
+        $actualPath = $imagePath
     }
 
     process {
@@ -757,6 +758,40 @@ function Invoke-QueryImageContent {
         # log the start of the actual image processing step
         Microsoft.PowerShell.Utility\Write-Verbose ('Processing image: ' +
             "$imagePath")
+
+
+        if ([IO.Path]::GetExtension($imagePath).ToLowerInvariant() -eq '.webp') {
+
+            $actualPath = [IO.Path]::GetTempPath() + ".png"
+
+            GenXdev.Helpers\EnsureNuGetAssembly -PackageKey "SixLabors.ImageSharp"
+            GenXdev.Helpers\EnsureNuGetAssembly -PackageKey "Shorthand.ImageSharp.WebP"
+            GenXdev.Helpers\EnsureNuGetAssembly -PackageKey "SixLabors.ImageSharp.Drawing"
+
+            try {
+                $webpImage = [SixLabors.ImageSharp.Image]::Load($ImagePath)
+                try {
+                    # Use Save method with PNG encoder
+                    $pngEncoder = [SixLabors.ImageSharp.Formats.Png.PngEncoder]::new()
+                    $fileStream = [System.IO.File]::Create($actualPath)
+                    try {
+                        $webpImage.Save($fileStream, $pngEncoder)
+                    }
+                    finally {
+                        $fileStream.Close()
+                    }
+                }
+                finally {
+                    if ($webpImage -and ($webpImage -is [IDisposable])) {
+                        $webpImage.Dispose()
+                    }
+                }
+            }
+            catch {
+                $actualPath = $ImagePath
+                Microsoft.PowerShell.Utility\Write-Warning "Error converting WebP to PNG: $($_.Exception.Message)"
+            }
+        }
 
         # construct a hashtable of parameters to be passed to the next function
         $parameters = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -767,7 +802,7 @@ function Invoke-QueryImageContent {
                 -ErrorAction SilentlyContinue)
 
         # add the image path to the attachments array for the llm query
-        $parameters.Attachments = @($imagePath)
+        $parameters.Attachments = @($actualPath)
 
         # invoke the ai model with the constructed parameters and image analysis
         # configuration
@@ -775,6 +810,12 @@ function Invoke-QueryImageContent {
     }
 
     end {
+
+        if ($actualPath -ne $imagePath) {
+
+            Microsoft.PowerShell.Utility\Write-Verbose "Removing temporary image file: $actualPath"
+            Microsoft.PowerShell.Management\Remove-Item -Path $actualPath -Force -ErrorAction SilentlyContinue
+        }
     }
 }
 ###############################################################################

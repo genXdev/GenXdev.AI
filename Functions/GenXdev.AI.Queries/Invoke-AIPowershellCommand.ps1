@@ -665,7 +665,7 @@ and have access to everything Powershell has to offer.
 Analyze the user's request and suggest a PowerShell command that accomplishes
 their goal.
 First try basic powershell commands, if that does not solve it then try to use
-the Get-GenXDevCmdlets, Get-Help and the Get-Command cmdlets to find the right
+the Get-GenXDevCmdlet, Get-Help and the Get-Command cmdlets to find the right
 commands to use.
 Return only the suggested command without any explanation or commentary.
 $Instructions

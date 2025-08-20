@@ -464,7 +464,6 @@ function Find-IndexedImage {
         )]
         [Alias('pt')]
         [switch]$PassThru,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -507,7 +506,6 @@ function Find-IndexedImage {
         )]
         [Alias('sbs')]
         [switch]$SideBySide,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -762,28 +760,24 @@ function Find-IndexedImage {
             HelpMessage = 'Send specified keys to the browser window after opening'
         )]
         [string[]] $KeysToSend,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Auto-scroll the page by this many pixels per second (null to disable)'
         )]
         [int]$AutoScrollPixelsPerSecond = $null,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Animate rectangles (objects/faces) in visible range, cycling every 300ms'
         )]
         [switch]$AutoAnimateRectangles,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Force single column layout (centered, 1/3 screen width)'
         )]
         [switch]$SingleColumnMode = $false,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,

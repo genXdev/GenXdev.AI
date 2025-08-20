@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Updates image metadata with AI-generated descriptions and keywords.
@@ -399,7 +399,6 @@ function Invoke-ImageKeywordUpdate {
         )]
         [Alias('FromPreferences')]
         [switch] $SkipSession,
-        ########################################################################
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -426,7 +425,7 @@ function Invoke-ImageKeywordUpdate {
         )]
         [int] $TTLSeconds,
         ###############################################################################
-        [Alias('m','mon')]
+        [Alias('m', 'mon')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Specifies the monitor to use for display.'
@@ -450,7 +449,6 @@ function Invoke-ImageKeywordUpdate {
             HelpMessage = 'Temperature for the response generation.'
         )]
         [double] $TemperatureResponse,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -647,7 +645,7 @@ function Invoke-ImageKeywordUpdate {
         )]
         [switch] $FullScreen,
         ###############################################################################
-        [Alias('rf','bg')]
+        [Alias('rf', 'bg')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Restore focus to the window.'
@@ -661,7 +659,7 @@ function Invoke-ImageKeywordUpdate {
         )]
         [switch] $SideBySide,
         ###############################################################################
-        [Alias('fw','focus')]
+        [Alias('fw', 'focus')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Focus the window.'
@@ -784,7 +782,8 @@ function Invoke-ImageKeywordUpdate {
                     # determine which metadata file to check based on language preference
                     $metadataFile = if ($language -eq 'English') {
                         "$($image):description.json"
-                    } else {
+                    }
+                    else {
                         "$($image):description.$language.json"
                     }
 
@@ -799,8 +798,8 @@ function Invoke-ImageKeywordUpdate {
                             $existingData = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
                             # Content is valid if success is true AND has required data
                             $hasValidContent = ($existingData.success -eq $true) -and
-                                              ($existingData.short_description) -and
-                                              ($existingData.keywords)
+                            ($existingData.short_description) -and
+                            ($existingData.keywords)
                         }
                         catch {
                             # If JSON parsing fails, treat as invalid content
@@ -885,132 +884,133 @@ function Invoke-ImageKeywordUpdate {
                         Microsoft.PowerShell.Utility\Write-Verbose ('Analyzing image ' +
                             "content: $image with language: $language")
 
-                        $Additional = @{metadata =@(
-                            GenXdev.FileSystem\Find-Item "$($image):people.json" -IncludeAlternateFileStreams -PassThru |
-                                Microsoft.PowerShell.Core\ForEach-Object FullName |
-                                Microsoft.PowerShell.Core\ForEach-Object {
-                                    try {
-                                        $content = [IO.File]::ReadAllText($_)
-                                        $obj = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
-                                        if (($null -ne $obj) -and ($null -ne $obj.predictions) -and ($obj.predictions.Count -gt 0)) {
+                        $Additional = @{metadata = @(
+                                GenXdev.FileSystem\Find-Item "$($image):people.json" -IncludeAlternateFileStreams -PassThru |
+                                    Microsoft.PowerShell.Core\ForEach-Object FullName |
+                                    Microsoft.PowerShell.Core\ForEach-Object {
+                                        try {
+                                            $content = [IO.File]::ReadAllText($_)
+                                            $obj = $content | Microsoft.PowerShell.Utility\ConvertFrom-Json
+                                            if (($null -ne $obj) -and ($null -ne $obj.predictions) -and ($obj.predictions.Count -gt 0)) {
 
-                                            $obj.predictions | Microsoft.PowerShell.Core\ForEach-Object { $_ }
+                                                $obj.predictions | Microsoft.PowerShell.Core\ForEach-Object { $_ }
+                                            }
                                         }
-                                    }
-                                    catch {
-                                        # ignore errors reading existing metadata
-                                    }
-                                });
-                            FileInfo         = @{
-                                ImageCollection = [IO.Path]::GetFileName($ImageDirectories)
-                                ImageFilename   = $image.Substring($ImageDirectories.Length + 1)
-                            }};
+                                        catch {
+                                            # ignore errors reading existing metadata
+                                        }
+                                    });
+                                FileInfo         = @{
+                                    ImageCollection = [IO.Path]::GetFileName($ImageDirectories)
+                                    ImageFilename   = $image.Substring($ImageDirectories.Length + 1)
+                                }
+                            };
 
-                        $json = $Additional | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 20
+                            $json = $Additional | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 20
 
-                        # construct comprehensive ai query for image analysis
-                        $query = (
-                            'Analyze image and return a JSON object with properties: ' +
-                            "'short_description' (max 80 chars), 'long_description', " +
-                            "'has_nudity', 'keywords' (array of strings with all " +
-                            'detected objects, text or anything describing this ' +
-                            'picture, max 15 keywords), ' +
-                            "'has_explicit_content', 'overall_mood_of_image', " +
-                            "'picture_type' and 'style_type'.`r`n`r`n" +
-                            "Generate all descriptions and keywords in $language " +
-                            "language.`r`n`r`n" +
-                            "Output only JSON, no markdown or anything other than JSON.`r`n`r`n" +
-                            "$(($Additional.metadata.Count -gt 0 ? @"
+                            # construct comprehensive ai query for image analysis
+                            $query = (
+                                'Analyze image and return a JSON object with properties: ' +
+                                "'short_description' (max 80 chars), 'long_description', " +
+                                "'has_nudity', 'keywords' (array of strings with all " +
+                                'detected objects, text or anything describing this ' +
+                                'picture, max 15 keywords), ' +
+                                "'has_explicit_content', 'overall_mood_of_image', " +
+                                "'picture_type' and 'style_type'.`r`n`r`n" +
+                                "Generate all descriptions and keywords in $language " +
+                                "language.`r`n`r`n" +
+                                "Output only JSON, no markdown or anything other than JSON.`r`n`r`n" +
+                                "$(($Additional.metadata.Count -gt 0 ? @"
 Use the metadata below to enrich the descriptions and titles.
 Like mentioning the person's name in the title when high confidence is detected (> 0.8).
 If it the name is that of a famous person, tell about his/her life in the long description
 and mention his name in the title.
 $json`r`n
 "@ : "$json`r`n"))"
-                        );
+                            );
 
-                        try {
-                            # get ai-generated image description and metadata
-                            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
-                                -BoundParameters $PSBoundParameters `
-                                -FunctionName 'GenXdev.AI\Invoke-QueryImageContent' `
-                                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                                    -Scope Local -ErrorAction SilentlyContinue)
-                            $description = GenXdev.AI\Invoke-QueryImageContent `
-                                @params `
-                                -ResponseFormat $responseSchema `
-                                -Query $query `
-                                -ImagePath $image `
-                                -Temperature 0.1
-                            $NoLMStudioInitialize = $true
-
-                            # output verbose information about the received analysis
-                            Microsoft.PowerShell.Utility\Write-Verbose ('Received ' +
-                                "analysis: $description")
-
-                            # extract just the json portion of the response text
-                            $description = $description.trim()
-
-                            # find the first opening brace position
-                            $i0 = $description.IndexOf('{')
-
-                            # find the last closing brace position
-                            $i1 = $description.LastIndexOf('}')
-
-                            # extract only the json content if braces found
-                            if ($i0 -ge 0) {
-
-                                $description = $description.Substring(
-                                    $i0, $i1 - $i0 + 1)
-                            }
-
-                            $description = (($description | Microsoft.PowerShell.Utility\ConvertFrom-Json | GenXdev.Helpers\ConvertTo-HashTable) + $Additional.FileInfo) |
-                                Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20  -WarningAction SilentlyContinue
-
-                            # save formatted json metadata to companion file
-                            $null = [System.IO.File]::WriteAllText(
-                                $metadataFile,
-                                $description
-                            )
-
-                            Microsoft.PowerShell.Utility\Write-Verbose (
-                                "Successfully saved keyword metadata for: $image")
-                        }
-                        catch {
-                            # write failure JSON to prevent infinite retries without -RetryFailed
                             try {
-                                $failureData = @{
-                                    success = $false
-                                    short_description = ""
-                                    long_description = ""
-                                    has_nudity = $true
-                                    keywords = @()
-                                    has_explicit_content = $true
-                                    overall_mood_of_image = ""
-                                    picture_type = ""
-                                    style_type = ""
-                                    error = "Keyword generation failed: $($_.Exception.Message)"
+                                # get ai-generated image description and metadata
+                                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                                    -BoundParameters $PSBoundParameters `
+                                    -FunctionName 'GenXdev.AI\Invoke-QueryImageContent' `
+                                    -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                                        -Scope Local -ErrorAction SilentlyContinue)
+                                $description = GenXdev.AI\Invoke-QueryImageContent `
+                                    @params `
+                                    -ResponseFormat $responseSchema `
+                                    -Query $query `
+                                    -ImagePath $image `
+                                    -Temperature 0.1
+                                $NoLMStudioInitialize = $true
+
+                                # output verbose information about the received analysis
+                                Microsoft.PowerShell.Utility\Write-Verbose ('Received ' +
+                                    "analysis: $description")
+
+                                # extract just the json portion of the response text
+                                $description = $description.trim()
+
+                                # find the first opening brace position
+                                $i0 = $description.IndexOf('{')
+
+                                # find the last closing brace position
+                                $i1 = $description.LastIndexOf('}')
+
+                                # extract only the json content if braces found
+                                if ($i0 -ge 0) {
+
+                                    $description = $description.Substring(
+                                        $i0, $i1 - $i0 + 1)
                                 }
 
-                                $failureJson = $failureData | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 10
-                                [System.IO.File]::WriteAllText($metadataFile, $failureJson)
-                            }
-                            catch {
-                                # If we can't even write the failure JSON, just log it
-                                Microsoft.PowerShell.Utility\Write-Verbose "Failed to write error metadata for ${image}: $($_.Exception.Message)"
-                            }
+                                $description = (($description | Microsoft.PowerShell.Utility\ConvertFrom-Json | GenXdev.Helpers\ConvertTo-HashTable) + $Additional.FileInfo) |
+                                    Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 20 -WarningAction SilentlyContinue
 
-                            Microsoft.PowerShell.Utility\Write-Warning (
-                                "Failed to process keywords for $image : $($_.Exception.Message)")
+                                    # save formatted json metadata to companion file
+                                    $null = [System.IO.File]::WriteAllText(
+                                        $metadataFile,
+                                        $description
+                                    )
+
+                                    Microsoft.PowerShell.Utility\Write-Verbose (
+                                        "Successfully saved keyword metadata for: $image")
+                                }
+                                catch {
+                                    # write failure JSON to prevent infinite retries without -RetryFailed
+                                    try {
+                                        $failureData = @{
+                                            success               = $false
+                                            short_description     = ""
+                                            long_description      = ""
+                                            has_nudity            = $true
+                                            keywords              = @()
+                                            has_explicit_content  = $true
+                                            overall_mood_of_image = ""
+                                            picture_type          = ""
+                                            style_type            = ""
+                                            error                 = "Keyword generation failed: $($_.Exception.Message)"
+                                        }
+
+                                        $failureJson = $failureData | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress -Depth 10
+                                        [System.IO.File]::WriteAllText($metadataFile, $failureJson)
+                                    }
+                                    catch {
+                                        # If we can't even write the failure JSON, just log it
+                                        Microsoft.PowerShell.Utility\Write-Verbose "Failed to write error metadata for ${image}: $($_.Exception.Message)"
+                                    }
+
+                                    Microsoft.PowerShell.Utility\Write-Warning (
+                                        "Failed to process keywords for $image : $($_.Exception.Message)")
+                                }
+                            }
+                        }
+                        catch {
+                            # output error message if image processing fails
+                            Microsoft.PowerShell.Utility\Write-Verbose ("Failed to process image: $image`r`n" +
+                                "Error: $($_.Exception.Message)")
                         }
                     }
-                }
-                catch {
-                    # output error message if image processing fails
-                    Microsoft.PowerShell.Utility\Write-Verbose ("Failed to process image: $image`r`n" +
-                        "Error: $($_.Exception.Message)")
-                }
-            }
         }
     }
     end {

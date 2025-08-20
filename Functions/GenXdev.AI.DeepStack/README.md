@@ -8,7 +8,7 @@ This module provides PowerShell functions to interact with DeepStack's face reco
 
 ## MIT License
 
-```text
+````text
 MIT License
 
 Copyright (c) 2025 GenXdev

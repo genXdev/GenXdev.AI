@@ -99,7 +99,7 @@ function Start-GenXdevMCPServer {
                     }
                     serverInfo      = @{
                         name    = 'GenXdev-PowerShell-MCP-Server'
-                        version = '1.238.2025'
+                        version = '1.242.2025'
                     }
                 }
             }
@@ -197,7 +197,7 @@ function Start-GenXdevMCPServer {
                             }
                             serverInfo      = @{
                                 name    = 'GenXdev-PowerShell-MCP-Server'
-                                version = '1.238.2025'
+                                version = '1.242.2025'
                             }
                         }
                     }
@@ -729,7 +729,7 @@ function Start-GenXdevMCPServer {
     if ($ExposedCmdLets.Count -eq 0) {
         $ExposedCmdLets = @(
              [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Show-GenXDevCmdlets'
+                Name                                 = 'Show-GenXdevCmdlet'
                 Description                          = "Shows GenXdev PowerShell modules with their cmdlets and aliases, allow it to take a few seconds or more. Don't invoke this function without parameters, that would be too much data. Wildcards allowed like * and ?"
                 AllowedParams                        = @(
                     'CmdletName=string',
@@ -746,7 +746,7 @@ function Start-GenXdevMCPServer {
                 Confirm                              = $false
             },
             [GenXdev.Helpers.ExposedCmdletDefinition]@{
-                Name                                 = 'Get-GenXDevCmdlets'
+                Name                                 = 'Get-GenXDevCmdlet'
                 Description                          = "Gets GenXdev PowerShell modules with their cmdlets and aliases, allow it to take a few seconds or more. Don't invoke this function without parameters, that would be too much data. Wildcards allowed like * and ?"
                 AllowedParams                        = @(
                     'CmdletName=string',

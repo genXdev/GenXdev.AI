@@ -384,7 +384,7 @@ function Show-GenXdevScriptErrorFixInIde {
             )
 
             GenXdev.Windows\Send-Key @params -KeysToSend @(
-                "^``", "^``", '^+i', '^l', '^a', '{DELETE}'
+                "^``", "^``", '^+i', '^n', '^a', '{DELETE}'
             )
 
             # check if issue has specific files to open or general error handling
@@ -420,7 +420,8 @@ function Show-GenXdevScriptErrorFixInIde {
                     )
 
                     GenXdev.Windows\Send-Key @params -KeysToSend @(
-                        '^v', '{ENTER}', '^{ENTER}',"^``"
+                        "^``", "^``", '^+i', '^n','^a', '{DELETE}', '^%b',
+                        '^+%{F12}', '{ENTER}', '^v', '{ENTER}', '^{ENTER}', "^``"
                     )
 
                     # allow time for copilot to process the request

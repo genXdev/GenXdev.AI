@@ -259,7 +259,6 @@ function EnsureLMStudio {
         )]
         [Alias('fs')]
         [switch]$FullScreen,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -276,7 +275,6 @@ function EnsureLMStudio {
         )]
         [Alias('sbs')]
         [switch]$SideBySide,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,

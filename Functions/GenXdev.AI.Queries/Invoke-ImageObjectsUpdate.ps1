@@ -462,7 +462,6 @@ function Invoke-ImageObjectsUpdate {
         )]
         [Alias('sbs')]
         [switch]$SideBySide,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,

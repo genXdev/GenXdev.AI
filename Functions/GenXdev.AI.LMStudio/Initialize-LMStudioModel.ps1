@@ -272,7 +272,6 @@ function Initialize-LMStudioModel {
         )]
         [Alias('sbs')]
         [switch]$SideBySide,
-
         ###############################################################################
         [Parameter(
             Mandatory = $false,

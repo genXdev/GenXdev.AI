@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Updates all face recognition profiles from image files in the faces directory.
@@ -279,7 +279,8 @@ function Register-AllFaces {
                         $ensureParams.Force = if ($PSBoundParameters.ContainsKey(
                                 'ForceRebuild')) {
                             $false
-                        } else {
+                        }
+                        else {
                             $null
                         }
                     }
@@ -674,11 +675,11 @@ function Register-AllFaces {
                     'The following registrations failed:'
 
                 # output each individual error
-                foreach ($error in $script:RegistrationErrors) {
+                foreach ($errorInfo in $script:RegistrationErrors) {
 
                     # output specific error information
                     Microsoft.PowerShell.Utility\Write-Verbose `
-                        "  $($error.Identifier): $($error.Error)"
+                        "  $($errorInfo.Identifier): $($errorInfo.Error)"
                 }
             }
         }
