@@ -555,7 +555,9 @@ function Export-ImageIndex {
     )
 
     begin {
-
+        # load SQLite client assembly
+        GenXdev.Helpers\EnsureNuGetAssembly -PackageKey 'System.Data.Sqlite'
+        
         # determine database file path if not provided
         $params = GenXdev.Helpers\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
