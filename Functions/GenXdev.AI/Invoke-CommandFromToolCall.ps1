@@ -485,28 +485,42 @@ function Invoke-CommandFromToolCall {
                             }
                             else {
 
-                                if ($tmpResult -is [System.ValueType] -or
-                                    $tmpResult -is [string]) {
-
+                                # Convert to JSON directly with error handling
+                                try {
                                     $tmpResult = $tmpResult |
                                         Microsoft.PowerShell.Utility\ConvertTo-Json -Depth $jsonDepth `
-                                            -ErrorAction SilentlyContinue `
                                             -WarningAction SilentlyContinue
                                 }
-                                else {
+                                catch {
+                                    # If JSON conversion fails, try to create a simplified representation
+                                    Microsoft.PowerShell.Utility\Write-Verbose "JSON conversion failed for $($tmpResult.GetType().Name): $($_.Exception.Message)"
 
-                                    $tmpResult = $tmpResult | Microsoft.PowerShell.Core\ForEach-Object {
-                                        $_ | Microsoft.PowerShell.Utility\ConvertTo-Json `
-                                            -ErrorAction SilentlyContinue `
-                                            -WarningAction SilentlyContinue `
-                                            -Depth ($jsonDepth - 1) |
-                                            Microsoft.PowerShell.Utility\ConvertFrom-Json `
-                                                -ErrorAction SilentlyContinue `
-                                                -WarningAction SilentlyContinue |
-                                            GenXdev.Helpers\ConvertTo-HashTable
-                                        } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth $jsonDepth `
-                                            -ErrorAction SilentlyContinue `
-                                            -WarningAction SilentlyContinue
+                                    # Special handling for web response objects
+                                    if ($tmpResult -is [Microsoft.PowerShell.Commands.WebResponseObject]) {
+                                        $simplifiedWebResponse = @{
+                                            StatusCode = $tmpResult.StatusCode
+                                            StatusDescription = $tmpResult.StatusDescription
+                                            Headers = @{}
+                                            Content = if ($tmpResult.Content) { $tmpResult.Content.ToString() } else { "" }
+                                            RawContentLength = $tmpResult.RawContentLength
+                                        }
+
+                                        # Add headers safely
+                                        foreach ($header in $tmpResult.Headers.GetEnumerator()) {
+                                            try {
+                                                $simplifiedWebResponse.Headers[$header.Name] = $header.Value -join ", "
+                                            }
+                                            catch {
+                                                $simplifiedWebResponse.Headers[$header.Name] = "[Could not serialize header value]"
+                                            }
+                                        }
+
+                                        $tmpResult = $simplifiedWebResponse | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth $jsonDepth
+                                    }
+                                    else {
+                                        # For other types, fall back to string representation
+                                        $tmpResult = $tmpResult | Microsoft.PowerShell.Utility\Out-String
+                                    }
                                 }
                             }
                         }

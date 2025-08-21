@@ -714,7 +714,7 @@ function Get-ScriptExecutionErrorFixPrompt {
                         'Method=string',
                         'UserAgent=string'
                     )
-                    OutputText    = $false
+                    OutputText    = $true
                     Confirm       = $false
                     JsonDepth     = 6
                 },

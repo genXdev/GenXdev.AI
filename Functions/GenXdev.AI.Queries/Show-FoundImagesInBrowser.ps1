@@ -609,7 +609,7 @@ function Show-FoundImagesInBrowser {
 
         # generate masonry layout html with specified parameters
         $null = GenXdev.AI\GenerateMasonryLayoutHtml @params `
-            -Images $results
+            -Images $results -FilePath $filePath
 
         # log successful html generation
         Microsoft.PowerShell.Utility\Write-Verbose (

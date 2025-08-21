@@ -1,4 +1,4 @@
-﻿###############################################################################
+###############################################################################
 <#
 .SYNOPSIS
 Interactive file content comparison and approval using WinMerge.
@@ -328,7 +328,7 @@ function Approve-NewTextFileContent {
         Microsoft.PowerShell.Utility\Write-Verbose "Created temp comparison file: $tempFile"
 
         # write proposed content to temp file
-        $NewContent | Microsoft.PowerShell.Utility\Out-File -FilePath $tempFile -Force
+        $NewContent | Microsoft.PowerShell.Utility\Out-File  $tempFile -Force
 
         # launch winmerge for interactive comparison
         $null = GenXdev.AI\Invoke-WinMerge `

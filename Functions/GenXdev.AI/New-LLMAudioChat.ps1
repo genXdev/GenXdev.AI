@@ -1016,7 +1016,7 @@ function New-LLMAudioChat {
                             'Method=string',
                             'UserAgent=string'
                         )
-                        OutputText    = $false
+                        OutputText    = $true
                         Confirm       = $false
                         JsonDepth     = 6
                     },

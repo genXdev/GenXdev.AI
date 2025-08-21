@@ -320,13 +320,13 @@ function GenerateMasonryLayoutHtml {
 
     end {
         # Either return HTML string or save to file based on parameters
-        if ($null -eq $FilePath) {
+        if ([string]::IsNullOrWhiteSpace($FilePath)) {
             Microsoft.PowerShell.Utility\Write-Verbose 'Returning HTML as string output'
             return $html
         }
         else {
             Microsoft.PowerShell.Utility\Write-Verbose "Saving HTML gallery to: $FilePath"
-            $html | Microsoft.PowerShell.Utility\Out-File -FilePath (GenXdev.FileSystem\Expand-Path $FilePath -CreateDirectory) -Encoding utf8
+            $html | Microsoft.PowerShell.Utility\Out-File  (GenXdev.FileSystem\Expand-Path $FilePath -CreateDirectory) -Encoding utf8
         }
     }
 }

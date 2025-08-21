@@ -764,6 +764,8 @@ function Invoke-LLMQuery {
 
         # store PSBoundParameters to avoid nested function issues
         $myPSBoundParameters = $PSBoundParameters
+        Microsoft.PowerShell.Utility\Write-Verbose "PSBoundParameters keys: $($myPSBoundParameters.Keys -join ', ')"
+        Microsoft.PowerShell.Utility\Write-Verbose "PSBoundParameters MaxToolcallBackLength: $($myPSBoundParameters['MaxToolcallBackLength'])"
 
         # copy identical parameter values for llm configuration
         $llmConfigParams = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -771,26 +773,39 @@ function Invoke-LLMQuery {
             -FunctionName 'GenXdev.AI\Get-AILLMSettings' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                 -Scope Local -ErrorAction SilentlyContinue)
+        Microsoft.PowerShell.Utility\Write-Verbose "llmConfigParams keys: $($llmConfigParams.Keys -join ', ')"
+        Microsoft.PowerShell.Utility\Write-Verbose "llmConfigParams MaxToolcallBackLength: $($llmConfigParams['MaxToolcallBackLength'])"
 
         # get the llm settings configuration
         $llmConfig = GenXdev.AI\Get-AILLMSettings @llmConfigParams
+        Microsoft.PowerShell.Utility\Write-Verbose "LLM Config keys: $($llmConfig.Keys -join ', ')"
+        Microsoft.PowerShell.Utility\Write-Verbose "LLM Config MaxToolcallBackLength: $($llmConfig['MaxToolcallBackLength'])"
 
         # apply configuration settings to local variables
         foreach ($param in $llmConfig.Keys) {
 
-            # check if variable exists in local scope
-            if (($null -ne $llmConfig[$param]) -and (
+            # check if variable exists in local scope and skip MaxToolcallBackLength to preserve user-specified value
+            if (($null -ne $llmConfig[$param]) -and ($param -ne 'MaxToolcallBackLength') -and (
                     Microsoft.PowerShell.Utility\Get-Variable -Name $param `
                         -Scope Local -ErrorAction SilentlyContinue)) {
 
+                Microsoft.PowerShell.Utility\Write-Verbose "Setting $param to $($llmConfig[$param])"
                 # set the variable value from configuration
                 Microsoft.PowerShell.Utility\Set-Variable -Name $param `
                     -Value $llmConfig[$param] -Scope Local -Force
             }
         }
+        Microsoft.PowerShell.Utility\Write-Verbose "MaxToolcallBackLength after config override: $MaxToolcallBackLength"
 
         # output verbose information about starting llm interaction
         Microsoft.PowerShell.Utility\Write-Verbose 'Starting LLM interaction...'
+        Microsoft.PowerShell.Utility\Write-Verbose "MaxToolcallBackLength parameter value: $MaxToolcallBackLength"
+
+        # Ensure MaxToolcallBackLength has a reasonable minimum value
+        if ($MaxToolcallBackLength -le 1000) {
+            Microsoft.PowerShell.Utility\Write-Verbose "MaxToolcallBackLength was $MaxToolcallBackLength, forcing to 100000"
+            $MaxToolcallBackLength = 100000
+        }
 
         # convert markup block types to lowercase for case-insensitive comparison
         $markupBlocksTypeFilter = $MarkupBlocksTypeFilter |
@@ -1632,14 +1647,26 @@ function Invoke-LLMQuery {
 
                     if ($isTextOnlyOutput) {
                         # For text-only output, convert everything to string first using Out-String
+                        Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' raw output type: $($invocationResult.Output.GetType().FullName)"
+                        Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' raw output count: $(if ($invocationResult.Output -is [Array]) { $invocationResult.Output.Count } else { '1 (not array)' })"
                         $outputText = "$(($invocationResult.Output | Microsoft.PowerShell.Utility\Out-String))".Trim()
+                        Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' text output length: $($outputText.Length) characters (max: $MaxToolcallBackLength)"
 
                         if ($outputText.Length -gt $MaxToolcallBackLength) {
                             $originalLength = $outputText.Length
                             $trimMessage = "TRIMMED OUTPUT (check parameter use!) invalid json on purpose, AI Agent: don't retry same function without check parameters! >>"
                             $maxContentLength = $MaxToolcallBackLength - $trimMessage.Length
-                            $outputText = $trimMessage + $outputText.Substring(0, $maxContentLength)
-                            Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' output was trimmed from $originalLength to $MaxToolcallBackLength characters"
+
+                            Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' MaxToolcallBackLength: $MaxToolcallBackLength, trimMessage.Length: $($trimMessage.Length), maxContentLength: $maxContentLength"
+
+                            # Handle output trimming with proper length validation
+                            if ($maxContentLength -le 0) {
+                                Microsoft.PowerShell.Utility\Write-Warning "MaxToolcallBackLength ($MaxToolcallBackLength) is too small for trim message ($($trimMessage.Length) chars)"
+                                $outputText = "Output too large to display"
+                            } else {
+                                $outputText = $trimMessage + $outputText.Substring(0, $maxContentLength)
+                            }
+                            Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' output was trimmed from $originalLength to $($outputText.Length) characters"
                         }
 
                         # Add tool response to history
@@ -1684,8 +1711,15 @@ function Invoke-LLMQuery {
                                 $originalLength = $parsedOutput.Length
                                 $trimMessage = "TRIMMED JSON OUTPUT (check parameter use!) incomplete json data, AI Agent: don't retry same function without checking parameters! >>"
                                 $maxContentLength = $MaxToolcallBackLength - $trimMessage.Length
-                                $content = $trimMessage + $parsedOutput.Substring(0, $maxContentLength)
-                                Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' JSON output was trimmed from $originalLength to $MaxToolcallBackLength characters (even at minimum depth 2)"
+                                Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' JSON MaxToolcallBackLength: $MaxToolcallBackLength, trimMessage.Length: $($trimMessage.Length), maxContentLength: $maxContentLength"
+
+                                if ($maxContentLength -le 0) {
+                                    Microsoft.PowerShell.Utility\Write-Warning "MaxToolcallBackLength ($MaxToolcallBackLength) is too small for JSON trim message ($($trimMessage.Length) chars)"
+                                    $content = "JSON output too large to display"
+                                } else {
+                                    $content = $trimMessage + $parsedOutput.Substring(0, $maxContentLength)
+                                }
+                                Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' JSON output was trimmed from $originalLength to $($content.Length) characters (even at minimum depth 2)"
                             }
                         } catch {
                             # If JSON conversion fails, fall back to text with trimming
@@ -1694,8 +1728,15 @@ function Invoke-LLMQuery {
                                 $originalLength = $outputText.Length
                                 $trimMessage = "TRIMMED OUTPUT (check parameter use!) invalid json on purpose, AI Agent: don't retry same function without check parameters! >>"
                                 $maxContentLength = $MaxToolcallBackLength - $trimMessage.Length
-                                $outputText = $trimMessage + $outputText.Substring(0, $maxContentLength)
-                                Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' fallback output was trimmed from $originalLength to $MaxToolcallBackLength characters"
+                                Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' fallback MaxToolcallBackLength: $MaxToolcallBackLength, trimMessage.Length: $($trimMessage.Length), maxContentLength: $maxContentLength"
+
+                                if ($maxContentLength -le 0) {
+                                    Microsoft.PowerShell.Utility\Write-Warning "MaxToolcallBackLength ($MaxToolcallBackLength) is too small for fallback trim message ($($trimMessage.Length) chars)"
+                                    $outputText = "Fallback output too large to display"
+                                } else {
+                                    $outputText = $trimMessage + $outputText.Substring(0, $maxContentLength)
+                                }
+                                Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' fallback output was trimmed from $originalLength to $($outputText.Length) characters"
                             }
                             $content = $outputText
                         }
