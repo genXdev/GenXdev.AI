@@ -278,8 +278,8 @@ function New-LLMAudioChat {
             Mandatory = $false,
             HelpMessage = 'Temperature for response randomness (0.0-1.0)'
         )]
-        [ValidateRange(0.0, 1.0)]
-        [double] $Temperature = 0.2,
+        [ValidateRange(-1, 1.0)]
+        [double] $Temperature = -1,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -1113,7 +1113,7 @@ function New-LLMAudioChat {
 
         # initialize lm studio if using localhost endpoint
         if ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or
-            $ApiEndpoint.Contains('localhost')) {
+            $ApiEndpoint.Contains('localhost') -or $ApiEndpoint.Contains('127.0.0.1')) {
 
             # copy parameters for model initialization
             $initializationParams = `

@@ -219,8 +219,8 @@ function New-LLMTextChat {
             Mandatory = $false,
             HelpMessage = 'Temperature for response randomness (0.0-1.0)'
         )]
-        [ValidateRange(0.0, 1.0)]
-        [double] $Temperature = 0.2,
+        [ValidateRange(-1, 1.0)]
+        [double] $Temperature = -1,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -699,9 +699,6 @@ function New-LLMTextChat {
 
     begin {
 
-        # output initialization verbose message
-        Microsoft.PowerShell.Utility\Write-Verbose "Initializing chat session with model: $Model"
-
         # determine if instructions need updating
         $updateInstructions = [string]::IsNullOrWhiteSpace($Instructions)
 
@@ -856,20 +853,6 @@ $Instructions
 
         # output verbose message about initialized cmdlets
         Microsoft.PowerShell.Utility\Write-Verbose "Initialized with $($ExposedCmdLets.Count) exposed cmdlets"
-
-        # initialize lm studio model if using localhost endpoint
-        if ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or $ApiEndpoint.Contains('localhost')) {
-
-            # copy parameters for model initialization
-            $initializationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
-                -BoundParameters $PSBoundParameters `
-                -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
-                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
-
-            # initialize the model and get its identifier
-            $modelInfo = GenXdev.AI\Initialize-LMStudioModel @initializationParams
-            $Model = $modelInfo.identifier
-        }
 
         # clean up force parameter from bound parameters
         if ($PSBoundParameters.ContainsKey('Force')) {

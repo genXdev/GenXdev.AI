@@ -260,8 +260,8 @@ function Invoke-LLMQuery {
             Mandatory = $false,
             HelpMessage = 'Temperature for response randomness (0.0-1.0)'
         )]
-        [ValidateRange(0.0, 1.0)]
-        [double] $Temperature = 0.2,
+        [ValidateRange(-1, 1.0)]
+        [double] $Temperature = -1,
         ###################################################################
         [Parameter(
             Mandatory = $false,
@@ -814,7 +814,7 @@ function Invoke-LLMQuery {
         # initialize lm studio if using localhost
         if ((-not $NoLMStudioInitialize) -and `
             ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or `
-                    -not $ApiEndpoint.Contains('localhost'))) {
+                    $ApiEndpoint.Contains('localhost') -or $ApiEndpoint.Contains('127.0.0.1'))) {
 
             # copy identical parameter values to initialize the model
             $initParams = GenXdev.Helpers\Copy-IdenticalParamValues `
@@ -1508,7 +1508,11 @@ function Invoke-LLMQuery {
         $payload = @{
             stream      = $false
             messages    = $messages
-            temperature = $Temperature
+        }
+
+        if ($Temperature -ge 0) {
+
+            $payload.temperature = $Temperature
         }
 
         if (-not [string]::IsNullOrWhiteSpace($ResponseFormat)) {
@@ -1581,7 +1585,7 @@ function Invoke-LLMQuery {
             -ConnectionTimeoutSeconds $TimeoutSeconds
 
         # First handle tool calls if present
-        if ($response.choices[0].message.tool_calls) {
+        if ($response.choices -and ($response.choices[0].message.tool_calls)) {
 
             # Add assistant's tool calls to history
             $newMsg = $response.choices[0].message

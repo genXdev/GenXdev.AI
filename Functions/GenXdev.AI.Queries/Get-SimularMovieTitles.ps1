@@ -164,8 +164,8 @@ function Get-SimularMovieTitles {
             Mandatory = $false,
             HelpMessage = 'Temperature for response randomness (0.0-1.0)'
         )]
-        [ValidateRange(0.0, 1.0)]
-        [double] $Temperature = 0.2,
+        [ValidateRange(-1, 1.0)]
+        [double] $Temperature = -1,
         #
         [Parameter(
             Mandatory = $false,

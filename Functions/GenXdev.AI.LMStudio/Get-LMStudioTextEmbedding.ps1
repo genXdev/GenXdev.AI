@@ -395,7 +395,7 @@ function Get-LMStudioTextEmbedding {
 
         # check if using local endpoint configuration
         if ([string]::IsNullOrWhiteSpace($ApiEndpoint) -or
-            $ApiEndpoint.Contains('localhost')) {
+            $ApiEndpoint.Contains('localhost') -or $ApiEndpoint.Contains('127.0.0.1')) {
 
             # prepare parameters for model initialization
             $initParams = GenXdev.Helpers\Copy-IdenticalParamValues `
