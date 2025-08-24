@@ -1,4 +1,4 @@
-###############################################################################
+﻿###############################################################################
 <#
 .SYNOPSIS
 Generates subtitle files for audio and video files using OpenAI Whisper.
@@ -155,7 +155,6 @@ function Save-Transcriptions {
             Position = 1,
             HelpMessage = 'The language to expect in the audio.'
         )]
-        [PSDefaultValue(Value = 'English')]
         [ValidateSet(
             'Afrikaans',
             'Akan',
@@ -465,7 +464,7 @@ function Save-Transcriptions {
             'Yoruba',
             'Zulu'
         )]
-        [string] $LanguageOut = $null,
+        [string] $LanguageOut,
         ###########################################################################
         [Parameter(
             Mandatory = $false,
@@ -708,9 +707,16 @@ function Save-Transcriptions {
                 -ErrorAction SilentlyContinue)
 
         # get resolved language using meta language processing
-        $languageIn = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageIn
-
-        $languageOut = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageOut
+        $params.Language = $LanguageIn
+        if ([string]::IsNullOrWhiteSpace($LanguageIn)) {
+            $null = $params.Remove('Language')
+        }
+        $languageIn = GenXdev.AI\Get-AIMetaLanguage @params
+        $params.Language = $LanguageOut
+        if ([string]::IsNullOrWhiteSpace($LanguageOut)) {
+            $null = $params.Remove('Language')
+        }
+        $languageOut = GenXdev.AI\Get-AIMetaLanguage @params
 
         # define array of supported media file extensions for processing
         $extensions = @(
@@ -908,6 +914,10 @@ function Save-Transcriptions {
                     return
                 }
 
+                # display file being processed
+                Microsoft.PowerShell.Utility\Write-Host ('Processing: ' +
+                    "$($PSItem.FullName)") -ForegroundColor Cyan
+
                 # construct paths for old and new subtitle file naming patterns
                 $enPathOld = "$($PSItem.FullName).en.srt"
 
@@ -930,6 +940,9 @@ function Save-Transcriptions {
 
                 $newPath = [IO.Path]::ChangeExtension($PSItem.FullName,
                     ".$targetLanguage.srt")
+
+                Microsoft.PowerShell.Utility\Write-Verbose "Target language: '$targetLanguage'"
+                Microsoft.PowerShell.Utility\Write-Verbose "Target file path: '$newPath'"
 
                 # handle legacy Dutch subtitle file naming convention
                 if ([io.file]::Exists($nlPathOld)) {
@@ -988,20 +1001,29 @@ function Save-Transcriptions {
                             "transcription for: $($PSItem.FullName)")
 
                         # prepare parameters for transcription generation
-                        $transcriptionParams = (GenXdev.Helpers\Copy-IdenticalParamValues `
-                                -BoundParameters $PSBoundParameters `
-                                -FunctionName 'GenXdev.AI\Start-AudioTranscription' `
-                                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                                    -Scope Local `
-                                    -ErrorAction SilentlyContinue)
-                        ) + @{
-                            Input = $PSItem.FullName
-                            SRT   = $true
-                        }
+                        $transcriptionParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                            -BoundParameters $PSBoundParameters `
+                            -FunctionName 'GenXdev.AI\Start-AudioTranscription'
+
+                        # Add required parameters for SRT generation
+                        $transcriptionParams.Input = $PSItem.FullName
+                        $transcriptionParams.Srt = $true
+                        $transcriptionParams.LanguageIn = $languageIn
+                        $transcriptionParams.LanguageOut = $languageOut
+
+                        Microsoft.PowerShell.Utility\Write-Host "  Starting transcription..." -ForegroundColor Yellow
+                        Microsoft.PowerShell.Utility\Write-Verbose "Parameters: $($transcriptionParams.Keys -join ', ')"
 
                         # generate transcription using whisper model
-                        $transcription = GenXdev.AI\Start-AudioTranscription `
-                            @transcriptionParams
+                        $transcription = GenXdev.AI\Start-AudioTranscription @transcriptionParams | Microsoft.PowerShell.Utility\Out-String
+
+                        if ($null -eq $transcription -or [string]::IsNullOrWhiteSpace($transcription)) {
+                            Microsoft.PowerShell.Utility\Write-Warning "No transcription generated for $($PSItem.Name)"
+                            return
+                        }
+
+                        Microsoft.PowerShell.Utility\Write-Host "  Transcription completed successfully" -ForegroundColor Green
+                        Microsoft.PowerShell.Utility\Write-Verbose "Transcription length: $($transcription.Length) characters"
                     }
                     finally {
 
@@ -1012,21 +1034,26 @@ function Save-Transcriptions {
                 }
                 catch {
 
-                    Microsoft.PowerShell.Utility\Write-Verbose ('Failed to ' +
-                        "process file: $($PSItem.FullName)")
-
-                    Microsoft.PowerShell.Utility\Write-Verbose ('Error details: ' +
-                        "$PSItem")
+                    Microsoft.PowerShell.Utility\Write-Error "Failed to process file: $($PSItem.FullName)"
+                    Microsoft.PowerShell.Utility\Write-Error "Error details: $($_.Exception.Message)"
+                    Microsoft.PowerShell.Utility\Write-Verbose "Full error: $_"
 
                     return
                 }
 
                 # save generated transcription to subtitle file
-                $null = $transcription |
-                    Microsoft.PowerShell.Utility\Out-File $newPath -Force
+                try {
+                    $null = $transcription |
+                        Microsoft.PowerShell.Utility\Out-File $newPath -Force -Encoding UTF8
 
-                Microsoft.PowerShell.Utility\Write-Verbose ('Transcription saved ' +
-                    "to: $newPath")
+                    Microsoft.PowerShell.Utility\Write-Host "  Saved: $([System.IO.Path]::GetFileName($newPath))" -ForegroundColor Green
+                    Microsoft.PowerShell.Utility\Write-Verbose ('Transcription saved ' +
+                        "to: $newPath")
+                } catch {
+                    Microsoft.PowerShell.Utility\Write-Error "Failed to save transcription to: $newPath"
+                    Microsoft.PowerShell.Utility\Write-Error "Save error: $($_.Exception.Message)"
+                    return
+                }
 
                 $transcription
             }

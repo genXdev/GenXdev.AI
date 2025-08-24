@@ -99,7 +99,7 @@ function Start-GenXdevMCPServer {
                     }
                     serverInfo      = @{
                         name    = 'GenXdev-PowerShell-MCP-Server'
-                        version = '1.258.2025'
+                        version = '1.260.2025'
                     }
                 }
             }
@@ -197,7 +197,7 @@ function Start-GenXdevMCPServer {
                             }
                             serverInfo      = @{
                                 name    = 'GenXdev-PowerShell-MCP-Server'
-                                version = '1.258.2025'
+                                version = '1.260.2025'
                             }
                         }
                     }
@@ -764,7 +764,7 @@ function Start-GenXdevMCPServer {
             },
             [GenXdev.Helpers.ExposedCmdletDefinition]@{
                 Name                                 = 'Import-GenXdevModules'
-                Description                          = 'Reloads all GenXdev PowerShell modules to reflect source code changes in the MCP interface. Use this after making any changes to GenXdev module source code to ensure those changes are available through the MCP server without restarting it.'
+                Description                          = 'Refreshes the MCP Server''s modules (ONLY) Not those in your own PWSH session, invoke reloadgenxdev in there directly to refresh after you made changes.'
                 AllowedParams                        = @(
                 )
                 DontShowDuringConfirmationParamNames = @()
