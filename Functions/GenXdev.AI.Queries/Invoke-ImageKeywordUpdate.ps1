@@ -818,7 +818,7 @@ function Invoke-ImageKeywordUpdate {
                             type        = 'json_schema'
                             json_schema = @{
                                 name   = 'image_analysis_response'
-                                strict = 'true'
+                                strict = $true
                                 schema = @{
                                     type       = 'object'
                                     properties = @{

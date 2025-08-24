@@ -4,7 +4,39 @@
 Sets the LLM settings for AI operations in GenXdev.AI.
 
 .DESCRIPTION
-This function configures the LLM (Large Language Model) settings used by the
+This f        [int] $TimeoutSeconds,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether the endpoint does not support json_schema response format'
+        )]
+        [switch] $NoSupportForJsonSchema,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether the endpoint does not support image upload functionality'
+        )]
+        [switch] $NoSupportForImageUpload,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether the endpoint does not support tool calling functionality'
+        )]
+        [switch] $NoSupportForToolCalls,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Store the settings only in the current session without ' +
+                'persisting')
+        )]
+        [switch] $SessionOnly,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Clear alternative settings stored in session for AI ' +
+                'preferences')
+        )]
+        [switch] $ClearSession,res the LLM (Large Language Model) settings used by the
 GenXdev.AI module for various AI operations. Settings can be stored persistently
 in preferences (default), only in the current session (using -SessionOnly), or
 cleared from the session (using -ClearSession). The function validates that at
@@ -41,6 +73,18 @@ The API key for authenticated AI operations.
 
 .PARAMETER TimeoutSeconds
 The timeout in seconds for AI operations.
+
+.PARAMETER NoSupportForJsonSchema
+When specified, indicates that the endpoint does not support json_schema
+response format. This enables fallback behavior using prompt-based instructions.
+
+.PARAMETER NoSupportForImageUpload
+When specified, indicates that the endpoint does not support image upload
+functionality.
+
+.PARAMETER NoSupportForToolCalls
+When specified, indicates that the endpoint does not support tool calling
+functionality.
 
 .PARAMETER SessionOnly
 When specified, stores the settings only in the current session (Global
@@ -176,6 +220,24 @@ function Set-AILLMSettings {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = 'Whether the endpoint does not support json_schema response format'
+        )]
+        [switch] $NoSupportForJsonSchema,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether the endpoint does not support image upload functionality'
+        )]
+        [switch] $NoSupportForImageUpload,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether the endpoint does not support tool calling functionality'
+        )]
+        [switch] $NoSupportForToolCalls,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = ('Use alternative settings stored in session for AI ' +
                 'preferences')
         )]
@@ -221,7 +283,10 @@ function Set-AILLMSettings {
                 'TTLSeconds',
                 'ApiEndpoint',
                 'ApiKey',
-                'TimeoutSeconds'
+                'TimeoutSeconds',
+                'NoSupportForJsonSchema',
+                'NoSupportForImageUpload',
+                'NoSupportForToolCalls'
             )
 
             # filter to only parameters that were actually provided
@@ -288,6 +353,9 @@ function Set-AILLMSettings {
                 Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_ApiEndpoint') -Value $null -Scope Global
                 Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_ApiKey') -Value $null -Scope Global
                 Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_TimeoutSeconds') -Value $null -Scope Global
+                Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_NoSupportForJsonSchema') -Value $null -Scope Global
+                Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_NoSupportForImageUpload') -Value $null -Scope Global
+                Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_NoSupportForToolCalls') -Value $null -Scope Global
 
                 # output confirmation of the clearing operation
                 Microsoft.PowerShell.Utility\Write-Verbose (
@@ -310,7 +378,10 @@ function Set-AILLMSettings {
             'TTLSeconds',
             'ApiEndpoint',
             'ApiKey',
-            'TimeoutSeconds'
+            'TimeoutSeconds',
+            'NoSupportForJsonSchema',
+            'NoSupportForImageUpload',
+            'NoSupportForToolCalls'
         )
 
         # iterate through all possible parameters and add provided ones to

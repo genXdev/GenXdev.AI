@@ -649,7 +649,7 @@ function Get-ScriptExecutionErrorFixPrompt {
             type        = 'json_schema'
             json_schema = @{
                 name   = 'error_resolution_response'
-                strict = 'true'
+                strict = $true
                 schema = @{
                     type  = 'array'
                     items = @{

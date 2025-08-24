@@ -1,157 +1,193 @@
 {
-    "SimpleIntelligence": [
-        {
-            "Model": "llama-3-groq-8b-tool-use",
-            "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF",
-            "RequiredMemoryGB": 7,
-            "MaxToken": null,
-            "TTLSeconds": null,
-            "ApiEndpoint": null,
-            "ApiKey": null,
-            "Cpu": null,
-            "Gpu": null,
-            "TimeoutSeconds": 86400
-        },
-        {
-            "Model": "qwen2.5-14b-instruct-1m",
-            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF",
-            "MaxToken": 32768,
-            "RequiredMemoryGB": 7,
-            "TTLSeconds": null,
-            "ApiEndpoint": null,
-            "ApiKey": null,
-            "Cpu": null,
-            "Gpu": null,
-            "TimeoutSeconds": 86400
-        }
-    ],
-    "Knowledge": [
-        {
-            "Model": "llama-3-groq-8b-tool-use",
-            "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF",
-            "RequiredMemoryGB": 7,
-            "MaxToken": null,
-            "TTLSeconds": null,
-            "ApiEndpoint": null,
-            "ApiKey": null,
-            "Cpu": null,
-            "Gpu": null,
-            "TimeoutSeconds": 86400
-        },
-        {
-            "Model": "qwen2.5-14b-instruct-1m",
-            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF",
-            "MaxToken": 32768,
-            "RequiredMemoryGB": 7,
-            "TTLSeconds": null,
-            "ApiEndpoint": null,
-            "ApiKey": null,
-            "Cpu": null,
-            "Gpu": null,
-            "TimeoutSeconds": 86400
-        }
-    ],
-    "Pictures": [
-        {
-            "Model": "minicpm-v-2_6",
-            "HuggingFaceIdentifier": "lmstudio-community/MiniCPM-V-2_6-GGUF",
-            "RequiredMemoryGB": 6,
-            "MaxToken": -1,
-            "TTLSeconds": null,
-            "ApiEndpoint": null,
-            "ApiKey": null,
-            "Cpu": null,
-            "Gpu": null,
-            "TimeoutSeconds": 86400
-        },
-        {
-            "Model": "gemma-3-27b",
-            "HuggingFaceIdentifier": "https://huggingface.co/lmstudio-community/gemma-3-27B-it-qat-GGUF/blob/main/gemma-3-27B-it-QAT-Q4_0.gguf",
-            "RequiredMemoryGB": 19,
-            "MaxToken": -1,
-            "TTLSeconds": null,
-            "ApiEndpoint": null,
-            "ApiKey": null,
-            "Cpu": null,
-            "Gpu": null,
-            "TimeoutSeconds": 86400
-        }
-    ],
-    "TextTranslation": [
-        {
-            "Model": "llama-3-groq-8b-tool-use",
-            "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF/Llama-3-Groq-8B-Tool-Use-Q4_K_M.gguf",
-            "RequiredMemoryGB": 7,
-            "MaxToken": null,
-            "TTLSeconds": null,
-            "ApiEndpoint": null,
-            "ApiKey": null,
-            "Cpu": null,
-            "Gpu": null,
-            "TimeoutSeconds": 86400
-        },
-        {
-            "Model": "qwen2.5-14b-instruct-1m",
-            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF/Qwen2.5-14B-Instruct-1M-Q4_K_M.gguf",
-            "MaxToken": 32768,
-            "RequiredMemoryGB": 7,
-            "TTLSeconds": null,
-            "ApiEndpoint": null,
-            "ApiKey": null,
-            "Cpu": null,
-            "Gpu": null,
-            "TimeoutSeconds": 86400
-        }
-    ],
-    "Coding": [
-        {
-            "Model": "qwen2.5-14b-instruct-1m",
-            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF/Qwen2.5-14B-Instruct-1M-Q4_K_M.gguf",
-            "MaxToken": 32768,
-            "RequiredMemoryGB": 7,
-            "TTLSeconds": null,
-            "ApiEndpoint": null,
-            "ApiKey": null,
-            "Cpu": null,
-            "Gpu": null,
-            "TimeoutSeconds": 86400
-        },
-        {
-            "Model": "llama-3.3-70b-instruct",
-            "HuggingFaceIdentifier": "lmstudio-community/Llama-3.3-70B-Instruct-GGUF/Llama-3.3-70B-Instruct-Q4_K_M.gguf",
-            "MaxToken": 32358,
-            "RequiredMemoryGB": 60,
-            "TTLSeconds": null,
-            "ApiEndpoint": null,
-            "ApiKey": null,
-            "Cpu": null,
-            "Gpu": null,
-            "TimeoutSeconds": 86400
-        }
-    ],
-    "ToolUse": [
-        {
-            "Model": "llama-3-groq-8b-tool-use",
-            "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF/Llama-3-Groq-8B-Tool-Use-Q4_K_M.gguf",
-            "MaxToken": null,
-            "TTLSeconds": null,
-            "ApiEndpoint": null,
-            "ApiKey": null,
-            "Cpu": null,
-            "Gpu": null,
-            "TimeoutSeconds": 86400
-        },
-        {
-            "Model": "qwen2.5-14b-instruct-1m",
-            "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF/Qwen2.5-14B-Instruct-1M-Q4_K_M.gguf",
-            "MaxToken": 32768,
-            "RequiredMemoryGB": 7,
-            "TTLSeconds": null,
-            "ApiEndpoint": null,
-            "ApiKey": null,
-            "Cpu": null,
-            "Gpu": null,
-            "TimeoutSeconds": 86400
-        }
-    ]
+  "SimpleIntelligence": [
+    {
+      "Model": "llama-3-groq-8b-tool-use",
+      "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF",
+      "RequiredMemoryGB": 7,
+      "MaxToken": null,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": false,
+      "NoSupportForToolCalls": false
+    },
+    {
+      "Model": "qwen2.5-14b-instruct-1m",
+      "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF",
+      "MaxToken": 32768,
+      "RequiredMemoryGB": 7,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": false,
+      "NoSupportForToolCalls": false
+    }
+  ],
+  "Knowledge": [
+    {
+      "Model": "llama-3-groq-8b-tool-use",
+      "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF",
+      "RequiredMemoryGB": 7,
+      "MaxToken": null,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": false,
+      "NoSupportForToolCalls": false
+    },
+    {
+      "Model": "qwen2.5-14b-instruct-1m",
+      "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF",
+      "MaxToken": 32768,
+      "RequiredMemoryGB": 7,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": false,
+      "NoSupportForToolCalls": false
+    }
+  ],
+  "Pictures": [
+    {
+      "Model": "minicpm-v-2_6",
+      "HuggingFaceIdentifier": "lmstudio-community/MiniCPM-V-2_6-GGUF",
+      "RequiredMemoryGB": 6,
+      "MaxToken": -1,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": false,
+      "NoSupportForToolCalls": false
+    },
+    {
+      "Model": "gemma-3-27b",
+      "HuggingFaceIdentifier": "https://huggingface.co/lmstudio-community/gemma-3-27B-it-qat-GGUF/blob/main/gemma-3-27B-it-QAT-Q4_0.gguf",
+      "RequiredMemoryGB": 19,
+      "MaxToken": -1,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": false,
+      "NoSupportForToolCalls": false
+    }
+  ],
+  "TextTranslation": [
+    {
+      "Model": "llama-3-groq-8b-tool-use",
+      "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF/Llama-3-Groq-8B-Tool-Use-Q4_K_M.gguf",
+      "RequiredMemoryGB": 7,
+      "MaxToken": null,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": false,
+      "NoSupportForToolCalls": false
+    },
+    {
+      "Model": "qwen2.5-14b-instruct-1m",
+      "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF/Qwen2.5-14B-Instruct-1M-Q4_K_M.gguf",
+      "MaxToken": 32768,
+      "RequiredMemoryGB": 7,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": false,
+      "NoSupportForToolCalls": false
+    }
+  ],
+  "Coding": [
+    {
+      "Model": "qwen2.5-14b-instruct-1m",
+      "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF/Qwen2.5-14B-Instruct-1M-Q4_K_M.gguf",
+      "MaxToken": 32768,
+      "RequiredMemoryGB": 7,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": false,
+      "NoSupportForToolCalls": false
+    },
+    {
+      "Model": "llama-3.3-70b-instruct",
+      "HuggingFaceIdentifier": "lmstudio-community/Llama-3.3-70B-Instruct-GGUF/Llama-3.3-70B-Instruct-Q4_K_M.gguf",
+      "MaxToken": 32358,
+      "RequiredMemoryGB": 60,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": false,
+      "NoSupportForToolCalls": false
+    }
+  ],
+  "ToolUse": [
+    {
+      "Model": "llama-3-groq-8b-tool-use",
+      "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF/Llama-3-Groq-8B-Tool-Use-Q4_K_M.gguf",
+      "MaxToken": null,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": false,
+      "NoSupportForToolCalls": false
+    },
+    {
+      "Model": "qwen2.5-14b-instruct-1m",
+      "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF/Qwen2.5-14B-Instruct-1M-Q4_K_M.gguf",
+      "MaxToken": 32768,
+      "RequiredMemoryGB": 7,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": false,
+      "NoSupportForToolCalls": false
+    }
+  ]
 }

@@ -76,9 +76,7 @@ Get-TextTranslation -Text "Hello world" -Language "French" -Model "qwen"
 
 .EXAMPLE
 "Bonjour" | translate -Language "English"
-###############################################################################>
-###############################################################################
-
+#>
 function Get-TextTranslation {
 
     [CmdletBinding()]

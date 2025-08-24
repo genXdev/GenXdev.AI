@@ -22,9 +22,101 @@ accuracy. Defaults to English. Supports 150+ languages.
 Optional target language for translation. If specified, the generated subtitles
 will be translated from LanguageIn to this language using LM Studio.
 
-.PARAMETER TranslateUsingLMStudioModel
-The LM Studio model name to use for translation. Defaults to "qwen". Only used
-when LanguageOut is specified.
+.PARAMETER TokenTimestampsSumThreshold
+Sum threshold for token timestamps, defaults to 0.5.
+
+.PARAMETER MaxTokensPerSegment
+Maximum number of tokens per segment.
+
+.PARAMETER MaxDurationOfSilence
+Maximum duration of silence before automatically stopping recording.
+
+.PARAMETER SilenceThreshold
+Silence detect threshold (0..32767 defaults to 30).
+
+.PARAMETER CpuThreads
+Number of CPU threads to use, defaults to 0 (auto).
+
+.PARAMETER Temperature
+Temperature for speech recognition.
+
+.PARAMETER TemperatureInc
+Temperature increment.
+
+.PARAMETER Prompt
+Prompt to use for the model.
+
+.PARAMETER SuppressRegex
+Regex to suppress tokens from the output.
+
+.PARAMETER AudioContextSize
+Size of the audio context.
+
+.PARAMETER MaxDuration
+Maximum duration of the audio.
+
+.PARAMETER Offset
+Offset for the audio.
+
+.PARAMETER MaxLastTextTokens
+Maximum number of last text tokens.
+
+.PARAMETER MaxSegmentLength
+Maximum segment length.
+
+.PARAMETER MaxInitialTimestamp
+Start timestamps at this moment.
+
+.PARAMETER LengthPenalty
+Length penalty.
+
+.PARAMETER EntropyThreshold
+Entropy threshold.
+
+.PARAMETER LogProbThreshold
+Log probability threshold.
+
+.PARAMETER NoSpeechThreshold
+No speech threshold.
+
+.PARAMETER PreferencesDatabasePath
+Database path for preference data files.
+
+.PARAMETER WithTokenTimestamps
+Whether to include token timestamps in the output.
+
+.PARAMETER SplitOnWord
+Whether to split on word boundaries.
+
+.PARAMETER IgnoreSilence
+Whether to ignore silence (will mess up timestamps).
+
+.PARAMETER WithProgress
+Whether to show progress.
+
+.PARAMETER DontSuppressBlank
+Whether to NOT suppress blank lines.
+
+.PARAMETER SingleSegmentOnly
+Whether to use single segment only.
+
+.PARAMETER PrintSpecialTokens
+Whether to print special tokens.
+
+.PARAMETER NoContext
+Don't use context.
+
+.PARAMETER WithBeamSearchSamplingStrategy
+Use beam search sampling strategy.
+
+.PARAMETER ModelType
+Whisper model type to use, defaults to LargeV3Turbo.
+
+.PARAMETER PassThru
+Returns objects instead of strings.
+
+.PARAMETER UseDesktopAudioCapture
+Whether to use desktop audio capture instead of microphone input.
 
 .PARAMETER SessionOnly
 Use alternative settings stored in session for AI preferences like Language,
@@ -34,9 +126,6 @@ Image collections, etc.
 Clear alternative settings stored in session for AI preferences like Language,
 Image collections, etc.
 
-.PARAMETER PreferencesDatabasePath
-Database path for preference data files.
-
 .PARAMETER SkipSession
 Dont use alternative settings stored in session for AI preferences like
 Language, Image collections, etc.
@@ -45,9 +134,8 @@ Language, Image collections, etc.
 Save-Transcriptions -DirectoryPath "C:\Videos" -LanguageIn "English"
 
 .EXAMPLE
-Save-Transcriptions "C:\Media" "Japanese" "English" "qwen"
-###############################################################################>
-#######################################################################
+Save-Transcriptions "C:\Media" "Japanese" "English"
+#>
 function Save-Transcriptions {
 
     [CmdletBinding()]
@@ -66,6 +154,165 @@ function Save-Transcriptions {
             Mandatory = $false,
             Position = 1,
             HelpMessage = 'The language to expect in the audio.'
+        )]
+        [PSDefaultValue(Value = 'English')]
+        [ValidateSet(
+            'Afrikaans',
+            'Akan',
+            'Albanian',
+            'Amharic',
+            'Arabic',
+            'Armenian',
+            'Azerbaijani',
+            'Basque',
+            'Belarusian',
+            'Bemba',
+            'Bengali',
+            'Bihari',
+            'Bork, bork, bork!',
+            'Bosnian',
+            'Breton',
+            'Bulgarian',
+            'Cambodian',
+            'Catalan',
+            'Cherokee',
+            'Chichewa',
+            'Chinese (Simplified)',
+            'Chinese (Traditional)',
+            'Corsican',
+            'Croatian',
+            'Czech',
+            'Danish',
+            'Dutch',
+            'Elmer Fudd',
+            'English',
+            'Esperanto',
+            'Estonian',
+            'Ewe',
+            'Faroese',
+            'Filipino',
+            'Finnish',
+            'French',
+            'Frisian',
+            'Ga',
+            'Galician',
+            'Georgian',
+            'German',
+            'Greek',
+            'Guarani',
+            'Gujarati',
+            'Hacker',
+            'Haitian Creole',
+            'Hausa',
+            'Hawaiian',
+            'Hebrew',
+            'Hindi',
+            'Hungarian',
+            'Icelandic',
+            'Igbo',
+            'Indonesian',
+            'Interlingua',
+            'Irish',
+            'Italian',
+            'Japanese',
+            'Javanese',
+            'Kannada',
+            'Kazakh',
+            'Kinyarwanda',
+            'Kirundi',
+            'Klingon',
+            'Kongo',
+            'Korean',
+            'Krio (Sierra Leone)',
+            'Kurdish',
+            'Kurdish (Soranî)',
+            'Kyrgyz',
+            'Laothian',
+            'Latin',
+            'Latvian',
+            'Lingala',
+            'Lithuanian',
+            'Lozi',
+            'Luganda',
+            'Luo',
+            'Macedonian',
+            'Malagasy',
+            'Malay',
+            'Malayalam',
+            'Maltese',
+            'Maori',
+            'Marathi',
+            'Mauritian Creole',
+            'Moldavian',
+            'Mongolian',
+            'Montenegrin',
+            'Nepali',
+            'Nigerian Pidgin',
+            'Northern Sotho',
+            'Norwegian',
+            'Norwegian (Nynorsk)',
+            'Occitan',
+            'Oriya',
+            'Oromo',
+            'Pashto',
+            'Persian',
+            'Pirate',
+            'Polish',
+            'Portuguese (Brazil)',
+            'Portuguese (Portugal)',
+            'Punjabi',
+            'Quechua',
+            'Romanian',
+            'Romansh',
+            'Runyakitara',
+            'Russian',
+            'Scots Gaelic',
+            'Serbian',
+            'Serbo-Croatian',
+            'Sesotho',
+            'Setswana',
+            'Seychellois Creole',
+            'Shona',
+            'Sindhi',
+            'Sinhalese',
+            'Slovak',
+            'Slovenian',
+            'Somali',
+            'Spanish',
+            'Spanish (Latin American)',
+            'Sundanese',
+            'Swahili',
+            'Swedish',
+            'Tajik',
+            'Tamil',
+            'Tatar',
+            'Telugu',
+            'Thai',
+            'Tigrinya',
+            'Tonga',
+            'Tshiluba',
+            'Tumbuka',
+            'Turkish',
+            'Turkmen',
+            'Twi',
+            'Uighur',
+            'Ukrainian',
+            'Urdu',
+            'Uzbek',
+            'Vietnamese',
+            'Welsh',
+            'Wolof',
+            'Xhosa',
+            'Yiddish',
+            'Yoruba',
+            'Zulu'
+        )]
+        [string] $LanguageIn,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            Position = 2,
+            HelpMessage = 'Sets the language to translate to.'
         )]
         [ValidateSet(
             'Afrikaans',
@@ -216,41 +463,234 @@ function Save-Transcriptions {
             'Xhosa',
             'Yiddish',
             'Yoruba',
-            'Zulu')]
-        [string] $LanguageIn,
-        #######################################################################
+            'Zulu'
+        )]
+        [string] $LanguageOut = $null,
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            Position = 2,
-            HelpMessage = 'Sets the language to translate to.'
+            HelpMessage = 'Sum threshold for token timestamps, defaults to 0.5'
         )]
-        [string]$LanguageOut,
-        #######################################################################
+        [float] $TokenTimestampsSumThreshold = 0.5,
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ('Use alternative settings stored in session for AI ' +
-                'preferences like Language, Image collections, etc')
+            HelpMessage = 'Maximum number of tokens per segment'
         )]
-        [switch] $SessionOnly,
-        #######################################################################
+        [int] $MaxTokensPerSegment = 20,
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = ('Clear alternative settings stored in session for ' +
-                'AI preferences like Language, Image collections, etc')
+            HelpMessage = ('Maximum duration of silence before automatically ' +
+                'stopping recording')
         )]
-        [switch] $ClearSession,
-        #######################################################################
+        [object] $MaxDurationOfSilence,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Silence detect threshold (0..32767 defaults to 30)'
+        )]
+        [ValidateRange(0, 32767)]
+        [int] $SilenceThreshold,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Number of CPU threads to use, defaults to 0 (auto)'
+        )]
+        [int] $CpuThreads = 0,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Temperature for speech recognition'
+        )]
+        [ValidateRange(0, 1)]
+        [float] $Temperature = 0.5,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Temperature increment'
+        )]
+        [ValidateRange(0, 1)]
+        [float] $TemperatureInc,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Prompt to use for the model'
+        )]
+        [string] $Prompt,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Regex to suppress tokens from the output'
+        )]
+        [string] $SuppressRegex = $null,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Size of the audio context'
+        )]
+        [int] $AudioContextSize,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Maximum duration of the audio'
+        )]
+        [object] $MaxDuration,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Offset for the audio'
+        )]
+        [object] $Offset,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Maximum number of last text tokens'
+        )]
+        [int] $MaxLastTextTokens,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Maximum segment length'
+        )]
+        [int] $MaxSegmentLength,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Start timestamps at this moment'
+        )]
+        [object] $MaxInitialTimestamp,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Length penalty'
+        )]
+        [ValidateRange(0, 1)]
+        [float] $LengthPenalty,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Entropy threshold'
+        )]
+        [ValidateRange(0, 1)]
+        [float] $EntropyThreshold,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Log probability threshold'
+        )]
+        [ValidateRange(0, 1)]
+        [float] $LogProbThreshold,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'No speech threshold'
+        )]
+        [ValidateRange(0, 1)]
+        [float] $NoSpeechThreshold,
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Database path for preference data files'
         )]
         [Alias('DatabasePath')]
         [string] $PreferencesDatabasePath,
-        #######################################################################
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether to include token timestamps in the output'
+        )]
+        [switch] $WithTokenTimestamps,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether to split on word boundaries'
+        )]
+        [switch] $SplitOnWord,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether to ignore silence (will mess up timestamps)'
+        )]
+        [switch] $IgnoreSilence,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether to show progress'
+        )]
+        [switch] $WithProgress,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether to NOT suppress blank lines'
+        )]
+        [switch] $DontSuppressBlank,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether to use single segment only'
+        )]
+        [switch] $SingleSegmentOnly,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether to print special tokens'
+        )]
+        [switch] $PrintSpecialTokens,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Don't use context"
+        )]
+        [switch] $NoContext,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Use beam search sampling strategy'
+        )]
+        [switch] $WithBeamSearchSamplingStrategy,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whisper model type to use, defaults to LargeV3Turbo'
+        )]
+        [ValidateSet('Tiny', 'TinyEn', 'Base', 'BaseEn', 'Small', 'SmallEn',
+            'Medium', 'MediumEn', 'Large', 'LargeV1', 'LargeV2', 'LargeV3', 'LargeV3Turbo')]
+        [string] $ModelType,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Returns objects instead of strings'
+        )]
+        [Alias('pt')]
+        [switch]$PassThru,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Whether to use desktop audio capture instead of ' +
+                'microphone input')
+        )]
+        [switch] $UseDesktopAudioCapture,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Use alternative settings stored in session for AI ' +
+                'preferences like Language, Image collections, etc')
+        )]
+        [switch] $SessionOnly,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = ('Clear alternative settings stored in session for ' +
+                'AI preferences like Language, Image collections, etc')
+        )]
+        [switch] $ClearSession,
+        ###########################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = ('Dont use alternative settings stored in session ' +
-                'for AI preferences like Language, Image collections, etc')
+                'for AI preferences like Language, Image ' +
+                'collections, etc')
         )]
         [Alias('FromPreferences')]
         [switch] $SkipSession
@@ -268,8 +708,9 @@ function Save-Transcriptions {
                 -ErrorAction SilentlyContinue)
 
         # get resolved language using meta language processing
-        $LanguageIn = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageIn
-        $LanguageOut = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageOut
+        $languageIn = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageIn
+
+        $languageOut = GenXdev.AI\Get-AIMetaLanguage @params -Language $LanguageOut
 
         # define array of supported media file extensions for processing
         $extensions = @(
@@ -427,15 +868,26 @@ function Save-Transcriptions {
 
     process {
 
+        # validate and expand the directory path
+        $expandedPath = GenXdev.FileSystem\Expand-Path "$DirectoryPath\"
+
+        # check if directory exists
+        if (-not [System.IO.Directory]::Exists($expandedPath)) {
+
+            Microsoft.PowerShell.Utility\Write-Warning ('Directory not found: ' +
+                "'${DirectoryPath}'")
+
+            return
+        }
+
         # change to target directory for file processing
-        Microsoft.PowerShell.Management\Set-Location `
-        -LiteralPath (GenXdev.FileSystem\Expand-Path $DirectoryPath)
+        Microsoft.PowerShell.Management\Set-Location -LiteralPath $expandedPath
 
         Microsoft.PowerShell.Utility\Write-Verbose ('Changed working ' +
             "directory to: $DirectoryPath")
 
         # recursively process each file in directory and subdirectories
-        Microsoft.PowerShell.Management\Get-ChildItem -File -rec |
+        Microsoft.PowerShell.Management\Get-ChildItem -File -Recurse |
             Microsoft.PowerShell.Core\ForEach-Object {
 
                 # skip files that don't have a supported media extension
@@ -443,6 +895,15 @@ function Save-Transcriptions {
 
                     Microsoft.PowerShell.Utility\Write-Verbose ('Skipping file ' +
                         "with unsupported extension: $($PSItem.Name)")
+
+                    return
+                }
+
+                # verify file still exists and is accessible
+                if (-not [System.IO.File]::Exists($PSItem.FullName)) {
+
+                    Microsoft.PowerShell.Utility\Write-Warning ('File not found ' +
+                        "or not accessible: '$($PSItem.FullName)'")
 
                     return
                 }
@@ -457,17 +918,18 @@ function Save-Transcriptions {
                 $enPath = [IO.Path]::ChangeExtension($PSItem.FullName, '.en.srt')
 
                 # determine target language and output path for new subtitle file
-                $lang = [string]::IsNullOrWhiteSpace($LanguageOut) ? $LanguageIn :
-                $LanguageOut
+                $targetLanguage = [string]::IsNullOrWhiteSpace($languageOut) ?
+                    $languageIn : $languageOut
 
-                $langCode = (GenXdev.Helpers\Get-WebLanguageDictionary)[$lang]
+                $langCode = (GenXdev.Helpers\Get-WebLanguageDictionary)[$targetLanguage]
 
                 if ($null -ne $langCode) {
 
-                    $lang = $langCode
+                    $targetLanguage = $langCode
                 }
 
-                $newPath = [IO.Path]::ChangeExtension($PSItem.FullName, ".$lang.srt")
+                $newPath = [IO.Path]::ChangeExtension($PSItem.FullName,
+                    ".$targetLanguage.srt")
 
                 # handle legacy Dutch subtitle file naming convention
                 if ([io.file]::Exists($nlPathOld)) {
@@ -518,7 +980,7 @@ function Save-Transcriptions {
 
                     # reduce CPU priority to minimize system impact during processing
                     [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass =
-                    [System.Diagnostics.ProcessPriorityClass]::Idle
+                        [System.Diagnostics.ProcessPriorityClass]::Idle
 
                     try {
 
@@ -526,29 +988,26 @@ function Save-Transcriptions {
                             "transcription for: $($PSItem.FullName)")
 
                         # prepare parameters for transcription generation
-                        $params = (GenXdev.Helpers\Copy-IdenticalParamValues `
+                        $transcriptionParams = (GenXdev.Helpers\Copy-IdenticalParamValues `
                                 -BoundParameters $PSBoundParameters `
-                                -FunctionName 'GenXdev.AI\Get-MediaFileAudioTranscription' `
+                                -FunctionName 'GenXdev.AI\Start-AudioTranscription' `
                                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
                                     -Scope Local `
                                     -ErrorAction SilentlyContinue)
-                        ) +
-                        @{
-                            FilePath            = $PSItem.FullName
-                            SRT                 = $true
-                            MaxTokensPerSegment = 20
-                            CpuThreads          = 4
+                        ) + @{
+                            Input = $PSItem.FullName
+                            SRT   = $true
                         }
 
                         # generate transcription using whisper model
-                        $transcription = GenXdev.AI\Get-MediaFileAudioTranscription `
-                            @params
+                        $transcription = GenXdev.AI\Start-AudioTranscription `
+                            @transcriptionParams
                     }
                     finally {
 
                         # restore normal CPU priority after processing
                         [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass =
-                        [System.Diagnostics.ProcessPriorityClass]::Normal
+                            [System.Diagnostics.ProcessPriorityClass]::Normal
                     }
                 }
                 catch {
@@ -566,11 +1025,11 @@ function Save-Transcriptions {
                 $null = $transcription |
                     Microsoft.PowerShell.Utility\Out-File $newPath -Force
 
-                    Microsoft.PowerShell.Utility\Write-Verbose ('Transcription saved ' +
-                        "to: $newPath")
+                Microsoft.PowerShell.Utility\Write-Verbose ('Transcription saved ' +
+                    "to: $newPath")
 
-                    $transcription
-                }
+                $transcription
+            }
     }
 
     end {

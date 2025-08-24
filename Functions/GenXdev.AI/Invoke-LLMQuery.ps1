@@ -1517,7 +1517,30 @@ function Invoke-LLMQuery {
 
         if (-not [string]::IsNullOrWhiteSpace($ResponseFormat)) {
             try {
-                $payload.response_format = $ResponseFormat | Microsoft.PowerShell.Utility\ConvertFrom-Json
+                # Check if the current LLM configuration disables JSON schema support
+                if ($llmConfig.NoSupportForJsonSchema -eq $true) {
+                    # Fallback: Extend prompt with instructions for JSON format compliance
+                    $schemaObj = $ResponseFormat | Microsoft.PowerShell.Utility\ConvertFrom-Json
+                    $fallbackInstruction = "`n`n===== CRITICAL JSON OUTPUT REQUIREMENT =====`nYou MUST respond with ONLY valid JSON. NO other text is allowed.`nDo NOT include any explanation, commentary, or text before or after the JSON.`nYour response must be parseable JSON that conforms EXACTLY to this schema:`n$ResponseFormat`n`nExample response format: {`"response`": `"your actual response here`"}`n===== END REQUIREMENT ====="
+
+                    # Add the fallback instruction to the last user message
+                    if ($messages -and $messages.Count -gt 0) {
+                        $lastUserMessageIndex = -1
+                        for ($i = $messages.Count - 1; $i -ge 0; $i--) {
+                            if ($messages[$i].role -eq 'user') {
+                                $lastUserMessageIndex = $i
+                                break
+                            }
+                        }
+                        if ($lastUserMessageIndex -ge 0) {
+                            $messages[$lastUserMessageIndex].content += $fallbackInstruction
+                        }
+                    }
+                    Microsoft.PowerShell.Utility\Write-Verbose 'LLM does not support JSON schema. Using prompt-based fallback.'
+                } else {
+                    # Normal path: Use native JSON schema support
+                    $payload.response_format = $ResponseFormat | Microsoft.PowerShell.Utility\ConvertFrom-Json
+                }
             }
             catch {
                 Microsoft.PowerShell.Utility\Write-Verbose 'Invalid response format schema. Ignoring.'

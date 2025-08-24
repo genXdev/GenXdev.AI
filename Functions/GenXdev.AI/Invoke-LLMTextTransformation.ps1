@@ -109,8 +109,7 @@ Invoke-LLMTextTransformation -Text "Hello, hwo are you todey?" `
 
 .EXAMPLE
 spellcheck "This is a sentance with erors"
-###############################################################################>
-###############################################################################
+#>
 function Invoke-LLMTextTransformation {
 
     [CmdletBinding()]
@@ -609,7 +608,7 @@ function Invoke-LLMTextTransformation {
             type        = 'json_schema'
             json_schema = @{
                 name   = 'text_transformation_response'
-                strict = 'true'
+                strict = $true
                 schema = @{
                     type       = 'object'
                     properties = @{
@@ -621,8 +620,7 @@ function Invoke-LLMTextTransformation {
                     required   = @('response')
                 }
             }
-        } |
-            Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
+        } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
 
         # log the start of transformation process with model information
         Microsoft.PowerShell.Utility\Write-Verbose `

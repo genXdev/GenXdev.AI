@@ -27,7 +27,6 @@ if ($major -ne 10) {
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-Fallacy.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-ImageIndexPath.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-ImageIndexStats.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-MediaFileAudioTranscription.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-ScriptExecutionErrorFixPrompt.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-SimularMovieTitles.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Invoke-AIPowershellCommand.ps1"

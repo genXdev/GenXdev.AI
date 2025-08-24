@@ -48,6 +48,18 @@ The API key for authenticated AI operations.
 .PARAMETER TimeoutSeconds
 The timeout in seconds for AI operations.
 
+.PARAMETER NoSupportForJsonSchema
+When specified, indicates that the endpoint does not support json_schema
+response format. This enables fallback behavior using prompt-based instructions.
+
+.PARAMETER NoSupportForImageUpload
+When specified, indicates that the endpoint does not support image upload
+functionality.
+
+.PARAMETER NoSupportForToolCalls
+When specified, indicates that the endpoint does not support tool calling
+functionality.
+
 .PARAMETER PreferencesDatabasePath
 Database path for preference data files.
 
@@ -198,6 +210,24 @@ function Get-AILLMSettings {
         ###############################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = 'Whether the endpoint does not support json_schema response format'
+        )]
+        [switch] $NoSupportForJsonSchema,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether the endpoint does not support image upload functionality'
+        )]
+        [switch] $NoSupportForImageUpload,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whether the endpoint does not support tool calling functionality'
+        )]
+        [switch] $NoSupportForToolCalls,
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = ('Use alternative settings stored in session for AI ' +
                 'preferences like Language, Image collections, etc')
         )]
@@ -245,6 +275,9 @@ function Get-AILLMSettings {
         if ($PSBoundParameters.ContainsKey('ApiEndpoint')) { $providedParams += "ApiEndpoint=$ApiEndpoint" }
         if ($PSBoundParameters.ContainsKey('ApiKey')) { $providedParams += 'ApiKey=(redacted)' }
         if ($PSBoundParameters.ContainsKey('TimeoutSeconds')) { $providedParams += "TimeoutSeconds=$TimeoutSeconds" }
+        if ($PSBoundParameters.ContainsKey('NoSupportForJsonSchema')) { $providedParams += "NoSupportForJsonSchema=$NoSupportForJsonSchema" }
+        if ($PSBoundParameters.ContainsKey('NoSupportForImageUpload')) { $providedParams += "NoSupportForImageUpload=$NoSupportForImageUpload" }
+        if ($PSBoundParameters.ContainsKey('NoSupportForToolCalls')) { $providedParams += "NoSupportForToolCalls=$NoSupportForToolCalls" }
 
         if ($providedParams.Count -gt 0) {
             Microsoft.PowerShell.Utility\Write-Verbose "Provided parameters: $($providedParams -join ', ')"
@@ -276,6 +309,12 @@ function Get-AILLMSettings {
 
             Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_TimeoutSeconds') -Value $null -Scope Global
 
+            Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_NoSupportForJsonSchema') -Value $null -Scope Global
+
+            Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_NoSupportForImageUpload') -Value $null -Scope Global
+
+            Microsoft.PowerShell.Utility\Set-Variable -Name ('AILLMSettings_' + $LLMQueryType + '_NoSupportForToolCalls') -Value $null -Scope Global
+
             # inform user that session variables have been cleared
             Microsoft.PowerShell.Utility\Write-Verbose (
                 'Cleared session LLM settings for all properties'
@@ -284,15 +323,18 @@ function Get-AILLMSettings {
 
         # initialize the result hashtable with all possible setting properties
         $result = @{
-            Model                 = $null
-            HuggingFaceIdentifier = $null
-            MaxToken              = $null
-            Cpu                   = $null
-            Gpu                   = $null
-            TTLSeconds            = $null
-            ApiEndpoint           = $null
-            ApiKey                = $null
-            TimeoutSeconds        = $null
+            Model                     = $null
+            HuggingFaceIdentifier     = $null
+            MaxToken                  = $null
+            Cpu                       = $null
+            Gpu                       = $null
+            TTLSeconds                = $null
+            ApiEndpoint               = $null
+            ApiKey                    = $null
+            TimeoutSeconds            = $null
+            NoSupportForJsonSchema    = $null
+            NoSupportForImageUpload   = $null
+            NoSupportForToolCalls     = $null
         }
     }
 
@@ -464,7 +506,7 @@ function Get-AILLMSettings {
         }
 
         # for each property, use the priority: parameter > session > preferences > auto-selected default
-        foreach ($propertyName in @('Model', 'HuggingFaceIdentifier', 'MaxToken', 'Cpu', 'Gpu', 'TTLSeconds', 'ApiEndpoint', 'ApiKey', 'TimeoutSeconds')) {
+        foreach ($propertyName in @('Model', 'HuggingFaceIdentifier', 'MaxToken', 'Cpu', 'Gpu', 'TTLSeconds', 'ApiEndpoint', 'ApiKey', 'TimeoutSeconds', 'NoSupportForJsonSchema', 'NoSupportForImageUpload', 'NoSupportForToolCalls')) {
 
             $parameterValue = $null
             $parameterExplicitlyProvided = $false
@@ -504,6 +546,18 @@ function Get-AILLMSettings {
                 'TimeoutSeconds' {
                     $parameterValue = $TimeoutSeconds
                     $parameterExplicitlyProvided = $PSBoundParameters.ContainsKey('TimeoutSeconds')
+                }
+                'NoSupportForJsonSchema' {
+                    $parameterValue = $NoSupportForJsonSchema
+                    $parameterExplicitlyProvided = $PSBoundParameters.ContainsKey('NoSupportForJsonSchema')
+                }
+                'NoSupportForImageUpload' {
+                    $parameterValue = $NoSupportForImageUpload
+                    $parameterExplicitlyProvided = $PSBoundParameters.ContainsKey('NoSupportForImageUpload')
+                }
+                'NoSupportForToolCalls' {
+                    $parameterValue = $NoSupportForToolCalls
+                    $parameterExplicitlyProvided = $PSBoundParameters.ContainsKey('NoSupportForToolCalls')
                 }
             }
 

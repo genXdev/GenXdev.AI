@@ -674,7 +674,7 @@ Return nothing.
             type        = 'json_schema'
             json_schema = @{
                 name   = 'fallacy_detection_response'
-                strict = 'true'
+                strict = $true
                 schema = @{
                     type       = 'object'
                     properties = @{
