@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : QueueComfyWorkflow.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.264.2025
+Version                   : 1.268.2025
 ################################################################################
 MIT License
 
