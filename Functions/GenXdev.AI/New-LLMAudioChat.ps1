@@ -1,3 +1,31 @@
+<##############################################################################
+Part of PowerShell module : GenXdev.AI
+Original cmdlet filename  : New-LLMAudioChat.ps1
+Original author           : René Vaessen / GenXdev
+Version                   : 1.264.2025
+################################################################################
+MIT License
+
+Copyright 2021-2025 GenXdev
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+################################################################################>
 ###############################################################################
 <#
 .SYNOPSIS
@@ -29,7 +57,7 @@ Temperature for response randomness. Range: 0.0-1.0. Default: 0.2
 .PARAMETER TemperatureResponse
 Temperature for controlling response randomness. Range: 0.0-1.0. Default: 0.01
 
-.PARAMETER Language
+.PARAMETER LanguageIn
 Language to detect in audio input. Default: "English"
 
 .PARAMETER CpuThreads
@@ -207,8 +235,8 @@ Switch to disable session caching.
 .PARAMETER OutputMarkdownBlocksOnly
 Will only output markup block responses
 
-.PARAMETER ShowWindow
-Switch to show the LM Studio window during operation.
+.PARAMETER NoShowWindow
+Switch to not show the LM Studio window.
 
 .PARAMETER Force
 Switch to force stop LM Studio before initialization.
@@ -266,13 +294,21 @@ function New-LLMAudioChat {
             HelpMessage = 'Array of file paths to attach'
         )]
         [string[]] $Attachments = @(),
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Whisper model type to use, defaults to LargeV3Turbo'
+        )]
+        [ValidateSet('Tiny', 'TinyEn', 'Base', 'BaseEn', 'Small', 'SmallEn',
+            'Medium', 'MediumEn', 'Large', 'LargeV1', 'LargeV2', 'LargeV3', 'LargeV3Turbo')]
+        [string] $ModelType = 'SmallEn',
         #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Temperature for audio input recognition (0.0-1.0)'
         )]
         [ValidateRange(0.0, 1.0)]
-        [double] $AudioTemperature = 0.0,
+        [double] $AudioTemperature = 0.5,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -293,6 +329,7 @@ function New-LLMAudioChat {
             Mandatory = $false,
             HelpMessage = 'Sets the language to detect'
         )]
+        [Alias('Language')]
         [ValidateSet(
             'Afrikaans',
             'Akan',
@@ -444,7 +481,7 @@ function New-LLMAudioChat {
             'Yoruba',
             'Zulu'
         )]
-        [string] $Language,
+        [string] $LanguageIn,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -640,14 +677,12 @@ function New-LLMAudioChat {
         )]
         [ScriptBlock[]] $Functions,
         ###############################################################################
-        ###############################################################################
         [Alias('NoConfirmationFor')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Array of tool function names that do not require confirmation (pass-through to Invoke-LLMQuery)'
         )]
         [string[]] $NoConfirmationToolFunctionNames,
-        ###############################################################################
         ###############################################################################
         [Alias('chat')]
         [Parameter(
@@ -729,9 +764,7 @@ function New-LLMAudioChat {
         )]
         [Alias('fs')]
         [switch]$FullScreen,
-
         #######################################################################
-
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Restore PowerShell window focus'
@@ -747,7 +780,6 @@ function New-LLMAudioChat {
         )]
         [Alias('sbs')]
         [switch]$SideBySide,
-
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -856,6 +888,18 @@ function New-LLMAudioChat {
                 'of microphone input')
         )]
         [switch] $UseDesktopAudioCapture,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Audio device name or GUID (supports wildcards, picks first match)'
+        )]
+        [string] $AudioDevice,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = "Use both desktop and recording device"
+        )]
+        [switch] $UseDesktopAndRecordingDevice,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -890,9 +934,9 @@ function New-LLMAudioChat {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Show the LM Studio window'
+            HelpMessage = 'Switch to not show the LM Studio window.'
         )]
-        [switch] $ShowWindow,
+        [switch] $NoShowWindow,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -932,17 +976,6 @@ function New-LLMAudioChat {
     )
 
     begin {
-
-        # copy identical parameter values for meta language configuration
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
-            -BoundParameters $PSBoundParameters `
-            -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
-            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
-                -Scope Local `
-                -ErrorAction SilentlyContinue)
-
-        # determine appropriate language setting for audio recognition
-        $Language = GenXdev.AI\Get-AIMetaLanguage @params
 
         # initialize stopping flag for chat loop
         $stopping = $false
@@ -1124,6 +1157,11 @@ function New-LLMAudioChat {
                     -Scope Local `
                     -ErrorAction SilentlyContinue)
 
+            $initializationParams['ShowWindow'] = -not $NoShowWindow
+            if (-not $PSBoundParameters.ContainsKey('Monitor')) {
+                $initializationParams['Monitor'] = -2
+            }
+
             # initialize the model and get its identifier
             $modelInfo = GenXdev.AI\Initialize-LMStudioModel `
                 @initializationParams
@@ -1193,8 +1231,76 @@ function New-LLMAudioChat {
             }
             else {
 
-                Microsoft.PowerShell.Utility\Write-Host (
-                    'Press any key to start recording or Q to quit')
+                # display appropriate message based on VOX setting
+                if ($NoVOX) {
+                    Microsoft.PowerShell.Utility\Write-Host (
+                        'Press any key to start recording or Q to quit')
+
+                    # wait for key press when VOX is disabled
+                    $keyPressed = [Console]::ReadKey($true)
+                    if ($keyPressed.Key -eq [ConsoleKey]::Q) {
+                        # Q pressed - wait for potential second Q
+                        Microsoft.PowerShell.Utility\Write-Host 'Q pressed - press Q again within 1000ms to quit...'
+
+                        $startTime = Microsoft.PowerShell.Utility\Get-Date
+                        $waitForSecondQ = $true
+
+                        while ($waitForSecondQ -and ((Microsoft.PowerShell.Utility\Get-Date) - $startTime).TotalMilliseconds -lt 1000) {
+                            if ([Console]::KeyAvailable) {
+                                $secondKey = [Console]::ReadKey($true)
+                                if ($secondKey.Key -eq [ConsoleKey]::Q) {
+                                    Microsoft.PowerShell.Utility\Write-Host 'Double Q detected - exiting audio chat'
+                                    $stopping = $true
+                                    while ([Console]::KeyAvailable) { [Console]::ReadKey($true) | Microsoft.PowerShell.Core\Out-Null }
+                                    return
+                                } else {
+                                    $waitForSecondQ = $false
+                                    break
+                                }
+                            }
+                            Microsoft.PowerShell.Utility\Start-Sleep -Milliseconds 10
+                        }
+
+                        if ($waitForSecondQ) {
+                            Microsoft.PowerShell.Utility\Write-Host 'No second Q detected - continuing to recording'
+                        }
+                    }
+                } else {
+                    Microsoft.PowerShell.Utility\Write-Host (
+                        'Start speaking (voice activated) or press Q twice to quit')
+
+                    # brief check for immediate Q press to quit before starting VOX
+                    if ([Console]::KeyAvailable) {
+                        $keyPressed = [Console]::ReadKey($true)
+                        if ($keyPressed.Key -eq [ConsoleKey]::Q) {
+                            # Q pressed - wait for potential second Q
+                            Microsoft.PowerShell.Utility\Write-Host 'Q pressed - press Q again within 1000ms to quit...'
+
+                            $startTime = Microsoft.PowerShell.Utility\Get-Date
+                            $waitForSecondQ = $true
+
+                            while ($waitForSecondQ -and ((Microsoft.PowerShell.Utility\Get-Date) - $startTime).TotalMilliseconds -lt 1000) {
+                                if ([Console]::KeyAvailable) {
+                                    $secondKey = [Console]::ReadKey($true)
+                                    if ($secondKey.Key -eq [ConsoleKey]::Q) {
+                                        Microsoft.PowerShell.Utility\Write-Host 'Double Q detected - exiting audio chat'
+                                        $stopping = $true
+                                        while ([Console]::KeyAvailable) { [Console]::ReadKey($true) | Microsoft.PowerShell.Core\Out-Null }
+                                        return
+                                    } else {
+                                        $waitForSecondQ = $false
+                                        break
+                                    }
+                                }
+                                Microsoft.PowerShell.Utility\Start-Sleep -Milliseconds 10
+                            }
+
+                            if ($waitForSecondQ) {
+                                Microsoft.PowerShell.Utility\Write-Host 'No second Q detected - continuing to recording'
+                            }
+                        }
+                    }
+                }
 
                 try {
 
@@ -1204,7 +1310,7 @@ function New-LLMAudioChat {
 
                     $audioParams = GenXdev.Helpers\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
-                        -FunctionName 'GenXdev.AI\Invoke-Whisper' `
+                        -FunctionName 'GenXdev.AI\Start-AudioTranscription' `
                         -DefaultValues `
                     (Microsoft.PowerShell.Utility\Get-Variable `
                             -Scope Local `
@@ -1226,7 +1332,7 @@ function New-LLMAudioChat {
                         Microsoft.PowerShell.Utility\Write-Verbose (
                             'Starting audio recording session')
 
-                        $recognizedText = GenXdev.AI\Invoke-Whisper @audioParams
+                        $recognizedText = GenXdev.AI\Start-AudioTranscription @audioParams
                     }
                 }
                 catch {
@@ -1285,7 +1391,12 @@ function New-LLMAudioChat {
                         'Query LM Studio',
                         'New-LLMAudioChat')) {
 
-                    $null = GenXdev.AI\New-LLMTextChat @invokeLMStudioParams
+                    # capture and display the LLM response in cyan
+                    $response = GenXdev.AI\New-LLMTextChat @invokeLMStudioParams
+
+                    if (-not [string]::IsNullOrWhiteSpace($response)) {
+                        Microsoft.PowerShell.Utility\Write-Host -ForegroundColor Cyan $response
+                    }
                 }
 
                 Microsoft.PowerShell.Utility\Write-Host (
@@ -1316,12 +1427,42 @@ function New-LLMAudioChat {
 
                         GenXdev.Console\Stop-TextToSpeech
 
-                        Microsoft.PowerShell.Utility\Write-Host (
-                            '---------------')
+                        Microsoft.PowerShell.Utility\Write-Host 'Q pressed - press Q again within 1000ms to quit or any other key to continue...'
 
+                        # wait 200ms for potential second Q press
+                        $qPressTime = Microsoft.PowerShell.Utility\Get-Date
+                        $waitingForSecondQ = $true
+
+                        while ($waitingForSecondQ -and ((Microsoft.PowerShell.Utility\Get-Date) - $qPressTime).TotalMilliseconds -lt 1000) {
+                            if ([Console]::KeyAvailable) {
+                                $secondKey = [Console]::ReadKey($true)
+                                if ($secondKey.Key -eq [ConsoleKey]::Q) {
+                                    # double Q pressed - exit completely
+                                    Microsoft.PowerShell.Utility\Write-Host 'Double Q detected - exiting audio chat'
+                                    Microsoft.PowerShell.Utility\Write-Host '---------------'
+                                    $continueWaiting = $false
+                                    $stopping = $true
+                                    while ([Console]::KeyAvailable) { [Console]::ReadKey($true) | Microsoft.PowerShell.Core\Out-Null }
+                                    return
+                                } else {
+                                    # other key pressed - just continue current loop iteration
+                                    Microsoft.PowerShell.Utility\Write-Host 'Continuing...'
+                                    $waitingForSecondQ = $false
+                                    $continueWaiting = $false
+                                    break
+                                }
+                            }
+                            Microsoft.PowerShell.Utility\Start-Sleep -Milliseconds 10
+                        }
+
+                        # if we reach here without second Q, just continue the current loop iteration
+                        if ($waitingForSecondQ) {
+                            Microsoft.PowerShell.Utility\Write-Host 'No second Q detected - continuing...'
+                        }
+
+                        Microsoft.PowerShell.Utility\Write-Host '---------------'
                         $continueWaiting = $false
-                        $stopping = $true
-                        return
+                        break
                     }
                     else {
 

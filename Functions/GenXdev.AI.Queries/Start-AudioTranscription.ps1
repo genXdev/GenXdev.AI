@@ -1,4 +1,32 @@
-﻿###############################################################################
+<##############################################################################
+Part of PowerShell module : GenXdev.AI.Queries
+Original cmdlet filename  : Start-AudioTranscription.ps1
+Original author           : René Vaessen / GenXdev
+Version                   : 1.264.2025
+################################################################################
+MIT License
+
+Copyright 2021-2025 GenXdev
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+################################################################################>
+###############################################################################
 <#
 .SYNOPSIS
 Transcribes an audio file, video file, or a recording device to text
@@ -155,7 +183,7 @@ Start-AudioTranscription  # Records from microphone when no file specified
 function Start-AudioTranscription {
 
     [CmdletBinding(SupportsShouldProcess = $true)]
-    [Alias('transcribefile', 'transcribe', 'Get-MediaFileAudioTranscription')]
+    [Alias('transcribefile', 'transcribe')]
 
     param(
         ###########################################################################
@@ -703,6 +731,12 @@ function Start-AudioTranscription {
         ###########################################################################
         [Parameter(
             Mandatory = $false,
+            HelpMessage = "Use both desktop and recording device"
+        )]
+        [switch] $UseDesktopAndRecordingDevice,
+        ###########################################################################
+        [Parameter(
+            Mandatory = $false,
             HelpMessage = ('Use alternative settings stored in session for AI ' +
                 'preferences like Language, Image collections, etc')
         )]
@@ -729,7 +763,7 @@ function Start-AudioTranscription {
             HelpMessage = 'Use silence detection to automatically stop recording'
         )]
         [switch] $VOX
-        )
+    )
 
     begin {
 
@@ -758,14 +792,14 @@ function Start-AudioTranscription {
                 )
             }
 
-            # enable ignore silence for vox mode
-            if (-not $myPSBoundParameters.ContainsKey('IgnoreSilence')) {
+            # # enable ignore silence for vox mode
+            # if (-not $myPSBoundParameters.ContainsKey('IgnoreSilence')) {
 
-                $null = $myPSBoundParameters.Add('IgnoreSilence', $true)
-            }
-            else {
-                $myPSBoundParameters['IgnoreSilence'] = $true
-            }
+            #     $null = $myPSBoundParameters.Add('IgnoreSilence', $true)
+            # }
+            # else {
+            #     $myPSBoundParameters['IgnoreSilence'] = $true
+            # }
 
             # remove vox parameter as it's processed
             if ($myPSBoundParameters.ContainsKey('VOX')) {
@@ -1220,7 +1254,7 @@ function Start-AudioTranscription {
                     $invocationArguments.WithTranslate = $true;
                     $skipTranslation = $true;
                 }
-                
+
                 $invocationArguments.Input = $outputFile
 
                 try {
@@ -1305,7 +1339,7 @@ function Start-AudioTranscription {
                                 )
 
                                 # return srt formatted subtitle entry to pipeline
-                                "$i`r`n$start --> $end`r`n$($result.Text)`r`n`r`n"
+                                Microsoft.PowerShell.Utility\Write-Output "$i`r`n$start --> $end`r`n$($result.Text)`r`n`r`n"
 
                                 # increment subtitle counter
                                 $i++
@@ -1482,7 +1516,7 @@ function Start-AudioTranscription {
                         )
 
                         # return srt formatted subtitle entry to pipeline
-                        "$i`r`n$start --> $end`r`n$($result.Text)`r`n`r`n"
+                        Microsoft.PowerShell.Utility\Write-Output "$i`r`n$start --> $end`r`n$($result.Text)`r`n`r`n"
 
                         # increment subtitle counter
                         $i++

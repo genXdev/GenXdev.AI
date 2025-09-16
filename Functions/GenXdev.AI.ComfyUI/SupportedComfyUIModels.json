@@ -1,0 +1,92 @@
+[
+    {
+        "Name": "Stable Diffusion 1.5",
+        "DownloadUrl": "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors",
+        "HuggingFaceRepo": "runwayml/stable-diffusion-v1-5",
+        "FileName": "v1-5-pruned-emaonly.safetensors",
+        "Architecture": "SD1.5",
+        "Compatible": true,
+        "SizeMB": 4067.56
+    },
+    {
+        "Name": "Stable Diffusion 2.1",
+        "DownloadUrl": "https://huggingface.co/stabilityai/stable-diffusion-2-1/resolve/main/v2-1_768-ema-pruned.safetensors",
+        "HuggingFaceRepo": "stabilityai/stable-diffusion-2-1",
+        "FileName": "v2-1_768-ema-pruned.safetensors",
+        "Architecture": "SD1.5",
+        "Compatible": true,
+        "SizeMB": 4973.03
+    },
+    {
+        "Name": "Analog Diffusion",
+        "DownloadUrl": "https://huggingface.co/wavymulder/Analog-Diffusion/resolve/main/analog-diffusion-1.0.ckpt",
+        "HuggingFaceRepo": "wavymulder/Analog-Diffusion",
+        "FileName": "analog-diffusion-1.0.ckpt",
+        "Architecture": "SD1.5",
+        "Compatible": true,
+        "SizeMB": 2034.05
+    },
+    {
+        "Name": "OpenJourney",
+        "DownloadUrl": "https://huggingface.co/prompthero/openjourney/resolve/main/mdjrny-v4.ckpt",
+        "HuggingFaceRepo": "prompthero/openjourney",
+        "FileName": "mdjrny-v4.ckpt",
+        "Architecture": "SD1.5",
+        "Compatible": true,
+        "SizeMB": 2034.05
+    },
+    {
+        "Name": "DreamShaper",
+        "DownloadUrl": "https://huggingface.co/Lykon/DreamShaper/resolve/main/DreamShaper_8_pruned.safetensors",
+        "HuggingFaceRepo": "Lykon/DreamShaper",
+        "FileName": "DreamShaper_8_pruned.safetensors",
+        "Architecture": "SD1.5",
+        "Compatible": true,
+        "SizeMB": 2033.83
+    },
+    {
+        "Name": "Protogen",
+        "DownloadUrl": "https://huggingface.co/darkstorm2150/Protogen_x3.4_Official_Release/resolve/main/ProtoGen_X3.4.safetensors",
+        "HuggingFaceRepo": "darkstorm2150/Protogen_x3.4_Official_Release",
+        "FileName": "ProtoGen_X3.4.safetensors",
+        "Architecture": "SD1.5",
+        "Compatible": true,
+        "SizeMB": 5707.01
+    },
+    {
+        "Name": "Juggernaut XL",
+        "DownloadUrl": "https://huggingface.co/RunDiffusion/Juggernaut-XL-v9/resolve/main/Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors",
+        "HuggingFaceRepo": "RunDiffusion/Juggernaut-XL-v9",
+        "FileName": "Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors",
+        "Architecture": "SDXL",
+        "Compatible": true,
+        "SizeMB": 6776.19
+    },
+    {
+        "Name": "SDXL Base 1.0",
+        "DownloadUrl": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors",
+        "HuggingFaceRepo": "stabilityai/stable-diffusion-xl-base-1.0",
+        "FileName": "sd_xl_base_1.0.safetensors",
+        "Architecture": "SDXL",
+        "Compatible": true,
+        "SizeMB": 6616.67
+    },
+    {
+        "Name": "SDXL Turbo",
+        "DownloadUrl": "https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/sd_xl_turbo_1.0_fp16.safetensors",
+        "HuggingFaceRepo": "stabilityai/sdxl-turbo",
+        "FileName": "sd_xl_turbo_1.0_fp16.safetensors",
+        "Architecture": "SDXL",
+        "Compatible": true,
+        "SizeMB": 6616.67
+    },
+    {
+        "Name": "AbyssOrangeMix3",
+        "DownloadUrl": "https://huggingface.co/WarriorMama777/OrangeMixs/resolve/main/Models/AbyssOrangeMix3/AOM3A1_orangemixs.safetensors",
+        "HuggingFaceRepo": "WarriorMama777/OrangeMixs",
+        "FileName": "AOM3A1_orangemixs.safetensors",
+        "Architecture": "SD1.5",
+        "Compatible": true,
+        "SizeMB": 2033.83
+    }
+]

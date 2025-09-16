@@ -1,3 +1,31 @@
+<##############################################################################
+Part of PowerShell module : GenXdev.AI.LMStudio
+Original cmdlet filename  : Get-LMStudioWindow.ps1
+Original author           : René Vaessen / GenXdev
+Version                   : 1.264.2025
+################################################################################
+MIT License
+
+Copyright 2021-2025 GenXdev
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+################################################################################>
 ################################################################################
 <#
 .SYNOPSIS
@@ -239,7 +267,7 @@ function Get-LMStudioWindow {
             HelpMessage = 'The monitor to use, 0 = default, -1 is discard'
         )]
         [Alias('m', 'mon')]
-        [int] $Monitor = -1,
+        [int] $Monitor = -2,
         ########################################################################
         [Parameter(
             Mandatory = $false,
@@ -467,7 +495,7 @@ function Get-LMStudioWindow {
                     # start primary instance
                     $null = Microsoft.PowerShell.Management\Start-Process `
                         -FilePath ($paths.LMStudioExe) `
-                        -WindowStyle 'Normal'
+                        -WindowStyle 'Minimized'
 
                     # wait for primary instance to initialize
                     Microsoft.PowerShell.Utility\Start-Sleep 3
@@ -475,7 +503,7 @@ function Get-LMStudioWindow {
                     # start secondary instance
                     $null = Microsoft.PowerShell.Management\Start-Process `
                         -FilePath ($paths.LMStudioExe) `
-                        -WindowStyle 'Normal'
+                        -WindowStyle 'Minimized'
 
                 } -ArgumentList $paths |
                     Microsoft.PowerShell.Core\Wait-Job
@@ -528,35 +556,34 @@ function Get-LMStudioWindow {
             CheckRunningInstances
         }
 
-        # handle successful process initialization
-        if ($process) {
+        if (-not $ShowWindow) { return }
 
-            # output verbose message about found process
-            Microsoft.PowerShell.Utility\Write-Verbose ('Found LM Studio process ' +
-                "(PID: $($process.Id))")
+        # output verbose message about found process
+        Microsoft.PowerShell.Utility\Write-Verbose ('Found LM Studio process ' +
+            "(PID: $($process.Id))")
 
-            # get window helper for the found process
-            $WindowHelper = GenXdev.Windows\Get-Window -ProcessId ($process.Id)
+        # get window helper for the found process
+        $WindowHelper = GenXdev.Windows\Get-Window -ProcessName "LM Studio"
 
-            # handle window positioning and display if requested
-            if ($ShowWindow -and $null -ne $WindowHelper) {
+        # handle window positioning and display if requested
+        if ($null -ne $WindowHelper) {
 
-                # copy identical parameter values for the Set-WindowPosition function call
-                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
-                    -BoundParameters $PSBoundParameters `
-                    -FunctionName 'GenXdev.Windows\Set-WindowPosition'
-
-                # set window positions and focus using the window helper
-                $null = GenXdev.Windows\Set-WindowPosition @params -WindowHelper $WindowHelper
+            # copy identical parameter values for the Set-WindowPosition function call
+            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName 'GenXdev.Windows\Set-WindowPosition'
+            $params.KeysToSend = @("^2")
+            $params.RestoreFocus = $true
+            if (-not $params.ContainsKey('Monitor')) {
+                $params['Monitor'] = -2
             }
 
-            # return the window helper object
-            Microsoft.PowerShell.Utility\Write-Output $WindowHelper
-            return
+            # set window positions and focus using the window helper
+            $null = GenXdev.Windows\Set-WindowPosition @params -WindowHelper $WindowHelper
         }
 
-        # output error if initialization failed
-        Microsoft.PowerShell.Utility\Write-Error 'Failed to initialize LM Studio'
+        # return the window helper object
+        Microsoft.PowerShell.Utility\Write-Output $WindowHelper
     }
 
     end {

@@ -1,4 +1,32 @@
-﻿###############################################################################
+<##############################################################################
+Part of PowerShell module : GenXdev.AI.Queries
+Original cmdlet filename  : Find-Image.ps1
+Original author           : René Vaessen / GenXdev
+Version                   : 1.264.2025
+################################################################################
+MIT License
+
+Copyright 2021-2025 GenXdev
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+################################################################################>
+###############################################################################
 <#
 .SYNOPSIS
 Searches for image files and metadata in specified directories with filtering
@@ -2046,12 +2074,20 @@ function Find-Image {
 
                 # return standardized hashtable with all image metadata and processing results
                 # ensuring consistent structure with Find-IndexedImage
+
+                # Ensure Description object has proper structure with Keywords
+                if ($null -eq $descriptionFound) {
+                    $descriptionFound = @{}
+                }
+                if ($null -ne $keywordsFound) {
+                    $descriptionFound.Keywords = $keywordsFound
+                }
+
                 $obj = @{
                     Path        = $image
                     Width       = $metadata.Basic.Width
                     Height      = $metadata.Basic.Height
                     Metadata    = $metadata
-                    Keywords    = $keywordsFound
                     Description = $descriptionFound
                     People      = $peopleFound
                     Objects     = $objectsFound
@@ -2133,30 +2169,35 @@ function Find-Image {
                         # skip file if no patterns match
                         if (-not $found) {
 
-                            return
+                            return;
                         }
                     }
+                    try {
+                        # process the image file and handle output appropriately based on display mode
+                        processImageFile $path |
+                            Microsoft.PowerShell.Core\ForEach-Object {
 
-                    # process the image file and handle output appropriately based on display mode
-                    processImageFile $path |
-                        Microsoft.PowerShell.Core\ForEach-Object {
+                                if ($done."$(($_.Path))") { return }
+                                $done."$(($_.Path))" = $true;
 
-                            if ($done."$(($_.Path))") { return }
-                            $done."$(($_.Path))" = $true;
+                                # output directly or add to results based on browser display setting
+                                if (-not $ShowInBrowser) {
 
-                            # output directly or add to results based on browser display setting
-                            if (-not $ShowInBrowser) {
+                                    Microsoft.PowerShell.Utility\Write-Output $_
+                                }
+                                else {
 
-                                Microsoft.PowerShell.Utility\Write-Output $_
-                            }
-                            else {
-
-                                # add to results collection for browser display
-                                $null = $results.Add($_)
+                                    # add to results collection for browser display
+                                    $null = $results.Add($_)
+                                }
                             }
                         }
-                    }
-
+                        catch {
+                            $msg = "[Find-Image] Exception 10: $($_.Exception.Message)";
+                            Microsoft.PowerShell.Utility\Write-Verbose $msg;
+                            throw;
+                        }
+                }
         }
 
         # handle append mode - output InputObject first, then process as normal

@@ -1,3 +1,31 @@
+<##############################################################################
+Part of PowerShell module : GenXdev.AI
+Original cmdlet filename  : Invoke-LLMQuery.ps1
+Original author           : René Vaessen / GenXdev
+Version                   : 1.264.2025
+################################################################################
+MIT License
+
+Copyright 2021-2025 GenXdev
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+################################################################################>
 ###############################################################################
 <#
 .SYNOPSIS
@@ -224,7 +252,7 @@ function Invoke-LLMQuery {
     [CmdletBinding()]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', '')]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
-    [Alias('qllm', 'llm', 'Invoke-LMStudioQuery', 'qlms')]
+    [Alias('qllm', 'llm')]
 
     param(
         ###################################################################
@@ -381,7 +409,7 @@ function Invoke-LLMQuery {
             HelpMessage = 'The monitor to use, 0 = default, -1 is discard'
         )]
         [Alias('m', 'mon')]
-        [int] $Monitor,
+        [int] $Monitor=-2,
         ###################################################################
         [Parameter(
             Mandatory = $false,
@@ -850,10 +878,28 @@ function Invoke-LLMQuery {
         }
 
         # remove show window parameter after initialization
-        if ($myPSBoundParameters.ContainsKey('ShowWindow')) {
+        if ($ShowWindow) {
+
+            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $myPSBoundParameters `
+                -FunctionName 'GenXdev.Windows\Set-WindowPosition' `
+                -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
+                    -Scope Local -ErrorAction SilentlyContinue)
+            $params.KeysToSend = @("^2")
+            $params.RestoreFocus = $true
+            if  (-not $myPSBoundParameters.ContainsKey('Monitor')) {
+
+                $params.Monitor = -2
+            }
+
+            # show the lm studio window if requested
+            GenXdev.Windows\Set-WindowPosition @params -ProcessName 'LM Studio'
 
             # remove show window parameter from bound parameters
-            $null = $myPSBoundParameters.Remove('ShowWindow')
+            if ($myPSBoundParameters.ContainsKey('ShowWindow')) {
+
+                $null = $myPSBoundParameters.Remove('ShowWindow')
+            }
 
             # reset show window flag
             $showWindow = $false
@@ -1601,6 +1647,8 @@ function Invoke-LLMQuery {
 
         # send request with long timeouts
         $response = Microsoft.PowerShell.Utility\Invoke-RestMethod -Uri $apiUrl `
+            -Verbose:$false `
+            -ProgressAction Continue `
             -Method Post `
             -Body $bytes `
             -Headers $headers `
