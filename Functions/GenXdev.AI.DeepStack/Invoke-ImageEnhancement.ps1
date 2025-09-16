@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.DeepStack
 Original cmdlet filename  : Invoke-ImageEnhancement.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.268.2025
+Version                   : 1.270.2025
 ################################################################################
 MIT License
 
