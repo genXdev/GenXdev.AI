@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Get-ScriptExecutionErrorFixPrompt.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.270.2025
+Version                   : 1.272.2025
 ################################################################################
 MIT License
 

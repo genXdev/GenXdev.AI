@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Get-NumberOfCpuCores.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.270.2025
+Version                   : 1.272.2025
 ################################################################################
 MIT License
 
@@ -60,7 +60,9 @@ function Get-NumberOfCpuCores {
 
     [CmdletBinding()]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '')]
-    param()
+    param(
+        
+    )
 
     begin {
 
