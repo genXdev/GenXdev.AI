@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.DeepStack
 Original cmdlet filename  : EnsureDeepStack.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.274.2025
+Version                   : 1.276.2025
 ################################################################################
 MIT License
 
@@ -331,7 +331,7 @@ function EnsureDeepStack {
 
         } else {
 
-            'deepquestai/deepstack:latest'
+            'deepquestai/deepstack'
         }
 
         # set script-scoped variables for docker volume and networking

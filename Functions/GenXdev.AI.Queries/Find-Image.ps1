@@ -1,8 +1,8 @@
-<##############################################################################
+﻿<##############################################################################
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Find-Image.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.274.2025
+Version                   : 1.276.2025
 ################################################################################
 MIT License
 
@@ -1091,6 +1091,7 @@ function Find-Image {
     )
 
     begin {
+        $filter = @("*.jpg", "*.jpeg", "*.gif", "*.png", "*.bmp", "*.webp", "*.tiff", "*.tif")
 
         # configure html return mode if requested
         if ($OnlyReturnHtml) {
@@ -2320,56 +2321,15 @@ function Find-Image {
                 continue
             }
 
+            $fileFilter = @($Filter | Microsoft.PowerShell.Core\ForEach-Object {"$path\$_" })
+
             # search for image files (jpg, jpeg, gif, png, bmp, webp, tiff, tif) and process each one found
-            (@(Microsoft.PowerShell.Management\Get-ChildItem `
-                -LiteralPath $path `
-                -Filter "*.bmp" `
-                -Recurse:$(!$NoRecurse) `
-                -File `
-                -ErrorAction SilentlyContinue) +
-                @(Microsoft.PowerShell.Management\Get-ChildItem `
-                -LiteralPath $path `
-                -Filter "*.webp" `
-                -Recurse:$(!$NoRecurse) `
-                -File `
-                -ErrorAction SilentlyContinue) +
-                @(Microsoft.PowerShell.Management\Get-ChildItem `
-                -LiteralPath $path `
-                -Filter "*.tif" `
-                -Recurse:$(!$NoRecurse) `
-                -File `
-                -ErrorAction SilentlyContinue) +
-                @(Microsoft.PowerShell.Management\Get-ChildItem `
-                -LiteralPath $path `
-                -Filter "*.tiff" `
-                -Recurse:$(!$NoRecurse) `
-                -File `
-                -ErrorAction SilentlyContinue) +
-                @(Microsoft.PowerShell.Management\Get-ChildItem `
-                -LiteralPath $path `
-                -Filter "*.jpg" `
-                -Recurse:$(!$NoRecurse) `
-                -File `
-                -ErrorAction SilentlyContinue) +
-                @(Microsoft.PowerShell.Management\Get-ChildItem `
-                -LiteralPath $path `
-                -Filter "*.jpeg" `
-                -Recurse:$(!$NoRecurse) `
-                -File `
-                -ErrorAction SilentlyContinue) +
-                @(Microsoft.PowerShell.Management\Get-ChildItem `
-                -LiteralPath $path `
-                -Filter "*.gif" `
-                -Recurse:$(!$NoRecurse) `
-                -File `
-                -ErrorAction SilentlyContinue) +
-                @(Microsoft.PowerShell.Management\Get-ChildItem `
-                -LiteralPath $path `
-                -Filter "*.png" `
-                -Recurse:$(!$NoRecurse) `
-                -File `
-                -ErrorAction SilentlyContinue)) |
-                Microsoft.PowerShell.Core\ForEach-Object {
+            @(GenXdev.Filesystem\Find-Item `
+                -NoRecurse:$($NoRecurse) `
+                -ErrorAction SilentlyContinue `
+                -SearchMask $fileFilter `
+                -PassThru
+            ) | Microsoft.PowerShell.Core\ForEach-Object {
 
                     # filter on pathlike patterns if specified for directory scanning
                     if ($null -ne $PathLike -and ($PathLike.Count -gt 0)) {
