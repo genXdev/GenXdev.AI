@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : Stop-ComfyUI.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.276.2025
+Version                   : 1.278.2025
 ################################################################################
 MIT License
 

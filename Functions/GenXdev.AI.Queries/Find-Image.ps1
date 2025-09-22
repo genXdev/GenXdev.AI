@@ -1,8 +1,8 @@
-﻿<##############################################################################
+<##############################################################################
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Find-Image.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.276.2025
+Version                   : 1.278.2025
 ################################################################################
 MIT License
 
@@ -1097,7 +1097,6 @@ function Find-Image {
         if ($OnlyReturnHtml) {
 
             $Interactive = $false
-
             $ShowInBrowser = $true
         }
 
@@ -1435,10 +1434,14 @@ function Find-Image {
 
             # check description search criteria against image description metadata
             if ($null -ne $DescriptionSearch -and $DescriptionSearch.Count -gt 0) {
-                $descriptionMatch = $false  # Start with false, set true if any description matches
+
+                $descriptionMatch = $false
+
                 if ($null -ne $descriptionFound -and $null -ne $descriptionFound.description) {
+
                     # check each required keyword against description content
                     foreach ($requiredDescriptionPhrase in $DescriptionSearch) {
+
                         # use wildcard matching for flexible description search against both long and short descriptions
                         if ($descriptionFound.description.long_description -like
                             $requiredDescriptionPhrase -or
@@ -1453,10 +1456,14 @@ function Find-Image {
 
             # perform picture type filtering against image metadata
             if ($null -ne $PictureType -and $PictureType.Count -gt 0) {
-                $pictureTypeMatch = $false  # Start with false, set true if any picture type matches
+
+                $pictureTypeMatch = $false
+
                 if ($null -ne $descriptionFound) {
+
                     # check each required picture type against image metadata
                     foreach ($requiredPictureType in $PictureType) {
+
                         # use wildcard matching for flexible picture type filtering
                         if ($descriptionFound.picture_type -like $requiredPictureType) {
                             $pictureTypeMatch = $true
@@ -1468,10 +1475,14 @@ function Find-Image {
 
             # perform style type filtering against image metadata
             if ($null -ne $StyleType -and $StyleType.Count -gt 0) {
-                $styleTypeMatch = $false  # Start with false, set true if any style type matches
+
+                $styleTypeMatch = $false
+
                 if ($null -ne $descriptionFound) {
+
                     # check each required style type against image metadata
                     foreach ($requiredStyleType in $StyleType) {
+
                         # use wildcard matching for flexible style type filtering
                         if ($descriptionFound.style_type -like $requiredStyleType) {
                             $styleTypeMatch = $true
@@ -1483,12 +1494,16 @@ function Find-Image {
 
             # perform overall mood filtering against image metadata
             if ($null -ne $OverallMood -and $OverallMood.Count -gt 0) {
-                $moodMatch = $false  # Start with false, set true if any mood matches
+
+                $moodMatch = $false
                 if ($null -ne $descriptionFound) {
+
                     # check each required mood against image metadata
                     foreach ($requiredMood in $OverallMood) {
+
                         # use wildcard matching for flexible mood filtering
                         if ($descriptionFound.overall_mood_of_image -like $requiredMood) {
+
                             $moodMatch = $true
                             break
                         }
@@ -1498,13 +1513,18 @@ function Find-Image {
 
             # perform keywords filtering if keywords criteria specified
             if ($null -ne $Keywords -and $Keywords.Length -gt 0) {
+
                 $keywordMatch = $false  # Start with false, set true if any keyword matches (OR within parameter)
+
                 # check each found keyword against search criteria using nested loops
                 foreach ($foundKeyword in $keywordsFound) {
+
                     # check each searched keywords against found keyword with wildcard matching
                     foreach ($searchedForKeyword in $Keywords) {
+
                         # use wildcard matching for flexible keyword search
                         if ($foundKeyword -like $searchedForKeyword) {
+
                             $keywordMatch = $true
                             break
                         }
@@ -1516,13 +1536,18 @@ function Find-Image {
 
             # perform people filtering if people criteria specified
             if ($null -ne $People -and $People.Length -gt 0) {
+
                 $peopleMatch = $false  # Start with false, set true if any person matches (OR within parameter)
+
                 # check each found person against search criteria using nested loops
                 foreach ($foundPerson in $peopleFound.faces) {
+
                     # check each searched person against found person with wildcard matching
                     foreach ($searchedForPerson in $People) {
+
                         # use wildcard matching for flexible people search
                         if ($foundPerson -like $searchedForPerson) {
+
                             $peopleMatch = $true
                             break
                         }
@@ -1534,17 +1559,23 @@ function Find-Image {
 
             # perform objects filtering if objects criteria specified
             if ($null -ne $Objects -and $Objects.Length -gt 0) {
+
                 $objectMatch = $false  # Start with false, set true if any object matches (OR within parameter)
+
                 # check each found object against search criteria using nested loops
                 foreach ($foundObject in $objectsFound.objects) {
+
                     # check each searched object against found object with wildcard matching
                     foreach ($searchedForObject in $Objects) {
+
                         # use wildcard matching for flexible objects search
                         if ($foundObject.label -like $searchedForObject) {
+
                             $objectMatch = $true
                             break
                         }
                     }
+
                     # exit early if any object matches to improve performance
                     if ($objectMatch) { break }
                 }
@@ -1552,9 +1583,12 @@ function Find-Image {
 
             # perform scenes filtering if scenes criteria specified
             if ($null -ne $Scenes -and $Scenes.Count -gt 0) {
-                $sceneMatch = $false  # Start with false, set true if any scene matches (OR within parameter)
+
+                $sceneMatch = $false
+
                 # output debug information for scene filtering when verbose mode is enabled
                 if ($VerbosePreference -eq 'Continue') {
+
                     Microsoft.PowerShell.Utility\Write-Verbose (
                         'Scene filtering - Searching for: ' +
                         "$($Scenes -join ', ')")
@@ -1575,19 +1609,23 @@ function Find-Image {
                         $scenesFound.scene -notlike "unknown")) {
 
                         $sceneMatch = $true
+
                         # output match confirmation when verbose mode is enabled
                         if ($VerbosePreference -eq 'Continue') {
+
                             Microsoft.PowerShell.Utility\Write-Verbose (
                                 'Scene filtering - Match found: ' +
                                 "'$($scenesFound.scene)' matches " +
                                 "'$searchedForScene'")
                         }
+
                         break
                     }
                 }
 
                 # output no match message when verbose mode is enabled and no matches found
                 if (-not $sceneMatch -and $VerbosePreference -eq 'Continue') {
+
                     Microsoft.PowerShell.Utility\Write-Verbose (
                         'Scene filtering - No match found for scene: ' +
                         "$($scenesFound.scene)")
@@ -1600,9 +1638,12 @@ function Find-Image {
 
                 # filter scenes by confidence - remove scenes below minimum threshold
                 if ($null -ne $scenesFound -and $null -ne $scenesFound.confidence) {
+
                     if ($scenesFound.confidence -ge $MinConfidenceRatio) {
+
                         $confidenceMatch = $true
                     } else {
+
                         # filter out the scene data by setting it to default
                         $scenesFound = @{
                             success = $false
@@ -1615,9 +1656,13 @@ function Find-Image {
 
                 # filter people by confidence - remove people predictions below minimum threshold
                 if ($null -ne $peopleFound -and $null -ne $peopleFound.predictions -and $peopleFound.predictions.Count -gt 0) {
+
                     $filteredPredictions = @()
+
                     foreach ($prediction in $peopleFound.predictions) {
+
                         if ($null -ne $prediction.confidence -and $prediction.confidence -ge $MinConfidenceRatio) {
+
                             $filteredPredictions += $prediction
                             $confidenceMatch = $true
                         }
@@ -1635,14 +1680,18 @@ function Find-Image {
                     $filteredCounts = @{}
 
                     foreach ($obj in $objectsFound.objects) {
+
                         if ($null -ne $obj.confidence -and $obj.confidence -ge $MinConfidenceRatio) {
+
                             $filteredObjects += $obj
                             $confidenceMatch = $true
 
                             # update object counts for filtered objects
                             if ($filteredCounts.ContainsKey($obj.label)) {
+
                                 $filteredCounts[$obj.label]++
                             } else {
+
                                 $filteredCounts[$obj.label] = 1
                             }
                         }
@@ -1655,6 +1704,7 @@ function Find-Image {
 
                 # if no confidence match was found and MinConfidenceRatio is specified, skip this image
                 if (-not $confidenceMatch) {
+
                     # skip the image when confidence filtering is enabled but no data meets threshold
                     Microsoft.PowerShell.Utility\Write-Verbose (
                         "Confidence filtering - No confidence data meets minimum threshold " +
@@ -1685,6 +1735,7 @@ function Find-Image {
                 try {
                     # get metadata for EXIF filtering
                     $metadataStream = "${image}:EXIF.json"
+
                     if (Microsoft.PowerShell.Management\Test-Path -LiteralPath $metadataStream -ErrorAction SilentlyContinue) {
                         try {
                             $cachedMetadata = Microsoft.PowerShell.Management\Get-Content -LiteralPath $metadataStream -Raw -ErrorAction SilentlyContinue
@@ -1721,8 +1772,11 @@ function Find-Image {
 
                         # check camera model filter (OR within parameter, AND with other EXIF)
                         if ($exifMatch -and $null -ne $MetaCameraModel -and $MetaCameraModel.Count -gt 0) {
+
                             $modelMatch = $false
+
                             foreach ($model in $MetaCameraModel) {
+
                                 if ($null -ne $metadata.Camera.Model -and $metadata.Camera.Model -like $model) {
                                     $modelMatch = $true
                                     break
@@ -1733,23 +1787,33 @@ function Find-Image {
 
                         # Width filter (exact or range)
                         if ($exifMatch -and $null -ne $MetaWidth -and $MetaWidth.Count -gt 0) {
+
                             $widthMatch = $false
+
                             if ($MetaWidth.Count -eq 1) {
+
                                 $widthMatch = $width -eq $MetaWidth[0]
                             } elseif ($MetaWidth.Count -eq 2) {
+
                                 $widthMatch = $width -ge $MetaWidth[0] -and $width -le $MetaWidth[1]
                             }
+
                             $exifMatch = $exifMatch -and $widthMatch
                         }
 
                         # Height filter (exact or range)
                         if ($exifMatch -and $null -ne $MetaHeight -and $MetaHeight.Count -gt 0) {
+
                             $heightMatch = $false
+
                             if ($MetaHeight.Count -eq 1) {
+
                                 $heightMatch = $height -eq $MetaHeight[0]
                             } elseif ($MetaHeight.Count -eq 2) {
+
                                 $heightMatch = $height -ge $MetaHeight[0] -and $height -le $MetaHeight[1]
                             }
+
                             $exifMatch = $exifMatch -and $heightMatch
                         }
 

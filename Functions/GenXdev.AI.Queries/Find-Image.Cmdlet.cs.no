@@ -1,0 +1,708 @@
+// ################################################################################
+// Part of PowerShell module : GenXdev.AI.Queries
+// Original cmdlet filename  : Find-Image.Cmdlet.cs
+// Original author           : Ren� Vaessen / GenXdev
+// Version                   : 1.278.2025
+// ################################################################################
+// MIT License
+//
+// Copyright 2021-2025 GenXdev
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+// ################################################################################
+
+using StreamRegex.Extensions.Core;
+using StreamRegex.Extensions.RegexExtensions;
+using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
+using System.Data.Common;
+using System.Diagnostics;
+using System.IO;
+using System.Management;
+using System.Management.Automation;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using Windows.ApplicationModel.Calls;
+
+/// <summary>
+/// <para type="synopsis">
+/// Searches for image files and metadata in specified directories with filtering
+/// capabilities and optional browser-based gallery display.
+/// </para>
+///
+/// <para type="description">
+/// Searches for image files (jpg, jpeg, png, gif, bmp, webp, tiff, tif) in the
+/// specified directory and its subdirectories. For each image, checks associated
+/// description.json,
+/// keywords.json, people.json, and objects.json files for metadata. Can filter
+/// images based on keyword matches, people recognition, and object detection, then
+/// return the results as objects. Use -ShowInBrowser to display results in a
+/// browser-based masonry layout.
+/// </para>
+///
+/// <para type="description">
+/// Parameter Logic:
+/// - Within each parameter type (Keywords, People, Objects, etc.): Uses OR logic
+///   Example: -Keywords "cat","dog" finds images with EITHER cat OR dog
+/// - Between different parameter types: Uses AND logic
+///   Example: -Keywords "cat" -People "John" finds images with cat AND John
+/// - EXIF range parameters: Provide [min, max] values for filtering ranges
+/// - String parameters: Support wildcard matching with * and ?
+/// </para>
+///
+/// <para type="description">
+/// The function searches through image directories and examines alternate data
+/// streams containing metadata in JSON format. It can match keywords using wildcard
+/// patterns, filter for specific people, and search for detected objects. By
+/// default, returns image data objects. Use -ShowInBrowser to display in a web
+/// browser.
+/// </para>
+///
+/// <para type="description">
+/// PARAMETERS
+/// </para>
+///
+/// <para type="description">
+/// -Any &lt;Switch&gt;<br/>
+/// Will match any of all the possible meta data types.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+///
+/// <para type="description">
+/// -DatabaseFilePath &lt;String&gt;<br/>
+/// The path to the image database file. If not specified, a default path is used.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// </para>
+///
+/// <para type="description">
+/// -ImageDirectories &lt;String[]&gt;<br/>
+/// Array of directory paths to search for images. Each directory is searched
+/// recursively for jpg, jpeg, png, gif, bmp, webp, tiff, and tif files. Relative
+/// paths are converted to
+/// absolute paths automatically.<br/>
+/// - <b>Aliases</b>: Path, Directory<br/>
+/// - <b>Position</b>: 0<br/>
+/// - <b>Default</b>: Current directory<br/>
+/// - <b>Accepts pipeline input</b>: Yes (ByValue, ByPropertyName)<br/>
+/// </para>
+///
+/// <para type="description">
+/// -PathLike &lt;String[]&gt;<br/>
+/// Array of directory path-like search strings to filter images by path (SQL LIKE
+/// patterns, e.g. '%\\2024\\%').<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// </para>
+///
+/// <para type="description">
+/// -Language &lt;String&gt;<br/>
+/// The language for retrieving descriptions and keywords. Will try to find metadata
+/// in the specified language first, then fall back to English if not available.
+/// This allows you to have metadata in multiple languages for the same images.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: "en"<br/>
+/// </para>
+///
+/// <para type="description">
+/// -FacesDirectory &lt;String&gt;<br/>
+/// The directory containing face images organized by person folders. If not
+/// specified, uses the configured faces directory preference.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// </para>
+///
+/// <para type="description">
+/// -EmbedImages &lt;Switch&gt;<br/>
+/// Switch to embed images as base64 data URLs instead of file:// URLs. This makes
+/// the generated HTML file completely self-contained and portable, but results in
+/// larger file sizes. Useful when the HTML needs to be shared or viewed on
+/// different systems where the original image files may not be accessible.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+///
+/// <para type="description">
+/// -ForceIndexRebuild &lt;Switch&gt;<br/>
+/// Force rebuild of the image index database.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+///
+/// <para type="description">
+/// -NoFallback &lt;Switch&gt;<br/>
+/// Switch to disable fallback behavior.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+///
+/// <para type="description">
+/// -NeverRebuild &lt;Switch&gt;<br/>
+/// Switch to skip database initialization and rebuilding.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+///
+/// <para type="description">
+/// -DescriptionSearch &lt;String&gt;<br/>
+/// The description text to look for, wildcards allowed.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// </para>
+///
+/// <para type="description">
+/// -Keywords &lt;String[]&gt;<br/>
+/// Array of keywords to search for in image metadata. Supports wildcards. If empty,
+/// returns all images with any metadata. Keywords are matched against both the
+/// description content and keywords arrays in metadata files.<br/>
+/// - <b>Aliases</b>: Keyword<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// </para>
+///
+/// <para type="description">
+/// -People &lt;String[]&gt;<br/>
+/// Array of people names to search for in image metadata. Supports wildcards. Used
+/// to filter images based on face recognition metadata stored in people.json files.<br/>
+/// - <b>Aliases</b>: Person<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// </para>
+///
+/// <para type="description">
+/// -Objects &lt;String[]&gt;<br/>
+/// Array of object names to search for in image metadata. Supports wildcards. Used
+/// to filter images based on object detection metadata stored in objects.json files.<br/>
+/// - <b>Aliases</b>: Object<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// </para>
+///
+/// <para type="description">
+/// -Scenes &lt;String[]&gt;<br/>
+/// Array of scene categories to search for in image metadata. Supports wildcards.
+/// Used to filter images based on scene classification metadata stored in
+/// scenes.json files.<br/>
+/// - <b>Aliases</b>: Scene<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// </para>
+///
+/// <para type="description">
+/// -InputObject &lt;PSObject[]&gt;<br/>
+/// Accepts search results from a previous -PassThru call to regenerate the view.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// - <b>Accepts pipeline input</b>: Yes (ByValue)<br/>
+/// </para>
+///
+/// <para type="description">
+/// -PictureType &lt;String[]&gt;<br/>
+/// Array of picture types to filter by (e.g., 'daylight', 'evening', 'indoor',
+/// 'outdoor'). Supports wildcards. Matches against the picture_type property in
+/// description metadata.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// </para>
+///
+/// <para type="description">
+/// -StyleType &lt;String[]&gt;<br/>
+/// Array of style types to filter by (e.g., 'casual', 'formal'). Supports
+/// wildcards. Matches against the style_type property in description metadata.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// </para>
+///
+/// <para type="description">
+/// -OverallMood &lt;String[]&gt;<br/>
+/// Array of overall moods to filter by (e.g., 'calm', 'cheerful', 'sad',
+/// 'energetic'). Supports wildcards. Matches against the overall_mood_of_image
+/// property in description metadata.<br/>
+/// - <b>Aliases</b>: Mood<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// </para>
+///
+/// <para type="description">
+/// -Title &lt;String&gt;<br/>
+/// The title to display at the top of the image gallery.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: 'Image Search Results'<br/>
+/// </para>
+///
+/// <para type="description">
+/// -Description &lt;String&gt;<br/>
+/// The description text to display in the image gallery.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: Original command<br/>
+/// </para>
+///
+/// <para type="description">
+/// -FocusWindow &lt;Switch&gt;<br/>
+/// Focus the browser window after opening.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+///
+/// <para type="description">
+/// -SetForeground &lt;Switch&gt;<br/>
+/// Set the browser window to foreground after opening.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+///
+/// <para type="description">
+/// -Maximize &lt;Switch&gt;<br/>
+/// Maximize the browser window after positioning.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+///
+/// <para type="description">
+/// -AcceptLang &lt;String&gt;<br/>
+/// Set the browser accept-lang http header.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// </para>
+///
+/// <para type="description">
+/// -Monitor &lt;Int32&gt;<br/>
+/// The monitor to use, 0 = default, -1 is discard, -2 = Configured secondary
+/// monitor, defaults to Global:DefaultSecondaryMonitor or 2 if not found.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: 0<br/>
+/// </para>
+///
+/// <para type="description">
+/// -KeysToSend &lt;String&gt;<br/>
+/// Send specified keys to the browser window after opening.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: None<br/>
+/// </para>
+///
+/// <para type="description">
+/// -SendKeyEscape &lt;Switch&gt;<br/>
+/// When specified, escapes special characters so they are sent as literal text
+/// instead of being interpreted as control sequences.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+///
+/// <para type="description">
+/// -SendKeyHoldKeyboardFocus &lt;Switch&gt;<br/>
+/// Prevents returning keyboard focus to PowerShell after sending keys.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+///
+/// <para type="description">
+/// -SendKeyUseShiftEnter &lt;Switch&gt;<br/>
+/// Sends Shift+Enter instead of regular Enter for line breaks.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+///
+/// <para type="description">
+/// -NoRecurse &lt;Switch&gt;<br/>
+/// Do not search subdirectories.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+///
+/// <para type="description">
+/// -Filter &lt;String[]&gt;<br/>
+/// File name patterns to search for (e.g., '*.jpg'). Defaults to image extensions.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: Image extensions<br/>
+/// </para>
+///
+/// <para type="description">
+/// -ShowInBrowser &lt;Switch&gt;<br/>
+/// Display results in a browser-based gallery.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+///
+/// <para type="description">
+/// -PassThru &lt;Switch&gt;<br/>
+/// Return results even when showing in browser.<br/>
+/// - <b>Aliases</b>: None<br/>
+/// - <b>Position</b>: Named<br/>
+/// - <b>Default</b>: False<br/>
+/// </para>
+/// </summary>
+[Cmdlet(VerbsCommon.Find, "ImageEx")]
+[OutputType(typeof(PSObject))]
+public partial class FindImage : PSCmdlet
+{
+	/// <summary>
+	/// The directories to search for images.
+	/// </summary>
+	[Parameter(Position = 0, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true, HelpMessage = "Array of directory paths to search for images.")]
+	[Alias("Path", "Directory")]
+	public string[] ImageDirectories { get; set; } = new[] { "." };
+
+	/// <summary>
+	/// Path-like patterns to filter images.
+	/// </summary>
+	[Parameter(HelpMessage = "Array of directory path-like search strings to filter images by path.")]
+	public string[] PathLike { get; set; }
+
+	/// <summary>
+	/// Language for metadata retrieval.
+	/// </summary>
+	[Parameter(HelpMessage = "The language for retrieving descriptions and keywords.")]
+	public string Language { get; set; } = "en";
+
+	/// <summary>
+	/// Directory for face images.
+	/// </summary>
+	[Parameter(HelpMessage = "The directory containing face images organized by person folders.")]
+	public string FacesDirectory { get; set; }
+
+	/// <summary>
+	/// Embed images as base64.
+	/// </summary>
+	[Parameter(HelpMessage = "Embed images as base64 data URLs.")]
+	public SwitchParameter EmbedImages { get; set; }
+
+	/// <summary>
+	/// Force rebuild of index database.
+	/// </summary>
+	[Parameter(HelpMessage = "Force rebuild of the image index database.")]
+	public SwitchParameter ForceIndexRebuild { get; set; }
+
+	/// <summary>
+	/// Disable fallback behavior.
+	/// </summary>
+	[Parameter(HelpMessage = "Disable fallback behavior.")]
+	public SwitchParameter NoFallback { get; set; }
+
+	/// <summary>
+	/// Skip database rebuild.
+	/// </summary>
+	[Parameter(HelpMessage = "Skip database initialization and rebuilding.")]
+	public SwitchParameter NeverRebuild { get; set; }
+
+	/// <summary>
+	/// Description text to search for.
+	/// </summary>
+	[Parameter(HelpMessage = "The description text to look for, wildcards allowed.")]
+	public string DescriptionSearch { get; set; }
+
+	/// <summary>
+	/// Keywords to search for.
+	/// </summary>
+	[Parameter(HelpMessage = "Array of keywords to search for in image metadata.")]
+	[Alias("Keyword")]
+	public string[] Keywords { get; set; }
+
+	/// <summary>
+	/// People names to search for.
+	/// </summary>
+	[Parameter(HelpMessage = "Array of people names to search for in image metadata.")]
+	[Alias("Person")]
+	public string[] People { get; set; }
+
+	/// <summary>
+	/// Object names to search for.
+	/// </summary>
+	[Parameter(HelpMessage = "Array of object names to search for in image metadata.")]
+	[Alias("Object")]
+	public string[] Objects { get; set; }
+
+	/// <summary>
+	/// Scene categories to search for.
+	/// </summary>
+	[Parameter(HelpMessage = "Array of scene categories to search for in image metadata.")]
+	[Alias("Scene")]
+	public string[] Scenes { get; set; }
+
+	/// <summary>
+	/// Input search results for regeneration.
+	/// </summary>
+	[Parameter(ValueFromPipeline = true, HelpMessage = "Accepts search results from a previous -PassThru call.")]
+	public PSObject[] InputObject { get; set; }
+
+	/// <summary>
+	/// Picture types to filter by.
+	/// </summary>
+	[Parameter(HelpMessage = "Array of picture types to filter by.")]
+	public string[] PictureType { get; set; }
+
+	/// <summary>
+	/// Style types to filter by.
+	/// </summary>
+	[Parameter(HelpMessage = "Array of style types to filter by.")]
+	public string[] StyleType { get; set; }
+
+	/// <summary>
+	/// Overall moods to filter by.
+	/// </summary>
+	[Parameter(HelpMessage = "Array of overall moods to filter by.")]
+	[Alias("Mood")]
+	public string[] OverallMood { get; set; }
+
+	/// <summary>
+	/// Title for the gallery.
+	/// </summary>
+	[Parameter(HelpMessage = "The title to display at the top of the image gallery.")]
+	public string Title { get; set; }
+
+	/// <summary>
+	/// Description for the gallery.
+	/// </summary>
+	[Parameter(HelpMessage = "The description text to display in the image gallery.")]
+	public string Description { get; set; }
+
+	/// <summary>
+	/// Focus the browser window.
+	/// </summary>
+	[Parameter(HelpMessage = "Focus the browser window after opening.")]
+	public SwitchParameter FocusWindow { get; set; }
+
+	/// <summary>
+	/// Set browser to foreground.
+	/// </summary>
+	[Parameter(HelpMessage = "Set the browser window to foreground after opening.")]
+	public SwitchParameter SetForeground { get; set; }
+
+	/// <summary>
+	/// Maximize the browser window.
+	/// </summary>
+	[Parameter(HelpMessage = "Maximize the browser window after positioning.")]
+	public SwitchParameter Maximize { get; set; }
+
+	/// <summary>
+	/// Accept-Language header.
+	/// </summary>
+	[Parameter(HelpMessage = "Set the browser accept-lang http header.")]
+	public string AcceptLang { get; set; }
+
+	/// <summary>
+	/// Monitor to use for display.
+	/// </summary>
+	[Parameter(HelpMessage = "The monitor to use for display.")]
+	public int Monitor { get; set; } = 0;
+
+	/// <summary>
+	/// Keys to send to browser.
+	/// </summary>
+	[Parameter(HelpMessage = "Send specified keys to the browser window after opening.")]
+	public string KeysToSend { get; set; }
+
+	/// <summary>
+	/// Escape special keys.
+	/// </summary>
+	[Parameter(HelpMessage = "Escape special characters for literal sending.")]
+	public SwitchParameter SendKeyEscape { get; set; }
+
+	/// <summary>
+	/// Hold keyboard focus.
+	/// </summary>
+	[Parameter(HelpMessage = "Prevent returning keyboard focus to PowerShell.")]
+	public SwitchParameter SendKeyHoldKeyboardFocus { get; set; }
+
+	/// <summary>
+	/// Use Shift+Enter.
+	/// </summary>
+	[Parameter(HelpMessage = "Send Shift+Enter for line breaks.")]
+	public SwitchParameter SendKeyUseShiftEnter { get; set; }
+
+	/// <summary>
+	/// Do not recurse subdirectories.
+	/// </summary>
+	[Parameter(HelpMessage = "Do not search subdirectories.")]
+	public SwitchParameter NoRecurse { get; set; }
+
+	/// <summary>
+	/// File name patterns.
+	/// </summary>
+	[Parameter(HelpMessage = "File name patterns to search for.")]
+	public string[] Filter { get; set; } = new[] { "*.jpg", "*.jpeg", "*.png", "*.gif", "*.bmp", "*.webp", "*.tiff", "*.tif" };
+
+	/// <summary>
+	/// Display in browser.
+	/// </summary>
+	[Parameter(HelpMessage = "Display results in a browser-based gallery.")]
+	public SwitchParameter ShowInBrowser { get; set; }
+
+	/// <summary>
+	/// Return results with browser display.
+	/// </summary>
+	[Parameter(HelpMessage = "Return results even when showing in browser.")]
+	public SwitchParameter PassThru { get; set; }
+
+	/// <summary>
+	/// Match any metadata type.
+	/// </summary>
+	[Parameter(HelpMessage = "Match any of all the possible meta data types.")]
+	public SwitchParameter Any { get; set; }
+
+	/// <summary>
+	/// Path to database file.
+	/// </summary>
+	[Parameter(HelpMessage = "The path to the image database file.")]
+	public string DatabaseFilePath { get; set; }
+
+	// Cmdlet lifecycle methods
+
+	/// <summary>
+	/// Initializes the cmdlet.
+	/// </summary>
+	protected override void BeginProcessing()
+	{
+		// Set default parallelism if not provided
+		MaxDegreeOfParallelism = MaxDegreeOfParallelism <= 0 ? GetCoreCount() : MaxDegreeOfParallelism;
+		ThreadPool.SetMaxThreads(MaxDegreeOfParallelism, MaxDegreeOfParallelism);
+
+		// Detect unattended mode
+		UnattendedMode = UnattendedModeHelper.IsUnattendedMode(MyInvocation);
+
+		// Initialize visited nodes
+		InitializeVisitedNodes();
+
+		// Set verbose output
+		InitializeVerboseOutput();
+
+		// Initialize wildcard matcher
+		InitializeWildcardMatcher();
+
+		// Set exclude patterns
+		InitializeExcludePatterns();
+
+		// Set current directory
+		InitializeCurrentDirectory();
+
+		// Resolve relative base dir
+		InitializeRelativeBaseDir();
+
+		// Initialize cancellation token
+		InitializeCancellationToken();
+
+		// Process image directories
+		if (ImageDirectories != null && ImageDirectories.Length > 0)
+		{
+			foreach (var dir in ImageDirectories)
+			{
+				if (VisitedNodes.TryAdd("start;" + dir, true))
+				{
+					if (UseVerboseOutput)
+					{
+						VerboseQueue.Enqueue($"Processing directory: {dir}");
+					}
+					InitializeSearchDirectory(dir);
+				}
+			}
+		}
+	}
+
+	/// <summary>
+	/// Processes pipeline input.
+	/// </summary>
+	protected override void ProcessRecord()
+	{
+		if (InputObject != null)
+		{
+			foreach (var obj in InputObject)
+			{
+				// Process input objects
+				ProcessInputObject(obj);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Finalizes processing and handles browser display if requested.
+	/// </summary>
+	protected override void EndProcessing()
+	{
+		// If no queue, add current directory
+		if (DirQueue.Count == 0)
+		{
+			InitializeSearchDirectory(CurrentDirectory + "\\");
+		}
+
+		// Start workers
+		isStarted = true;
+
+		// Process tasks
+		ProcessSearchTasks();
+
+		// Empty queues
+		EmptyQueues();
+
+		// Complete progress
+		var completeRecord = new ProgressRecord(0, "Find-Image", "Completed")
+		{
+			PercentComplete = 100,
+			RecordType = ProgressRecordType.Completed
+		};
+		WriteProgress(completeRecord);
+
+		// Restore thread pool
+		ThreadPool.SetMaxThreads(oldMaxWorkerThread, oldMaxCompletionPorts);
+
+		// Dispose cancellation
+		cts?.Dispose();
+
+		// Handle show in browser
+		if (ShowInBrowser)
+		{
+			ShowResultsInBrowser();
+		}
+	}
+
+	/// <summary>
+	/// Handles stopping.
+	/// </summary>
+	protected override void StopProcessing()
+	{
+		cts?.Cancel();
+	}
+}
