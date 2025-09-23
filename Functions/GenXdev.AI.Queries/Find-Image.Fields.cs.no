@@ -2,7 +2,7 @@
 // Part of PowerShell module : GenXdev.AI.Queries
 // Original cmdlet filename  : Find-Image.Fields.cs
 // Original author           : Ren� Vaessen / GenXdev
-// Version                   : 1.284.2025
+// Version                   : 1.286.2025
 // ################################################################################
 // MIT License
 //
