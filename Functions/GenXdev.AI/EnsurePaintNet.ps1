@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : EnsurePaintNet.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.288.2025
+Version                   : 1.290.2025
 ################################################################################
 MIT License
 
@@ -94,6 +94,17 @@ function EnsurePaintNet {
         #>
         function InstallWinGet {
             try {
+                # Request consent before installing WinGet PowerShell module
+                $wingetConsent = GenXdev.FileSystem\Confirm-InstallationConsent `
+                    -ApplicationName 'Microsoft.WinGet.Client PowerShell Module' `
+                    -Source 'PowerShell Gallery' `
+                    -Description 'Required for automated software package management via WinGet' `
+                    -Publisher 'Microsoft'
+
+                if (-not $wingetConsent) {
+                    throw 'User declined installation of Microsoft.WinGet.Client PowerShell module'
+                }
+
                 Microsoft.PowerShell.Utility\Write-Verbose 'Installing WinGet PowerShell client...'
                 PowerShellGet\Install-Module 'Microsoft.WinGet.Client' -Force -AllowClobber -ErrorAction Stop
                 Microsoft.PowerShell.Core\Import-Module 'Microsoft.WinGet.Client' -ErrorAction Stop
@@ -128,6 +139,17 @@ function EnsurePaintNet {
 
             # Check again after updating PATH
             if (@(Microsoft.PowerShell.Core\Get-Command 'paintdotnet.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
+
+                # Request consent before installing Paint.NET
+                $paintNetConsent = GenXdev.FileSystem\Confirm-InstallationConsent `
+                    -ApplicationName 'Paint.NET' `
+                    -Source 'WinGet' `
+                    -Description 'Image editing software required for graphics processing operations' `
+                    -Publisher 'dotPDN LLC'
+
+                if (-not $paintNetConsent) {
+                    throw 'User declined installation of Paint.NET. Cannot proceed without image editing capabilities.'
+                }
 
                 Microsoft.PowerShell.Utility\Write-Verbose 'Installing Paint.NET...'
 

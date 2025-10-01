@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : EnsureWinMergeInstalled.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.288.2025
+Version                   : 1.290.2025
 ################################################################################
 MIT License
 
@@ -86,6 +86,17 @@ function EnsureWinMergeInstalled {
         #>
         function InstallWinGet {
 
+            # request user consent before installing winget module
+            $consent = GenXdev.FileSystem\Confirm-InstallationConsent `
+                -ApplicationName 'Microsoft.WinGet.Client' `
+                -Source 'PowerShell Gallery' `
+                -Description 'PowerShell module for Windows Package Manager operations' `
+                -Publisher 'Microsoft'
+
+            if (-not $consent) {
+                throw 'Installation of Microsoft.WinGet.Client was denied by user.'
+            }
+
             # install and import winget module with force to ensure success
             Microsoft.PowerShell.Utility\Write-Verbose 'Installing WinGet PowerShell client...'
             $null = PowerShellGet\Install-Module 'Microsoft.WinGet.Client' -Force -AllowClobber
@@ -133,6 +144,17 @@ function EnsureWinMergeInstalled {
             # ensure winget is available for installation
             if (-not (IsWinGetInstalled)) {
                 InstallWinGet
+            }
+
+            # request user consent before installing winmerge
+            $consentWinMerge = GenXdev.FileSystem\Confirm-InstallationConsent `
+                -ApplicationName 'WinMerge' `
+                -Source 'WinGet' `
+                -Description 'Visual diff and merge tool for files and folders' `
+                -Publisher 'WinMerge Team'
+
+            if (-not $consentWinMerge) {
+                throw 'Installation of WinMerge was denied by user.'
             }
 
             # install winmerge using winget package manager

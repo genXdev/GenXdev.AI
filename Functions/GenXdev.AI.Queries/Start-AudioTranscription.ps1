@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Start-AudioTranscription.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.288.2025
+Version                   : 1.290.2025
 ################################################################################
 MIT License
 
@@ -1070,6 +1070,17 @@ function Start-AudioTranscription {
                     Microsoft.PowerShell.Utility\Write-Verbose `
                         'Installing WinGet PowerShell client..'
 
+                    # check for installation consent before proceeding
+                    $consent = GenXdev.FileSystem\Confirm-InstallationConsent `
+                        -ApplicationName 'Microsoft.WinGet.Client' `
+                        -Source 'PowerShell Gallery' `
+                        -Description 'PowerShell module for WinGet package management, required for automated FFmpeg installation' `
+                        -Publisher 'Microsoft'
+
+                    if (-not $consent) {
+                        throw 'Installation consent denied for Microsoft.WinGet.Client module. Cannot proceed with automatic package installation.'
+                    }
+
                     # install the winget client module
                     PowerShellGet\Install-Module 'Microsoft.WinGet.Client' `
                         -Force -AllowClobber
@@ -1106,6 +1117,17 @@ function Start-AudioTranscription {
 
                         Microsoft.PowerShell.Utility\Write-Verbose `
                             'Installing ffmpeg..'
+
+                        # check for installation consent before proceeding
+                        $consent = GenXdev.FileSystem\Confirm-InstallationConsent `
+                            -ApplicationName 'FFmpeg' `
+                            -Source 'WinGet' `
+                            -Description 'Audio/video processing library required for converting media files to formats compatible with speech recognition' `
+                            -Publisher 'Gyan'
+
+                        if (-not $consent) {
+                            throw 'Installation consent denied for FFmpeg. Cannot proceed with media file conversion for transcription.'
+                        }
 
                         try {
 

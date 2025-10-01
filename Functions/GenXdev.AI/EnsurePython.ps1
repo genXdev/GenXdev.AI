@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : EnsurePython.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.288.2025
+Version                   : 1.290.2025
 ################################################################################
 MIT License
 
@@ -285,6 +285,30 @@ function EnsurePython {
             if (-not $pythonSearch -or $pythonSearch -match "No package found") {
                 Microsoft.PowerShell.Utility\Write-Error `
                     "Python ${Version} not found via winget. Available versions may be different."
+                return
+            }
+
+            # request consent for python installation
+            Microsoft.PowerShell.Utility\Write-Progress `
+                -Activity "Python Installation" `
+                -Status "Requesting installation consent..." `
+                -PercentComplete 50
+
+            try {
+                $consentResult = GenXdev.FileSystem\Confirm-InstallationConsent `
+                    -ApplicationName "Python ${Version}" `
+                    -Source "Winget" `
+                    -Description "Python interpreter and runtime environment for executing Python scripts and applications" `
+                    -Publisher "Python Software Foundation"
+
+                if (-not $consentResult) {
+                    Microsoft.PowerShell.Utility\Write-Error `
+                        "Python ${Version} installation was declined by user."
+                    return
+                }
+            } catch {
+                Microsoft.PowerShell.Utility\Write-Error `
+                    "Failed to confirm installation consent: $($_.Exception.Message)"
                 return
             }
 

@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.LMStudio
 Original cmdlet filename  : Install-LMStudioApplication.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.288.2025
+Version                   : 1.290.2025
 ################################################################################
 MIT License
 
@@ -59,6 +59,17 @@ function Install-LMStudioApplication {
         # helper function to install winget if missing
         function Install-WingetDependency {
             if (-not (Test-WingetDependency)) {
+                # request consent before installing winget module
+                $consent = GenXdev.FileSystem\Confirm-InstallationConsent `
+                    -ApplicationName 'Microsoft.WinGet.Client PowerShell Module' `
+                    -Source 'PowerShell Gallery' `
+                    -Description 'Required for managing Windows software packages programmatically' `
+                    -Publisher 'Microsoft'
+
+                if (-not $consent) {
+                    throw 'Installation consent denied for WinGet PowerShell module'
+                }
+
                 Microsoft.PowerShell.Utility\Write-Verbose 'Installing WinGet PowerShell module...'
                 $null = PowerShellGet\Install-Module 'Microsoft.WinGet.Client' `
                     -Force `
@@ -84,6 +95,18 @@ function Install-LMStudioApplication {
             $installed = Microsoft.WinGet.Client\Get-WinGetPackage -Id $lmStudioId -ErrorAction Stop
 
             if ($null -eq $installed) {
+                # request consent before installing lm studio
+                $consent = GenXdev.FileSystem\Confirm-InstallationConsent `
+                    -ApplicationName 'LM Studio' `
+                    -Source 'WinGet' `
+                    -Description 'Local AI model management and inference platform' `
+                    -Publisher 'Element Labs'
+
+                if (-not $consent) {
+                    Microsoft.PowerShell.Utility\Write-Warning 'Installation consent denied for LM Studio'
+                    return
+                }
+
                 Microsoft.PowerShell.Utility\Write-Verbose 'Installing LM Studio...'
 
                 try {

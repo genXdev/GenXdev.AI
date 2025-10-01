@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : EnsureComfyUI.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.288.2025
+Version                   : 1.290.2025
 ################################################################################
 MIT License
 
@@ -355,6 +355,20 @@ function EnsureComfyUI {
 
             # install comfyui if not currently installed
             if (-not $comfyInstalled) {
+
+                # request user consent before installing third-party software
+                $installConsent = GenXdev.FileSystem\Confirm-InstallationConsent `
+                    -ApplicationName "ComfyUI Desktop" `
+                    -Source "Winget" `
+                    -Description "ComfyUI is required for AI image generation workflows. This desktop application provides a graphical interface for creating and managing ComfyUI workflows." `
+                    -Publisher "Comfy Org"
+
+                # handle installation consent response
+                if (-not $installConsent) {
+                    Microsoft.PowerShell.Utility\Write-Error `
+                        "Installation consent denied. ComfyUI Desktop is required for this operation to continue."
+                    return
+                }
 
                 # install comfyui desktop application via winget
                 Microsoft.PowerShell.Utility\Write-Verbose `

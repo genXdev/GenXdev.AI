@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : EnsureGithubCLIInstalled.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.288.2025
+Version                   : 1.290.2025
 ################################################################################
 MIT License
 
@@ -88,6 +88,17 @@ function EnsureGithubCLIInstalled {
         #>
         function InstallWinGet {
             try {
+                # Check user consent before installing WinGet module
+                $consent = GenXdev.FileSystem\Confirm-InstallationConsent `
+                    -ApplicationName 'Microsoft.WinGet.Client PowerShell Module' `
+                    -Source 'PowerShell Gallery' `
+                    -Description 'Required for automated software package management via WinGet' `
+                    -Publisher 'Microsoft'
+
+                if (-not $consent) {
+                    throw 'User declined installation of Microsoft.WinGet.Client PowerShell module'
+                }
+
                 Microsoft.PowerShell.Utility\Write-Verbose 'Installing WinGet PowerShell client...'
                 PowerShellGet\Install-Module 'Microsoft.WinGet.Client' -Force -AllowClobber -ErrorAction Stop
                 Microsoft.PowerShell.Core\Import-Module 'Microsoft.WinGet.Client' -ErrorAction Stop
@@ -107,6 +118,17 @@ function EnsureGithubCLIInstalled {
             # First check and install Git if needed
             if (@(Microsoft.PowerShell.Core\Get-Command 'git.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
                 Microsoft.PowerShell.Utility\Write-Verbose 'Git not found, installing...'
+
+                # Check user consent before installing Git
+                $gitConsent = GenXdev.FileSystem\Confirm-InstallationConsent `
+                    -ApplicationName 'Git for Windows' `
+                    -Source 'WinGet' `
+                    -Description 'Version control system required for GitHub CLI functionality' `
+                    -Publisher 'Git for Windows Project'
+
+                if (-not $gitConsent) {
+                    throw 'User declined installation of Git for Windows'
+                }
 
                 if (-not (IsWinGetInstalled)) {
                     InstallWinGet
@@ -145,6 +167,17 @@ function EnsureGithubCLIInstalled {
 
                 if (@(Microsoft.PowerShell.Core\Get-Command 'gh.exe' -ErrorAction SilentlyContinue).Length -eq 0) {
                     Microsoft.PowerShell.Utility\Write-Verbose 'Installing GitHub CLI...'
+
+                    # Check user consent before installing GitHub CLI
+                    $ghConsent = GenXdev.FileSystem\Confirm-InstallationConsent `
+                        -ApplicationName 'GitHub CLI' `
+                        -Source 'WinGet' `
+                        -Description 'Command-line tool for GitHub operations and authentication' `
+                        -Publisher 'GitHub'
+
+                    if (-not $ghConsent) {
+                        throw 'User declined installation of GitHub CLI'
+                    }
 
                     if (-not (IsWinGetInstalled)) {
                         InstallWinGet

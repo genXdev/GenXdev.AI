@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Invoke-QueryImageContent.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.288.2025
+Version                   : 1.290.2025
 ################################################################################
 MIT License
 
@@ -113,6 +113,14 @@ If specified, forces LM Studio to stop before initialization.
 .PARAMETER IncludeThoughts
 If specified, includes the model's thoughts in the output.
 
+.PARAMETER ForceConsent
+Force a consent prompt even if a preference is already set for ImageSharp
+package installation, overriding any saved consent preferences.
+
+.PARAMETER ConsentToThirdPartySoftwareInstallation
+Automatically consent to third-party software installation and set a persistent
+preference flag for ImageSharp packages, bypassing interactive consent prompts.
+
 .EXAMPLE
 Invoke-QueryImageContent `
     -Query "What objects are in this image?" `
@@ -121,6 +129,9 @@ Invoke-QueryImageContent `
     -MaxToken 100
 
 Analyzes an image with specific temperature and token limits.
+
+.EXAMPLE
+Invoke-QueryImageContent -Query "Describe this image" -ImagePath "photo.webp" -ConsentToThirdPartySoftwareInstallation
 
 .EXAMPLE
 Query-Image "Describe this image" "C:\Images\photo.jpg"
@@ -757,7 +768,21 @@ function Invoke-QueryImageContent {
             Mandatory = $false,
             HelpMessage = 'Maximum callback length for tool calls.'
         )]
-        [int] $MaxToolcallBackLength
+        [int] $MaxToolcallBackLength,
+
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Force a consent prompt even if preference is set for ImageSharp package installation.'
+        )]
+        [switch] $ForceConsent,
+
+        ###############################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Automatically consent to third-party software installation and set persistent flag for ImageSharp packages.'
+        )]
+        [switch] $ConsentToThirdPartySoftwareInstallation
     )
     begin {
 
@@ -791,9 +816,28 @@ function Invoke-QueryImageContent {
 
             $actualPath = [IO.Path]::GetTempPath() + ".png"
 
-            GenXdev.Helpers\EnsureNuGetAssembly -PackageKey "SixLabors.ImageSharp"
-            GenXdev.Helpers\EnsureNuGetAssembly -PackageKey "Shorthand.ImageSharp.WebP"
-            GenXdev.Helpers\EnsureNuGetAssembly -PackageKey "SixLabors.ImageSharp.Drawing"
+            # Load ImageSharp packages with embedded consent using Copy-IdenticalParamValues
+            $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                -BoundParameters $PSBoundParameters `
+                -FunctionName 'GenXdev.Helpers\EnsureNuGetAssembly' `
+                -DefaultValues (
+                Microsoft.PowerShell.Utility\Get-Variable -Scope Local `
+                    -ErrorAction SilentlyContinue
+            )
+
+            # Set specific parameters for ImageSharp packages
+            $ensureParams['Description'] = 'Required for WebP image format conversion and processing'
+            $ensureParams['Publisher'] = 'SixLabors'
+
+            # Load required ImageSharp packages
+            $ensureParams['PackageKey'] = 'SixLabors.ImageSharp'
+            GenXdev.Helpers\EnsureNuGetAssembly @ensureParams
+
+            $ensureParams['PackageKey'] = 'Shorthand.ImageSharp.WebP'
+            GenXdev.Helpers\EnsureNuGetAssembly @ensureParams
+
+            $ensureParams['PackageKey'] = 'SixLabors.ImageSharp.Drawing'
+            GenXdev.Helpers\EnsureNuGetAssembly @ensureParams
 
             try {
                 $webpImage = [SixLabors.ImageSharp.Image]::Load($ImagePath)
