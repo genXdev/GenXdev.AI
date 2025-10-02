@@ -1,6 +1,6 @@
 Pester\Describe 'Get-LMStudioLoadedModelList basic functionality test' {
 
-    Pester\It 'Should return loaded models from LM Studio' {
+    Pester\It 'Should return loaded models from LM Studio' -Skip:(-not ($Global:AllowLongRunningTests -eq $true)){
 
         GenXdev.AI\EnsureLMStudio
 

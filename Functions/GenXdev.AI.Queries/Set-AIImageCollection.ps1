@@ -341,13 +341,19 @@ function Set-AIImageCollection {
     $ImageDirectories = ($ImageDirectories ? $ImageDirectories : $DefaultValue)
     $Json = $ImageDirectories | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress
 
-    $params = GenXdev.Helpers\Copy-IdenticalParamValues `
-        -BoundParameters $PSBoundParameters `
-        -FunctionName 'GenXdev.Data\Set-GenXdevPreference'
+    # confirm the operation with the user before proceeding
+    if ($PSCmdlet.ShouldProcess(
+            "AI Image Collection settings",
+            "Update image directories and language preferences")) {
 
-    $null = GenXdev.Data\Set-GenXdevPreference @params `
-        -Name 'AIImageCollection' `
-        -Value $Json
+        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            -BoundParameters $PSBoundParameters `
+            -FunctionName 'GenXdev.Data\Set-GenXdevPreference'
+
+        $null = GenXdev.Data\Set-GenXdevPreference @params `
+            -Name 'AIImageCollection' `
+            -Value $Json
+    }
 
 }
 ################################################################################

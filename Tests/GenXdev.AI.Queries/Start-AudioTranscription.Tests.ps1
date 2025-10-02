@@ -5,7 +5,7 @@
         GenXdev.AI\Set-AILLMSettings -ClearSession TextTranslation
     }
 
-    Pester\It "Should get audio transcription from a media file" { # } -Skip:(-not ($Global:AllowLongRunningTests -eq $true)) {
+    Pester\It "Should get audio transcription from a media file" -Skip:(-not ($Global:AllowLongRunningTests -eq $true)) {
 
         # test with default model name that Should be available
         $result = GenXdev.AI\Start-AudioTranscription -FilePath "$PSScriptRoot\escalated-quickly.mp3" -LanguageIn English -Verbose | Microsoft.PowerShell.Utility\Out-String

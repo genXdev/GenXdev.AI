@@ -335,9 +335,12 @@ function Approve-NewTextFileContent {
     begin {
 
         # ensure content path exists, create if missing
-        $contentPath = GenXdev.FileSystem\Expand-Path $ContentPath -CreateFile
+        $contentPath = GenXdev.FileSystem\Expand-Path $ContentPath `
+            -CreateFile
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Target file path: $contentPath"
+        # log the target file path for debugging
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Target file path: ${contentPath}")
     }
 
 
@@ -346,17 +349,23 @@ function Approve-NewTextFileContent {
         # check initial file existence for tracking deletion
         $existed = [System.IO.File]::Exists($contentPath)
 
-        Microsoft.PowerShell.Utility\Write-Verbose "File existed before comparison: $existed"
+        # log initial file existence state
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "File existed before comparison: ${existed}")
 
         # create temporary file with matching extension for comparison
-        $tempFile = GenXdev.FileSystem\Expand-Path ([System.IO.Path]::GetTempFileName() +
+        $tempFile = GenXdev.FileSystem\Expand-Path (
+            [System.IO.Path]::GetTempFileName() +
             [System.IO.Path]::GetExtension($contentPath)) `
             -CreateDirectory
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Created temp comparison file: $tempFile"
+        # log temporary file creation
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Created temp comparison file: ${tempFile}")
 
         # write proposed content to temp file
-        $NewContent | Microsoft.PowerShell.Utility\Out-File  $tempFile -Force
+        $NewContent |
+            Microsoft.PowerShell.Utility\Out-File $tempFile -Force
 
         # launch winmerge for interactive comparison
         $null = GenXdev.AI\Invoke-WinMerge `
@@ -366,26 +375,39 @@ function Approve-NewTextFileContent {
 
         # prepare result tracking object
         $result = @{
+
             approved = [System.IO.File]::Exists($contentPath)
         }
 
         if ($result.approved) {
 
-            # check if content was modified during comparison
-            $content = Microsoft.PowerShell.Management\Get-Content -LiteralPath $contentPath -Raw
+            # read file content to check for modifications
+            $content = [System.IO.File]::ReadAllText($contentPath)
+
+            # compare original and modified content
             $changed = $content.Trim() -ne $NewContent.Trim()
 
+            # track if content was accepted without changes
             $result.approvedAsIs = -not $changed
 
             if ($changed) {
+
+                # store the user-modified content
                 $result.savedContent = $content
             }
         }
         elseif ($existed) {
+
+            # track if user deleted the existing file
             $result.userDeletedFile = $true
         }
 
-        Microsoft.PowerShell.Utility\Write-Verbose "Comparison result: $($result | Microsoft.PowerShell.Utility\ConvertTo-Json)"
+        # log the comparison result
+        Microsoft.PowerShell.Utility\Write-Verbose (
+            "Comparison result: $(
+                $result |
+                    Microsoft.PowerShell.Utility\ConvertTo-Json)")
+
         return $result
     }
 

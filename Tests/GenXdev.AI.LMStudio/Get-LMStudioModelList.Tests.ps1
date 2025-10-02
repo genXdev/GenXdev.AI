@@ -2,7 +2,7 @@ Pester\Describe 'Get-LMStudioModelList.Tests' {
 
     Pester\Context 'Basic functionality' {
 
-        Pester\It 'Should return models with required properties' {
+        Pester\It 'Should return models with required properties' -Skip:(-not ($Global:AllowLongRunningTests -eq $true)){
             # get all models
             $result = GenXdev.AI\Get-LMStudioModelList
 

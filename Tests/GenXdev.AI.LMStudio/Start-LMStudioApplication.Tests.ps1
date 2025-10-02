@@ -1,6 +1,6 @@
 Pester\Describe 'Start-LMStudioApplication functionality tests' {
 
-    Pester\It 'Should successfully start LM Studio application with default settings' {
+    Pester\It 'Should successfully start LM Studio application with default settings' -Skip:(-not ($Global:AllowLongRunningTests -eq $true)){
 
         # start lm studio
         $result = GenXdev.AI\Start-LMStudioApplication

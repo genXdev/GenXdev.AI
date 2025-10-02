@@ -1,6 +1,6 @@
 ﻿Pester\Describe 'EnsureComfyUIModel' {
 
-    Pester\It 'Should have valid download URLs for all supported models' {
+    Pester\It 'Should have valid download URLs for all supported models' -Skip:(-not ($Global:AllowLongRunningTests -eq $true)){
 
         # Load the supported models configuration
         $jsonPath = Microsoft.PowerShell.Management\Join-Path $PSScriptRoot "..\..\Functions\GenXdev.AI.ComfyUI\SupportedComfyUIModels.json"
@@ -110,7 +110,7 @@
         }
     }
 
-    Pester\It 'Should detect and mark incompatible models for removal' {
+    Pester\It 'Should detect and mark incompatible models for removal'-Skip:(-not ($Global:AllowLongRunningTests -eq $true)){
 
         # Load the supported models configuration
         $jsonPath = Microsoft.PowerShell.Management\Join-Path $PSScriptRoot "..\..\Functions\GenXdev.AI.ComfyUI\SupportedComfyUIModels.json"
@@ -172,7 +172,7 @@
         $true | Pester\Should -Be $true -Because "Model compatibility check completed (warnings provided for any issues)"
     }
 
-    Pester\It 'Should correctly map available model files to supported models using FileName property' {
+    Pester\It 'Should correctly map available model files to supported models using FileName property' -Skip:(-not ($Global:AllowLongRunningTests -eq $true)){
 
         # Load the supported models configuration
         $jsonPath = Microsoft.PowerShell.Management\Join-Path $PSScriptRoot "..\..\Functions\GenXdev.AI.ComfyUI\SupportedComfyUIModels.json"
@@ -206,7 +206,7 @@
         Microsoft.PowerShell.Utility\Write-Verbose "Model filename mapping logic validation completed successfully"
     }
 
-    Pester\It 'Should accept all ValidateSet model names' {
+    Pester\It 'Should accept all ValidateSet model names' -Skip:(-not ($Global:AllowLongRunningTests -eq $true)){
 
         # Load the supported models configuration to get current model names
         $jsonPath = Microsoft.PowerShell.Management\Join-Path $PSScriptRoot "..\..\Functions\GenXdev.AI.ComfyUI\SupportedComfyUIModels.json"

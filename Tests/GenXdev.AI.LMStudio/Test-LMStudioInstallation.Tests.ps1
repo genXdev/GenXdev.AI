@@ -1,6 +1,6 @@
 Pester\Describe 'Test-LMStudioInstallation function tests' {
 
-    Pester\It 'Should verify LM Studio is properly installed and accessible' {
+    Pester\It 'Should verify LM Studio is properly installed and accessible' -Skip:(-not ($Global:AllowLongRunningTests -eq $true)){
 
         # attempt to detect lm studio installation
         $result = GenXdev.AI\Test-LMStudioInstallation

@@ -1,6 +1,6 @@
 Pester\Describe 'Get-LMStudioPaths basic integration tests' {
 
-    Pester\It 'Returns valid default paths that exist on the system' {
+    Pester\It 'Returns valid default paths that exist on the system' -Skip:(-not ($Global:AllowLongRunningTests -eq $true)){
 
         $result = GenXdev.AI\Get-LMStudioPaths
 
