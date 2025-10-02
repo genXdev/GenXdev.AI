@@ -92,8 +92,15 @@ jobs:
           $env:PSModulePath = "$modulesPath;$env:PSModulePath"
           Write-Host "PSModulePath: $env:PSModulePath" -ForegroundColor Cyan
 
-          # Import dependency modules
-          $dependencies = @('GenXdev.Helpers', 'GenXdev.FileSystem', 'GenXdev.Console', 'GenXdev.Windows', 'GenXdev.Webbrowser', 'GenXdev.Data', 'GenXdev.Queries')
+          $dependencies = @(
+              'GenXdev.Helpers',
+              'GenXdev.Windows',
+              'GenXdev.Data',
+              'GenXdev.Queries',
+              'GenXdev.Console',
+              'GenXdev.FileSystem',
+              'GenXdev.Webbrowser'
+          )
           foreach ($dep in $dependencies) {
             $depPath = Join-Path $modulesPath $dep
             if (Test-Path $depPath) {
