@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Approve-NewTextFileContent.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.290.2025
+Version                   : 1.292.2025
 ################################################################################
 MIT License
 
@@ -241,6 +241,12 @@ function Approve-NewTextFileContent {
             HelpMessage = 'Maximize the window after positioning'
         )]
         [switch] $Maximize,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Restore the window to normal state after positioning'
+        )]
+        [switch] $SetRestored,
         #######################################################################
         [Parameter(
             Mandatory = $false,

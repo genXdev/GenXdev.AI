@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : New-LLMAudioChat.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.290.2025
+Version                   : 1.292.2025
 ################################################################################
 MIT License
 
@@ -179,7 +179,10 @@ Switch to focus the LM Studio window after opening
 Switch to set the LM Studio window to foreground after opening
 
 .PARAMETER Maximize
-Switch to maximize the LM Studio window after positioning
+Maximize the window after positioning
+
+.PARAMETER SetRestored
+Restore the window to normal state after positioning
 
 .PARAMETER KeysToSend
 Array of keystrokes to send to the LM Studio window
@@ -800,6 +803,12 @@ function New-LLMAudioChat {
             HelpMessage = 'Maximize the window after positioning'
         )]
         [switch] $Maximize,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Restore the window to normal state after positioning'
+        )]
+        [switch] $SetRestored,
         #######################################################################
         [Parameter(
             Mandatory = $false,

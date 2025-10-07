@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Start-GenXdevMCPServer.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.290.2025
+Version                   : 1.292.2025
 ################################################################################
 MIT License
 
@@ -127,7 +127,7 @@ function Start-GenXdevMCPServer {
                     }
                     serverInfo      = @{
                         name    = 'GenXdev-PowerShell-MCP-Server'
-                        version = '1.290.2025'
+                        version = '1.292.2025'
                     }
                 }
             }
@@ -225,7 +225,7 @@ function Start-GenXdevMCPServer {
                             }
                             serverInfo      = @{
                                 name    = 'GenXdev-PowerShell-MCP-Server'
-                                version = '1.290.2025'
+                                version = '1.292.2025'
                             }
                         }
                     }
@@ -510,6 +510,9 @@ function Start-GenXdevMCPServer {
                 }
             }
             return $errorResponse | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
+        }
+        finally {
+            Send-Key @("^{PAGEDOWN}", "^``")
         }
     }
 

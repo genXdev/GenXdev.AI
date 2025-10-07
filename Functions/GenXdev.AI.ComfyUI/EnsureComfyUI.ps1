@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : EnsureComfyUI.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.290.2025
+Version                   : 1.292.2025
 ################################################################################
 MIT License
 
@@ -90,7 +90,10 @@ Focus the ComfyUI window after opening and positioning.
 Set the ComfyUI window to foreground after opening.
 
 .PARAMETER Maximize
-Maximize the ComfyUI window after positioning.
+Maximize the window after positioning
+
+.PARAMETER SetRestored
+Restore the window to normal state after positioning
 
 .PARAMETER KeysToSend
 Array of keys to send to the ComfyUI window after it's ready.
@@ -269,6 +272,12 @@ function EnsureComfyUI {
             HelpMessage = 'Maximize the window after positioning'
         )]
         [switch] $Maximize,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Restore the window to normal state after positioning'
+        )]
+        [switch] $SetRestored,
         ###############################################################################
         [Parameter(
             Mandatory = $false,

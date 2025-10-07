@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.LMStudio
 Original cmdlet filename  : EnsureLMStudio.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.290.2025
+Version                   : 1.292.2025
 ################################################################################
 MIT License
 
@@ -110,7 +110,10 @@ Focus the window after opening.
 Set the window to foreground after opening.
 
 .PARAMETER Maximize
-Maximize the window after positioning.
+Maximize the window after positioning
+
+.PARAMETER SetRestored
+Restore the window to normal state after positioning
 
 .PARAMETER KeysToSend
 Keystrokes to send to the Window, see documentation for cmdlet
@@ -323,6 +326,12 @@ function EnsureLMStudio {
             HelpMessage = 'Maximize the window after positioning'
         )]
         [switch] $Maximize,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Restore the window to normal state after positioning'
+        )]
+        [switch] $SetRestored,
         ###############################################################################
         [Parameter(
             Mandatory = $false,

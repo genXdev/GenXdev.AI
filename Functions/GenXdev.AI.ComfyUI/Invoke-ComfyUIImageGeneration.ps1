@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : Invoke-ComfyUIImageGeneration.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.290.2025
+Version                   : 1.292.2025
 ################################################################################
 MIT License
 
@@ -180,6 +180,9 @@ Set the window to foreground after opening
 
 .PARAMETER Maximize
 Maximize the window after positioning
+
+.PARAMETER SetRestored
+Restore the window to normal state after positioning
 
 .PARAMETER KeysToSend
 Keys to send to the ComfyUI window

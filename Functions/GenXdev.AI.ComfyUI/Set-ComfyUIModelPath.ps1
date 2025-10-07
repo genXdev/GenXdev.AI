@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : Set-ComfyUIModelPath.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.290.2025
+Version                   : 1.292.2025
 ################################################################################
 MIT License
 
@@ -118,6 +118,9 @@ Set the window to foreground after opening
 
 .PARAMETER Maximize
 Maximize the window after positioning
+
+.PARAMETER SetRestored
+Restore the window to normal state after positioning
 
 .PARAMETER SendKeyEscape
 Escape control characters and modifiers when sending keys
@@ -312,6 +315,12 @@ function Set-ComfyUIModelPath {
             HelpMessage = 'Maximize the window after positioning'
         )]
         [switch] $Maximize,
+        ########################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Restore the window to normal state after positioning'
+        )]
+        [switch] $SetRestored,
         ###############################################################################
         [Parameter(
             Mandatory = $false,

@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Save-FoundImageObjects.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.290.2025
+Version                   : 1.292.2025
 ################################################################################
 MIT License
 
@@ -197,7 +197,10 @@ Focus browser window.
 Set browser window to foreground.
 
 .PARAMETER Maximize
-Maximize browser window.
+Maximize the window after positioning
+
+.PARAMETER SetRestored
+Restore the window to normal state after positioning
 
 .PARAMETER HasNudity
 Filter images that contain nudity.
