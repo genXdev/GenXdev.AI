@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : Test-ComfyUIQueueEmpty.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.292.2025
+Version                   : 1.296.2025
 ################################################################################
 MIT License
 

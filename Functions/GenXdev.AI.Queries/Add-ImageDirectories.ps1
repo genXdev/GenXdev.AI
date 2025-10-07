@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Add-ImageDirectories.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.292.2025
+Version                   : 1.296.2025
 ################################################################################
 MIT License
 
