@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Save-Transcriptions.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -727,7 +727,7 @@ function Save-Transcriptions {
     begin {
 
         # copy identical parameter values for meta language processing
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -1029,7 +1029,7 @@ function Save-Transcriptions {
                             "transcription for: $($PSItem.FullName)")
 
                         # prepare parameters for transcription generation
-                        $transcriptionParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                        $transcriptionParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                             -BoundParameters $PSBoundParameters `
                             -FunctionName 'GenXdev.AI\Start-AudioTranscription'
 

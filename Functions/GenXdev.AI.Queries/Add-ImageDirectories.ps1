@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Add-ImageDirectories.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -125,7 +125,7 @@ function Add-ImageDirectories {
     begin {
         try {
             # retrieve current image directories configuration
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -193,7 +193,7 @@ function Add-ImageDirectories {
             )) {
 
             # prepare parameters for set operation using identical parameter copying
-            $setParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $setParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Set-AIImageCollection' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Invoke-AIPowershellCommand.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -707,7 +707,7 @@ $Instructions
             "command for query: $Query")
 
         # copy matching parameters to invoke transformation function
-        $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $invocationParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Invoke-LLMTextTransformation'
 
@@ -754,7 +754,7 @@ $Instructions
                         Microsoft.PowerShell.Management\Set-Clipboard
 
                     # copy identical parameters between functions
-                    $sendKeyParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                    $sendKeyParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
                         -FunctionName 'GenXdev.Windows\Send-Key'
 

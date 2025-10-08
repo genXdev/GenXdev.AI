@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Save-FoundImageFaces.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -454,7 +454,7 @@ function Save-FoundImageFaces {
     begin {
 
         # copy identical parameter values for ai meta language function
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -827,7 +827,7 @@ function Save-FoundImageFaces {
                 'Searching for indexed images')
 
             # copy parameters for find indexed image function call
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Find-IndexedImage' `
                 -DefaultValues (

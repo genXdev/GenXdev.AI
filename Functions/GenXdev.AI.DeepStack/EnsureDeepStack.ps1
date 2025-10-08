@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.DeepStack
 Original cmdlet filename  : EnsureDeepStack.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -844,7 +844,7 @@ function EnsureDeepStack {
                 'Ensuring Docker Desktop is available...'
 
             # Copy identical parameters between functions
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -FunctionName 'GenXdev.Windows\EnsureDockerDesktop' `
                 -BoundParameters $PSBoundParameters `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)

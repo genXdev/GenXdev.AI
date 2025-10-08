@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Show-GenXdevScriptErrorFixInIde.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -369,7 +369,7 @@ function Show-GenXdevScriptErrorFixInIde {
                 'Copying parameters for LLM prompt function'
             )
 
-            $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $invocationArgs = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Get-ScriptExecutionErrorFixPrompt'
 
@@ -400,7 +400,7 @@ function Show-GenXdevScriptErrorFixInIde {
                 'Copying identical parameters for Send-Key function'
             )
 
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -FunctionName 'GenXdev.Windows\Send-Key' `
                 -BoundParameters $PSBoundParameters `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -436,7 +436,7 @@ function Show-GenXdevScriptErrorFixInIde {
                             Microsoft.PowerShell.Management\Set-Clipboard
 
                     # copy identical parameters between functions
-                    $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                    $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                         -FunctionName 'GenXdev.Windows\Send-Key' `
                         -BoundParameters $PSBoundParameters `
                         -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -485,7 +485,7 @@ function Show-GenXdevScriptErrorFixInIde {
                             "Copying parameters for opening file: $($PSItem.Path)"
                         )
 
-                        $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
+                        $invocationArgs = GenXdev.FileSystem\Copy-IdenticalParamValues `
                             -BoundParameters $PSBoundParameters `
                             -FunctionName 'GenXdev.Coding\Open-SourceFileInIde'
 
@@ -536,7 +536,7 @@ function Show-GenXdevScriptErrorFixInIde {
                             Microsoft.PowerShell.Management\Set-Clipboard
 
                     # copy identical parameters between functions
-                    $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                    $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                         -FunctionName 'GenXdev.Windows\Send-Key' `
                         -BoundParameters $PSBoundParameters `
                         -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

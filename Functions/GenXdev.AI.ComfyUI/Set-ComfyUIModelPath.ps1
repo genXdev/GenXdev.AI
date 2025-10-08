@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : Set-ComfyUIModelPath.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -527,7 +527,7 @@ function Set-ComfyUIModelPath {
         # restart comfyui if it was running before the change
         if ($wasRunning) {
 
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\EnsureComfyUI"
 

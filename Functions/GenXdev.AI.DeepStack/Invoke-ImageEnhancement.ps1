@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.DeepStack
 Original cmdlet filename  : Invoke-ImageEnhancement.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -225,7 +225,7 @@ function Invoke-ImageEnhancement {
                 'available')
 
             # copy parameter values for the EnsureDeepStack function call
-            $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $ensureParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Invoke-ImageObjectsUpdate.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -588,7 +588,7 @@ function Invoke-ImageObjectsUpdate {
             # applying recursion only if the recurse switch was provided
             # get all supported image files from the specified directory
             $imageTypes = @(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif")
-            $findParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $findParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.FileSystem\Find-Item" `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
@@ -642,7 +642,7 @@ function Invoke-ImageObjectsUpdate {
 
                             try {
                                 # obtain object detection data using ai detection technology
-                                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                                $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                                     -BoundParameters $PSBoundParameters `
                                     -FunctionName 'GenXdev.AI\Get-ImageDetectedObjects' `
                                     -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

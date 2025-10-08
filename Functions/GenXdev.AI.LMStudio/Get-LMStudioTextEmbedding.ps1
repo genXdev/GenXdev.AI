@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.LMStudio
 Original cmdlet filename  : Get-LMStudioTextEmbedding.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -434,7 +434,7 @@ function Get-LMStudioTextEmbedding {
             $ApiEndpoint.Contains('localhost') -or $ApiEndpoint.Contains('127.0.0.1')) {
 
             # prepare parameters for model initialization
-            $initParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $initParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

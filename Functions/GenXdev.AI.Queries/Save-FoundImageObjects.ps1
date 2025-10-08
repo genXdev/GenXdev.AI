@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Save-FoundImageObjects.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -825,7 +825,7 @@ function Save-FoundImageObjects {
     begin {
 
         # copy parameters for the ai meta language function to resolve language
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -1165,7 +1165,7 @@ function Save-FoundImageObjects {
                 'searching for indexed images')
 
             # copy parameters for find-indexedimage function call
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Find-IndexedImage' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

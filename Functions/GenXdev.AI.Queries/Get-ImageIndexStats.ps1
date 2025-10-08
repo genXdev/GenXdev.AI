@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Get-ImageIndexStats.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -217,7 +217,7 @@ function Get-ImageIndexStats {
         if ([String]::IsNullOrWhiteSpace($DatabaseFilePath)) {
 
             # copy identical parameter values for helper function call
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Get-ImageIndexPath' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

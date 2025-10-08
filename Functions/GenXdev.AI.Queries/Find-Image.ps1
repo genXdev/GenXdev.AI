@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Find-Image.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -1110,7 +1110,7 @@ function Find-Image {
         }
 
         # get language preference using helper function with parameter copying
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -1127,7 +1127,7 @@ function Find-Image {
         }
 
         # copy parameters for resolving input object file names
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.FileSystem\ResolveInputObjectFileNames' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
@@ -1146,7 +1146,7 @@ function Find-Image {
         $results = [System.Collections.Generic.List[Object]] @()
 
         # copy parameters for getting ai image collection directories
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -2486,7 +2486,7 @@ function Find-Image {
             }
 
             # copy parameters for show function call using helper function
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Show-FoundImagesInBrowser' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

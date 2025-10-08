@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Invoke-LLMBooleanEvaluation.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -714,7 +714,7 @@ $Instructions
             )
 
             # copy parameters from current function to invoke-llmquery
-            $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $invocationParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Invoke-LLMQuery'
 

@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : EnsureComfyUIModel.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -299,7 +299,7 @@ function EnsureComfyUIModel {
         # update extra_model_paths.yaml if modelpath provided
         if (-not [string]::IsNullOrWhiteSpace($ModelPath)) {
 
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\Set-ComfyUIModelPath"
             $params.ModelPath = $ModelPath
@@ -352,7 +352,7 @@ function EnsureComfyUIModel {
         }
 
         $isUnattended = GenXdev.Helpers\Test-UnattendedMode -CallersInvocation $MyInvocation
-        $ensureparams = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $ensureparams = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName "GenXdev.AI\EnsureComfyUI"
     }

@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Get-ImageIndexPath.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -232,7 +232,7 @@ function Get-ImageIndexPath {
         $SCHEMA_VERSION = '1.0.0.6'
 
         # copy identical parameters for Get-AIMetaLanguage
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -443,7 +443,7 @@ function Get-ImageIndexPath {
             try {
 
                 # copy parameter values for Export-ImageIndex function call
-                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\Export-ImageIndex' `
                     -DefaultValues (

@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Invoke-QueryImageContent.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -817,7 +817,7 @@ function Invoke-QueryImageContent {
             $actualPath = [IO.Path]::GetTempPath() + ".png"
 
             # Load ImageSharp packages with embedded consent using Copy-IdenticalParamValues
-            $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $ensureParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.Helpers\EnsureNuGetAssembly' `
                 -DefaultValues (
@@ -865,7 +865,7 @@ function Invoke-QueryImageContent {
         }
 
         # construct a hashtable of parameters to be passed to the next function
-        $parameters = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $parameters = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Invoke-LLMQuery' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

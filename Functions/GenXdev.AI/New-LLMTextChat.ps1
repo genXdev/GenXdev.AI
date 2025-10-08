@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : New-LLMTextChat.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -1051,7 +1051,7 @@ $Instructions
             $PSBoundParameters['ExposedCmdLets'] = $ExposedCmdLets;
 
             # copy parameters for llm query invocation
-            $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $invocationArguments = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Invoke-LLMQuery' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)

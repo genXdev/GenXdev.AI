@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.LMStudio
 Original cmdlet filename  : Get-LMStudioWindow.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -467,7 +467,7 @@ function Get-LMStudioWindow {
         if ($Force -and (-not $NoAutoStart)) {
 
             # copy identical parameter values for the EnsureLMStudio function call
-            $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $invocationArguments = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\EnsureLMStudio' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -545,7 +545,7 @@ function Get-LMStudioWindow {
             Microsoft.PowerShell.Utility\Write-Verbose 'Initializing new LM Studio instance'
 
             # copy identical parameter values for the EnsureLMStudio function call
-            $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $invocationArguments = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\EnsureLMStudio' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -578,7 +578,7 @@ function Get-LMStudioWindow {
         if ($null -ne $WindowHelper) {
 
             # copy identical parameter values for the Set-WindowPosition function call
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.Windows\Set-WindowPosition'
             $params.KeysToSend = @("^2")

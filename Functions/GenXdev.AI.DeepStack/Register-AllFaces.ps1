@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.DeepStack
 Original cmdlet filename  : Register-AllFaces.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -232,7 +232,7 @@ function Register-AllFaces {
 
     begin {
 
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIKnownFacesRootpath' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -290,7 +290,7 @@ function Register-AllFaces {
                         'recognition service')
 
                     # copy parameters for the EnsureDeepStack function call
-                    $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                    $ensureParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
                         -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                         -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -400,7 +400,7 @@ function Register-AllFaces {
                         "$($ImagePaths.Count) image(s) (attempt $attempt)")
 
                     # copy parameters for the Register-Face function call
-                    $registerParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                    $registerParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
                         -FunctionName 'GenXdev.AI\Register-Face' `
                         -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -631,7 +631,7 @@ function Register-AllFaces {
                     'Force flag specified - clearing existing faces'
 
                 # copy parameters for the Unregister-AllFaces function call
-                $unregisterParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                $unregisterParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\Unregister-AllFaces' `
                     -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

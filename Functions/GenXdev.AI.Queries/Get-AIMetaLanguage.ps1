@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Get-AIMetaLanguage.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -275,7 +275,7 @@ function Get-AIMetaLanguage {
         return $Language
     }
 
-    $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+    $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
         -BoundParameters $PSBoundParameters `
         -FunctionName 'GenXdev.Data\Get-GenXdevPreference'
 

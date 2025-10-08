@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.DeepStack
 Original cmdlet filename  : Unregister-Face.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -190,7 +190,7 @@ function Unregister-Face {
                 'face recognition service is available')
 
             # copy matching parameters to pass to ensuredeepstack function
-            $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $ensureParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

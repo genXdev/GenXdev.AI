@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Invoke-ImageFacesUpdate.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -498,7 +498,7 @@ function Invoke-ImageFacesUpdate {
             # applying recursion only if the -Recurse switch was provided
             # get all supported image files from the specified directory
             $imageTypes = @(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif")
-            $findParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $findParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.FileSystem\Find-Item" `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
@@ -552,7 +552,7 @@ function Invoke-ImageFacesUpdate {
 
                     try {
                         # obtain face recognition data using ai recognition technology
-                        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                             -FunctionName 'GenXdev.AI\Get-ImageDetectedFaces' `
                             -BoundParameters $PSBoundParameters `
                             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)

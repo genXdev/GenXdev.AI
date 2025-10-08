@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Remove-ImageMetaData.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -374,7 +374,7 @@ function Remove-ImageMetaData {
     begin {
 
         # copy identical parameter values for image collection retrieval
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -385,7 +385,7 @@ function Remove-ImageMetaData {
         $directories = GenXdev.AI\Get-AIImageCollection @params
 
         # copy identical parameter values for language retrieval
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

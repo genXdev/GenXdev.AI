@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Update-AllImageMetaData.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -620,7 +620,7 @@ function Update-AllImageMetaData {
             try {
 
                 # copy identical parameter values for lm studio initialization
-                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
                     -DefaultValues (
@@ -685,7 +685,7 @@ function Update-AllImageMetaData {
         if (-not $NoDockerInitialize) {
 
             # copy identical parameter values from bound parameters for deepstack
-            $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $ensureParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\EnsureDeepStack' `
                 -DefaultValues (
@@ -748,7 +748,7 @@ function Update-AllImageMetaData {
         }
 
         # copy parameter values for faces directory retrieval
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIKnownFacesRootpath' `
             -DefaultValues (
@@ -826,7 +826,7 @@ function Update-AllImageMetaData {
             try {
 
                 # copy parameter values for face unregistration
-                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\UnRegister-AllFaces' `
                     -DefaultValues (
@@ -852,7 +852,7 @@ function Update-AllImageMetaData {
             try {
 
                 # copy parameter values for face registration
-                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\Register-AllFaces' `
                     -DefaultValues (
@@ -883,7 +883,7 @@ function Update-AllImageMetaData {
         )
 
         # copy parameter values for language preference retrieval
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (
@@ -908,7 +908,7 @@ function Update-AllImageMetaData {
     process {
 
         # get configured directories using parameter values
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
             -DefaultValues (
@@ -939,7 +939,7 @@ function Update-AllImageMetaData {
             )
 
             # copy parameter values for metadata update processing
-            $metadataParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $metadataParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName (
                 'GenXdev.AI\Invoke-ImageMetadataUpdate'
@@ -959,7 +959,7 @@ function Update-AllImageMetaData {
                 -ImageDirectories $currentDirectory
 
             # copy parameter values for face update processing
-            $faceParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $faceParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName (
                 'GenXdev.AI\Invoke-ImageFacesUpdate'
@@ -980,7 +980,7 @@ function Update-AllImageMetaData {
                 -NoDockerInitialize
 
             # copy parameter values for object detection processing
-            $objectParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $objectParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName (
                 'GenXdev.AI\Invoke-ImageObjectsUpdate'
@@ -1001,7 +1001,7 @@ function Update-AllImageMetaData {
                 -NoLMStudioInitialize
 
             # copy parameter values for scene classification processing
-            $sceneParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $sceneParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName (
                 'GenXdev.AI\Invoke-ImageScenesUpdate'
@@ -1022,7 +1022,7 @@ function Update-AllImageMetaData {
                 -NoDockerInitialize
 
             # copy parameter values for keyword generation processing
-            $keywordParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $keywordParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName (
                 'GenXdev.AI\Invoke-ImageKeywordUpdate'

@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Find-IndexedImage.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -951,7 +951,7 @@ function Find-IndexedImage {
         }
 
         # copy function parameters for ai meta language retrieval
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (
@@ -1393,7 +1393,7 @@ function Find-IndexedImage {
         }
 
         # determine database file path if not provided
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-ImageIndexPath' `
             -DefaultValues (
@@ -2283,7 +2283,7 @@ function Find-IndexedImage {
         if ( ($null -ne $InputObject -and ($InputObject.Count -gt 0)) -or ($filenames.Count -gt 0)) {
 
             # copy parameters for find-image call
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Find-Image' `
                 -DefaultValues (
@@ -2441,7 +2441,7 @@ function Find-IndexedImage {
             }
 
             # copy all gallery-related parameters for browser display
-            $galleryParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $galleryParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Show-FoundImagesInBrowser' `
                 -DefaultValues (

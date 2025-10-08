@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Start-AudioTranscription.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -839,7 +839,7 @@ function Start-AudioTranscription {
         }
 
         # copy identical parameter values for ai meta language helper function
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $myPSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -1256,7 +1256,7 @@ function Start-AudioTranscription {
                 }
 
                 # set the input file for the transcription engine
-                $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
+                $invocationArguments = GenXdev.FileSystem\Copy-IdenticalParamValues `
                     -BoundParameters $myPSBoundParameters `
                     -FunctionName  'GenXdev.Helpers\Get-SpeechToText'
 
@@ -1313,7 +1313,7 @@ function Start-AudioTranscription {
 
                                         # prepare parameters for text translation
                                         $translateParams = `
-                                            GenXdev.Helpers\Copy-IdenticalParamValues `
+                                            GenXdev.FileSystem\Copy-IdenticalParamValues `
                                             -BoundParameters $myPSBoundParameters `
                                             -FunctionName `
                                                 'GenXdev.AI\Get-TextTranslation'
@@ -1380,7 +1380,7 @@ function Start-AudioTranscription {
 
                         # prepare parameters for text translation
                         $translateParams = `
-                            GenXdev.Helpers\Copy-IdenticalParamValues `
+                            GenXdev.FileSystem\Copy-IdenticalParamValues `
                             -BoundParameters $myPSBoundParameters `
                             -FunctionName 'GenXdev.AI\Get-TextTranslation'
 
@@ -1444,7 +1444,7 @@ function Start-AudioTranscription {
                 $null = $myPSBoundParameters.Add('ModelType', $ModelType)
             }
 
-            $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $invocationArguments = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $myPSBoundParameters `
                 -FunctionName 'GenXdev.Helpers\Receive-RealTimeSpeechToText'
 
@@ -1490,7 +1490,7 @@ function Start-AudioTranscription {
 
                                 # prepare parameters for text translation
                                 $translateParams = `
-                                    GenXdev.Helpers\Copy-IdenticalParamValues `
+                                    GenXdev.FileSystem\Copy-IdenticalParamValues `
                                     -BoundParameters $myPSBoundParameters `
                                     -FunctionName `
                                         'GenXdev.AI\Get-TextTranslation'
@@ -1553,7 +1553,7 @@ function Start-AudioTranscription {
                 -and -not $skipTranslation) {
 
                 # prepare parameters for text translation
-                $translateParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                $translateParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                     -BoundParameters $myPSBoundParameters `
                     -FunctionName 'GenXdev.AI\Get-TextTranslation'
 

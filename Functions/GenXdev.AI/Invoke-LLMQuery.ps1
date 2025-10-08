@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Invoke-LLMQuery.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -805,7 +805,7 @@ function Invoke-LLMQuery {
         Microsoft.PowerShell.Utility\Write-Verbose "PSBoundParameters MaxToolcallBackLength: $($myPSBoundParameters['MaxToolcallBackLength'])"
 
         # copy identical parameter values for llm configuration
-        $llmConfigParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $llmConfigParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $myPSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AILLMSettings' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -854,7 +854,7 @@ function Invoke-LLMQuery {
                     $ApiEndpoint.Contains('localhost') -or $ApiEndpoint.Contains('127.0.0.1'))) {
 
             # copy identical parameter values to initialize the model
-            $initParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $initParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $myPSBoundParameters `
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -889,7 +889,7 @@ function Invoke-LLMQuery {
         # remove show window parameter after initialization
         if ($ShowWindow) {
 
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $myPSBoundParameters `
                 -FunctionName 'GenXdev.Windows\Set-WindowPosition' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -1045,7 +1045,7 @@ function Invoke-LLMQuery {
         if ($ChatOnce) {
 
             # copy identical parameter values for text chat invocation
-            $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $invocationArgs = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $myPSBoundParameters `
                 -FunctionName 'GenXdev.AI\New-LLMTextChat' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -1067,7 +1067,7 @@ function Invoke-LLMQuery {
             'textprompt' {
 
                 # copy identical parameter values for text chat invocation
-                $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
+                $invocationArgs = GenXdev.FileSystem\Copy-IdenticalParamValues `
                     -BoundParameters $myPSBoundParameters `
                     -FunctionName 'GenXdev.AI\New-LLMTextChat' `
                     -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -1079,7 +1079,7 @@ function Invoke-LLMQuery {
             'default audioinput device' {
 
                 # copy identical parameter values for audio chat invocation
-                $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
+                $invocationArgs = GenXdev.FileSystem\Copy-IdenticalParamValues `
                     -BoundParameters $myPSBoundParameters `
                     -FunctionName 'GenXdev.AI\New-LLMAudioChat' `
                     -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -1094,7 +1094,7 @@ function Invoke-LLMQuery {
                 $desktopAudio = $true
 
                 # copy identical parameter values for audio chat invocation
-                $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
+                $invocationArgs = GenXdev.FileSystem\Copy-IdenticalParamValues `
                     -BoundParameters $myPSBoundParameters `
                     -FunctionName 'GenXdev.AI\New-LLMAudioChat' `
                     -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

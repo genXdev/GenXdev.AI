@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : New-LLMAudioChat.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -1159,7 +1159,7 @@ function New-LLMAudioChat {
 
             # copy parameters for model initialization
             $initializationParams = `
-                GenXdev.Helpers\Copy-IdenticalParamValues `
+                GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -1317,7 +1317,7 @@ function New-LLMAudioChat {
                     Microsoft.PowerShell.Utility\Write-Verbose (
                         'Preparing audio transcription parameters')
 
-                    $audioParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+                    $audioParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
                         -FunctionName 'GenXdev.AI\Start-AudioTranscription' `
                         -DefaultValues `
@@ -1374,7 +1374,7 @@ function New-LLMAudioChat {
                     'Preparing LM Studio parameters')
 
                 $invokeLMStudioParams = `
-                    GenXdev.Helpers\Copy-IdenticalParamValues `
+                    GenXdev.FileSystem\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\New-LLMTextChat' `
                     -DefaultValues `

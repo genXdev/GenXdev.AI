@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Remove-ImageDirectories.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -131,7 +131,7 @@ function Remove-ImageDirectories {
     begin {
 
         # get current configuration using helper function to copy identical parameters
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -254,7 +254,7 @@ function Remove-ImageDirectories {
         if ($shouldProceed) {
 
             # prepare parameters for the set operation using helper function
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Set-AIImageCollection' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

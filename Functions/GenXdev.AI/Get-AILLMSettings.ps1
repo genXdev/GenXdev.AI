@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Get-AILLMSettings.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -491,7 +491,7 @@ function Get-AILLMSettings {
         # retrieve each setting value using the helper function or from defaults
 
         # create parameter hashtable for Get-AIDefaultLLMSettings
-        $defaultSettingsParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $defaultSettingsParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIDefaultLLMSettings'
         # -DefaultValues (Get-Variable -Scope Local -ErrorAction SilentlyContinue)

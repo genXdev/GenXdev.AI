@@ -364,7 +364,7 @@ function Set-WindowsWallpaperEx {
     process {
 
         # copy all relevant parameters for the called GenXdev cmdlet
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName (
                 $DontUseImageIndex ? "GenXdev.AI\Find-Image" : "GenXdev.AI\Find-IndexedImage"

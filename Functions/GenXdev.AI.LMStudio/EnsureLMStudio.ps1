@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.LMStudio
 Original cmdlet filename  : EnsureLMStudio.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -429,7 +429,7 @@ function EnsureLMStudio {
     process {
 
         # prepare parameters for model initialization by copying identical values
-        $invocationArguments = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $invocationArguments = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Initialize-LMStudioModel' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

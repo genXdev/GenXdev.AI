@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Show-FoundImagesInBrowser.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -631,7 +631,7 @@ function Show-FoundImagesInBrowser {
         }
 
         # copy parameter values for masonry layout html generation
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\GenerateMasonryLayoutHtml' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -705,7 +705,7 @@ function Show-FoundImagesInBrowser {
             }
 
             # copy parameter values for open-webbrowser function
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.Webbrowser\Open-Webbrowser' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -1061,7 +1061,7 @@ function Show-FoundImagesInBrowser {
         }
 
         # copy identical parameter values for open-webbrowser
-        $parameters = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $parameters = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.Webbrowser\Open-Webbrowser' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

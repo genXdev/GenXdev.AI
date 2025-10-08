@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Get-ScriptExecutionErrorFixPrompt.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -910,7 +910,7 @@ $($informationOutput.ToString())
 "@
 
                 # copy parameters for llm invocation
-                $invocationArgs = GenXdev.Helpers\Copy-IdenticalParamValues `
+                $invocationArgs = GenXdev.FileSystem\Copy-IdenticalParamValues `
                     -BoundParameters $PSBoundParameters `
                     -FunctionName 'GenXdev.AI\Invoke-LLMQuery'
 

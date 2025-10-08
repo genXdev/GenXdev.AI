@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Export-ImageIndex.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -609,7 +609,7 @@ function Export-ImageIndex {
 
     begin {
         # load SQLite client assembly with embedded consent using Copy-IdenticalParamValues
-        $ensureParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $ensureParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.Helpers\EnsureNuGetAssembly' `
             -DefaultValues (
@@ -625,7 +625,7 @@ function Export-ImageIndex {
         GenXdev.Helpers\EnsureNuGetAssembly @ensureParams
 
         # determine database file path if not provided
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-ImageIndexPath' `
             -DefaultValues (
@@ -636,7 +636,7 @@ function Export-ImageIndex {
         $DatabaseFilePath = GenXdev.AI\Get-ImageIndexPath @params -NeverRebuild -NoFallback
 
         # retrieve configured image directories if not provided
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIImageCollection' `
             -DefaultValues (
@@ -647,7 +647,7 @@ function Export-ImageIndex {
         $ImageDirectories = GenXdev.AI\Get-AIImageCollection @params
 
         # copy identical parameter values for Find-Image function call
-        $findImageParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $findImageParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Find-Image' `
             -DefaultValues (
@@ -1136,7 +1136,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
         )
 
         # create transaction for batch operations to improve performance
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.Data\Get-SQLiteTransaction' `
             -DefaultValues (
@@ -1680,7 +1680,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                 # if no results found, update all image metadata and retry once
                 if (-not $Info.FoundResults) {
 
-                    $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                    $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                         -BoundParameters $PSBoundParameters `
                         -FunctionName 'GenXdev.AI\Update-AllImageMetaData' `
                         -DefaultValues (
@@ -1760,7 +1760,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
         # output image database stats if PassThru is not enabled
         if (-not $PassThru) {
 
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Get-ImageIndexStats' `
                 -DefaultValues (

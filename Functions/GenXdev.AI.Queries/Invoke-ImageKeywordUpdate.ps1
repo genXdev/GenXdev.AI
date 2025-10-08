@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Invoke-ImageKeywordUpdate.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -754,7 +754,7 @@ function Invoke-ImageKeywordUpdate {
     begin {
 
         # copy identical parameter values for ai meta language function
-        $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AIMetaLanguage' `
             -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `
@@ -782,7 +782,7 @@ function Invoke-ImageKeywordUpdate {
 
             # get all supported image files from the specified directory
             $imageTypes = @(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif")
-            $findParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $findParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.FileSystem\Find-Item" `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
@@ -959,7 +959,7 @@ $json`r`n
 
                             try {
                                 # get ai-generated image description and metadata
-                                $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+                                $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                                     -BoundParameters $PSBoundParameters `
                                     -FunctionName 'GenXdev.AI\Invoke-QueryImageContent' `
                                     -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

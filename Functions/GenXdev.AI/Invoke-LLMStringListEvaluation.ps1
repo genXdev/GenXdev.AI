@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Invoke-LLMStringListEvaluation.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -712,7 +712,7 @@ $Instructions
             )
 
             # copy matching parameters from current function to target function
-            $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $invocationParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Invoke-LLMQuery'
 

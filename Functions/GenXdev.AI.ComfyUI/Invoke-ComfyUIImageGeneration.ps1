@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : Invoke-ComfyUIImageGeneration.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -535,7 +535,7 @@ function Invoke-ComfyUIImageGeneration {
         # update extra_model_paths.yaml if modelpath provided
         if (-not [string]::IsNullOrWhiteSpace($ModelPath)) {
 
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName "GenXdev.AI\Set-ComfyUIModelPath"
             $params.ModelPath = $ModelPath
@@ -560,7 +560,7 @@ function Invoke-ComfyUIImageGeneration {
             $CpuThreads = GenXdev.AI\Get-CPUCore
         }
 
-        $comfyParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $comfyParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'EnsureComfyUI' `
             -DefaultValues (

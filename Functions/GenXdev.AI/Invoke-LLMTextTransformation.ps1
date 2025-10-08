@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Invoke-LLMTextTransformation.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -686,7 +686,7 @@ function Invoke-LLMTextTransformation {
                 'Processing text block for transformation'
 
             # copy matching parameters to invoke ai query function
-            $invocationParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $invocationParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Invoke-LLMQuery'
 

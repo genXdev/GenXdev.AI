@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : EnsureComfyUI.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -313,7 +313,7 @@ function EnsureComfyUI {
     begin {
 
         # copy window positioning parameters for later use
-        $showWindowParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $showWindowParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.Windows\Set-WindowPosition' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable `

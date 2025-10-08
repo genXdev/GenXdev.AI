@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.LMStudio
 Original cmdlet filename  : Initialize-LMStudioModel.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -413,7 +413,7 @@ function Initialize-LMStudioModel {
         $installationOk = $false
         $processOk = $false
 
-        $llmConfigParams = GenXdev.Helpers\Copy-IdenticalParamValues `
+        $llmConfigParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AILLMSettings' `
             -DefaultValues  (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
@@ -478,7 +478,7 @@ function Initialize-LMStudioModel {
 
         if ($ShowWindow) {
 
-            $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+            $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
                 -BoundParameters $PSBoundParameters `
                 -FunctionName 'GenXdev.AI\Get-LMStudioWindow' `
                 -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)

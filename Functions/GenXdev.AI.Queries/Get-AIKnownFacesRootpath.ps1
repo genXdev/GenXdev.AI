@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Get-AIKnownFacesRootpath.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.296.2025
+Version                   : 1.298.2025
 ################################################################################
 MIT License
 
@@ -143,7 +143,7 @@ function Get-AIKnownFacesRootpath {
 
     $FacesDirectory = [string]::IsNullOrWhiteSpace($FacesDirectory) ? $defaultPicturesPath : (GenXdev.FileSystem\Expand-Path $FacesDirectory)
 
-    $params = GenXdev.Helpers\Copy-IdenticalParamValues `
+    $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
         -BoundParameters $PSBoundParameters `
         -FunctionName 'GenXdev.Data\Get-GenXdevPreference'
 
