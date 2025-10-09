@@ -8,11 +8,11 @@
     <SelfContained>true</SelfContained>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <PackageLicenseFile>license.txt</PackageLicenseFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <NeutralLanguage>en</NeutralLanguage>
-    <AssemblyVersion>1.298.2025</AssemblyVersion>
-    <FileVersion>1.298.2025</FileVersion>
+    <AssemblyVersion>1.300.2025</AssemblyVersion>
+    <FileVersion>1.300.2025</FileVersion>
     <Description>A Windows PowerShell module for local AI related operations</Description>
     <Copyright>Copyright (c) 2024 GenXdev</Copyright>
     <PackageProjectUrl>https://github.com/genXdev/GenXdev.Helpers</PackageProjectUrl>
@@ -55,9 +55,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Update="LICENSE">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="license.txt">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
