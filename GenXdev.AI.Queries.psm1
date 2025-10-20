@@ -12,7 +12,6 @@ if ($major -ne 10) {
 
 
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Add-EmoticonsToText.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI.Queries\Add-ImageDirectories.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\ConvertFrom-CorporateSpeak.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\ConvertFrom-DiplomaticSpeak.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\ConvertTo-CorporateSpeak.ps1"
@@ -21,8 +20,6 @@ if ($major -ne 10) {
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Find-Image.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Find-IndexedImage.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-AIImageCollection.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-AIKnownFacesRootpath.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-AIMetaLanguage.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-Fallacy.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-ImageIndexPath.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Get-ImageIndexStats.ps1"
@@ -41,9 +38,6 @@ if ($major -ne 10) {
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Save-FoundImageObjects.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Save-Transcriptions.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Set-AIImageCollection.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI.Queries\Set-AIKnownFacesRootpath.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI.Queries\Set-AIMetaLanguage.ps1"
-. "$PSScriptRoot\Functions\GenXdev.AI.Queries\Set-ImageIndexPath.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Set-WindowsWallpaperEx.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Show-FoundImagesInBrowser.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI.Queries\Show-GenXdevScriptErrorFixInIde.ps1"

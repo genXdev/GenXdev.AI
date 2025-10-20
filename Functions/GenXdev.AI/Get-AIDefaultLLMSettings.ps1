@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Get-AIDefaultLLMSettings.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.300.2025
+Version                   : 1.302.2025
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -374,12 +374,12 @@ function Get-AIDefaultLLMSettings {
                     Microsoft.PowerShell.Utility\Write-Verbose "Config filtered out: HuggingFaceIdentifier '$($configHash.HuggingFaceIdentifier)' does not match filter '$HuggingFaceIdentifier'"
                 }
 
-                if ($includeConfig -and $PSBoundParameters.ContainsKey('MaxToken') -and $null -ne $MaxToken -and $MaxToken -ne 0 -and $configHash.MaxToken -ne $MaxToken) {
+                if ($includeConfig -and $PSBoundParameters.ContainsKey('MaxToken') -and $null -ne $MaxToken -and $MaxToken -ne 0 -and $null -ne $configHash.MaxToken -and $configHash.MaxToken -ne $MaxToken) {
                     $includeConfig = $false
                     Microsoft.PowerShell.Utility\Write-Verbose "Config filtered out: MaxToken '$($configHash.MaxToken)' does not match filter '$MaxToken'"
                 }
 
-                if ($includeConfig -and $PSBoundParameters.ContainsKey('TTLSeconds') -and $null -ne $TTLSeconds -and $TTLSeconds -ne 0 -and $configHash.TTLSeconds -ne $TTLSeconds) {
+                if ($includeConfig -and $PSBoundParameters.ContainsKey('TTLSeconds') -and $null -ne $TTLSeconds -and $TTLSeconds -ne 0 -and $null -ne $configHash.TTLSeconds -and $configHash.TTLSeconds -ne $TTLSeconds) {
                     $includeConfig = $false
                     Microsoft.PowerShell.Utility\Write-Verbose "Config filtered out: TTLSeconds '$($configHash.TTLSeconds)' does not match filter '$TTLSeconds'"
                 }
@@ -394,7 +394,7 @@ function Get-AIDefaultLLMSettings {
                     Microsoft.PowerShell.Utility\Write-Verbose 'Config filtered out: ApiKey does not match filter'
                 }
 
-                if ($includeConfig -and $PSBoundParameters.ContainsKey('TimeoutSeconds') -and $null -ne $TimeoutSeconds -and $TimeoutSeconds -ne 0 -and $configHash.TimeoutSeconds -ne $TimeoutSeconds) {
+                if ($includeConfig -and $PSBoundParameters.ContainsKey('TimeoutSeconds') -and $null -ne $TimeoutSeconds -and $TimeoutSeconds -ne 0 -and $null -ne $configHash.TimeoutSeconds -and $configHash.TimeoutSeconds -ne $TimeoutSeconds) {
                     $includeConfig = $false
                     Microsoft.PowerShell.Utility\Write-Verbose "Config filtered out: TimeoutSeconds '$($configHash.TimeoutSeconds)' does not match filter '$TimeoutSeconds'"
                 }

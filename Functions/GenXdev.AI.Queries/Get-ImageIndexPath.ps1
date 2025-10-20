@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Get-ImageIndexPath.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.300.2025
+Version                   : 1.302.2025
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -221,7 +221,7 @@ function Get-ImageIndexPath {
     begin {
 
         # define required schema version constant for database compatibility
-        $SCHEMA_VERSION = '1.0.0.6'
+        $SCHEMA_VERSION = '1.0.0.7'
 
         # copy identical parameters for Get-AIMetaLanguage
         $params = GenXdev.FileSystem\Copy-IdenticalParamValues `

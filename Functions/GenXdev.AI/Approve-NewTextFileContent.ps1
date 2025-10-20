@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Approve-NewTextFileContent.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.300.2025
+Version                   : 1.302.2025
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -35,9 +35,133 @@ doesn't exist, it will be created.
 .PARAMETER NewContent
 The proposed new content to compare against the existing file content.
 
+.PARAMETER Monitor
+The monitor to use, 0 = default, -1 is discard, -2 = Configured secondary
+monitor, defaults to $Global:DefaultSecondaryMonitor or 2 if not found
+
+.PARAMETER Width
+The initial width of the webbrowser window
+
+.PARAMETER Height
+The initial height of the webbrowser window
+
+.PARAMETER X
+The initial X position of the webbrowser window
+
+.PARAMETER Y
+The initial Y position of the webbrowser window
+
+.PARAMETER AcceptLang
+Set the browser accept-lang http header
+
+.PARAMETER Force
+Force enable debugging port, stopping existing browsers if needed
+
+.PARAMETER Edge
+Opens in Microsoft Edge
+
+.PARAMETER Chrome
+Opens in Google Chrome
+
+.PARAMETER Chromium
+Opens in Microsoft Edge or Google Chrome, depending on what the default
+browser is
+
+.PARAMETER Firefox
+Opens in Firefox
+
+.PARAMETER All
+Opens in all registered modern browsers
+
+.PARAMETER Left
+Place browser window on the left side of the screen
+
+.PARAMETER Right
+Place browser window on the right side of the screen
+
+.PARAMETER Top
+Place browser window on the top side of the screen
+
+.PARAMETER Bottom
+Place browser window on the bottom side of the screen
+
+.PARAMETER Centered
+Place browser window in the center of the screen
+
+.PARAMETER FullScreen
+Opens in fullscreen mode
+
+.PARAMETER Private
+Opens in incognito/private browsing mode
+
+.PARAMETER ApplicationMode
+Hide the browser controls
+
+.PARAMETER NoBrowserExtensions
+Prevent loading of browser extensions
+
+.PARAMETER DisablePopupBlocker
+Disable the popup blocker
+
+.PARAMETER NewWindow
+Don't re-use existing browser window, instead, create a new one
+
+.PARAMETER FocusWindow
+Focus the browser window after opening
+
+.PARAMETER SetForeground
+Set the browser window to foreground after opening
+
+.PARAMETER Maximize
+Maximize the window after positioning
+
+.PARAMETER SetRestored
+Restore the window to normal state after positioning
+
+.PARAMETER PassThru
+Returns a PowerShell object of the browserprocess
+
+.PARAMETER NoBorders
+Removes the borders of the window
+
+.PARAMETER RestoreFocus
+Restore PowerShell window focus
+
+.PARAMETER SideBySide
+Position browser window either fullscreen on different monitor than
+PowerShell, or side by side with PowerShell on the same monitor.
+
+.PARAMETER KeysToSend
+Keystrokes to send to the Window, see documentation for cmdlet
+GenXdev.Windows\Send-Key
+
+.PARAMETER SendKeyEscape
+Escape control characters and modifiers when sending keys
+
+.PARAMETER SendKeyHoldKeyboardFocus
+Hold keyboard focus on target window when sending keys
+
+.PARAMETER SendKeyUseShiftEnter
+Use Shift+Enter instead of Enter when sending keys
+
+.PARAMETER SendKeyDelayMilliSeconds
+Delay between different input strings in milliseconds when sending keys
+
+.PARAMETER SessionOnly
+Use alternative settings stored in session for AI preferences
+
+.PARAMETER ClearSession
+Clear alternative settings stored in session for AI preferences
+
+.PARAMETER SkipSession
+Store settings only in persistent preferences without affecting session
+
 .EXAMPLE
 $result = Approve-NewTextFileContent -ContentPath "C:\temp\myfile.txt" `
     -NewContent "New file content"
+
+.EXAMPLE
+Approve-NewTextFileContent -ContentPath "C:\temp\myfile.txt" -NewContent "New content" -e -fs
 
 .NOTES
 Returns a hashtable with these properties:
@@ -102,7 +226,8 @@ function Approve-NewTextFileContent {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Force enable debugging port, stopping existing browsers if needed'
+            HelpMessage = ('Force enable debugging port, stopping existing ' +
+                'browsers if needed')
         )]
         [switch] $Force,
         #######################################################################
@@ -194,7 +319,8 @@ function Approve-NewTextFileContent {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Prevent loading of browser extensions'
+            HelpMessage = ('Prevent loading of browser ' +
+                'extensions')
         )]
         [Alias('de', 'ne', 'NoExtensions')]
         [switch] $NoBrowserExtensions,
@@ -216,14 +342,16 @@ function Approve-NewTextFileContent {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Focus the browser window after opening'
+            HelpMessage = ('Focus the browser window ' +
+                'after opening')
         )]
-        [Alias('fw','focus')]
+        [Alias('fw', 'focus')]
         [switch] $FocusWindow,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Set the browser window to foreground after opening'
+            HelpMessage = ('Set the browser window to foreground ' +
+                'after opening')
         )]
         [Alias('fg')]
         [switch] $SetForeground,
@@ -236,7 +364,8 @@ function Approve-NewTextFileContent {
         ########################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Restore the window to normal state after positioning'
+            HelpMessage = ('Restore the window to normal state ' +
+                'after positioning')
         )]
         [switch] $SetRestored,
         #######################################################################
@@ -265,7 +394,9 @@ function Approve-NewTextFileContent {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Position browser window either fullscreen on different monitor than PowerShell, or side by side with PowerShell on the same monitor.'
+            HelpMessage = ('Position browser window either fullscreen on ' +
+                'different monitor than PowerShell, or side by side with ' +
+                'PowerShell on the same monitor.')
         )]
         [Alias('sbs')]
         [switch] $SideBySide,
@@ -279,21 +410,24 @@ function Approve-NewTextFileContent {
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Escape control characters and modifiers when sending keys'
+            HelpMessage = ('Escape control characters and modifiers ' +
+                'when sending keys')
         )]
         [Alias('Escape')]
         [switch] $SendKeyEscape,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Hold keyboard focus on target window when sending keys'
+            HelpMessage = ('Hold keyboard focus on target window ' +
+                'when sending keys')
         )]
         [Alias('HoldKeyboardFocus')]
         [switch] $SendKeyHoldKeyboardFocus,
         #######################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Use Shift+Enter instead of Enter when sending keys'
+            HelpMessage = ('Use Shift+Enter instead of Enter ' +
+                'when sending keys')
         )]
         [Alias('UseShiftEnter')]
         [switch] $SendKeyUseShiftEnter,

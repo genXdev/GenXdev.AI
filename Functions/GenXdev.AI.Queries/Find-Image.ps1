@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Find-Image.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.300.2025
+Version                   : 1.302.2025
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -707,7 +707,7 @@ function Find-Image {
             Mandatory = $false,
             HelpMessage = 'Focus the browser window after opening'
         )]
-        [Alias('fw','focus')]
+        [Alias('fw', 'focus')]
         [switch] $FocusWindow,
 
         ########################################################################
@@ -1126,7 +1126,7 @@ function Find-Image {
 
         # resolve input object file names and convert to full path array
         $fileNames = @(@(GenXdev.FileSystem\ResolveInputObjectFileNames @params -InputObject $InputObject -PassThru) +
-                     @(GenXdev.FileSystem\ResolveInputObjectFileNames @params -InputObject $Any -PassThru) | Microsoft.PowerShell.Core\ForEach-Object FullName)
+            @(GenXdev.FileSystem\ResolveInputObjectFileNames @params -InputObject $Any -PassThru) | Microsoft.PowerShell.Core\ForEach-Object FullName)
 
         # filter input objects to exclude already processed file names
         $InputObject = $null -eq $InputObject ? $InputObject : (@($InputObject | Microsoft.PowerShell.Core\Where-Object { $fileNames.IndexOf((GenXdev.FileSystem\Expand-Path $_)) -lt 0 } -ErrorAction SilentlyContinue));
@@ -1153,18 +1153,18 @@ function Find-Image {
         if ($null -ne $Any -and $Any.Length -gt 0) {
             # add wildcards to entries that don't already have them for flexible matching
             $anySearchTerms = @($Any | Microsoft.PowerShell.Core\ForEach-Object {
-                # trim whitespace from each entry
-                $entry = $_.Trim()
-                # check if entry already has wildcard characters
-                if ($entry.IndexOfAny([char[]]@('*', '?')) -lt 0) {
-                    # add wildcard wrapping for broader matching
-                    "*$entry*"
-                }
-                else {
-                    # return entry as-is if wildcards already present
-                    $_
-                }
-            })
+                    # trim whitespace from each entry
+                    $entry = $_.Trim()
+                    # check if entry already has wildcard characters
+                    if ($entry.IndexOfAny([char[]]@('*', '?')) -lt 0) {
+                        # add wildcard wrapping for broader matching
+                        "*$entry*"
+                    }
+                    else {
+                        # return entry as-is if wildcards already present
+                        $_
+                    }
+                })
         }
 
         $done = @{}
@@ -1180,6 +1180,7 @@ function Find-Image {
             # get full path of current image file being processed
             $image = $item
             if ($image -is [IO.FileInfo]) { $image = $item.FullName }
+
             # skip if image path is null or empty
             if ([string]::IsNullOrEmpty($image)) {
                 Microsoft.PowerShell.Utility\Write-Verbose "Skipping null or empty image path"
@@ -1362,29 +1363,29 @@ function Find-Image {
             # determine if image has search criteria or metadata for filtering
             $hasSearchCriteria = (($null -ne $Keywords) -and
                 ($Keywords.Length -gt 0)) -or
-                (($null -ne $People) -and ($People.Count -gt 0)) -or
-                (($null -ne $Objects) -and ($Objects.Count -gt 0)) -or
-                (($null -ne $Scenes) -and ($Scenes.Count -gt 0)) -or
+            (($null -ne $People) -and ($People.Count -gt 0)) -or
+            (($null -ne $Objects) -and ($Objects.Count -gt 0)) -or
+            (($null -ne $Scenes) -and ($Scenes.Count -gt 0)) -or
             $HasNudity -or $NoNudity -or $HasExplicitContent -or
             $NoExplicitContent -or
-                (($null -ne $PictureType) -and ($PictureType.Count -gt 0)) -or
-                (($null -ne $StyleType) -and ($StyleType.Count -gt 0)) -or
-                (($null -ne $OverallMood) -and ($OverallMood.Count -gt 0)) -or
-                (($null -ne $DescriptionSearch) -and ($DescriptionSearch.Count -gt 0)) -or
-                (($null -ne $MetaCameraMake) -and ($MetaCameraMake.Count -gt 0)) -or
-                (($null -ne $MetaCameraModel) -and ($MetaCameraModel.Count -gt 0)) -or
-                (($null -ne $MetaWidth) -and ($MetaWidth.Count -gt 0)) -or
-                (($null -ne $MetaHeight) -and ($MetaHeight.Count -gt 0)) -or
-                (($null -ne $MetaGPSLatitude) -and ($MetaGPSLatitude.Count -gt 0)) -or
-                (($null -ne $MetaGPSLongitude) -and ($MetaGPSLongitude.Count -gt 0)) -or
-                (($null -ne $MetaGPSAltitude) -and ($MetaGPSAltitude.Count -gt 0)) -or
-                (($null -ne $MetaExposureTime) -and ($MetaExposureTime.Count -gt 0)) -or
-                (($null -ne $MetaFNumber) -and ($MetaFNumber.Count -gt 0)) -or
-                (($null -ne $MetaISO) -and ($MetaISO.Count -gt 0)) -or
-                (($null -ne $MetaFocalLength) -and ($MetaFocalLength.Count -gt 0)) -or
-                (($null -ne $MetaDateTaken) -and ($MetaDateTaken.Count -gt 0)) -or
-                (($null -ne $GeoLocation) -and ($GeoLocation.Count -eq 2)) -or
-                ($PSBoundParameters.ContainsKey('MinConfidenceRatio'))
+            (($null -ne $PictureType) -and ($PictureType.Count -gt 0)) -or
+            (($null -ne $StyleType) -and ($StyleType.Count -gt 0)) -or
+            (($null -ne $OverallMood) -and ($OverallMood.Count -gt 0)) -or
+            (($null -ne $DescriptionSearch) -and ($DescriptionSearch.Count -gt 0)) -or
+            (($null -ne $MetaCameraMake) -and ($MetaCameraMake.Count -gt 0)) -or
+            (($null -ne $MetaCameraModel) -and ($MetaCameraModel.Count -gt 0)) -or
+            (($null -ne $MetaWidth) -and ($MetaWidth.Count -gt 0)) -or
+            (($null -ne $MetaHeight) -and ($MetaHeight.Count -gt 0)) -or
+            (($null -ne $MetaGPSLatitude) -and ($MetaGPSLatitude.Count -gt 0)) -or
+            (($null -ne $MetaGPSLongitude) -and ($MetaGPSLongitude.Count -gt 0)) -or
+            (($null -ne $MetaGPSAltitude) -and ($MetaGPSAltitude.Count -gt 0)) -or
+            (($null -ne $MetaExposureTime) -and ($MetaExposureTime.Count -gt 0)) -or
+            (($null -ne $MetaFNumber) -and ($MetaFNumber.Count -gt 0)) -or
+            (($null -ne $MetaISO) -and ($MetaISO.Count -gt 0)) -or
+            (($null -ne $MetaFocalLength) -and ($MetaFocalLength.Count -gt 0)) -or
+            (($null -ne $MetaDateTaken) -and ($MetaDateTaken.Count -gt 0)) -or
+            (($null -ne $GeoLocation) -and ($GeoLocation.Count -eq 2)) -or
+            ($PSBoundParameters.ContainsKey('MinConfidenceRatio'))
 
             # assume match if no search criteria specified (return all images with metadata)
             # if we have search criteria, start with true and set to false if any criteria fails (AND logic)
@@ -1607,7 +1608,7 @@ function Find-Image {
 
                     # use wildcard matching for flexible scene search
                     if ($scenesFound.scene -like $searchedForScene -and (
-                        $scenesFound.scene -notlike "unknown")) {
+                            $scenesFound.scene -notlike "unknown")) {
 
                         $sceneMatch = $true
 
@@ -1643,13 +1644,14 @@ function Find-Image {
                     if ($scenesFound.confidence -ge $MinConfidenceRatio) {
 
                         $confidenceMatch = $true
-                    } else {
+                    }
+                    else {
 
                         # filter out the scene data by setting it to default
                         $scenesFound = @{
-                            success = $false
-                            scene = 'unknown'
-                            label = 'unknown'
+                            success    = $false
+                            scene      = 'unknown'
+                            label      = 'unknown'
                             confidence = 0.0
                         }
                     }
@@ -1691,7 +1693,8 @@ function Find-Image {
                             if ($filteredCounts.ContainsKey($obj.label)) {
 
                                 $filteredCounts[$obj.label]++
-                            } else {
+                            }
+                            else {
 
                                 $filteredCounts[$obj.label] = 1
                             }
@@ -1718,18 +1721,18 @@ function Find-Image {
             $height = $null
             $metadata = $null
             if ($hasSearchCriteria -and (($null -ne $MetaCameraMake -and $MetaCameraMake.Count -gt 0) -or
-                ($null -ne $MetaCameraModel -and $MetaCameraModel.Count -gt 0) -or
-                ($null -ne $MetaWidth -and $MetaWidth.Count -gt 0) -or
-                ($null -ne $MetaHeight -and $MetaHeight.Count -gt 0) -or
-                ($null -ne $MetaGPSLatitude -and $MetaGPSLatitude.Count -gt 0) -or
-                ($null -ne $MetaGPSLongitude -and $MetaGPSLongitude.Count -gt 0) -or
-                ($null -ne $MetaGPSAltitude -and $MetaGPSAltitude.Count -gt 0) -or
-                ($null -ne $MetaExposureTime -and $MetaExposureTime.Count -gt 0) -or
-                ($null -ne $MetaFNumber -and $MetaFNumber.Count -gt 0) -or
-                ($null -ne $MetaISO -and $MetaISO.Count -gt 0) -or
-                ($null -ne $MetaFocalLength -and $MetaFocalLength.Count -gt 0) -or
-                ($null -ne $MetaDateTaken -and $MetaDateTaken.Count -gt 0) -or
-                ($null -ne $GeoLocation -and $GeoLocation.Count -eq 2))) {
+                    ($null -ne $MetaCameraModel -and $MetaCameraModel.Count -gt 0) -or
+                    ($null -ne $MetaWidth -and $MetaWidth.Count -gt 0) -or
+                    ($null -ne $MetaHeight -and $MetaHeight.Count -gt 0) -or
+                    ($null -ne $MetaGPSLatitude -and $MetaGPSLatitude.Count -gt 0) -or
+                    ($null -ne $MetaGPSLongitude -and $MetaGPSLongitude.Count -gt 0) -or
+                    ($null -ne $MetaGPSAltitude -and $MetaGPSAltitude.Count -gt 0) -or
+                    ($null -ne $MetaExposureTime -and $MetaExposureTime.Count -gt 0) -or
+                    ($null -ne $MetaFNumber -and $MetaFNumber.Count -gt 0) -or
+                    ($null -ne $MetaISO -and $MetaISO.Count -gt 0) -or
+                    ($null -ne $MetaFocalLength -and $MetaFocalLength.Count -gt 0) -or
+                    ($null -ne $MetaDateTaken -and $MetaDateTaken.Count -gt 0) -or
+                    ($null -ne $GeoLocation -and $GeoLocation.Count -eq 2))) {
 
                 $exifMatch = $false  # Start with false, will be set true if EXIF criteria match
 
@@ -1794,7 +1797,8 @@ function Find-Image {
                             if ($MetaWidth.Count -eq 1) {
 
                                 $widthMatch = $width -eq $MetaWidth[0]
-                            } elseif ($MetaWidth.Count -eq 2) {
+                            }
+                            elseif ($MetaWidth.Count -eq 2) {
 
                                 $widthMatch = $width -ge $MetaWidth[0] -and $width -le $MetaWidth[1]
                             }
@@ -1810,7 +1814,8 @@ function Find-Image {
                             if ($MetaHeight.Count -eq 1) {
 
                                 $heightMatch = $height -eq $MetaHeight[0]
-                            } elseif ($MetaHeight.Count -eq 2) {
+                            }
+                            elseif ($MetaHeight.Count -eq 2) {
 
                                 $heightMatch = $height -ge $MetaHeight[0] -and $height -le $MetaHeight[1]
                             }
@@ -1820,9 +1825,9 @@ function Find-Image {
 
                         # GPS filtering - exclude images without GPS data when GPS parameters are specified
                         if ($exifMatch -and (($null -ne $MetaGPSLatitude -and $MetaGPSLatitude.Count -gt 0) -or
-                            ($null -ne $MetaGPSLongitude -and $MetaGPSLongitude.Count -gt 0) -or
-                            ($null -ne $MetaGPSAltitude -and $MetaGPSAltitude.Count -gt 0) -or
-                            ($null -ne $GeoLocation -and $GeoLocation.Count -eq 2))) {
+                                ($null -ne $MetaGPSLongitude -and $MetaGPSLongitude.Count -gt 0) -or
+                                ($null -ne $MetaGPSAltitude -and $MetaGPSAltitude.Count -gt 0) -or
+                                ($null -ne $GeoLocation -and $GeoLocation.Count -eq 2))) {
 
                             $gpsMatch = $false
 
@@ -1839,7 +1844,8 @@ function Find-Image {
                                 if ($null -ne $MetaGPSLatitude -and $MetaGPSLatitude.Count -gt 0) {
                                     if ($MetaGPSLatitude.Count -eq 1) {
                                         $gpsMatch = $imageLatitude -eq $MetaGPSLatitude[0]
-                                    } elseif ($MetaGPSLatitude.Count -eq 2) {
+                                    }
+                                    elseif ($MetaGPSLatitude.Count -eq 2) {
                                         $gpsMatch = $imageLatitude -ge $MetaGPSLatitude[0] -and $imageLatitude -le $MetaGPSLatitude[1]
                                     }
                                 }
@@ -1849,15 +1855,18 @@ function Find-Image {
                                     $longitudeMatch = $false
                                     if ($MetaGPSLongitude.Count -eq 1) {
                                         $longitudeMatch = $imageLongitude -eq $MetaGPSLongitude[0]
-                                    } elseif ($MetaGPSLongitude.Count -eq 2) {
+                                    }
+                                    elseif ($MetaGPSLongitude.Count -eq 2) {
                                         $longitudeMatch = $imageLongitude -ge $MetaGPSLongitude[0] -and $imageLongitude -le $MetaGPSLongitude[1]
                                     }
                                     $gpsMatch = $gpsMatch -and $longitudeMatch
-                                } elseif ($null -ne $MetaGPSLongitude -and $MetaGPSLongitude.Count -gt 0) {
+                                }
+                                elseif ($null -ne $MetaGPSLongitude -and $MetaGPSLongitude.Count -gt 0) {
                                     # Only longitude specified, no latitude filter
                                     if ($MetaGPSLongitude.Count -eq 1) {
                                         $gpsMatch = $imageLongitude -eq $MetaGPSLongitude[0]
-                                    } elseif ($MetaGPSLongitude.Count -eq 2) {
+                                    }
+                                    elseif ($MetaGPSLongitude.Count -eq 2) {
                                         $gpsMatch = $imageLongitude -ge $MetaGPSLongitude[0] -and $imageLongitude -le $MetaGPSLongitude[1]
                                     }
                                 }
@@ -1867,18 +1876,22 @@ function Find-Image {
                                     $altitudeMatch = $false
                                     if ($MetaGPSAltitude.Count -eq 1) {
                                         $altitudeMatch = $imageAltitude -eq $MetaGPSAltitude[0]
-                                    } elseif ($MetaGPSAltitude.Count -eq 2) {
+                                    }
+                                    elseif ($MetaGPSAltitude.Count -eq 2) {
                                         $altitudeMatch = $imageAltitude -ge $MetaGPSAltitude[0] -and $imageAltitude -le $MetaGPSAltitude[1]
                                     }
                                     $gpsMatch = $gpsMatch -and $altitudeMatch
-                                } elseif ($null -ne $MetaGPSAltitude -and $MetaGPSAltitude.Count -gt 0 -and $null -ne $imageAltitude) {
+                                }
+                                elseif ($null -ne $MetaGPSAltitude -and $MetaGPSAltitude.Count -gt 0 -and $null -ne $imageAltitude) {
                                     # Only altitude specified
                                     if ($MetaGPSAltitude.Count -eq 1) {
                                         $gpsMatch = $imageAltitude -eq $MetaGPSAltitude[0]
-                                    } elseif ($MetaGPSAltitude.Count -eq 2) {
+                                    }
+                                    elseif ($MetaGPSAltitude.Count -eq 2) {
                                         $gpsMatch = $imageAltitude -ge $MetaGPSAltitude[0] -and $imageAltitude -le $MetaGPSAltitude[1]
                                     }
-                                } elseif ($null -ne $MetaGPSAltitude -and $MetaGPSAltitude.Count -gt 0) {
+                                }
+                                elseif ($null -ne $MetaGPSAltitude -and $MetaGPSAltitude.Count -gt 0) {
                                     # Altitude filter specified but image has no altitude data
                                     $gpsMatch = $false
                                 }
@@ -1897,14 +1910,15 @@ function Find-Image {
                                     $deltaLonRad = [Math]::PI * ($targetLongitude - $imageLongitude) / 180
 
                                     $a = [Math]::Sin($deltaLatRad / 2) * [Math]::Sin($deltaLatRad / 2) +
-                                         [Math]::Cos($lat1Rad) * [Math]::Cos($lat2Rad) *
-                                         [Math]::Sin($deltaLonRad / 2) * [Math]::Sin($deltaLonRad / 2)
+                                    [Math]::Cos($lat1Rad) * [Math]::Cos($lat2Rad) *
+                                    [Math]::Sin($deltaLonRad / 2) * [Math]::Sin($deltaLonRad / 2)
                                     $c = 2 * [Math]::Atan2([Math]::Sqrt($a), [Math]::Sqrt(1 - $a))
                                     $distance = $earthRadius * $c
 
                                     $proximityMatch = $distance -le $maxDistance
                                     $gpsMatch = $gpsMatch -and $proximityMatch
-                                } elseif ($null -ne $GeoLocation -and $GeoLocation.Count -eq 2) {
+                                }
+                                elseif ($null -ne $GeoLocation -and $GeoLocation.Count -eq 2) {
                                     # Only GeoLocation specified (no other GPS filters)
                                     $targetLatitude = $GeoLocation[0]
                                     $targetLongitude = $GeoLocation[1]
@@ -1918,8 +1932,8 @@ function Find-Image {
                                     $deltaLonRad = [Math]::PI * ($targetLongitude - $imageLongitude) / 180
 
                                     $a = [Math]::Sin($deltaLatRad / 2) * [Math]::Sin($deltaLatRad / 2) +
-                                         [Math]::Cos($lat1Rad) * [Math]::Cos($lat2Rad) *
-                                         [Math]::Sin($deltaLonRad / 2) * [Math]::Sin($deltaLonRad / 2)
+                                    [Math]::Cos($lat1Rad) * [Math]::Cos($lat2Rad) *
+                                    [Math]::Sin($deltaLonRad / 2) * [Math]::Sin($deltaLonRad / 2)
                                     $c = 2 * [Math]::Atan2([Math]::Sqrt($a), [Math]::Sqrt(1 - $a))
                                     $distance = $earthRadius * $c
 
@@ -1932,7 +1946,8 @@ function Find-Image {
                             $exifMatch = $exifMatch -and $gpsMatch
                         }
                     }
-                } catch {
+                }
+                catch {
                     Microsoft.PowerShell.Utility\Write-Verbose ("Could not process EXIF metadata for ${image}: $_")
                     Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception 6: $($_.Exception.Message)"
                     $exifMatch = $false
@@ -2058,12 +2073,13 @@ function Find-Image {
             # if no search criteria specified, return all images with metadata
             if (-not $hasSearchCriteria) {
                 $found = $true
-            } else {
+            }
+            else {
                 # AND logic between different parameter types: ALL specified criteria must match
                 $found = $keywordMatch -and $peopleMatch -and $objectMatch -and
-                         $sceneMatch -and $descriptionMatch -and $pictureTypeMatch -and
-                         $styleTypeMatch -and $moodMatch -and $contentMatch -and $exifMatch -and
-                         $anyMatch -and $confidenceMatch
+                $sceneMatch -and $descriptionMatch -and $pictureTypeMatch -and
+                $styleTypeMatch -and $moodMatch -and $contentMatch -and $exifMatch -and
+                $anyMatch -and $confidenceMatch
             }
 
             # return image data if all criteria matched
@@ -2104,14 +2120,16 @@ function Find-Image {
                         if ($null -ne $metadata) {
                             $width = $metadata.Basic.Width
                             $height = $metadata.Basic.Height
-                        } else {
+                        }
+                        else {
                             # fallback to just getting dimensions if metadata extraction fails
                             $imageObj = [System.Drawing.Image]::FromFile($image)
                             $width = $imageObj.Width
                             $height = $imageObj.Height
                             $null = $imageObj.Dispose()
                         }
-                    } catch {
+                    }
+                    catch {
                         Microsoft.PowerShell.Utility\Write-Verbose "[Find-Image] Exception 8: $($_.Exception.Message)"
                     }
                 }
@@ -2163,7 +2181,7 @@ function Find-Image {
                 $json = $obj | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10 -Compress;
                 try {
                     $standardizedOutput = [GenXdev.Helpers.ImageSearchResult]::FromJson((
-                        $json)
+                            $json)
                     );
                 }
                 catch {
@@ -2263,7 +2281,7 @@ function Find-Image {
                             Microsoft.PowerShell.Utility\Write-Verbose $msg;
                             throw;
                         }
-                }
+                    }
         }
 
         # handle append mode - output InputObject first, then process as normal
@@ -2365,7 +2383,7 @@ function Find-Image {
 
         # remove duplicate directories from search list for efficiency
         $directories = @($directories |
-            Microsoft.PowerShell.Utility\Select-Object -Unique)
+                Microsoft.PowerShell.Utility\Select-Object -Unique)
 
         # iterate through each specified image directory to scan for images
         foreach ($imageDirectory in $directories) {
@@ -2386,67 +2404,67 @@ function Find-Image {
                 continue
             }
 
-            $fileFilter = @($Filter | Microsoft.PowerShell.Core\ForEach-Object {"$path\$_" })
+            $fileFilter = @($Filter | Microsoft.PowerShell.Core\ForEach-Object { "$path\$_" })
 
             # search for image files (jpg, jpeg, gif, png, bmp, webp, tiff, tif) and process each one found
             @(GenXdev.Filesystem\Find-Item `
-                -NoRecurse:$($NoRecurse) `
-                -ErrorAction SilentlyContinue `
-                -SearchMask $fileFilter `
-                -PassThru
+                    -NoRecurse:$($NoRecurse) `
+                    -ErrorAction SilentlyContinue `
+                    -Name $fileFilter `
+                    -PassThru
             ) | Microsoft.PowerShell.Core\ForEach-Object {
 
-                    # filter on pathlike patterns if specified for directory scanning
-                    if ($null -ne $PathLike -and ($PathLike.Count -gt 0)) {
+                # filter on pathlike patterns if specified for directory scanning
+                if ($null -ne $PathLike -and ($PathLike.Count -gt 0)) {
 
-                        # assume no match until pattern is found
-                        $found = $false
+                    # assume no match until pattern is found
+                    $found = $false
 
-                        # check each path pattern against current image file
-                        foreach ($pattern in $PathLike) {
+                    # check each path pattern against current image file
+                    foreach ($pattern in $PathLike) {
 
-                            # expand pattern to full path if needed
-                            $patternDir = GenXdev.FileSystem\Expand-Path $pattern
+                        # expand pattern to full path if needed
+                        $patternDir = GenXdev.FileSystem\Expand-Path $pattern
 
-                            # add wildcards if pattern doesn't already contain them
-                            if ($patternDir.IndexOfAny('?' + '*') -eq -1) {
+                        # add wildcards if pattern doesn't already contain them
+                        if ($patternDir.IndexOfAny('?' + '*') -eq -1) {
 
-                                $patternDir = "*$patternDir*"
-                            }
-
-                            # check if current image path matches pattern
-                            if ($PSItem.FullName -like $patternDir) {
-
-                                $found = $true
-
-                                break
-                            }
+                            $patternDir = "*$patternDir*"
                         }
 
-                        # skip image if no patterns match
-                        if (-not $found) {
+                        # check if current image path matches pattern
+                        if ($PSItem.FullName -like $patternDir) {
 
-                            return
+                            $found = $true
+
+                            break
                         }
                     }
 
-                    # process the image file and handle output appropriately based on display mode
-                    processImageFile $_ |
-                        Microsoft.PowerShell.Core\ForEach-Object {
+                    # skip image if no patterns match
+                    if (-not $found) {
 
-                            # output directly or add to results based on browser display setting
-                            if (-not $ShowInBrowser) {
+                        return
+                    }
+                }
 
-                                # Convert to formatted ImageSearchResult object
-                                $_  #| GenXdev.Helpers\ConvertTo-ImageSearchResult
-                            }
-                            else {
+                # process the image file and handle output appropriately based on display mode
+                processImageFile $_ |
+                    Microsoft.PowerShell.Core\ForEach-Object {
 
-                                # add to results collection for browser display
-                                $null = $results.Add($_)
-                            }
+                        # output directly or add to results based on browser display setting
+                        if (-not $ShowInBrowser) {
+
+                            # Convert to formatted ImageSearchResult object
+                            $_  #| GenXdev.Helpers\ConvertTo-ImageSearchResult
+                        }
+                        else {
+
+                            # add to results collection for browser display
+                            $null = $results.Add($_)
                         }
                     }
+                }
         }
     }
 

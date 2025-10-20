@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Find-IndexedImage.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.300.2025
+Version                   : 1.302.2025
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -1100,7 +1100,7 @@ function Find-IndexedImage {
             # Only assign if DB value is not null/DBNull
             if (($null -ne $DbResult.camera_make) -and ($DbResult.camera_make -ne [DBNull]::Value)) { $result.Metadata.Camera.Make = $DbResult.camera_make }
             if (($null -ne $DbResult.camera_model) -and ($DbResult.camera_model -ne [DBNull]::Value)) { $result.Metadata.Camera.Model = $DbResult.camera_model }
-            if (($null -ne $DbResult.software) -and ($DbResult.software -ne [DBNull]::Value)) { $result.Metadata.Camera.Software = $DbResult.software }
+            # Software assignment is handled later at line 1142 to avoid duplication
 
             if (($null -ne $DbResult.gps_latitude) -and ($DbResult.gps_latitude -ne [DBNull]::Value)) { $result.Metadata.Gps.Latitude = $DbResult.gps_latitude }
             if (($null -ne $DbResult.gps_longitude) -and ($DbResult.gps_longitude -ne [DBNull]::Value)) { $result.Metadata.Gps.Longitude = $DbResult.gps_longitude }
@@ -1216,43 +1216,27 @@ function Find-IndexedImage {
             $result.Description.Short_Description = [string]::IsNullOrWhiteSpace($DbResult.short_description) ? '' : $DbResult.short_description
             $result.Description.Long_Description = [string]::IsNullOrWhiteSpace($DbResult.long_description) ? '' : $DbResult.long_description
 
-            # Build scenes hashtable
-            if ($DbResult.scenes_json) {
-                $scenesObj = @{};
-                try {
-                    $scenesObj = $DbResult.scenes_json |
-                        Microsoft.PowerShell.Utility\ConvertFrom-Json
-                }
-                catch {
-                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-IndexedImage] Exception: $($_.Exception.Message)"
-                }
+            # Build scenes hashtable from database columns
+            # Populate the Scenes structure to match Find-Image output
+            if (($null -ne $DbResult.scene_label) -and ($DbResult.scene_label -ne [DBNull]::Value) -and (-not [string]::IsNullOrWhiteSpace($DbResult.scene_label))) {
+                $result.Scenes.Label = $DbResult.scene_label
+                $result.Scenes.Scene = $DbResult.scene_label
+                $result.Scenes.Success = $true
 
-                $result.Scene.success = $scenesObj.success;
-                if (($null -ne $DbResult.scene_label) -and ($DbResult.scene_label -ne [DBNull]::Value)) {
-                    $result.Scene.Label = $DbResult.scene_label;
-                } elseif (($null -ne $scenesObj.label)) {
-                    $result.Scene.Label = $scenesObj.Label
-                }
                 if (($null -ne $DbResult.scene_confidence) -and ($DbResult.scene_confidence -ne [DBNull]::Value)) {
-                    $result.Scene.Confidence = $DbResult.scene_confidence
-                }
-                elseif (($null -ne $scenesObj.confidence)) {
-                    $result.Scene.Confidence = $scenesObj.confidence
+                    $result.Scenes.Confidence = $DbResult.scene_confidence
                 }
                 if (($null -ne $DbResult.scene_confidence_percentage) -and ($DbResult.scene_confidence_percentage -ne [DBNull]::Value)) {
-                    $result.Scene.Confidence_Percentage = $DbResult.scene_confidence_percentage
+                    $result.Scenes.Confidence_Percentage = $DbResult.scene_confidence_percentage
                 }
-                elseif (($null -ne $scenesObj.confidence_percentage)) {
-                    $result.Scene.Confidence_Percentage = $scenesObj.confidence_percentage
-                }
-                if (($null -ne $DbResult.scene) -and ($DbResult.scene -ne [DBNull]::Value)) {
-                    $result.Scene.Scene = $DbResult.scene
-                }
-                elseif (($null -ne $scenesObj.scene)) {
-                    $result.Scene.Scene = $scenesObj.scene
-                }
+            } else {
+                # Set default empty scenes to match Find-Image when no scenes data
+                $result.Scenes.Label = ""
+                $result.Scenes.Scene = ""
+                $result.Scenes.Success = $false
+                $result.Scenes.Confidence = 0.0
+                $result.Scenes.Confidence_Percentage = 0.0
             }
-
             # Build people hashtable with proper structure
             if ($DbResult.objects_json) {
                 try {

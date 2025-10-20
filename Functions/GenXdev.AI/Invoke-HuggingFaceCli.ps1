@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Invoke-HuggingFaceCli.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.300.2025
+Version                   : 1.302.2025
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -18,6 +18,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ################################################################################>
+# Don't remove this line [dontrefactor]
+
 ###############################################################################
 <#
 .SYNOPSIS
@@ -148,7 +150,8 @@ function Invoke-HuggingFaceCli {
                         "CLI execution failed with exit code ${LASTEXITCODE}: ${clioutput}"
                     return
                 }
-            } else {
+            }
+            else {
                 # Execute via Start-Process with executable
                 $process = Microsoft.PowerShell.Management\Start-Process `
                     -FilePath $clipath `
@@ -167,8 +170,8 @@ function Invoke-HuggingFaceCli {
                         -LiteralPath "$env:TEMP\hfcli_error.txt" `
                         -ErrorAction SilentlyContinue
                     Microsoft.PowerShell.Utility\Write-Error `
-                        ("CLI execution failed with exit code $($process.ExitCode): " + `
-                        "${erroroutput}")
+                    ("CLI execution failed with exit code $($process.ExitCode): " + `
+                            "${erroroutput}")
                     return
                 }
 

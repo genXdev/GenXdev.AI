@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : New-LLMAudioChat.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.300.2025
+Version                   : 1.302.2025
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -1426,7 +1426,7 @@ function New-LLMAudioChat {
                     # quit if q key pressed
                     if ($key -eq [ConsoleKey]::Q) {
 
-                        GenXdev.Console\Stop-TextToSpeech
+                        GenXdev.Console\Set-TextToSpeechStopped
 
                         Microsoft.PowerShell.Utility\Write-Host 'Q pressed - press Q again within 1000ms to quit or any other key to continue...'
 
@@ -1481,7 +1481,7 @@ function New-LLMAudioChat {
             [System.Console]::Write("`e[1A`e[2K")
 
             # stop text to speech and show separator
-            GenXdev.Console\Stop-TextToSpeech
+            GenXdev.Console\Set-TextToSpeechStopped
 
             Microsoft.PowerShell.Utility\Write-Host '---------------'
         }

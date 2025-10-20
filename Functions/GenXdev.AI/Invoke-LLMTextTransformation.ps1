@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Invoke-LLMTextTransformation.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.300.2025
+Version                   : 1.302.2025
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -684,20 +684,15 @@ function Invoke-LLMTextTransformation {
 
             # set required parameters for ai query invocation
             $invocationParams.Query = $Text
-
             $invocationParams.Instructions = $Instructions
-
             $invocationParams.IncludeThoughts = $false
-
             $invocationParams.ResponseFormat = $responseSchema
-
             $invocationParams.Temperature = $Temperature
 
             if ($AllowDefaultTools) {
 
                 # configure chat mode for tool usage
                 $invocationParams.ChatMode = 'textprompt'
-
                 $invocationParams.ChatOnce = $true
             }
 

@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Export-ImageIndex.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.300.2025
+Version                   : 1.302.2025
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -677,7 +677,7 @@ function Export-ImageIndex {
         }
 
         # define schema version constant
-        $SCHEMA_VERSION = '1.0.0.6'
+        $SCHEMA_VERSION = '1.0.0.7'
 
         # initialize info object for tracking found results
         $Info = @{
@@ -846,6 +846,13 @@ CREATE TABLE IF NOT EXISTS Images (
     -- Color metadata
     color_space TEXT,
     bits_per_sample INTEGER,
+    pixel_format TEXT,
+    format TEXT,
+
+    -- File metadata
+    file_size_bytes INTEGER,
+    file_name TEXT,
+    file_extension TEXT,
 
     -- Author metadata
     artist TEXT,
@@ -1151,7 +1158,8 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             'camera_model, software, gps_latitude, gps_longitude, ' +
             'gps_altitude, exposure_time, f_number, iso_speed, focal_length, ' +
             'flash, date_time_original, date_time_digitized, color_space, ' +
-            'bits_per_sample, artist, copyright, orientation, ' +
+            'bits_per_sample, pixel_format, format, file_size_bytes, file_name, ' +
+            'file_extension, artist, copyright, orientation, ' +
             'resolution_unit, x_resolution, y_resolution, metadata_json) ' +
             'VALUES (@path, @image_data, @width, @height, @explicit, ' +
             '@nudity, @short_desc, @long_desc, @pic_type, @mood, @style, ' +
@@ -1162,7 +1170,8 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             '@gps_latitude, @gps_longitude, @gps_altitude, @exposure_time, ' +
             '@f_number, @iso_speed, @focal_length, @flash, ' +
             '@date_time_original, @date_time_digitized, @color_space, ' +
-            '@bits_per_sample, @artist, @copyright, @orientation, ' +
+            '@bits_per_sample, @pixel_format, @format, @file_size_bytes, @file_name, ' +
+            '@file_extension, @artist, @copyright, @orientation, ' +
             '@resolution_unit, @x_resolution, @y_resolution, @metadata_json)')
         }
         else {
@@ -1176,7 +1185,8 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             'camera_make, camera_model, software, ' +
             'gps_latitude, gps_longitude, gps_altitude, exposure_time, ' +
             'f_number, iso_speed, focal_length, flash, date_time_original, ' +
-            'date_time_digitized, color_space, bits_per_sample, artist, ' +
+            'date_time_digitized, color_space, bits_per_sample, pixel_format, format, ' +
+            'file_size_bytes, file_name, file_extension, artist, ' +
             'copyright, orientation, resolution_unit, x_resolution, ' +
             'y_resolution, metadata_json) VALUES (@path, @width, @height, ' +
             '@explicit, @nudity, @short_desc, @long_desc, @pic_type, @mood, ' +
@@ -1187,7 +1197,8 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
             '@software, @gps_latitude, @gps_longitude, @gps_altitude, ' +
             '@exposure_time, @f_number, @iso_speed, @focal_length, @flash, ' +
             '@date_time_original, @date_time_digitized, @color_space, ' +
-            '@bits_per_sample, @artist, @copyright, @orientation, ' +
+            '@bits_per_sample, @pixel_format, @format, @file_size_bytes, @file_name, ' +
+            '@file_extension, @artist, @copyright, @orientation, ' +
             '@resolution_unit, @x_resolution, @y_resolution, @metadata_json)')
         }
 
@@ -1205,7 +1216,7 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                 [System.Collections.Generic.List[String]]::new()
 
             [System.Collections.Generic.List[System.Collections.Hashtable]] `
-            $lookupParams = `
+                $lookupParams = `
                 [System.Collections.Generic.List[System.Collections.Hashtable]]::new()
 
             # define internal function to insert a single image into database
@@ -1230,30 +1241,35 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                             'width'               = $image.width
                             'height'              = $image.height
                             'explicit'            = if ($image.description -and
-                                $image.description.has_explicit_content) { 1 }
-                                else { 0 }
+                                $image.description.Has_Explicit_Content) { 1 }
+                            else { 0 }
                             'nudity'              = if ($image.description -and
-                                $image.description.has_nudity) { 1 }
-                                else { 0 }
+                                $image.description.Has_Nudity) { 1 }
+                            else { 0 }
                             'short_desc'          = if ($image.description) {
-                                $image.description.short_description }
-                                else { '' }
+                                $image.description.Short_Description
+                            }
+                            else { '' }
                             'long_desc'           = if ($image.description) {
-                                $image.description.long_description }
-                                else { '' }
+                                $image.description.Long_Description
+                            }
+                            else { '' }
                             'pic_type'            = if ($image.description) {
-                                $image.description.picture_type }
-                                else { '' }
+                                $image.description.Picture_Type
+                            }
+                            else { '' }
                             'mood'                = if ($image.description) {
-                                $image.description.overall_mood_of_image }
-                                else { '' }
+                                $image.description.Overall_MoodOf_Image
+                            }
+                            else { '' }
                             'style'               = if ($image.description) {
-                                $image.description.style_type }
-                                else { '' }
+                                $image.description.Style_Type
+                            }
+                            else { '' }
                             'desc_keywords'       = if ($image.description -and
-                                $image.description.keywords) {
-                                if ($image.description.keywords.Count -gt 0) {
-                                    ($image.description.keywords |
+                                $image.description.Keywords) {
+                                if ($image.description.Keywords.Count -gt 0) {
+                                    ($image.description.Keywords |
                                         Microsoft.PowerShell.Utility\ConvertTo-Json `
                                             -Compress -Depth 20)
                                 }
@@ -1265,12 +1281,13 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                                 '[]'
                             }
                             'people_count'        = if ($image.people) {
-                                $image.people.count }
-                                else { 0 }
+                                $image.people.Count
+                            }
+                            else { 0 }
                             'people_faces'        = if ($image.people -and
-                                $image.people.faces) {
-                                if ($image.people.faces.Count -gt 0) {
-                                    ($image.people.faces |
+                                $image.people.Faces) {
+                                if ($image.people.Faces.Count -gt 0) {
+                                    ($image.people.Faces |
                                         Microsoft.PowerShell.Utility\ConvertTo-Json `
                                             -Compress -Depth 20)
                                 }
@@ -1284,11 +1301,13 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                             'people_json'         = if ($image.people) {
                                 ($image.people |
                                     Microsoft.PowerShell.Utility\ConvertTo-Json `
-                                        -Compress -Depth 20) }
-                                else { '{}' }
+                                        -Compress -Depth 20)
+                            }
+                            else { '{}' }
                             'objects_count'       = if ($image.objects) {
-                                $image.objects.count }
-                                else { 0 }
+                                $image.objects.Count
+                            }
+                            else { 0 }
                             'objects_list'        = if ($image.objects -and
                                 $image.objects.objects) {
                                 if ($image.objects.objects.Count -gt 0) {
@@ -1306,8 +1325,9 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                             'objects_json'        = if ($image.objects) {
                                 ($image.objects |
                                     Microsoft.PowerShell.Utility\ConvertTo-Json `
-                                        -Compress -Depth 20) }
-                                else { '{}' }
+                                        -Compress -Depth 20)
+                            }
+                            else { '{}' }
                             'object_counts'       = if ($image.objects -and
                                 $image.objects.object_counts) {
                                 ($image.objects.object_counts |
@@ -1318,119 +1338,174 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                                 '{}'
                             }
                             'scene_label'         = if ($image.scenes) {
-                                $image.scenes.label }
-                                else { '' }
+                                $image.scenes.Label
+                            }
+                            else { '' }
                             'scene_confidence'    = if ($image.scenes) {
-                                $image.scenes.confidence }
-                                else { 0 }
+                                $image.scenes.Confidence
+                            }
+                            else { 0 }
                             'scene_conf_pct'      = if ($image.scenes) {
-                                $image.scenes.confidence_percentage }
-                                else { 0 }
+                                $image.scenes.Confidence_Percentage
+                            }
+                            else { 0 }
 
                             # Camera metadata
                             'camera_make'         = if ($image.metadata -and
                                 $image.metadata.Camera.Make) {
-                                $image.metadata.Camera.Make }
-                                else { '' }
+                                $image.metadata.Camera.Make
+                            }
+                            else { '' }
                             'camera_model'        = if ($image.metadata -and
                                 $image.metadata.Camera.Model) {
-                                $image.metadata.Camera.Model }
-                                else { '' }
+                                $image.metadata.Camera.Model
+                            }
+                            else { '' }
+                            # Use only Other.Software since Find-Image searches this field
+                            # Camera.Software is for EXIF camera info, Other.Software is for
+                            # image editing software like Picasa, Photoshop, etc.
                             'software'            = if ($image.metadata -and
-                                $image.metadata.Other.Software) {
-                                $image.metadata.Other.Software }
-                                else { '' }
+                                -not [string]::IsNullOrEmpty($image.metadata.Other.Software)) {
+                                $image.metadata.Other.Software
+                            }
+                            else { '' }
 
                             # GPS metadata
                             'gps_latitude'        = if ($image.metadata -and
                                 $image.metadata.GPS.Latitude) {
-                                $image.metadata.GPS.Latitude }
-                                else { $null }
+                                $image.metadata.GPS.Latitude
+                            }
+                            else { $null }
                             'gps_longitude'       = if ($image.metadata -and
                                 $image.metadata.GPS.Longitude) {
-                                $image.metadata.GPS.Longitude }
-                                else { $null }
+                                $image.metadata.GPS.Longitude
+                            }
+                            else { $null }
                             'gps_altitude'        = if ($image.metadata -and
                                 $image.metadata.GPS.Altitude) {
-                                $image.metadata.GPS.Altitude }
-                                else { $null }
+                                $image.metadata.GPS.Altitude
+                            }
+                            else { $null }
 
                             # Exposure metadata
                             'exposure_time'       = if ($image.metadata -and
                                 $image.metadata.Exposure.ExposureTime) {
-                                "$($image.metadata.Exposure.ExposureTime)" }
-                                else { $null }
+                                "$($image.metadata.Exposure.ExposureTime)"
+                            }
+                            else { $null }
                             'f_number'            = if ($image.metadata -and
                                 $image.metadata.Exposure.FNumber) {
-                                "$($image.metadata.Exposure.FNumber)" }
-                                else { $null }
+                                "$($image.metadata.Exposure.FNumber)"
+                            }
+                            else { $null }
                             'iso_speed'           = if ($image.metadata -and
                                 $image.metadata.Exposure.ISOSpeedRatings) {
-                                $image.metadata.Exposure.ISOSpeedRatings }
-                                else { $null }
+                                $image.metadata.Exposure.ISOSpeedRatings
+                            }
+                            else { $null }
                             'focal_length'        = if ($image.metadata -and
                                 $image.metadata.Exposure.FocalLength) {
-                                "$($image.metadata.Exposure.FocalLength)" }
-                                else { $null }
+                                "$($image.metadata.Exposure.FocalLength)"
+                            }
+                            else { $null }
                             'flash'               = if ($image.metadata -and
                                 $image.metadata.Exposure.Flash) {
-                                $image.metadata.Exposure.Flash }
-                                else { $null }
+                                $image.metadata.Exposure.Flash
+                            }
+                            else { $null }
 
                             # DateTime metadata
                             'date_time_original'  = if ($image.metadata -and
                                 $image.metadata.DateTime.DateTimeOriginal) {
-                                $image.metadata.DateTime.DateTimeOriginal }
-                                else { '' }
+                                $image.metadata.DateTime.DateTimeOriginal
+                            }
+                            else { '' }
                             'date_time_digitized' = if ($image.metadata -and
                                 $image.metadata.DateTime.DateTimeDigitized) {
-                                $image.metadata.DateTime.DateTimeDigitized }
-                                else { '' }
+                                $image.metadata.DateTime.DateTimeDigitized
+                            }
+                            else { '' }
 
                             # Color metadata
                             'color_space'         = if ($image.metadata -and
                                 $image.metadata.Other.ColorSpace) {
-                                $image.metadata.Other.ColorSpace }
-                                else { '' }
+                                $image.metadata.Other.ColorSpace
+                            }
+                            else { '' }
                             'bits_per_sample'     = if ($image.metadata -and
                                 $image.metadata.Basic.BitsPerSample) {
-                                $image.metadata.Basic.BitsPerSample }
-                                else { $null }
+                                $image.metadata.Basic.BitsPerSample
+                            }
+                            else { $null }
+                            'pixel_format'        = if ($image.metadata -and
+                                $image.metadata.Basic.PixelFormat) {
+                                $image.metadata.Basic.PixelFormat
+                            }
+                            else { '' }
+                            'format'              = if ($image.metadata -and
+                                $image.metadata.Basic.Format) {
+                                $image.metadata.Basic.Format
+                            }
+                            else { '' }
+
+                            # File metadata
+                            'file_size_bytes'     = if ($image.metadata -and
+                                $image.metadata.Basic.FileSizeBytes) {
+                                $image.metadata.Basic.FileSizeBytes
+                            }
+                            else { $null }
+                            'file_name'           = if ($image.metadata -and
+                                $image.metadata.Basic.FileName) {
+                                $image.metadata.Basic.FileName
+                            }
+                            else { '' }
+                            'file_extension'      = if ($image.metadata -and
+                                $image.metadata.Basic.FileExtension) {
+                                $image.metadata.Basic.FileExtension
+                            }
+                            else { '' }
 
                             # Author metadata
                             'artist'              = if ($image.metadata -and
                                 $image.metadata.Author.Artist) {
-                                $image.metadata.Author.Artist }
-                                else { '' }
+                                $image.metadata.Author.Artist
+                            }
+                            else { '' }
                             'copyright'           = if ($image.metadata -and
                                 $image.metadata.Author.Copyright) {
-                                $image.metadata.Author.Copyright }
-                                else { '' }
+                                $image.metadata.Author.Copyright
+                            }
+                            else { '' }
 
                             # Orientation and resolution
                             'orientation'         = if ($image.metadata -and
                                 $image.metadata.Basic.Orientation) {
-                                $image.metadata.Basic.Orientation }
-                                else { $null }
+                                $image.metadata.Basic.Orientation
+                            }
+                            else { $null }
                             'resolution_unit'     = if ($image.metadata -and
                                 $image.metadata.Other.ResolutionUnit) {
-                                $image.metadata.Other.ResolutionUnit }
-                                else { '' }
+                                $image.metadata.Other.ResolutionUnit
+                            }
+                            else { '' }
                             'x_resolution'        = if ($image.metadata -and
                                 $image.metadata.Basic.HorizontalResolution) {
-                                $image.metadata.Basic.HorizontalResolution }
-                                else { $null }
+                                $image.metadata.Basic.HorizontalResolution
+                            }
+                            else { $null }
                             'y_resolution'        = if ($image.metadata -and
                                 $image.metadata.Basic.VerticalResolution) {
-                                $image.metadata.Basic.VerticalResolution }
-                                else { $null }
+                                $image.metadata.Basic.VerticalResolution
+                            }
+                            else { $null }
 
                             # Store complete metadata as JSON for text-based searching
                             'metadata_json'       = if ($image.metadata) {
                                 ($image.metadata |
                                     Microsoft.PowerShell.Utility\ConvertTo-Json `
-                                        -Compress -Depth 20) }
-                                else { '{}' }
+                                        -Compress -Depth 20)
+                            }
+                            else { '{}' }
                         }
 
                         # add image data if embedding is enabled for binary storage
@@ -1492,9 +1567,9 @@ CREATE INDEX IF NOT EXISTS idx_images_scene_confidence_range ON Images(scene_con
                         $lookupParams.Clear()
 
                         # insert keywords if present for searchable metadata
-                        if ($image.description -and $image.description.keywords -and $image.description.keywords.Count -gt 0) {
+                        if ($image.description -and $image.description.Keywords -and $image.description.Keywords.Count -gt 0) {
 
-                            foreach ($keyword in $image.description.keywords) {
+                            foreach ($keyword in $image.description.Keywords) {
 
                                 $lookupQueries.Add(
                                     ('INSERT INTO ImageKeywords (image_id, ' +

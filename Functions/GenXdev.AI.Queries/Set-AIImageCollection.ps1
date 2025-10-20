@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Set-AIImageCollection.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.300.2025
+Version                   : 1.302.2025
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -18,7 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ################################################################################>
-################################################################################
 <#
 .SYNOPSIS
 Sets the directories and default language for image files used in GenXdev.AI
@@ -95,7 +94,8 @@ function Set-AIImageCollection {
             HelpMessage = 'Array of directory paths for image files'
         )]
         [Alias('imagespath', 'directories', 'imgdirs', 'imagedirectory')]
-        [string[]] $ImageDirectories,    ###############################################################################
+        [string[]] $ImageDirectories,
+        ###############################################################################
         [Parameter(
             Position = 1,
             Mandatory = $false,
@@ -323,15 +323,15 @@ function Set-AIImageCollection {
 
     # define default directories for image processing operations
     $DefaultValue = @(
-            (GenXdev.FileSystem\Expand-Path '~\downloads'),
-            (GenXdev.FileSystem\Expand-Path '~\onedrive'),
+        (GenXdev.FileSystem\Expand-Path '~\downloads'),
+        (GenXdev.FileSystem\Expand-Path '~\onedrive'),
         $picturesPath,
         $desktopPath,
         $documentsPath
     )
 
-    $ImageDirectories = ($ImageDirectories ? $ImageDirectories : $DefaultValue)
-    $Json = $ImageDirectories | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress
+    $ImageDirectories = ($PSBoundParameters.ContainsKey('ImageDirectories') ? $ImageDirectories : $DefaultValue)
+    $Json = Microsoft.PowerShell.Utility\ConvertTo-Json -InputObject $ImageDirectories -Compress
 
     # confirm the operation with the user before proceeding
     if ($PSCmdlet.ShouldProcess(
@@ -340,7 +340,8 @@ function Set-AIImageCollection {
 
         $params = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
-            -FunctionName 'GenXdev.Data\Set-GenXdevPreference'
+            -FunctionName 'GenXdev.Data\Set-GenXdevPreference' `
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
         $null = GenXdev.Data\Set-GenXdevPreference @params `
             -Name 'AIImageCollection' `

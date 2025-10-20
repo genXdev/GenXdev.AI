@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : Invoke-ComfyUIImageGeneration.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.300.2025
+Version                   : 1.302.2025
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -312,9 +312,9 @@ function Invoke-ComfyUIImageGeneration {
             HelpMessage = "Model checkpoint(s) to use"
         )]
         [ValidateSet("Stable Diffusion 1.5", "Stable Diffusion 2.1", "Analog Diffusion",
-                     "OpenJourney", "DreamShaper", "Protogen", "Juggernaut XL",
-                     "SDXL Base 1.0", "SDXL Turbo",
-                     "AbyssOrangeMix3")]
+            "OpenJourney", "DreamShaper", "Protogen", "Juggernaut XL",
+            "SDXL Base 1.0", "SDXL Turbo",
+            "AbyssOrangeMix3")]
         [string[]] $Model = "Stable Diffusion 2.1",
         #######################################################################
         [Parameter(
@@ -535,7 +535,7 @@ function Invoke-ComfyUIImageGeneration {
         }
 
         # determine defaults based on gpu
-        $isgpu = $UseGPU.IsPresent
+        $isgpu = $UseGPU
 
         if (-not $Steps) { $Steps = if ($isgpu) { 20 } else { 15 } }
 
@@ -556,8 +556,8 @@ function Invoke-ComfyUIImageGeneration {
             -BoundParameters $PSBoundParameters `
             -FunctionName 'EnsureComfyUI' `
             -DefaultValues (
-                Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
-            )
+            Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue
+        )
 
         # ensure comfyui is running
         GenXdev.AI\EnsureComfyUI @comfyParams
@@ -651,14 +651,16 @@ function Invoke-ComfyUIImageGeneration {
                     Microsoft.PowerShell.Utility\Write-Verbose "Ensuring model '$modelName' is available..."
                     if ($ModelPath) {
                         $ensuredModel = GenXdev.AI\EnsureComfyUIModel -ModelName $modelName -ModelPath $ModelPath -ErrorAction Stop
-                    } else {
+                    }
+                    else {
                         $ensuredModel = GenXdev.AI\EnsureComfyUIModel -ModelName $modelName -ErrorAction Stop
                     }
                     if ($ensuredModel) {
                         $modelstouse += $modelName
                         Microsoft.PowerShell.Utility\Write-Verbose "Successfully ensured model: $modelName"
                     }
-                } catch {
+                }
+                catch {
                     Microsoft.PowerShell.Utility\Write-Warning "Could not ensure model '$modelName' is available: $_"
                     # Continue with other models instead of failing completely
                 }
@@ -674,14 +676,14 @@ function Invoke-ComfyUIImageGeneration {
             # Set multimodel flag for UseAllModels case
             $multimodel = $modelstouse.Count -gt 1
         }
-        else
-        {
+        else {
             # handle specific model selection or wildcards
             $filteredModels = @()
             foreach ($m in $Model) {
                 if ($m -match '[\*\?]') {
                     $filteredModels += $supportedModels.Name | Microsoft.PowerShell.Core\Where-Object { $_ -like $m }
-                } else {
+                }
+                else {
                     $filteredModels += $m
                 }
             }
@@ -694,7 +696,8 @@ function Invoke-ComfyUIImageGeneration {
                     $modelInfo = $supportedModels | Microsoft.PowerShell.Core\Where-Object { $_.Name -eq $modelName }
                     if ($modelInfo -and $availableModelFiles -contains $modelInfo.FileName) {
                         $validatedModels += $modelName
-                    } elseif ($modelInfo) {
+                    }
+                    elseif ($modelInfo) {
                         Microsoft.PowerShell.Utility\Write-Warning "Model '$modelName' (file: $($modelInfo.FileName)) is not available in ComfyUI. Skipping."
                     }
                 }
@@ -736,23 +739,28 @@ function Invoke-ComfyUIImageGeneration {
                 try {
                     if ($ModelPath) {
                         $ensuredmodel = GenXdev.AI\EnsureComfyUIModel -ModelName $currentmodel -ModelPath $ModelPath -ErrorAction Stop
-                    } else {
+                    }
+                    else {
                         $ensuredmodel = GenXdev.AI\EnsureComfyUIModel -ModelName $currentmodel -ErrorAction Stop
                     }
                     Microsoft.PowerShell.Utility\Write-Verbose "Using pre-ensured model: $ensuredmodel"
-                } catch {
+                }
+                catch {
                     Microsoft.PowerShell.Utility\Write-Warning "Could not get model path for pre-ensured model '${currentmodel}': $_"
                     continue
                 }
-            } else {
+            }
+            else {
                 # ensure the model is available (download if needed)
                 try {
                     if ($ModelPath) {
                         $ensuredmodel = GenXdev.AI\EnsureComfyUIModel -ModelName $currentmodel -ModelPath $ModelPath -ErrorAction Stop
-                    } else {
+                    }
+                    else {
                         $ensuredmodel = GenXdev.AI\EnsureComfyUIModel -ModelName $currentmodel -ErrorAction Stop
                     }
-                } catch {
+                }
+                catch {
                     Microsoft.PowerShell.Utility\Write-Warning "Could not ensure model '${currentmodel}' is available: $_"
                     continue
                 }
@@ -779,20 +787,20 @@ function Invoke-ComfyUIImageGeneration {
             $workflowcreator = if ($modelInfo.Architecture -eq 'SDXL') { 'CreateComfySDXLWorkflow' } else { 'CreateComfyUniversalWorkflow' }
 
             $workflow = & "GenXdev.AI\$workflowcreator" `
-                        -PromptText $Prompt `
-                        -NegativePromptText $NegativePrompt `
-                        -ImageName ([System.IO.Path]::GetFileName($processedimagepath)) `
-                        -Steps $Steps `
-                        -Width $ImageWidth `
-                        -Height $ImageHeight `
-                        -CfgScale $CfgScale `
-                        -Strength $Strength `
-                        -Seed $Seed `
-                        -BatchSize $BatchSize `
-                        -Model $currentModelFileName `
-                        -Sampler $Sampler `
-                        -Scheduler $Scheduler `
-                        -FilenamePrefix $basefilename
+                -PromptText $Prompt `
+                -NegativePromptText $NegativePrompt `
+                -ImageName ([System.IO.Path]::GetFileName($processedimagepath)) `
+                -Steps $Steps `
+                -Width $ImageWidth `
+                -Height $ImageHeight `
+                -CfgScale $CfgScale `
+                -Strength $Strength `
+                -Seed $Seed `
+                -BatchSize $BatchSize `
+                -Model $currentModelFileName `
+                -Sampler $Sampler `
+                -Scheduler $Scheduler `
+                -FilenamePrefix $basefilename
 
             # queue workflow
             $promptid = GenXdev.AI\QueueComfyWorkflow -Workflow $workflow
@@ -806,8 +814,8 @@ function Invoke-ComfyUIImageGeneration {
 
                 # download generated images
                 $downloadedfiles = @(GenXdev.AI\DownloadComfyResults `
-                    -HistoryData $results `
-                    -OutputDirectory $env:TEMP)
+                        -HistoryData $results `
+                        -OutputDirectory $env:TEMP)
 
                 for ($i = 0; $i -lt $downloadedfiles.Count; $i++) {
 
@@ -833,12 +841,12 @@ function Invoke-ComfyUIImageGeneration {
 
                         $targetformat = switch ($targetext) {
 
-                            ".jpg"  { "Jpeg" }
+                            ".jpg" { "Jpeg" }
                             ".jpeg" { "Jpeg" }
-                            ".png"  { "Png" }
-                            ".bmp"  { "Bmp" }
+                            ".png" { "Png" }
+                            ".bmp" { "Bmp" }
                             ".tiff" { "Tiff" }
-                            ".gif"  { "Gif" }
+                            ".gif" { "Gif" }
                             default { "Jpeg" }
                         }
 
@@ -854,7 +862,8 @@ function Invoke-ComfyUIImageGeneration {
                                 -Force `
                                 -ErrorAction SilentlyContinue
                         }
-                } else {
+                    }
+                    else {
 
                         Microsoft.PowerShell.Management\Move-Item `
                             -LiteralPath $originalfile `
@@ -874,55 +883,55 @@ function Invoke-ComfyUIImageGeneration {
 
                         # Create EXIF metadata structure (for technical metadata like Invoke-ImageMetadataUpdate)
                         $exifMetadata = @{
-                            success = $true
+                            success      = $true
                             has_metadata = $true
-                            Basic = @{
-                                Width = $ImageWidth
-                                Height = $ImageHeight
-                                Format = $fileExtension -replace '\.', ''
-                                FileName = $fileInfo.Name
-                                FileExtension = $fileExtension
-                                FileSizeBytes = $fileInfo.Length
-                                PixelFormat = ""
+                            Basic        = @{
+                                Width                = $ImageWidth
+                                Height               = $ImageHeight
+                                Format               = $fileExtension -replace '\.', ''
+                                FileName             = $fileInfo.Name
+                                FileExtension        = $fileExtension
+                                FileSizeBytes        = $fileInfo.Length
+                                PixelFormat          = ""
                                 HorizontalResolution = 96.0
-                                VerticalResolution = 96.0
+                                VerticalResolution   = 96.0
                             }
-                            Camera = @{
-                                Make = "ComfyUI"
-                                Model = $displayModelName
+                            Camera       = @{
+                                Make     = "ComfyUI"
+                                Model    = $displayModelName
                                 Software = "ComfyUI"
                             }
-                            Other = @{
-                                Software = "ComfyUI"
-                                ColorSpace = "sRGB"
+                            Other        = @{
+                                Software       = "ComfyUI"
+                                ColorSpace     = "sRGB"
                                 ResolutionUnit = "inch"
                             }
-                            Author = @{
-                                Artist = "ComfyUI AI Generation"
+                            Author       = @{
+                                Artist    = "ComfyUI AI Generation"
                                 Copyright = ""
                             }
-                            DateTime = @{
-                                DateTimeOriginal = (Microsoft.PowerShell.Utility\Get-Date).ToString("yyyy:MM:dd HH:mm:ss")
+                            DateTime     = @{
+                                DateTimeOriginal  = (Microsoft.PowerShell.Utility\Get-Date).ToString("yyyy:MM:dd HH:mm:ss")
                                 DateTimeDigitized = (Microsoft.PowerShell.Utility\Get-Date).ToString("yyyy:MM:dd HH:mm:ss")
                             }
-                            GPS = @{
-                                Latitude = $null
-                                Longitude = $null
-                                Altitude = $null
-                                LatitudeDMS = ""
-                                LongitudeDMS = ""
-                                LatitudeError = ""
+                            GPS          = @{
+                                Latitude       = $null
+                                Longitude      = $null
+                                Altitude       = $null
+                                LatitudeDMS    = ""
+                                LongitudeDMS   = ""
+                                LatitudeError  = ""
                                 LongitudeError = ""
-                                AltitudeError = ""
+                                AltitudeError  = ""
                             }
-                            Exposure = @{
-                                FNumber = $null
-                                ExposureTime = $null
+                            Exposure     = @{
+                                FNumber         = $null
+                                ExposureTime    = $null
                                 ISOSpeedRatings = $null
-                                FocalLength = $null
+                                FocalLength     = $null
                                 ExposureProgram = $null
-                                MeteringMode = $null
-                                Flash = $null
+                                MeteringMode    = $null
+                                Flash           = $null
                             }
                         }
 
@@ -933,15 +942,15 @@ function Invoke-ComfyUIImageGeneration {
 
                         # Create description metadata structure matching Invoke-ImageKeywordUpdate format
                         $descriptionMetadata = @{
-                            success = $true
-                            short_description = "AI-generated image: $Prompt"
-                            long_description = "Generated using ComfyUI with model '$displayModelName'. Prompt: '$Prompt'. Negative prompt: '$NegativePrompt'"
-                            keywords = @("AI-generated", "ComfyUI", ($displayModelName -replace '\s+', '-'))
-                            picture_type = if ($InputImage) { "img2img" } else { "txt2img" }
-                            style_type = "AI-generated"
+                            success               = $true
+                            short_description     = "AI-generated image: $Prompt"
+                            long_description      = "Generated using ComfyUI with model '$displayModelName'. Prompt: '$Prompt'. Negative prompt: '$NegativePrompt'"
+                            keywords              = @("AI-generated", "ComfyUI", ($displayModelName -replace '\s+', '-'))
+                            picture_type          = if ($InputImage) { "img2img" } else { "txt2img" }
+                            style_type            = "AI-generated"
                             overall_mood_of_image = "AI-created"
-                            has_nudity = $false
-                            has_explicit_content = $false
+                            has_nudity            = $false
+                            has_explicit_content  = $false
                         }
 
                         # Save description metadata to description.json stream
@@ -951,9 +960,9 @@ function Invoke-ComfyUIImageGeneration {
 
                         # Create empty people metadata structure
                         $peopleMetadata = @{
-                            count = 0
-                            faces = @()
-                            success = $false
+                            count       = 0
+                            faces       = @()
+                            success     = $false
                             predictions = @()
                         }
 
@@ -964,9 +973,9 @@ function Invoke-ComfyUIImageGeneration {
 
                         # Create empty objects metadata structure
                         $objectsMetadata = @{
-                            objects = @()
+                            objects       = @()
                             object_counts = @{}
-                            count = 0
+                            count         = 0
                         }
 
                         # Save objects metadata to objects.json stream
@@ -986,10 +995,11 @@ function Invoke-ComfyUIImageGeneration {
                 $displayName = $currentmodel -replace '^(Available|Auto-Detected):\s*', ''
                 Microsoft.PowerShell.Utility\Write-Verbose `
                     "${displayName} completed in $([Math]::Round($modeltime.TotalSeconds)) seconds"
-            } else {
+            }
+            else {
 
-                    $displayName = $currentmodel -replace '^(Available|Auto-Detected):\s*', ''
-                    Microsoft.PowerShell.Utility\Write-Warning `
+                $displayName = $currentmodel -replace '^(Available|Auto-Detected):\s*', ''
+                Microsoft.PowerShell.Utility\Write-Warning `
                     "Generation failed for $displayName"
             }
         }
@@ -1008,8 +1018,8 @@ function Invoke-ComfyUIImageGeneration {
 
         # output results
         $allresults | GenXdev.FileSystem\WriteFileOutput `
-                -CallerInvocation $callerInvocation `
-                -Prefix "Generated: "
+            -CallerInvocation $callerInvocation `
+            -Prefix "Generated: "
 
         # shutdown if not noshutdown and queue is empty
         if (-not $NoShutdown) {
@@ -1023,7 +1033,8 @@ function Invoke-ComfyUIImageGeneration {
                     "ComfyUI queue is empty, proceeding with shutdown"
 
                 GenXdev.AI\Stop-ComfyUI -ErrorAction SilentlyContinue
-            } else {
+            }
+            else {
 
                 Microsoft.PowerShell.Utility\Write-Warning `
                     "ComfyUI queue has pending tasks, skipping shutdown to avoid interrupting other workflows"

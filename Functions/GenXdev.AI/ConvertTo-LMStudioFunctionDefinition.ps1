@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : ConvertTo-LMStudioFunctionDefinition.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.300.2025
+Version                   : 1.302.2025
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -18,36 +18,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ################################################################################>
-###############################################################################
-###############################################################################Module: GenXdev.AI.LMStudio
-###############################################################################Purpose: Converts PowerShell function definitions into a format compatible with LMStudio's
-###############################################################################         function calling interface. This enables seamless integration between PowerShell
-###############################################################################         commands and LMStudio's AI capabilities.
-<#
+<###############################################################################
 .SYNOPSIS
 Converts PowerShell functions to LMStudio function definitions.
 
 .DESCRIPTION
-Takes PowerShell functions and generates LMStudio compatible function definitions
+Takes exposed cmdlet definitions and generates LMStudio compatible function definitions
 including parameter information and callback handlers.
 
-.PARAMETER Functions
-One or more PowerShell function info objects to convert to LMStudio definitions.
+.PARAMETER ExposedCmdLets
+Array of custom objects containing function definitions and their allowed parameters to convert to LMStudio definitions.
 
 .EXAMPLE
 Get-Command Get-Process | ConvertTo-LMStudioFunctionDefinition
 ##############################################################################
 #>
-
-###############################################################################Main function that handles the conversion process from PowerShell to LMStudio format
 function ConvertTo-LMStudioFunctionDefinition {
 
     [CmdletBinding()]
     [OutputType([System.Collections.Generic.List[hashtable]])]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     param(
-        ########################################################################
-        # Array of custom objects containing function definitions and their allowed parameters
+    #######################################################################
+    # Array of custom objects containing function definitions and their allowed parameters
         [Parameter(
             Mandatory = $false,
             Position = 0,
