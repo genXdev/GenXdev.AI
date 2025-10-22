@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Find-IndexedImage.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 1.304.2025
+Version                   : 1.308.2025
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -18,7 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ################################################################################>
-<#  #>###############################################################################
 <#
 .SYNOPSIS
 Searches for images using an optimized SQLite database with fast indexed lookups.
@@ -762,7 +761,7 @@ function Find-IndexedImage {
             Mandatory = $false,
             HelpMessage = 'Focus the browser window after opening'
         )]
-        [Alias('fw','focus')]
+        [Alias('fw', 'focus')]
         [switch] $FocusWindow,
         ###############################################################################
         [Parameter(
@@ -1054,18 +1053,18 @@ function Find-IndexedImage {
                 try {
                     # determine mime type from file extension
                     $extension = [System.IO.Path]::GetExtension($DbResult.path).
-                        ToLower()
+                    ToLower()
 
                     # select appropriate mime type based on file extension
                     $mimeType = switch ($extension) {
-                        '.jpg'  { 'image/jpeg' }
+                        '.jpg' { 'image/jpeg' }
                         '.jpeg' { 'image/jpeg' }
-                        '.png'  { 'image/png' }
-                        '.gif'  { 'image/gif' }
-                        '.bmp'  { 'image/bmp' }
+                        '.png' { 'image/png' }
+                        '.gif' { 'image/gif' }
+                        '.bmp' { 'image/bmp' }
                         '.webp' { 'image/webp' }
                         '.tiff' { 'image/tiff' }
-                        '.tif'  { 'image/tiff' }
+                        '.tif' { 'image/tiff' }
                         default { 'image/jpeg' }  # fallback
                     }
 
@@ -1138,15 +1137,16 @@ function Find-IndexedImage {
 
             # Parse keywords from database
             $result.Description.Keywords = @(if ($DbResult.description_keywords) {
-                try {
-                    $keywordArray = $DbResult.description_keywords |
-                        Microsoft.PowerShell.Utility\ConvertFrom-Json
-                    [string[]]$keywordArray
-                } catch {
-                    Microsoft.PowerShell.Utility\Write-Verbose "[Find-IndexedImage] Exception: $($_.Exception.Message)"
-                    [string[]]@()
-                }
-            })
+                    try {
+                        $keywordArray = $DbResult.description_keywords |
+                            Microsoft.PowerShell.Utility\ConvertFrom-Json
+                        [string[]]$keywordArray
+                    }
+                    catch {
+                        Microsoft.PowerShell.Utility\Write-Verbose "[Find-IndexedImage] Exception: $($_.Exception.Message)"
+                        [string[]]@()
+                    }
+                })
 
             # Build people hashtable with proper structure
             if ($DbResult.people_json) {
@@ -1158,22 +1158,25 @@ function Find-IndexedImage {
                     if ($peopleObj.faces.count -gt 0) {
                         $result.People.Faces = @(if ($peopleObj.PSObject.Properties['faces']) {
                                 $peopleObj.faces
-                            } elseif ($DbResult.people_faces) {
+                            }
+                            elseif ($DbResult.people_faces) {
                                 try {
                                     $DbResult.people_faces |
                                         Microsoft.PowerShell.Utility\ConvertFrom-Json
-                                } catch {
+                                }
+                                catch {
                                     Microsoft.PowerShell.Utility\Write-Verbose "[Find-IndexedImage] Exception: $($_.Exception.Message)"
                                     @()
                                 }
                             })
                     }
 
-                    $result.People.Count  = if ($peopleObj.PSObject.Properties['count']) {
-                            $peopleObj.count
-                        } else {
-                            $DbResult.people_count
-                        };
+                    $result.People.Count = if ($peopleObj.PSObject.Properties['count']) {
+                        $peopleObj.count
+                    }
+                    else {
+                        $DbResult.people_count
+                    };
 
                     if ($peopleObj.PSObject.Properties['predictions']) {
 
@@ -1195,8 +1198,7 @@ function Find-IndexedImage {
 
                     $result.People.Success = $peopleObj.Success;
                 }
-                catch
-                {
+                catch {
                 }
             }
             # Build description hashtable (always assign if fields are present)
@@ -1209,7 +1211,8 @@ function Find-IndexedImage {
             if ($DbResult.description_keywords) {
                 try {
                     $result.Description.Keywords = $DbResult.description_keywords | Microsoft.PowerShell.Utility\ConvertFrom-Json
-                } catch {
+                }
+                catch {
                     $result.Description.Keywords = @($DbResult.description_keywords)
                 }
             }
@@ -1229,7 +1232,8 @@ function Find-IndexedImage {
                 if (($null -ne $DbResult.scene_confidence_percentage) -and ($DbResult.scene_confidence_percentage -ne [DBNull]::Value)) {
                     $result.Scenes.Confidence_Percentage = $DbResult.scene_confidence_percentage
                 }
-            } else {
+            }
+            else {
                 # Set default empty scenes to match Find-Image when no scenes data
                 $result.Scenes.Label = ""
                 $result.Scenes.Scene = ""
@@ -1247,7 +1251,7 @@ function Find-IndexedImage {
                     $result.Objects.Count = $DbResult.objects_count;
 
                     if ($objectsObj.PSObject.Properties['predictions']) {
-É
+
                         $objectsObj.predictions | Microsoft.PowerShell.Core\ForEach-Object {
                             [GenXdev.Helpers.ImageSearchResultObject] $pr = [GenXdev.Helpers.ImageSearchResultObject]::new();
                             if ($_.Confidence) { $pr.Confidence = $_.Confidence; }
@@ -1270,8 +1274,7 @@ function Find-IndexedImage {
                         }
                     }
                 }
-                catch
-                {
+                catch {
                 }
             }
 
@@ -1290,20 +1293,20 @@ function Find-IndexedImage {
                 [double] $MinConfidenceRatio
             )
 
-           $confidenceMatch = $null -ne $MinConfidenceRatio;
+            $confidenceMatch = $null -ne $MinConfidenceRatio;
 
-           # filter scenes by confidence - modify the scenes object directly
-           if (($confidenceMatch) -and
-               ($null -ne $ImageObject.Scenes) -and
-               ($null -ne $ImageObject.Scenes.Confidence)) {
+            # filter scenes by confidence - modify the scenes object directly
+            if (($confidenceMatch) -and
+                ($null -ne $ImageObject.Scenes) -and
+                ($null -ne $ImageObject.Scenes.Confidence)) {
                 if ($ImageObject.Scenes.Confidence -le $MinConfidenceRatio) {
 
-                   $ImageObject.Scenes.Success = $False
-                   $ImageObject.Scenes.Scene = 'unknown'
-                   $ImageObject.Scenes.Label = 'unknown'
-                   $ImageObject.Scenes.Confidence = 0.0
-                   $ImageObject.Scenes.Confidence_Percentage = 0.0
-               }
+                    $ImageObject.Scenes.Success = $False
+                    $ImageObject.Scenes.Scene = 'unknown'
+                    $ImageObject.Scenes.Label = 'unknown'
+                    $ImageObject.Scenes.Confidence = 0.0
+                    $ImageObject.Scenes.Confidence_Percentage = 0.0
+                }
             }
 
             # filter people by confidence - remove people predictions below minimum threshold
@@ -1357,7 +1360,8 @@ function Find-IndexedImage {
                     if ($filteredCounts.ContainsKey($obj.label)) {
 
                         $filteredCounts."$($obj.label)"++
-                    } else {
+                    }
+                    else {
                         $filteredCounts."$($obj.label)" = 1
                     }
                 }
@@ -1448,14 +1452,16 @@ function Find-IndexedImage {
                         "$TableAlias.$ColumnName LIKE @$ParamName COLLATE NOCASE"
                     )
                     $Parameters[$ParamName] = $pattern
-                } else {
+                }
+                else {
                     # fallback to case-insensitive like for leading wildcards
                     $condition = (
                         "$TableAlias.$ColumnName LIKE @$ParamName COLLATE NOCASE"
                     )
                     $Parameters[$ParamName] = $pattern
                 }
-            } else {
+            }
+            else {
                 # exact match - most efficient using exact indexes
                 $condition = (
                     "$TableAlias.$ColumnName = @$ParamName COLLATE NOCASE"
@@ -1719,7 +1725,8 @@ function Find-IndexedImage {
 
                     # decode url encoding if present
                     $localPath = [System.Uri]::UnescapeDataString($localPath)
-                } else {
+                }
+                else {
                     $localPath = $pathPattern
                 }
 
@@ -1797,7 +1804,8 @@ function Find-IndexedImage {
                 $whereClauses += "(i.gps_latitude IS NOT NULL AND i.gps_latitude = @$paramName)"
                 $parameters[$paramName] = $MetaGPSLatitude[0]
                 $paramCounter++
-            } else {
+            }
+            else {
                 # apply range match for latitude values
                 $minLat = [Math]::Min($MetaGPSLatitude[0], $MetaGPSLatitude[1])
                 $maxLat = [Math]::Max($MetaGPSLatitude[0], $MetaGPSLatitude[1])
@@ -1821,7 +1829,8 @@ function Find-IndexedImage {
                 $whereClauses += "(i.gps_longitude IS NOT NULL AND i.gps_longitude = @$paramName)"
                 $parameters[$paramName] = $MetaGPSLongitude[0]
                 $paramCounter++
-            } else {
+            }
+            else {
                 # apply range match for longitude values
                 $minLong = [Math]::Min($MetaGPSLongitude[0],
                     $MetaGPSLongitude[1])
@@ -1847,7 +1856,8 @@ function Find-IndexedImage {
                 $whereClauses += "(i.gps_altitude IS NOT NULL AND i.gps_altitude = @$paramName)"
                 $parameters[$paramName] = $MetaGPSAltitude[0]
                 $paramCounter++
-            } else {
+            }
+            else {
                 # apply range match for altitude values
                 $minAlt = [Math]::Min($MetaGPSAltitude[0], $MetaGPSAltitude[1])
                 $maxAlt = [Math]::Max($MetaGPSAltitude[0], $MetaGPSAltitude[1])
@@ -1871,7 +1881,8 @@ function Find-IndexedImage {
                 $whereClauses += "(i.exposure_time IS NOT NULL AND i.exposure_time = @$paramName)"
                 $parameters[$paramName] = $MetaExposureTime[0]
                 $paramCounter++
-            } else {
+            }
+            else {
                 # Range match
                 $minExp = [Math]::Min($MetaExposureTime[0], $MetaExposureTime[1])
                 $maxExp = [Math]::Max($MetaExposureTime[0], $MetaExposureTime[1])
@@ -1894,7 +1905,8 @@ function Find-IndexedImage {
                 $whereClauses += "(i.f_number IS NOT NULL AND i.f_number = @$paramName)"
                 $parameters[$paramName] = $MetaFNumber[0]
                 $paramCounter++
-            } else {
+            }
+            else {
                 # Range match
                 $minF = [Math]::Min($MetaFNumber[0], $MetaFNumber[1])
                 $maxF = [Math]::Max($MetaFNumber[0], $MetaFNumber[1])
@@ -1917,7 +1929,8 @@ function Find-IndexedImage {
                 $whereClauses += "(i.iso_speed IS NOT NULL AND i.iso_speed = @$paramName)"
                 $parameters[$paramName] = $MetaISO[0]
                 $paramCounter++
-            } else {
+            }
+            else {
                 # Range match
                 $minISO = [Math]::Min($MetaISO[0], $MetaISO[1])
                 $maxISO = [Math]::Max($MetaISO[0], $MetaISO[1])
@@ -1940,7 +1953,8 @@ function Find-IndexedImage {
                 $whereClauses += "(i.focal_length IS NOT NULL AND i.focal_length = @$paramName)"
                 $parameters[$paramName] = $MetaFocalLength[0]
                 $paramCounter++
-            } else {
+            }
+            else {
                 # Range match
                 $minFL = [Math]::Min($MetaFocalLength[0], $MetaFocalLength[1])
                 $maxFL = [Math]::Max($MetaFocalLength[0], $MetaFocalLength[1])
@@ -1963,7 +1977,8 @@ function Find-IndexedImage {
                 $whereClauses += "i.width = @$paramName"
                 $parameters[$paramName] = $MetaWidth[0]
                 $paramCounter++
-            } else {
+            }
+            else {
                 # Range match
                 $minWidth = [Math]::Min($MetaWidth[0], $MetaWidth[1])
                 $maxWidth = [Math]::Max($MetaWidth[0], $MetaWidth[1])
@@ -1986,7 +2001,8 @@ function Find-IndexedImage {
                 $whereClauses += "i.height = @$paramName"
                 $parameters[$paramName] = $MetaHeight[0]
                 $paramCounter++
-            } else {
+            }
+            else {
                 # Range match
                 $minHeight = [Math]::Min($MetaHeight[0], $MetaHeight[1])
                 $maxHeight = [Math]::Max($MetaHeight[0], $MetaHeight[1])
@@ -2015,7 +2031,8 @@ function Find-IndexedImage {
                 $parameters[$paramNameStart] = $dateTaken.ToString('yyyy-MM-dd')
                 $parameters[$paramNameEnd] = $nextDay.ToString('yyyy-MM-dd')
                 $paramCounter += 2
-            } else {
+            }
+            else {
                 # Range match
                 $startDate = $MetaDateTaken[0]
                 $endDate = $MetaDateTaken[1]
@@ -2089,13 +2106,14 @@ function Find-IndexedImage {
         if (($null -ne $Any) -and ($Any.Length -gt 0)) {
             # Add wildcards to any terms that don't already have them
             $processedAnyTerms = @($Any | Microsoft.PowerShell.Core\ForEach-Object {
-                $entry = $_.Trim()
-                if ($entry.IndexOfAny([char[]]@('*', '?')) -lt 0) {
-                    "*$entry*"
-                } else {
-                    $_
-                }
-            })
+                    $entry = $_.Trim()
+                    if ($entry.IndexOfAny([char[]]@('*', '?')) -lt 0) {
+                        "*$entry*"
+                    }
+                    else {
+                        $_
+                    }
+                })
 
             $anyConditions = @()
 
@@ -2209,10 +2227,12 @@ function Find-IndexedImage {
 
                         $null = $results.Add($imageObj)
                     }
-                } catch {
+                }
+                catch {
                 }
             }
-        } else {
+        }
+        else {
             # stream results for memory efficiency - process each record as it comes from the database
             $Info.resultCount = 0
             GenXdev.Data\Invoke-SQLiteQuery `
@@ -2289,7 +2309,8 @@ function Find-IndexedImage {
                     $Info.resultCount++
 
                     $null = $results.Add($imageObj)
-                } else {
+                }
+                else {
 
                     $Info.resultCount++
 
@@ -2411,8 +2432,8 @@ function Find-IndexedImage {
             # set default description with performance information
             if ([String]::IsNullOrWhiteSpace($Description)) {
                 $searchInfo = 'Database search completed in ' +
-                    "$($queryTime.TotalMilliseconds)ms | " +
-                    "Found $($results.Count) images"
+                "$($queryTime.TotalMilliseconds)ms | " +
+                "Found $($results.Count) images"
                 $Description = "$($MyInvocation.Statement) | $searchInfo"
             }
 
