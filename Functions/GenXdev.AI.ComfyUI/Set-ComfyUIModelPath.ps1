@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : Set-ComfyUIModelPath.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -190,28 +190,28 @@ function Set-ComfyUIModelPath {
             Mandatory = $false,
             HelpMessage = 'The initial width of the window'
         )]
-        [int] $Width,
+        [int] $Width = -1,
         ###############################################################################
         [Parameter(
             Position = 3,
             Mandatory = $false,
             HelpMessage = 'The initial height of the window'
         )]
-        [int] $Height,
+        [int] $Height = -1,
         ###############################################################################
         [Parameter(
             Position = 4,
             Mandatory = $false,
             HelpMessage = 'The initial X position of the window'
         )]
-        [int] $X,
+        [int] $X = -999999,
         ###############################################################################
         [Parameter(
             Position = 5,
             Mandatory = $false,
             HelpMessage = 'The initial Y position of the window'
         )]
-        [int] $Y,
+        [int] $Y = -999999,
         ###############################################################################
         [Parameter(
             Position = 6,

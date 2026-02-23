@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : ConvertFrom-CorporateSpeak.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -193,7 +193,7 @@ function ConvertFrom-CorporateSpeak {
                 HelpMessage = ("How much to offload to the GPU. If 'off', GPU offloading is disabled. If 'max', all layers are offloaded to GPU. If a number between 0 and 1, that fraction of layers will be offloaded to the GPU. -1 = LM Studio will decide how much to offload to the GPU. -2 = Auto")
             )]
             [ValidateRange(-2, 1)]
-            [int] $Gpu,
+            [int] $Gpu = -1,
             ###########################################################################
             [Parameter(
                 Mandatory = $false,
@@ -310,19 +310,19 @@ function ConvertFrom-CorporateSpeak {
                 Mandatory = $false,
                 HelpMessage = 'Monitor index or name for window display (passed to LLMQuery)'
             )]
-            [int] $Monitor,
+            [int] $Monitor = -1,
             ###############################################################################
             [Parameter(
                 Mandatory = $false,
                 HelpMessage = 'Width of the window or image (passed to LLMQuery)'
             )]
-            [int] $Width,
+            [int] $Width = -1,
             ###############################################################################
             [Parameter(
                 Mandatory = $false,
                 HelpMessage = 'Height of the window or image (passed to LLMQuery)'
             )]
-            [int] $Height,
+            [int] $Height = -1,
             ###############################################################################
             [Parameter(
                 Mandatory = $false,

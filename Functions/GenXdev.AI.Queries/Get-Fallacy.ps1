@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Get-Fallacy.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -481,7 +481,7 @@ function Get-Fallacy {
             Mandatory = $false,
             HelpMessage = 'Monitor index or identifier for display output.'
         )]
-        [int] $Monitor,
+        [int] $Monitor = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,

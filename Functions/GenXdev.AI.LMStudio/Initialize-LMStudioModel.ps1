@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.LMStudio
 Original cmdlet filename  : Initialize-LMStudioModel.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -216,14 +216,14 @@ function Initialize-LMStudioModel {
             Mandatory = $false,
             HelpMessage = 'The initial X position of the window'
         )]
-        [int] $X = -1,
+        [int] $X = -999999,
         ########################################################################
 
         [parameter(
             Mandatory = $false,
             HelpMessage = 'The initial Y position of the window'
         )]
-        [int] $Y = -1,
+        [int] $Y = -999999,
         ########################################################################
 
         [parameter(
@@ -276,6 +276,7 @@ function Initialize-LMStudioModel {
         )]
         [Alias('rf', 'bg')]
         [switch]$RestoreFocus,
+
         ########################################################################
         [parameter(
             Mandatory = $false,
@@ -489,10 +490,12 @@ function Initialize-LMStudioModel {
         $modelList = GenXdev.AI\Get-LMStudioModelList
         $foundModel = $modelList |
             Microsoft.PowerShell.Core\Where-Object {
-                ($_.path -like "*$Model*") -or
-                ($_.path -like "*$HuggingFaceIdentifier*") -or
-                ($_.modelKey -eq $Model) -or
-                ($_.displayName -like "*$Model*")
+                ((-not [string]::IsNullOrWhiteSpace($HuggingFaceIdentifier)) -and ($_.path -like "*$HuggingFaceIdentifier*")) -or
+                (-not [string]::IsNullOrWhiteSpace($Model)) -and (
+                    ($_.path -like "*$Model*") -or
+                    ($_.modelKey -eq $Model) -or
+                    ($_.displayName -like "*$Model*")
+                )
             } |
             Microsoft.PowerShell.Utility\Select-Object -First 1
 

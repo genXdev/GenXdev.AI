@@ -1,21 +1,6 @@
 {
   "SimpleIntelligence": [
     {
-      "Model": "llama-3-groq-8b-tool-use",
-      "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF",
-      "RequiredMemoryGB": 7,
-      "MaxToken": null,
-      "TTLSeconds": null,
-      "ApiEndpoint": null,
-      "ApiKey": null,
-      "Cpu": null,
-      "Gpu": null,
-      "TimeoutSeconds": 86400,
-      "NoSupportForJsonSchema": false,
-      "NoSupportForImageUpload": false,
-      "NoSupportForToolCalls": false
-    },
-    {
       "Model": "qwen2.5-14b-instruct-1m",
       "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF",
       "MaxToken": 32768,
@@ -27,8 +12,23 @@
       "Gpu": null,
       "TimeoutSeconds": 86400,
       "NoSupportForJsonSchema": false,
-      "NoSupportForImageUpload": false,
+      "NoSupportForImageUpload": true,
       "NoSupportForToolCalls": false
+    },
+    {
+      "Model": "openai/gpt-oss-20b",
+      "HuggingFaceIdentifier": "lmstudio-community/gpt-oss-20b-GGUF",
+      "RequiredMemoryGB": 32,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": true,
+      "NoSupportForToolCalls": false,
+      "MaxToken": 131072
     }
   ],
   "Knowledge": [
@@ -44,8 +44,8 @@
       "Gpu": null,
       "TimeoutSeconds": 86400,
       "NoSupportForJsonSchema": false,
-      "NoSupportForImageUpload": false,
-      "NoSupportForToolCalls": false
+      "NoSupportForImageUpload": true,
+      "NoSupportForToolCalls": true
     },
     {
       "Model": "qwen2.5-14b-instruct-1m",
@@ -59,8 +59,23 @@
       "Gpu": null,
       "TimeoutSeconds": 86400,
       "NoSupportForJsonSchema": false,
-      "NoSupportForImageUpload": false,
+      "NoSupportForImageUpload": true,
       "NoSupportForToolCalls": false
+    },
+    {
+      "Model": "openai/gpt-oss-20b",
+      "HuggingFaceIdentifier": "lmstudio-community/gpt-oss-20b-GGUF",
+      "RequiredMemoryGB": 32,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": true,
+      "NoSupportForToolCalls": false,
+      "MaxToken": 131072
     }
   ],
   "Pictures": [
@@ -77,7 +92,7 @@
       "TimeoutSeconds": 86400,
       "NoSupportForJsonSchema": false,
       "NoSupportForImageUpload": false,
-      "NoSupportForToolCalls": false
+      "NoSupportForToolCalls": true
     },
     {
       "Model": "gemma-3-27b",
@@ -92,7 +107,7 @@
       "TimeoutSeconds": 86400,
       "NoSupportForJsonSchema": false,
       "NoSupportForImageUpload": false,
-      "NoSupportForToolCalls": false
+      "NoSupportForToolCalls": true
     }
   ],
   "TextTranslation": [
@@ -108,8 +123,8 @@
       "Gpu": null,
       "TimeoutSeconds": 86400,
       "NoSupportForJsonSchema": false,
-      "NoSupportForImageUpload": false,
-      "NoSupportForToolCalls": false
+      "NoSupportForImageUpload": true,
+      "NoSupportForToolCalls": true
     },
     {
       "Model": "qwen2.5-14b-instruct-1m",
@@ -123,8 +138,23 @@
       "Gpu": null,
       "TimeoutSeconds": 86400,
       "NoSupportForJsonSchema": false,
-      "NoSupportForImageUpload": false,
+      "NoSupportForImageUpload": true,
       "NoSupportForToolCalls": false
+    },
+    {
+      "Model": "openai/gpt-oss-20b",
+      "HuggingFaceIdentifier": "lmstudio-community/gpt-oss-20b-GGUF",
+      "RequiredMemoryGB": 32,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": true,
+      "NoSupportForToolCalls": false,
+      "MaxToken": 131072
     }
   ],
   "Coding": [
@@ -140,8 +170,23 @@
       "Gpu": null,
       "TimeoutSeconds": 86400,
       "NoSupportForJsonSchema": false,
-      "NoSupportForImageUpload": false,
+      "NoSupportForImageUpload": true,
       "NoSupportForToolCalls": false
+    },
+    {
+      "Model": "openai/gpt-oss-20b",
+      "HuggingFaceIdentifier": "lmstudio-community/gpt-oss-20b-GGUF",
+      "RequiredMemoryGB": 32,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": true,
+      "NoSupportForToolCalls": false,
+      "MaxToken": 131072
     },
     {
       "Model": "llama-3.3-70b-instruct",
@@ -155,25 +200,11 @@
       "Gpu": null,
       "TimeoutSeconds": 86400,
       "NoSupportForJsonSchema": false,
-      "NoSupportForImageUpload": false,
+      "NoSupportForImageUpload": true,
       "NoSupportForToolCalls": false
     }
   ],
   "ToolUse": [
-    {
-      "Model": "llama-3-groq-8b-tool-use",
-      "HuggingFaceIdentifier": "lmstudio-community/Llama-3-Groq-8B-Tool-Use-GGUF/Llama-3-Groq-8B-Tool-Use-Q4_K_M.gguf",
-      "MaxToken": null,
-      "TTLSeconds": null,
-      "ApiEndpoint": null,
-      "ApiKey": null,
-      "Cpu": null,
-      "Gpu": null,
-      "TimeoutSeconds": 86400,
-      "NoSupportForJsonSchema": false,
-      "NoSupportForImageUpload": false,
-      "NoSupportForToolCalls": false
-    },
     {
       "Model": "qwen2.5-14b-instruct-1m",
       "HuggingFaceIdentifier": "lmstudio-community/Qwen2.5-14B-Instruct-1M-GGUF/Qwen2.5-14B-Instruct-1M-Q4_K_M.gguf",
@@ -186,8 +217,23 @@
       "Gpu": null,
       "TimeoutSeconds": 86400,
       "NoSupportForJsonSchema": false,
-      "NoSupportForImageUpload": false,
+      "NoSupportForImageUpload": true,
       "NoSupportForToolCalls": false
+    },
+    {
+      "Model": "openai/gpt-oss-20b",
+      "HuggingFaceIdentifier": "lmstudio-community/gpt-oss-20b-GGUF",
+      "RequiredMemoryGB": 32,
+      "TTLSeconds": null,
+      "ApiEndpoint": null,
+      "ApiKey": null,
+      "Cpu": null,
+      "Gpu": null,
+      "TimeoutSeconds": 86400,
+      "NoSupportForJsonSchema": false,
+      "NoSupportForImageUpload": true,
+      "NoSupportForToolCalls": false,
+      "MaxToken": 131072
     }
   ]
 }

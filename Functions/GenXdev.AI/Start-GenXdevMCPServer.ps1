@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Start-GenXdevMCPServer.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -68,7 +68,9 @@ function Start-GenXdevMCPServer {
 
         [switch]$StopExisting,
 
-        [int]$MaxOutputLength = 75000
+        [int]$MaxOutputLength = 75000,
+
+        [string]$Token = $null
     )
 
     # Helper functions (nested to avoid module scope exposure)
@@ -119,7 +121,7 @@ function Start-GenXdevMCPServer {
                     }
                     serverInfo      = @{
                         name    = 'GenXdev-PowerShell-MCP-Server'
-                        version = '2.1.2025'
+                        version = '2.3.2026'
                     }
                 }
             }
@@ -158,7 +160,8 @@ function Start-GenXdevMCPServer {
                             # Log every 6th heartbeat (every minute)
                             Microsoft.PowerShell.Utility\Write-Host "SSE heartbeat #$heartbeatCount" -ForegroundColor DarkGray
                         }
-                    } else {
+                    }
+                    else {
                         Microsoft.PowerShell.Utility\Write-Host 'Cannot write to stream, client disconnected' -ForegroundColor Yellow
                         break
                     }
@@ -217,7 +220,7 @@ function Start-GenXdevMCPServer {
                             }
                             serverInfo      = @{
                                 name    = 'GenXdev-PowerShell-MCP-Server'
-                                version = '2.1.2025'
+                                version = '2.3.2026'
                             }
                         }
                     }
@@ -316,7 +319,8 @@ function Start-GenXdevMCPServer {
                         if ($isTextOnlyOutput) {
                             # For text-only output, convert everything to string first using Out-String
                             $outputText = "$(($invocationResult.Output | Microsoft.PowerShell.Utility\Out-String))".Trim()
-                        } else {
+                        }
+                        else {
                             # For structured output, preserve object types but convert non-strings to text
                             $outputText = "$($invocationResult.Output | Microsoft.PowerShell.Core\ForEach-Object {
                                 if ($_ -is [string]) {
@@ -347,7 +351,8 @@ function Start-GenXdevMCPServer {
                             Microsoft.PowerShell.Utility\Write-Verbose "Full tool output:`n$outputText"
                             if ($outputText.Length -lt 200) {
                                 Microsoft.PowerShell.Utility\Write-Host "$outputText" -ForegroundColor DarkCyan
-                            } else {
+                            }
+                            else {
                                 Microsoft.PowerShell.Utility\Write-Host "First 100 chars: $($outputText.Substring(0, 100))..." -ForegroundColor DarkCyan
                                 Microsoft.PowerShell.Utility\Write-Host 'Use -Verbose to see full output' -ForegroundColor DarkGray
                             }
@@ -364,7 +369,8 @@ function Start-GenXdevMCPServer {
                                     )
                                 }
                             }
-                        } else {
+                        }
+                        else {
                             # For non-text output, serialize to JSON with length limiting
                             # If output is still empty, provide more informative message
                             if ([string]::IsNullOrWhiteSpace($outputText)) {
@@ -375,7 +381,8 @@ function Start-GenXdevMCPServer {
                             Microsoft.PowerShell.Utility\Write-Verbose "Full tool output:`n$outputText"
                             if ($outputText.Length -lt 200) {
                                 Microsoft.PowerShell.Utility\Write-Host "$outputText" -ForegroundColor DarkCyan
-                            } else {
+                            }
+                            else {
                                 Microsoft.PowerShell.Utility\Write-Host "First 100 chars: $($outputText.Substring(0, 100))..." -ForegroundColor DarkCyan
                                 Microsoft.PowerShell.Utility\Write-Host 'Use -Verbose to see full output' -ForegroundColor DarkGray
                             }
@@ -419,7 +426,8 @@ function Start-GenXdevMCPServer {
                                             )
                                         }
                                     }
-                                } else {
+                                }
+                                else {
                                     # Even at depth 2 it's too long, so trim it
                                     $originalLength = $parsedOutput.Length
                                     $trimMessage = "TRIMMED JSON OUTPUT (reduced to depth $finalDepth, still too large!) incomplete json data, AI Agent: don't retry same function without checking parameters! >>"
@@ -440,7 +448,8 @@ function Start-GenXdevMCPServer {
                                         }
                                     }
                                 }
-                            } catch {
+                            }
+                            catch {
                                 # If JSON conversion fails, fall back to text with trimming
                                 if ($outputText.Length -gt $MaxOutputLength) {
                                     $originalLength = $outputText.Length
@@ -605,7 +614,8 @@ function Start-GenXdevMCPServer {
                 if ($isTextOnlyOutput) {
                     # For text-only output, convert everything to string first using Out-String
                     $outputText = "$($invocationResult.Output | Microsoft.PowerShell.Utility\Out-String)".Trim()
-                } else {
+                }
+                else {
                     # For structured output, preserve object types but convert non-strings to text
                     $outputText = "$($invocationResult.Output | Microsoft.PowerShell.Core\ForEach-Object {
                         if ($_ -is [string]) {
@@ -640,7 +650,8 @@ function Start-GenXdevMCPServer {
                             }
                         )
                     }
-                } else {
+                }
+                else {
                     # For non-text output, serialize to JSON with length limiting
                     # If output is still empty, provide more informative message
                     if ([string]::IsNullOrWhiteSpace($outputText)) {
@@ -682,7 +693,8 @@ function Start-GenXdevMCPServer {
                                     }
                                 )
                             }
-                        } else {
+                        }
+                        else {
                             # Even at depth 2 it's too long, so trim it
                             $originalLength = $parsedOutput.Length
                             $trimMessage = "TRIMMED JSON OUTPUT (reduced to depth $finalDepth, still too large!) incomplete json data, AI Agent: don't retry same function without checking parameters! >>"
@@ -699,7 +711,8 @@ function Start-GenXdevMCPServer {
                                 )
                             }
                         }
-                    } catch {
+                    }
+                    catch {
                         # If JSON conversion fails, fall back to text with trimming
                         if ($outputText.Length -gt $MaxOutputLength) {
                             $originalLength = $outputText.Length
@@ -751,7 +764,7 @@ function Start-GenXdevMCPServer {
     # Default exposed cmdlets if none provided
     if ($ExposedCmdLets.Count -eq 0) {
         $ExposedCmdLets = @(
-             [GenXdev.Helpers.ExposedCmdletDefinition]@{
+            [GenXdev.Helpers.ExposedCmdletDefinition]@{
                 Name                                 = 'Show-GenXdevCmdlet'
                 Description                          = "Shows GenXdev PowerShell modules with their cmdlets and aliases, allow it to take a few seconds or more. Don't invoke this function without parameters, that would be too much data. Wildcards allowed like * and ?"
                 AllowedParams                        = @(
@@ -885,10 +898,10 @@ function Start-GenXdevMCPServer {
             },
             [GenXdev.Helpers.ExposedCmdletDefinition]@{
                 Name                                 = 'New-GenXdevCmdlet'
+                Description                          = 'Creates a new GenXdev PowerShell cmdlet following GenXdev standards and conventions. Generates the cmdlet file structure with proper headers, parameter blocks, and documentation.'
                 AllowedParams                        = @(
                     'CmdletName=string',
                     'Description=string',
-                    'ModuleName',
                     'ModuleName',
                     'CmdletAliases'
                 )
@@ -910,6 +923,50 @@ function Start-GenXdevMCPServer {
                 JsonDepth                            = 3
                 OutputText                           = $true
                 Confirm                              = $false
+            },
+            [GenXdev.Helpers.ExposedCmdletDefinition]@{
+                Name                                 = 'Find-Item'
+                Description                          = 'Fast multi-threaded file and directory search with optional content pattern matching. Searches ONLY in C:\Users\renev\Documents\PowerShell and E:\VCS directories. Use Name for file patterns (supports *, ?, **), Content for regex/text search within files. Examples: Find-Item -Name "*.ps1" searches for PowerShell files, Find-Item -Content "function" -SimpleMatch finds files containing literal text "function", Find-Item -Directory lists directories only.'
+                AllowedParams                        = @(
+                    'Name=string',
+                    'Content',
+                    'Quiet',
+                    'Directory',
+                    'PassThru',
+                    'NoRecurse',
+                    'MaxRecursionDepth=integer',
+                    'MaxFileSize=number',
+                    'MinFileSize=number',
+                    'ModifiedAfter=string',
+                    'ModifiedBefore=string',
+                    'Exclude=string',
+                    'CaseSensitive',
+                    'SimpleMatch',
+                    'List',
+                    'Category'
+                )
+                DontShowDuringConfirmationParamNames = @()
+                ForcedParams                         = @(
+                    @{
+                        Name  = 'Root'
+                        Value = @('C:\Users\renev\Documents\PowerShell', 'E:\VCS')
+                    },
+                    @{
+                        Name  = 'NoLinks'
+                        Value = $true
+                    },
+                    @{
+                        Name  = 'PassThru'
+                        Value = $true
+                    },
+                    @{
+                        Name  = 'LimitToRoot'
+                        Value = $true
+                    }
+                )
+                OutputText                           = $true
+                JsonDepth                            = 5
+                Confirm                              = $false
             }
         )
     }
@@ -925,6 +982,18 @@ function Start-GenXdevMCPServer {
         Microsoft.PowerShell.Utility\Write-Host "Starting GenXdev MCP server on port $Port..." -ForegroundColor Green
         Microsoft.PowerShell.Utility\Write-Host "Exposed cmdlets: $($ExposedCmdLets.Name -join ', ')" -ForegroundColor Cyan
         Microsoft.PowerShell.Utility\Write-Host "Max output length: $MaxOutputLength characters ($([math]::Round($MaxOutputLength / 1024, 1))KB)" -ForegroundColor Cyan
+
+        # Display authentication status
+        $authToken = $Token
+        if ([string]::IsNullOrEmpty($authToken)) {
+            $authToken = [System.Environment]::GetEnvironmentVariable('GENXDEV_MCP_TOKEN', 'User')
+        }
+        if (-not [string]::IsNullOrEmpty($authToken)) {
+            Microsoft.PowerShell.Utility\Write-Host "Authentication: Bearer token configured (LAN access requires token, localhost allowed without token)" -ForegroundColor Yellow
+        }
+        else {
+            Microsoft.PowerShell.Utility\Write-Host "Authentication: No token configured (open access - set GENXDEV_MCP_TOKEN environment variable to secure)" -ForegroundColor Red
+        }
 
         # Convert cmdlets to function definitions
         $functions = GenXdev.AI\ConvertTo-LMStudioFunctionDefinition -ExposedCmdLets $ExposedCmdLets
@@ -964,242 +1033,319 @@ function Start-GenXdevMCPServer {
 
         # Main server loop
         while (-not [Console]::KeyAvailable) {
-        try {
-            while ($listener.IsListening -and (-not [Console]::KeyAvailable)) {
-                $context = $listener.GetContext()
-                $request = $context.Request
-                $response = $context.Response
+            try {
+                while ($listener.IsListening -and (-not [Console]::KeyAvailable)) {
+                    $context = $listener.GetContext()
+                    $request = $context.Request
+                    $response = $context.Response
 
-                try {
-                    # Add separator line for non-routine requests
-                    $isRoutineRequest = ($request.HttpMethod -eq 'GET' -and $request.Url.AbsolutePath -eq '/mcp')
-                    if (-not $isRoutineRequest) {
-                        Microsoft.PowerShell.Utility\Write-Host '──────────────────────────────────────────────────────────────────────────────────' -ForegroundColor DarkGray
-                    }
+                    try {
+                        # Add separator line for non-routine requests
+                        $isRoutineRequest = ($request.HttpMethod -eq 'GET' -and $request.Url.AbsolutePath -eq '/mcp')
+                        if (-not $isRoutineRequest) {
+                            Microsoft.PowerShell.Utility\Write-Host '──────────────────────────────────────────────────────────────────────────────────' -ForegroundColor DarkGray
+                        }
 
-                    # Set CORS headers - SECURITY: Only allow localhost origins to prevent CSRF attacks
-                    $origin = $request.Headers['Origin']
-                    $allowedOrigins = @(
-                        'http://localhost',
-                        'https://localhost',
-                        'http://127.0.0.1',
-                        'https://127.0.0.1',
-                        'http://[::1]',
-                        'https://[::1]'
-                    )
+                        # Set CORS headers - SECURITY: Only allow localhost origins to prevent CSRF attacks
+                        $origin = $request.Headers['Origin']
+                        $allowedOrigins = @(
+                            'http://localhost',
+                            'https://localhost',
+                            'http://127.0.0.1',
+                            'https://127.0.0.1',
+                            'http://[::1]',
+                            'https://[::1]'
+                        )
 
-                    # Check if origin is from localhost/127.0.0.1 (any port)
-                    $isAllowedOrigin = $false
-                    if ($origin) {
-                        foreach ($allowedOrigin in $allowedOrigins) {
-                            if ($origin.StartsWith($allowedOrigin)) {
-                                $isAllowedOrigin = $true
-                                break
+                        # Check if origin is from localhost/127.0.0.1 (any port)
+                        $isAllowedOrigin = $false
+                        if ($origin) {
+                            foreach ($allowedOrigin in $allowedOrigins) {
+                                if ($origin.StartsWith($allowedOrigin)) {
+                                    $isAllowedOrigin = $true
+                                    break
+                                }
                             }
                         }
-                    }
 
-                    if ($isAllowedOrigin -or -not $origin) {
-                        $response.Headers.Add('Access-Control-Allow-Origin',($origin ? $origin : '*' ))
-                        $response.Headers.Add('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-                        $response.Headers.Add('Access-Control-Allow-Headers', 'Content-Type')
-                    }
-
-                    # Handle preflight requests - only if CORS headers were set (origin allowed)
-                    if ($request.HttpMethod -eq 'OPTIONS') {
                         if ($isAllowedOrigin -or -not $origin) {
-                            $response.StatusCode = 200
-                        } else {
-                            $response.StatusCode = 403 # Forbidden for non-localhost origins
+                            $response.Headers.Add('Access-Control-Allow-Origin', ($origin ? $origin : '*' ))
+                            $response.Headers.Add('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+                            $response.Headers.Add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
                         }
-                        $response.Close()
-                        continue
-                    }
 
-                    # Security check: Block requests from non-localhost origins
-                    if ($origin -and -not $isAllowedOrigin) {
-                        Microsoft.PowerShell.Utility\Write-Verbose "Blocked request from unauthorized origin: $origin"
-                        $response.StatusCode = 403
-                        $response.Close()
-                        continue
-                    }
+                        # Handle preflight requests - only if CORS headers were set (origin allowed)
+                        if ($request.HttpMethod -eq 'OPTIONS') {
+                            if ($isAllowedOrigin -or -not $origin) {
+                                $response.StatusCode = 200
+                            }
+                            else {
+                                $response.StatusCode = 403 # Forbidden for non-localhost origins
+                            }
+                            $response.Close()
+                            continue
+                        }
 
-                    # Read request body
-                    $requestBody = ''
-                    if ($request.HasEntityBody) {
-                        $reader = Microsoft.PowerShell.Utility\New-Object System.IO.StreamReader($request.InputStream)
-                        $requestBody = $reader.ReadToEnd()
-                        $reader.Close()
-                    }
+                        # Security check: Block requests from non-localhost origins
+                        if ($origin -and -not $isAllowedOrigin) {
+                            Microsoft.PowerShell.Utility\Write-Verbose "Blocked request from unauthorized origin: $origin"
+                            $response.StatusCode = 403
+                            $response.Close()
+                            continue
+                        }
 
-                    # Parse JSON request
-                    $jsonRequest = $null
-                    if ($requestBody) {
-                        try {
-                            $jsonRequest = $requestBody | Microsoft.PowerShell.Utility\ConvertFrom-Json
-                            # Only log detailed JSON for non-/mcp endpoints
-                            if ($request.Url.AbsolutePath -ne '/mcp') {
-                                Microsoft.PowerShell.Utility\Write-Host "Parsed JSON request: $($jsonRequest | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress)" -ForegroundColor Magenta
+                        # Security check: Validate Bearer token if configured
+                        # Token is required for non-localhost origins OR when explicitly set via -Token parameter
+                        $expectedToken = $Token
+                        if ([string]::IsNullOrEmpty($expectedToken)) {
+                            $expectedToken = [System.Environment]::GetEnvironmentVariable('GENXDEV_MCP_TOKEN', 'User')
+                        }
+
+                        if (-not [string]::IsNullOrEmpty($expectedToken)) {
+                            # Token is configured - validate it
+                            # Allow localhost without token for backward compatibility, but require it from LAN
+                            $requireToken = $origin -or ($request.RemoteEndPoint.Address.ToString() -ne '127.0.0.1' -and
+                                $request.RemoteEndPoint.Address.ToString() -ne '::1')
+
+                            if ($requireToken) {
+                                $authHeader = $request.Headers['Authorization']
+
+                                if ([string]::IsNullOrEmpty($authHeader)) {
+                                    Microsoft.PowerShell.Utility\Write-Verbose "Missing Authorization header from $($request.RemoteEndPoint.Address)"
+                                    $response.StatusCode = 401
+                                    $response.Headers.Add('WWW-Authenticate', 'Bearer realm="GenXdev MCP Server"')
+                                    $errorJson = @{
+                                        error = @{
+                                            code    = -32600
+                                            message = 'Authentication required: Missing Authorization header'
+                                        }
+                                    } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
+                                    $response.ContentType = 'application/json'
+                                    $errorBytes = [System.Text.Encoding]::UTF8.GetBytes($errorJson)
+                                    $response.ContentLength64 = $errorBytes.Length
+                                    $response.OutputStream.Write($errorBytes, 0, $errorBytes.Length)
+                                    $response.Close()
+                                    continue
+                                }
+
+                                if (-not $authHeader.StartsWith('Bearer ', [StringComparison]::OrdinalIgnoreCase)) {
+                                    Microsoft.PowerShell.Utility\Write-Verbose "Invalid Authorization header format from $($request.RemoteEndPoint.Address)"
+                                    $response.StatusCode = 401
+                                    $response.Headers.Add('WWW-Authenticate', 'Bearer realm="GenXdev MCP Server"')
+                                    $errorJson = @{
+                                        error = @{
+                                            code    = -32600
+                                            message = 'Authentication required: Invalid Authorization header format (expected Bearer token)'
+                                        }
+                                    } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
+                                    $response.ContentType = 'application/json'
+                                    $errorBytes = [System.Text.Encoding]::UTF8.GetBytes($errorJson)
+                                    $response.ContentLength64 = $errorBytes.Length
+                                    $response.OutputStream.Write($errorBytes, 0, $errorBytes.Length)
+                                    $response.Close()
+                                    continue
+                                }
+
+                                $providedToken = $authHeader.Substring(7).Trim()
+
+                                if ($providedToken -ne $expectedToken) {
+                                    Microsoft.PowerShell.Utility\Write-Verbose "Invalid token from $($request.RemoteEndPoint.Address)"
+                                    $response.StatusCode = 401
+                                    $response.Headers.Add('WWW-Authenticate', 'Bearer realm="GenXdev MCP Server"')
+                                    $errorJson = @{
+                                        error = @{
+                                            code    = -32600
+                                            message = 'Authentication failed: Invalid token'
+                                        }
+                                    } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
+                                    $response.ContentType = 'application/json'
+                                    $errorBytes = [System.Text.Encoding]::UTF8.GetBytes($errorJson)
+                                    $response.ContentLength64 = $errorBytes.Length
+                                    $response.OutputStream.Write($errorBytes, 0, $errorBytes.Length)
+                                    $response.Close()
+                                    continue
+                                }
+
+                                Microsoft.PowerShell.Utility\Write-Verbose "Successfully authenticated request from $($request.RemoteEndPoint.Address)"
                             }
                         }
-                        catch {
-                            Microsoft.PowerShell.Utility\Write-Verbose "Invalid JSON in request: $($_.Exception.Message)"
-                            Microsoft.PowerShell.Utility\Write-Host "Raw request body: $requestBody" -ForegroundColor Red
+
+                        # Read request body
+                        $requestBody = ''
+                        if ($request.HasEntityBody) {
+                            $reader = Microsoft.PowerShell.Utility\New-Object System.IO.StreamReader($request.InputStream)
+                            $requestBody = $reader.ReadToEnd()
+                            $reader.Close()
                         }
-                    }
 
-                    # Route requests
-                    $responseJson = ''
-                    $statusCode = 200
-
-                    # Add concise logging (skip routine GET /mcp requests)
-                    if (-not $isRoutineRequest) {
-                        Microsoft.PowerShell.Utility\Write-Host "Request: $($request.HttpMethod) $($request.Url.AbsolutePath)" -ForegroundColor Cyan
-                    }
-
-                    # Normalize path by removing trailing slash for consistent routing
-                    $normalizedPath = $request.Url.AbsolutePath.TrimEnd('/')
-                    if ([string]::IsNullOrEmpty($normalizedPath)) {
-                        $normalizedPath = '/'
-                    }
-
-                    switch ($normalizedPath) {
-                        '/mcp' {
-                            if ($request.HttpMethod -eq 'GET') {
-                                # All GET requests to /mcp return normal HTTP (list tools)
-                                $responseJson = HandleGenXdevMCPServerListToolsRequest -Functions $functions
+                        # Parse JSON request
+                        $jsonRequest = $null
+                        if ($requestBody) {
+                            try {
+                                $jsonRequest = $requestBody | Microsoft.PowerShell.Utility\ConvertFrom-Json
+                                # Only log detailed JSON for non-/mcp endpoints
+                                if ($request.Url.AbsolutePath -ne '/mcp') {
+                                    Microsoft.PowerShell.Utility\Write-Host "Parsed JSON request: $($jsonRequest | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress)" -ForegroundColor Magenta
+                                }
                             }
-                            elseif ($request.HttpMethod -eq 'POST') {
-                                # Handle Streamable HTTP transport
-                                if ($jsonRequest) {
-                                    Microsoft.PowerShell.Utility\Write-Host "MCP Request: $($jsonRequest.method)" -ForegroundColor Cyan
-                                    if ($jsonRequest.method -eq 'tools/call') {
-                                        Microsoft.PowerShell.Utility\Write-Host "  Tool: $($jsonRequest.params.name)" -ForegroundColor Green
-                                        if ($jsonRequest.params.arguments) {
-                                            Microsoft.PowerShell.Utility\Write-Host "  Arguments: $($jsonRequest.params.arguments | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress)" -ForegroundColor Gray
+                            catch {
+                                Microsoft.PowerShell.Utility\Write-Verbose "Invalid JSON in request: $($_.Exception.Message)"
+                                Microsoft.PowerShell.Utility\Write-Host "Raw request body: $requestBody" -ForegroundColor Red
+                            }
+                        }
+
+                        # Route requests
+                        $responseJson = ''
+                        $statusCode = 200
+
+                        # Add concise logging (skip routine GET /mcp requests)
+                        if (-not $isRoutineRequest) {
+                            Microsoft.PowerShell.Utility\Write-Host "Request: $($request.HttpMethod) $($request.Url.AbsolutePath)" -ForegroundColor Cyan
+                        }
+
+                        # Normalize path by removing trailing slash for consistent routing
+                        $normalizedPath = $request.Url.AbsolutePath.TrimEnd('/')
+                        if ([string]::IsNullOrEmpty($normalizedPath)) {
+                            $normalizedPath = '/'
+                        }
+
+                        switch ($normalizedPath) {
+                            '/mcp' {
+                                if ($request.HttpMethod -eq 'GET') {
+                                    # All GET requests to /mcp return normal HTTP (list tools)
+                                    $responseJson = HandleGenXdevMCPServerListToolsRequest -Functions $functions
+                                }
+                                elseif ($request.HttpMethod -eq 'POST') {
+                                    # Handle Streamable HTTP transport
+                                    if ($jsonRequest) {
+                                        Microsoft.PowerShell.Utility\Write-Host "MCP Request: $($jsonRequest.method)" -ForegroundColor Cyan
+                                        if ($jsonRequest.method -eq 'tools/call') {
+                                            Microsoft.PowerShell.Utility\Write-Host "  Tool: $($jsonRequest.params.name)" -ForegroundColor Green
+                                            if ($jsonRequest.params.arguments) {
+                                                Microsoft.PowerShell.Utility\Write-Host "  Arguments: $($jsonRequest.params.arguments | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress)" -ForegroundColor Gray
+                                            }
+                                        }
+                                        $responseJson = HandleGenXdevMCPServerMCPRequest -Request $jsonRequest -Functions $functions -ExposedCmdLets $ExposedCmdLets -NoConfirmationToolFunctionNames $NoConfirmationToolFunctionNames -MaxOutputLength $MaxOutputLength
+                                        if ($jsonRequest.method -eq 'tools/call') {
+                                            Microsoft.PowerShell.Utility\Write-Host "  Response Length: $($responseJson.Length) chars" -ForegroundColor Gray
                                         }
                                     }
-                                    $responseJson = HandleGenXdevMCPServerMCPRequest -Request $jsonRequest -Functions $functions -ExposedCmdLets $ExposedCmdLets -NoConfirmationToolFunctionNames $NoConfirmationToolFunctionNames -MaxOutputLength $MaxOutputLength
-                                    if ($jsonRequest.method -eq 'tools/call') {
-                                        Microsoft.PowerShell.Utility\Write-Host "  Response Length: $($responseJson.Length) chars" -ForegroundColor Gray
+                                    else {
+                                        Microsoft.PowerShell.Utility\Write-Error 'No valid JSON request received for POST to /mcp'
+                                        $statusCode = 400
+                                        $responseJson = @{
+                                            error = @{
+                                                code    = -32700
+                                                message = 'Parse error - Invalid JSON'
+                                            }
+                                        } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 50
                                     }
                                 }
                                 else {
-                                    Microsoft.PowerShell.Utility\Write-Error 'No valid JSON request received for POST to /mcp'
-                                    $statusCode = 400
+                                    $statusCode = 405
                                     $responseJson = @{
                                         error = @{
-                                            code    = -32700
-                                            message = 'Parse error - Invalid JSON'
+                                            code    = -32601
+                                            message = 'Method not allowed'
                                         }
                                     } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 50
                                 }
                             }
-                            else {
-                                $statusCode = 405
-                                $responseJson = @{
-                                    error = @{
-                                        code    = -32601
-                                        message = 'Method not allowed'
-                                    }
-                                } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 50
+                            '/mcp/list-tools' {
+                                Microsoft.PowerShell.Utility\Write-Host 'Handling list-tools request' -ForegroundColor Cyan
+                                $responseJson = HandleGenXdevMCPServerListToolsRequest -Functions $functions
                             }
-                        }
-                        '/mcp/list-tools' {
-                            Microsoft.PowerShell.Utility\Write-Host 'Handling list-tools request' -ForegroundColor Cyan
-                            $responseJson = HandleGenXdevMCPServerListToolsRequest -Functions $functions
-                        }
-                        '/sse' {
-                            # Dedicated SSE endpoint for legacy transport
-                            if ($request.HttpMethod -eq 'GET') {
-                                Microsoft.PowerShell.Utility\Write-Host 'Handling dedicated SSE GET request' -ForegroundColor Yellow
-                                HandleGenXdevMCPServerSSERequest -Request $request -Response $response -Functions $functions
-                                continue # SSE response handles its own connection, continue to next request
-                            }
-                            else {
-                                $statusCode = 405
-                                $responseJson = @{
-                                    error = @{
-                                        code    = -32601
-                                        message = 'Method not allowed - SSE endpoint only supports GET'
-                                    }
-                                } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 50
-                            }
-                        }
-                        '/mcp/call-tool' {
-                            Microsoft.PowerShell.Utility\Write-Host "Tool Call: $($jsonRequest.params.name)" -ForegroundColor Green
-                            if ($jsonRequest.params.arguments) {
-                                Microsoft.PowerShell.Utility\Write-Host "Arguments: $($jsonRequest.params.arguments | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress)" -ForegroundColor Gray
-                            }
-                            $responseJson = HandleGenXdevMCPServerToolRequest -Request $jsonRequest -Functions $functions -ExposedCmdLets $ExposedCmdLets -NoConfirmationToolFunctionNames $NoConfirmationToolFunctionNames -MaxOutputLength $MaxOutputLength
-                            Microsoft.PowerShell.Utility\Write-Host "Tool Response Length: $($responseJson.Length) chars" -ForegroundColor Gray
-                        }
-                        '/messages' {
-                            # Handle legacy SSE transport POST messages
-                            Microsoft.PowerShell.Utility\Write-Host "Legacy SSE Message: $($jsonRequest.method)" -ForegroundColor Yellow
-                            $responseJson = HandleGenXdevMCPServerMCPRequest -Request $jsonRequest -Functions $functions -ExposedCmdLets $ExposedCmdLets -NoConfirmationToolFunctionNames $NoConfirmationToolFunctionNames -MaxOutputLength $MaxOutputLength
-                        }
-                        default {
-                            $statusCode = 404
-                            $responseJson = @{
-                                error = @{
-                                    code    = -32601
-                                    message = 'Method not found'
+                            '/sse' {
+                                # Dedicated SSE endpoint for legacy transport
+                                if ($request.HttpMethod -eq 'GET') {
+                                    Microsoft.PowerShell.Utility\Write-Host 'Handling dedicated SSE GET request' -ForegroundColor Yellow
+                                    HandleGenXdevMCPServerSSERequest -Request $request -Response $response -Functions $functions
+                                    continue # SSE response handles its own connection, continue to next request
                                 }
-                            } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 50
+                                else {
+                                    $statusCode = 405
+                                    $responseJson = @{
+                                        error = @{
+                                            code    = -32601
+                                            message = 'Method not allowed - SSE endpoint only supports GET'
+                                        }
+                                    } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 50
+                                }
+                            }
+                            '/mcp/call-tool' {
+                                Microsoft.PowerShell.Utility\Write-Host "Tool Call: $($jsonRequest.params.name)" -ForegroundColor Green
+                                if ($jsonRequest.params.arguments) {
+                                    Microsoft.PowerShell.Utility\Write-Host "Arguments: $($jsonRequest.params.arguments | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress)" -ForegroundColor Gray
+                                }
+                                $responseJson = HandleGenXdevMCPServerToolRequest -Request $jsonRequest -Functions $functions -ExposedCmdLets $ExposedCmdLets -NoConfirmationToolFunctionNames $NoConfirmationToolFunctionNames -MaxOutputLength $MaxOutputLength
+                                Microsoft.PowerShell.Utility\Write-Host "Tool Response Length: $($responseJson.Length) chars" -ForegroundColor Gray
+                            }
+                            '/messages' {
+                                # Handle legacy SSE transport POST messages
+                                Microsoft.PowerShell.Utility\Write-Host "Legacy SSE Message: $($jsonRequest.method)" -ForegroundColor Yellow
+                                $responseJson = HandleGenXdevMCPServerMCPRequest -Request $jsonRequest -Functions $functions -ExposedCmdLets $ExposedCmdLets -NoConfirmationToolFunctionNames $NoConfirmationToolFunctionNames -MaxOutputLength $MaxOutputLength
+                            }
+                            default {
+                                $statusCode = 404
+                                $responseJson = @{
+                                    error = @{
+                                        code    = -32601
+                                        message = 'Method not found'
+                                    }
+                                } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 50
+                            }
                         }
-                    }
 
-                    # Send response
-                    $response.StatusCode = $statusCode
-                    $response.ContentType = 'application/json'
-                    $responseBytes = [System.Text.Encoding]::UTF8.GetBytes($responseJson)
-                    $response.ContentLength64 = $responseBytes.Length
-                    $response.OutputStream.Write($responseBytes, 0, $responseBytes.Length)
-                    $response.Close()
-                }
-                catch {
-                    # Handle request-specific exceptions without stopping the server
-                    Microsoft.PowerShell.Utility\Write-Verbose "Request handling error: $($_.Exception.Message)"
-                    try {
-                        if (-not $response.HeadersSent) {
-                            $response.StatusCode = 500
-                            $response.ContentType = 'application/json'
-                            $errorJson = @{
-                                error = @{
-                                    code    = -32603
-                                    message = 'Internal server error'
-                                }
-                            } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
-                            $errorBytes = [System.Text.Encoding]::UTF8.GetBytes($errorJson)
-                            $response.ContentLength64 = $errorBytes.Length
-                            $response.OutputStream.Write($errorBytes, 0, $errorBytes.Length)
-                        }
+                        # Send response
+                        $response.StatusCode = $statusCode
+                        $response.ContentType = 'application/json'
+                        $responseBytes = [System.Text.Encoding]::UTF8.GetBytes($responseJson)
+                        $response.ContentLength64 = $responseBytes.Length
+                        $response.OutputStream.Write($responseBytes, 0, $responseBytes.Length)
                         $response.Close()
                     }
                     catch {
-                        # Ignore errors when trying to send error response
+                        # Handle request-specific exceptions without stopping the server
+                        Microsoft.PowerShell.Utility\Write-Verbose "Request handling error: $($_.Exception.Message)"
+                        try {
+                            if (-not $response.HeadersSent) {
+                                $response.StatusCode = 500
+                                $response.ContentType = 'application/json'
+                                $errorJson = @{
+                                    error = @{
+                                        code    = -32603
+                                        message = 'Internal server error'
+                                    }
+                                } | Microsoft.PowerShell.Utility\ConvertTo-Json -Depth 10
+                                $errorBytes = [System.Text.Encoding]::UTF8.GetBytes($errorJson)
+                                $response.ContentLength64 = $errorBytes.Length
+                                $response.OutputStream.Write($errorBytes, 0, $errorBytes.Length)
+                            }
+                            $response.Close()
+                        }
+                        catch {
+                            # Ignore errors when trying to send error response
+                        }
                     }
                 }
             }
-        }
-        catch [System.Net.HttpListenerException] {
-            if ($_.Exception.ErrorCode -ne 995) {
-                # 995 = WSA_OPERATION_ABORTED (normal shutdown)
-                Microsoft.PowerShell.Utility\Write-Error "Server error: $($_.Exception.Message)"
+            catch [System.Net.HttpListenerException] {
+                if ($_.Exception.ErrorCode -ne 995) {
+                    # 995 = WSA_OPERATION_ABORTED (normal shutdown)
+                    Microsoft.PowerShell.Utility\Write-Error "Server error: $($_.Exception.Message)"
+                }
+            }
+            catch {
+                Microsoft.PowerShell.Utility\Write-Error "Unexpected error: $($_.Exception.Message)"
+            }
+            finally {
+                if ($listener.IsListening) {
+                    $listener.Stop()
+                }
+                $listener.Close()
+                Microsoft.PowerShell.Utility\Write-Host 'Server stopped.' -ForegroundColor Yellow
             }
         }
-        catch {
-            Microsoft.PowerShell.Utility\Write-Error "Unexpected error: $($_.Exception.Message)"
-        }
-        finally {
-            if ($listener.IsListening) {
-                $listener.Stop()
-            }
-            $listener.Close()
-            Microsoft.PowerShell.Utility\Write-Host 'Server stopped.' -ForegroundColor Yellow
-        }
-    }
     }
 }
 

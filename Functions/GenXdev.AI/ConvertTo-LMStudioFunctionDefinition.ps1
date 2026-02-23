@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : ConvertTo-LMStudioFunctionDefinition.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -39,8 +39,8 @@ function ConvertTo-LMStudioFunctionDefinition {
     [OutputType([System.Collections.Generic.List[hashtable]])]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
     param(
-    #######################################################################
-    # Array of custom objects containing function definitions and their allowed parameters
+        #######################################################################
+        # Array of custom objects containing function definitions and their allowed parameters
         [Parameter(
             Mandatory = $false,
             Position = 0,
@@ -201,6 +201,13 @@ function ConvertTo-LMStudioFunctionDefinition {
                         }
                     }
 
+                    if ($parameter.ParameterType.IsEnum) {
+
+                        $paramDefinition = $propertiesTable."$($parameter.Name)"
+                        $paramDefinition.type = 'string'
+                        $paramDefinition.enum = @($parameter.ParameterType.GetEnumNames())
+                    }
+
                     # Handle switch parameters explicitly - ensure they get proper boolean/object type
                     if ($parameter.ParameterType.FullName -eq 'System.Management.Automation.SwitchParameter') {
                         $paramDefinition = $propertiesTable."$($parameter.Name)"
@@ -208,16 +215,25 @@ function ConvertTo-LMStudioFunctionDefinition {
                         if ([string]::IsNullOrWhiteSpace($typeStr)) {
                             # Try 'boolean' first, fallback to 'object' if needed
                             # This can be configured based on the target system's capabilities
-                            $paramDefinition.type = 'object'  # Use 'object' as default for broader compatibility
+                            $paramDefinition.type = 'boolean'  # Use 'boolean' as default for broader compatibility
                         }
                         Microsoft.PowerShell.Utility\Write-Verbose "Switch parameter '$($parameter.Name)' set to type '$($paramDefinition.type)'"
                     }
 
-                    if ($parameter.ParameterType.IsEnum) {
-
-                        $paramDefinition = $propertiesTable."$($parameter.Name)"
-                        $paramDefinition.type = 'string'
-                        $paramDefinition.enum = @($parameter.ParameterType.GetEnumNames())
+                    # Handle array and list types
+                    $paramDefinition = $propertiesTable."$($parameter.Name)"
+                    $paramType = $parameter.ParameterType
+                    if ($paramType.IsArray) {
+                        $elementType = $paramType.GetElementType().FullName
+                        $itemType = GenXdev.AI\Convert-DotNetTypeToLLMType -DotNetType $elementType
+                        $paramDefinition.type = 'array'
+                        $paramDefinition.items = @{ type = $itemType }
+                    }
+                    elseif ($paramType.IsGenericType -and $paramType.Name -like 'List`1*') {
+                        $elementType = $paramType.GetGenericArguments()[0].FullName
+                        $itemType = GenXdev.AI\Convert-DotNetTypeToLLMType -DotNetType $elementType
+                        $paramDefinition.type = 'array'
+                        $paramDefinition.items = @{ type = $itemType }
                     }
                 }
 
@@ -236,6 +252,7 @@ function ConvertTo-LMStudioFunctionDefinition {
                     $moduleName = ''
                 }
                 else {
+
                     $moduleName = "$moduleName\"
                 }
 

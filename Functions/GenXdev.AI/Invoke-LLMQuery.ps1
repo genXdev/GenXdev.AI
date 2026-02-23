@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Invoke-LLMQuery.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -404,31 +404,31 @@ function Invoke-LLMQuery {
             HelpMessage = 'The monitor to use, 0 = default, -1 is discard'
         )]
         [Alias('m', 'mon')]
-        [int] $Monitor=-2,
+        [int] $Monitor = -2,
         ###################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The initial width of the window'
         )]
-        [int] $Width,
+        [int] $Width = -1,
         ###################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The initial height of the window'
         )]
-        [int] $Height,
+        [int] $Height = -1,
         ###################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The initial X position of the window'
         )]
-        [int] $X,
+        [int] $X = -999999,
         ###################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The initial Y position of the window'
         )]
-        [int] $Y,
+        [int] $Y = -999999,
         ###################################################################
         [Parameter(
             Mandatory = $false,
@@ -713,7 +713,7 @@ function Invoke-LLMQuery {
             Mandatory = $false,
             HelpMessage = 'Focus the window after opening'
         )]
-        [Alias('fw','focus')]
+        [Alias('fw', 'focus')]
         [switch] $FocusWindow,
         ###################################################################
         [Parameter(
@@ -888,7 +888,7 @@ function Invoke-LLMQuery {
                     -Scope Local -ErrorAction SilentlyContinue)
             $params.KeysToSend = @("^2")
             $params.RestoreFocus = $true
-            if  (-not $myPSBoundParameters.ContainsKey('Monitor')) {
+            if (-not $myPSBoundParameters.ContainsKey('Monitor')) {
 
                 $params.Monitor = -2
             }
@@ -1553,8 +1553,8 @@ function Invoke-LLMQuery {
         # prepare api payload
 
         $payload = @{
-            stream      = $false
-            messages    = $messages
+            stream   = $false
+            messages = $messages
         }
 
         if ($Temperature -ge 0) {
@@ -1584,7 +1584,8 @@ function Invoke-LLMQuery {
                         }
                     }
                     Microsoft.PowerShell.Utility\Write-Verbose 'LLM does not support JSON schema. Using prompt-based fallback.'
-                } else {
+                }
+                else {
                     # Normal path: Use native JSON schema support
                     $payload.response_format = $ResponseFormat | Microsoft.PowerShell.Utility\ConvertFrom-Json
                 }
@@ -1603,12 +1604,22 @@ function Invoke-LLMQuery {
 
             $payload.max_tokens = $MaxToken
         }
-
         if ($Functions -and $Functions.Count -gt 0) {
 
             # maintain array structure, create new array with required properties
             $functionsWithoutCallbacks = @(
                 $Functions | Microsoft.PowerShell.Core\ForEach-Object {
+                    $cleanProperties = @{}
+                    foreach ($prop in $_.function.parameters.properties.GetEnumerator()) {
+                        $cleanProp = @{}
+                        foreach ($key in $prop.Value.Keys) {
+                            if ($key -ne 'powershell_type') {
+                                $cleanProp[$key] = $prop.Value[$key]
+                            }
+                        }
+                        $cleanProperties[$prop.Key] = $cleanProp
+                    }
+
                     [PSCustomObject] @{
                         type     = $_.type
                         function = [PSCustomObject] @{
@@ -1616,7 +1627,7 @@ function Invoke-LLMQuery {
                             description = $_.function.description
                             parameters  = @{
                                 type       = 'object'
-                                properties = [PSCustomObject] $_.function.parameters.properties
+                                properties = [PSCustomObject] $cleanProperties
                                 required   = $_.function.parameters.required
                             }
                         }
@@ -1739,7 +1750,8 @@ function Invoke-LLMQuery {
                             if ($maxContentLength -le 0) {
                                 Microsoft.PowerShell.Utility\Write-Warning "MaxToolcallBackLength ($MaxToolcallBackLength) is too small for trim message ($($trimMessage.Length) chars)"
                                 $outputText = "Output too large to display"
-                            } else {
+                            }
+                            else {
                                 $outputText = $trimMessage + $outputText.Substring(0, $maxContentLength)
                             }
                             Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' output was trimmed from $originalLength to $($outputText.Length) characters"
@@ -1755,7 +1767,8 @@ function Invoke-LLMQuery {
                                 id           = $toolCall.id
                                 arguments    = $toolCall.function.arguments | Microsoft.PowerShell.Utility\ConvertFrom-Json
                             })
-                    } else {
+                    }
+                    else {
                         # For structured output, serialize with smart depth reduction
                         try {
                             # Start with the specified depth and progressively reduce if too long
@@ -1782,7 +1795,8 @@ function Invoke-LLMQuery {
                             # If we found a depth that works, use it
                             if ($foundValidDepth) {
                                 $content = $parsedOutput
-                            } else {
+                            }
+                            else {
                                 # If even depth 2 is too long, trim the output
                                 $originalLength = $parsedOutput.Length
                                 $trimMessage = "TRIMMED JSON OUTPUT (check parameter use!) incomplete json data, AI Agent: don't retry same function without checking parameters! >>"
@@ -1792,12 +1806,14 @@ function Invoke-LLMQuery {
                                 if ($maxContentLength -le 0) {
                                     Microsoft.PowerShell.Utility\Write-Warning "MaxToolcallBackLength ($MaxToolcallBackLength) is too small for JSON trim message ($($trimMessage.Length) chars)"
                                     $content = "JSON output too large to display"
-                                } else {
+                                }
+                                else {
                                     $content = $trimMessage + $parsedOutput.Substring(0, $maxContentLength)
                                 }
                                 Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' JSON output was trimmed from $originalLength to $($content.Length) characters (even at minimum depth 2)"
                             }
-                        } catch {
+                        }
+                        catch {
                             # If JSON conversion fails, fall back to text with trimming
                             $outputText = "$($invocationResult.Output)".Trim()
                             if ($outputText.Length -gt $MaxToolcallBackLength) {
@@ -1809,7 +1825,8 @@ function Invoke-LLMQuery {
                                 if ($maxContentLength -le 0) {
                                     Microsoft.PowerShell.Utility\Write-Warning "MaxToolcallBackLength ($MaxToolcallBackLength) is too small for fallback trim message ($($trimMessage.Length) chars)"
                                     $outputText = "Fallback output too large to display"
-                                } else {
+                                }
+                                else {
                                     $outputText = $trimMessage + $outputText.Substring(0, $maxContentLength)
                                 }
                                 Microsoft.PowerShell.Utility\Write-Verbose "Tool '$($toolCall.function.name)' fallback output was trimmed from $originalLength to $($outputText.Length) characters"

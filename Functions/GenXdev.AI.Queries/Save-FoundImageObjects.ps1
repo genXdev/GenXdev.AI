@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Save-FoundImageObjects.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -543,7 +543,7 @@ function Save-FoundImageObjects {
             HelpMessage = 'Monitor to use for browser window.'
         )]
         [Alias('m','mon')]
-        [int] $Monitor,
+        [int] $Monitor = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,

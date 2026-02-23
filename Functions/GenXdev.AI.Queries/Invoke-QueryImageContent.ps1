@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Invoke-QueryImageContent.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -333,13 +333,13 @@ function Invoke-QueryImageContent {
             Mandatory = $false,
             HelpMessage = 'Specifies the monitor to use for display.'
         )]
-        [int] $Monitor,
+        [int] $Monitor = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Width for the display window.'
         )]
-        [int] $Width,
+        [int] $Width = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -600,7 +600,7 @@ function Invoke-QueryImageContent {
             Mandatory = $false,
             HelpMessage = 'Height for the display window.'
         )]
-        [int] $Height,
+        [int] $Height = -1,
         ###############################################################################
         [Alias('DelayMilliSeconds')]
         [Parameter(

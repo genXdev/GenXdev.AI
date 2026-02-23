@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : CreateComfyUniversalWorkflow.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -132,7 +132,7 @@ function CreateComfyUniversalWorkflow {
             HelpMessage = "Number of denoising steps for the sampling process"
         )]
         [ValidateRange(1, 100)]
-        [int] $Steps,
+        [int] $Steps = 10,
         #######################################################################
         [Parameter(
             Mandatory = $true,
@@ -140,7 +140,7 @@ function CreateComfyUniversalWorkflow {
             HelpMessage = "Output image width in pixels"
         )]
         [ValidateRange(256, 2048)]
-        [int] $Width,
+        [int] $Width = -1,
         #######################################################################
         [Parameter(
             Mandatory = $true,
@@ -148,7 +148,7 @@ function CreateComfyUniversalWorkflow {
             HelpMessage = "Output image height in pixels"
         )]
         [ValidateRange(256, 2048)]
-        [int] $Height,
+        [int] $Height = -1,
         #######################################################################
         [Parameter(
             Mandatory = $true,

@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Set-AILLMSettings.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -208,7 +208,7 @@ function Set-AILLMSettings {
                 'offload to the GPU. -2 = Auto')
         )]
         [ValidateRange(-2, 1)]
-        [int] $Gpu,
+        [int] $Gpu = -1,
         ###############################################################################
         [Parameter(
             Position = 6,

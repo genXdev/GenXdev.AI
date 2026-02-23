@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.ComfyUI
 Original cmdlet filename  : Invoke-ComfyUIImageGeneration.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -264,7 +264,7 @@ function Invoke-ComfyUIImageGeneration {
             HelpMessage = "Number of denoising steps (default: 15 for CPU, 20 for GPU)"
         )]
         [ValidateRange(1, 100)]
-        [int] $Steps,
+        [int] $Steps = 10,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -375,25 +375,25 @@ function Invoke-ComfyUIImageGeneration {
             Mandatory = $false,
             HelpMessage = "The initial width of the window"
         )]
-        [int] $Width,
+        [int] $Width = -1,
         #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The initial height of the window"
         )]
-        [int] $Height,
+        [int] $Height = -1,
         #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The initial X position of the window"
         )]
-        [int] $X,
+        [int] $X = -999999,
         #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = "The initial Y position of the window"
         )]
-        [int] $Y,
+        [int] $Y = -999999,
         #######################################################################
         [Parameter(
             Mandatory = $false,

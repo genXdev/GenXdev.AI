@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : New-LLMAudioChat.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -664,7 +664,7 @@ function New-LLMAudioChat {
             Mandatory = $false,
             HelpMessage = 'The monitor to use, 0 = default, -1 is discard'
         )]
-        [int] $Monitor,
+        [int] $Monitor = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -698,30 +698,30 @@ function New-LLMAudioChat {
             HelpMessage = 'Removes the borders of the window'
         )]
         [switch] $NoBorders,
-        #######################################################################
+        ###################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The initial width of the window'
         )]
-        [int] $Width,
-        #######################################################################
+        [int] $Width = -1,
+        ###################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The initial height of the window'
         )]
-        [int] $Height,
-        #######################################################################
+        [int] $Height = -1,
+        ###################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The initial X position of the window'
         )]
-        [int] $X,
-        #######################################################################
+        [int] $X = -999999,
+        ###################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The initial Y position of the window'
         )]
-        [int] $Y,
+        [int] $Y = -999999,
         #######################################################################
         [Parameter(
             Mandatory = $false,

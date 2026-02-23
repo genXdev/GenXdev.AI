@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Invoke-ImageObjectsUpdate.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -406,14 +406,14 @@ function Invoke-ImageObjectsUpdate {
             Mandatory = $false,
             HelpMessage = 'The initial X position of the window'
         )]
-        [int] $X = -1,
+        [int] $X = -999999,
         ########################################################################
 
         [parameter(
             Mandatory = $false,
             HelpMessage = 'The initial Y position of the window'
         )]
-        [int] $Y = -1,
+        [int] $Y = -999999,
         ########################################################################
 
         [parameter(

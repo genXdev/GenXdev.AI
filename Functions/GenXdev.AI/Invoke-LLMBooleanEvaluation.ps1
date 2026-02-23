@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Invoke-LLMBooleanEvaluation.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -369,19 +369,19 @@ function Invoke-LLMBooleanEvaluation {
             Mandatory = $false,
             HelpMessage = 'Monitor index or identifier for display operations'
         )]
-        [int] $Monitor,
+        [int] $Monitor = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Width for display or rendering operations'
         )]
-        [int] $Width,
+        [int] $Width = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Height for display or rendering operations'
         )]
-        [int] $Height,
+        [int] $Height = -1,
         ###############################################################################
         [Alias('DelayMilliSeconds')]
         [Parameter(

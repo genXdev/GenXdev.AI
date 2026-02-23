@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Invoke-LLMTextTransformation.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -364,19 +364,31 @@ function Invoke-LLMTextTransformation {
             Mandatory = $false,
             HelpMessage = 'Monitor index or name for window display (passed to LLMQuery)'
         )]
-        [int] $Monitor,
-        ###############################################################################
+        [int] $Monitor = -1,
+        ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Width of the window or image (passed to LLMQuery)'
+            HelpMessage = 'The initial width of the window'
         )]
-        [int] $Width,
-        ###############################################################################
+        [int] $Width = -1,
+        ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Height of the window or image (passed to LLMQuery)'
+            HelpMessage = 'The initial height of the window'
         )]
-        [int] $Height,
+        [int] $Height = -1,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The initial X position of the window'
+        )]
+        [int] $X = -999999,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The initial Y position of the window'
+        )]
+        [int] $Y = -999999,
         ###############################################################################
         [Parameter(
             Mandatory = $false,

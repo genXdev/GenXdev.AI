@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Get-AILLMSettings.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -202,7 +202,7 @@ function Get-AILLMSettings {
                 'that fraction of layers will be offloaded to the ' +
                 'GPU. -1 = LM Studio will decide how much to ' +
                 'offload to the GPU. -2 = Auto'))]
-        [int] $Gpu,
+        [int] $Gpu = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -605,7 +605,6 @@ function Get-AILLMSettings {
             Microsoft.PowerShell.Utility\Write-Verbose "$key = $value"
         }
         Microsoft.PowerShell.Utility\Write-Verbose '=== End Summary ==='
-
         # return the completed settings hashtable to the caller
         return $result
     }

@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Get-AIDefaultLLMSettings.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -180,7 +180,7 @@ function Get-AIDefaultLLMSettings {
                 'that fraction of layers will be offloaded to the ' +
                 'GPU. -1 = LM Studio will decide how much to ' +
                 'offload to the GPU. -2 = Auto'))]
-        [int] $Gpu,
+        [int] $Gpu = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -265,7 +265,8 @@ function Get-AIDefaultLLMSettings {
 
         if ($filterParams.Count -gt 0) {
             Microsoft.PowerShell.Utility\Write-Verbose "Filter parameters: $($filterParams -join ', ')"
-        } else {
+        }
+        else {
             Microsoft.PowerShell.Utility\Write-Verbose 'No filter parameters provided'
         }
 
@@ -284,23 +285,27 @@ function Get-AIDefaultLLMSettings {
                 $selectByCombinedMemory = $true
                 Microsoft.PowerShell.Utility\Write-Verbose 'Strategy: COMBINED MEMORY (both Gpu and Cpu parameters specified)'
                 Microsoft.PowerShell.Utility\Write-Verbose 'Will use: System RAM + GPU RAM for configuration selection'
-            } elseif ($PSBoundParameters.ContainsKey('Gpu')) {
+            }
+            elseif ($PSBoundParameters.ContainsKey('Gpu')) {
                 # only GPU specified, prefer GPU memory
                 $selectByFreeGpuRam = $true
                 Microsoft.PowerShell.Utility\Write-Verbose 'Strategy: GPU MEMORY (only Gpu parameter specified)'
                 Microsoft.PowerShell.Utility\Write-Verbose 'Will use: GPU RAM with system RAM fallback for configuration selection'
-            } elseif ($PSBoundParameters.ContainsKey('Cpu')) {
+            }
+            elseif ($PSBoundParameters.ContainsKey('Cpu')) {
                 # only CPU specified, use system RAM
                 $selectByFreeRam = $true
                 Microsoft.PowerShell.Utility\Write-Verbose 'Strategy: SYSTEM RAM (only Cpu parameter specified)'
                 Microsoft.PowerShell.Utility\Write-Verbose 'Will use: System RAM only for configuration selection'
-            } else {
+            }
+            else {
                 # neither specified, use combined memory as default
                 $selectByCombinedMemory = $true
                 Microsoft.PowerShell.Utility\Write-Verbose 'Strategy: COMBINED MEMORY (default - no Gpu/Cpu parameters specified)'
                 Microsoft.PowerShell.Utility\Write-Verbose 'Will use: System RAM + GPU RAM for configuration selection'
             }
-        } else {
+        }
+        else {
             Microsoft.PowerShell.Utility\Write-Verbose 'AutoSelect disabled - will return all matching configurations'
         }
 
@@ -340,7 +345,8 @@ function Get-AIDefaultLLMSettings {
             if ($defaultsJson.PSObject.Properties.Name -contains $LLMQueryType) {
                 $defaultConfigs = $defaultsJson.$LLMQueryType
                 Microsoft.PowerShell.Utility\Write-Verbose "Found $($defaultConfigs.Count) default configurations for query type: $LLMQueryType"
-            } else {
+            }
+            else {
                 Microsoft.PowerShell.Utility\Write-Verbose "No configurations found for query type: $LLMQueryType"
                 return [hashtable[]]@()
             }
@@ -437,7 +443,8 @@ function Get-AIDefaultLLMSettings {
                                         -Sum).Sum / 1024 / 1024 / 1024, 2
                             )
                             Microsoft.PowerShell.Utility\Write-Verbose "Found $($cudaGpus.Count) CUDA GPU(s), total memory: $memoryToCheck GB"
-                        } else {
+                        }
+                        else {
                             # fallback to system RAM if no CUDA GPUs found
                             $memoryToCheck = [math]::Round(
                                 (CimCmdlets\Get-CimInstance `
@@ -454,7 +461,8 @@ function Get-AIDefaultLLMSettings {
                         )
                         Microsoft.PowerShell.Utility\Write-Verbose "Error checking GPU memory, fallback to system RAM: $memoryToCheck GB. Error: $($_.Exception.Message)"
                     }
-                } elseif ($selectByCombinedMemory) {
+                }
+                elseif ($selectByCombinedMemory) {
 
                     Microsoft.PowerShell.Utility\Write-Verbose 'Checking combined CPU + GPU memory...'
 
@@ -483,7 +491,8 @@ function Get-AIDefaultLLMSettings {
                                         -Sum).Sum / 1024 / 1024 / 1024, 2
                             )
                             Microsoft.PowerShell.Utility\Write-Verbose "GPU RAM available: $gpuRam GB from $($cudaGpus.Count) CUDA GPU(s)"
-                        } else {
+                        }
+                        else {
                             Microsoft.PowerShell.Utility\Write-Verbose 'No CUDA GPUs found, GPU RAM: 0 GB'
                         }
 
@@ -499,7 +508,8 @@ function Get-AIDefaultLLMSettings {
                         )
                         Microsoft.PowerShell.Utility\Write-Verbose "Error checking combined memory, fallback to system RAM only: $memoryToCheck GB. Error: $($_.Exception.Message)"
                     }
-                } else {
+                }
+                else {
                     # use system RAM for memory checking
                     $memoryToCheck = [math]::Round(
                         (CimCmdlets\Get-CimInstance `
@@ -527,7 +537,8 @@ function Get-AIDefaultLLMSettings {
                         $selectedConfig = $config
                         Microsoft.PowerShell.Utility\Write-Verbose "SELECTED Config $i - Memory requirement met ($configMemReq is acceptable with $memoryToCheck GB available)"
                         break
-                    } else {
+                    }
+                    else {
                         Microsoft.PowerShell.Utility\Write-Verbose "Config $i - Memory requirement NOT met ($configMemReq exceeds $memoryToCheck GB available)"
                     }
                 }
@@ -535,7 +546,8 @@ function Get-AIDefaultLLMSettings {
                 if ($null -ne $selectedConfig) {
                     Microsoft.PowerShell.Utility\Write-Verbose 'AutoSelect result: 1 configuration selected'
                     return [hashtable[]]@($selectedConfig)
-                } else {
+                }
+                else {
                     Microsoft.PowerShell.Utility\Write-Verbose 'AutoSelect result: No configuration meets memory requirements'
                     return [hashtable[]]@()
                 }

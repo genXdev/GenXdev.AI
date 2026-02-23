@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : ConvertFrom-DiplomaticSpeak.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -319,12 +319,12 @@ function ConvertFrom-DiplomaticSpeak {
         [Parameter(
             HelpMessage = 'Width for AI output or window.'
         )]
-        [int] $Width,
+        [int] $Width = -1,
         ###############################################################################
         [Parameter(
             HelpMessage = 'Height for AI output or window.'
         )]
-        [int] $Height,
+        [int] $Height = -1,
         ###############################################################################
         [Parameter(
             HelpMessage = 'Audio temperature for AI audio generation.'

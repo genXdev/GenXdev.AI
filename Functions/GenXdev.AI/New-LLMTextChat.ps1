@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : New-LLMTextChat.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -296,7 +296,7 @@ function New-LLMTextChat {
             Mandatory = $false,
             HelpMessage = 'The number of CPU cores to dedicate to AI operations'
         )]
-        [int] $Cpu,
+        [int] $Cpu = -1,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -360,31 +360,31 @@ function New-LLMTextChat {
             HelpMessage = 'The monitor to use, 0 = default, -1 is discard'
         )]
         [Alias('m', 'mon')]
-        [int] $Monitor,
+        [int] $Monitor = -2,
         #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The initial width of the window'
         )]
-        [int] $Width,
+        [int] $Width = -1,
         #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The initial height of the window'
         )]
-        [int] $Height,
+        [int] $Height = -1,
         #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The initial X position of the window'
         )]
-        [int] $X,
+        [int] $X = -999999,
         #######################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The initial Y position of the window'
         )]
-        [int] $Y,
+        [int] $Y = -999999,
         #######################################################################
         [Parameter(
             Mandatory = $false,
@@ -555,7 +555,7 @@ function New-LLMTextChat {
             Mandatory = $false,
             HelpMessage = 'Focus the window after opening'
         )]
-        [Alias('fw','focus')]
+        [Alias('fw', 'focus')]
         [switch] $FocusWindow,
         #######################################################################
         [Parameter(
@@ -1010,7 +1010,8 @@ $Instructions
                 # configure psreadline for history prediction
                 try {
                     $null = PSReadLine\Set-PSReadLineOption -PredictionSource History
-                } catch { }
+                }
+                catch { }
 
                 # read user input line using psreadline
                 $question = PSReadLine\PSConsoleHostReadLine
@@ -1051,7 +1052,8 @@ $Instructions
             # ensure chatonce is disabled for recursive calls
             $invocationArguments.ChatOnce = $false
             $invocationArguments.ErrorAction = 'SilentlyContinue'
-            $invocationArguments.NoLMStudioInitialize = (-not $script:IsFirst) -and (-not $NoLMStudioInitialize)
+            $invocationArguments.NoLMStudioInitialize = (-not $script:IsFirst) -or ($NoLMStudioInitialize)
+            $NoLMStudioInitialize = $true;
             $invocationArguments.ShowWindow = ($script:IsFirst) -and (-not $NoShowWindow)
             if (-not $PSBoundParameters.ContainsKey('Monitor')) {
                 $invocationArguments.Monitor = -2

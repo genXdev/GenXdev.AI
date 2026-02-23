@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Get-SimularMovieTitles.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -210,19 +210,19 @@ function Get-SimularMovieTitles {
             Mandatory = $false,
             HelpMessage = 'Monitor index or name for browser window placement'
         )]
-        [int] $Monitor,
+        [int] $Monitor = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Width of the browser window in pixels'
         )]
-        [int] $Width,
+        [int] $Width = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Height of the browser window in pixels'
         )]
-        [int] $Height,
+        [int] $Height = -1,
         ###############################################################################
         [Alias('lang','locale')]
         [Parameter(

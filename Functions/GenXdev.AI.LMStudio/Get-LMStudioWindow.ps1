@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.LMStudio
 Original cmdlet filename  : Get-LMStudioWindow.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -286,13 +286,13 @@ function Get-LMStudioWindow {
             Mandatory = $false,
             HelpMessage = 'The initial X position of the window'
         )]
-        [int] $X = -1,
+        [int] $X = -999999,
         ########################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The initial Y position of the window'
         )]
-        [int] $Y = -1,
+        [int] $Y = -999999,
         ########################################################################
         [Parameter(
             Mandatory = $false,

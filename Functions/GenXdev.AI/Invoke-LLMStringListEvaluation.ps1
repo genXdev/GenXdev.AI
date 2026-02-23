@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI
 Original cmdlet filename  : Invoke-LLMStringListEvaluation.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -385,24 +385,12 @@ function Invoke-LLMStringListEvaluation {
         )]
         [int] $TTLSeconds,
         ###############################################################################
-        [Alias('m','mon')]
+        [Alias('m', 'mon')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'The monitor index or identifier for display output.'
         )]
-        [int] $Monitor,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'The width for display or image output.'
-        )]
-        [int] $Width,
-        ###############################################################################
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'The height for display or image output.'
-        )]
-        [int] $Height,
+        [int] $Monitor = -1,
         ###############################################################################
         [Alias('DelayMilliSeconds')]
         [Parameter(
@@ -531,24 +519,54 @@ function Invoke-LLMStringListEvaluation {
             HelpMessage = 'Do not show borders in the display output.'
         )]
         [switch] $NoBorders,
-        ###############################################################################
+        ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Set the left position for display output.'
+            HelpMessage = 'The initial width of the window'
         )]
-        [int] $Left,
-        ###############################################################################
+        [int] $Width = -1,
+        ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Set the right position for display output.'
+            HelpMessage = 'The initial height of the window'
         )]
-        [int] $Right,
-        ###############################################################################
+        [int] $Height = -1,
+        ###################################################################
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Set the bottom position for display output.'
+            HelpMessage = 'The initial X position of the window'
         )]
-        [int] $Bottom,
+        [int] $X = -999999,
+        ###################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'The initial Y position of the window'
+        )]
+        [int] $Y = -999999,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place window on the left side of the screen'
+        )]
+        [switch] $Left,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place window on the right side of the screen'
+        )]
+        [switch] $Right,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place window on the top side of the screen'
+        )]
+        [switch] $Top,
+        #######################################################################
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Place window on the bottom side of the screen'
+        )]
+        [switch] $Bottom,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
@@ -563,7 +581,7 @@ function Invoke-LLMStringListEvaluation {
         )]
         [switch] $FullScreen,
         ###############################################################################
-        [Alias('rf','bg')]
+        [Alias('rf', 'bg')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Restore focus to the previous window after completion.'
@@ -577,7 +595,7 @@ function Invoke-LLMStringListEvaluation {
         )]
         [switch] $SideBySide,
         ###############################################################################
-        [Alias('fw','focus')]
+        [Alias('fw', 'focus')]
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Focus the output window.'
@@ -736,7 +754,7 @@ $Instructions
 
             # construct summary text for verbose logging
             $summary = ("`r`n`"$Text`"`r`n`r`nExtracted items:`r`n" +
-                       ($response.items -join "`r`n"))
+                ($response.items -join "`r`n"))
 
             # log the processing summary with extracted items
             Microsoft.PowerShell.Utility\Write-Verbose $summary

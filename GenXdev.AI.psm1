@@ -29,6 +29,7 @@ if ($major -ne 10) {
 . "$PSScriptRoot\Functions\GenXdev.AI\Invoke-LLMQuery.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Invoke-LLMStringListEvaluation.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Invoke-LLMTextTransformation.ps1"
+. "$PSScriptRoot\Functions\GenXdev.AI\New-GenXdevMCPToken.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\New-LLMAudioChat.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\New-LLMTextChat.ps1"
 . "$PSScriptRoot\Functions\GenXdev.AI\Set-AILLMSettings.ps1"

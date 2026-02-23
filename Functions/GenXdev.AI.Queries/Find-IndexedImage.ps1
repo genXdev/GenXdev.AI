@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Find-IndexedImage.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -559,25 +559,25 @@ function Find-IndexedImage {
             Mandatory = $false,
             HelpMessage = 'Initial width of browser window.'
         )]
-        [int] $Width,
+        [int] $Width = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Initial height of browser window.'
         )]
-        [int] $Height,
+        [int] $Height = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Initial X position of browser window.'
         )]
-        [int] $X,
+        [int] $X = -999999,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Initial Y position of browser window.'
         )]
-        [int] $Y,
+        [int] $Y = -999999,
         ###############################################################################
         [Parameter(
             Mandatory = $false,

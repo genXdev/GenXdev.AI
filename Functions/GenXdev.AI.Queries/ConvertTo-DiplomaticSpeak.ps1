@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : ConvertTo-DiplomaticSpeak.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.1.2025
+Version                   : 2.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -322,19 +322,19 @@ function ConvertTo-DiplomaticSpeak {
             Mandatory = $false,
             HelpMessage = 'Monitor index or name for window display (passed to LLMQuery)'
         )]
-        [int] $Monitor,
+        [int] $Monitor = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Width of the window or image (passed to LLMQuery)'
         )]
-        [int] $Width,
+        [int] $Width = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Height of the window or image (passed to LLMQuery)'
         )]
-        [int] $Height,
+        [int] $Height = -1,
         ###############################################################################
         [Parameter(
             Mandatory = $false,
