@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Start-AudioTranscription.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.3.2026
+Version                   : 3.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -697,8 +697,7 @@ function Start-AudioTranscription {
             Mandatory = $false,
             HelpMessage = 'Whisper model type to use, defaults to LargeV3Turbo'
         )]
-        [ValidateSet('Tiny', 'TinyEn', 'Base', 'BaseEn', 'Small', 'SmallEn',
-            'Medium', 'MediumEn', 'Large', 'LargeV1', 'LargeV2', 'LargeV3', 'LargeV3Turbo')]
+        [ValidateSet('Tiny', 'TinyEn', 'Base', 'BaseEn', 'Small', 'SmallEn', 'Medium', 'MediumEn', 'LargeV1', 'LargeV2', 'LargeV3', 'LargeV3Turbo')]
         [string] $ModelType,
         ###########################################################################
         [Parameter(
@@ -995,7 +994,7 @@ function Start-AudioTranscription {
 
                 # convert input to file path based on object type
                 $filePathString = if ($currentInput -is [string] -and `
-                    -not [string]::IsNullOrWhiteSpace($currentInput)) {
+                        -not [string]::IsNullOrWhiteSpace($currentInput)) {
 
                     GenXdev.FileSystem\Expand-Path $currentInput
                 }
@@ -1004,12 +1003,12 @@ function Start-AudioTranscription {
                     $currentInput.FullName
                 }
                 elseif ($currentInput -and `
-                    $currentInput.PSObject.Properties['FullName']) {
+                        $currentInput.PSObject.Properties['FullName']) {
 
                     $currentInput.FullName
                 }
                 elseif ($currentInput -and `
-                    $currentInput.PSObject.Properties['Path']) {
+                        $currentInput.PSObject.Properties['Path']) {
 
                     GenXdev.FileSystem\Expand-Path $currentInput.Path
                 }
@@ -1159,259 +1158,260 @@ function Start-AudioTranscription {
                                         -First 1 |
                                     Microsoft.PowerShell.Core\ForEach-Object `
                                         FullName
-                            )
+                                )
+                            }
                         }
                     }
-                }
 
-                # ensure ffmpeg is installed before proceeding
-                $null = InstallFFmpeg
+                    # ensure ffmpeg is installed before proceeding
+                    $null = InstallFFmpeg
 
-                # expand the input file path to absolute path
-                $inputFile = GenXdev.FileSystem\Expand-Path $filePathString
+                    # expand the input file path to absolute path
+                    $inputFile = GenXdev.FileSystem\Expand-Path $filePathString
 
-                # create a temporary wav file for conversion
-                $outputFile = [System.IO.Path]::GetTempFileName() + '.wav'
+                    # create a temporary wav file for conversion
+                    $outputFile = [System.IO.Path]::GetTempFileName() + '.wav'
 
-                # inform user about the conversion process
-                Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Converting the file '$inputFile' to WAV format.."
-                )
-
-                # locate ffmpeg path in case it's not passed correctly
-                # try multiple possible locations for ffmpeg
-                if ([string]::IsNullOrEmpty($ffmpegPath)) {
-
-                    # first try the symlink location (fastest)
-                    $symlinkPath = (
-                        "${env:LOCALAPPDATA}\Microsoft\WinGet\Links\ffmpeg.exe"
+                    # inform user about the conversion process
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Converting the file '$inputFile' to WAV format.."
                     )
-                    if ([System.IO.File]::Exists($symlinkPath)) {
 
-                        $ffmpegPath = $symlinkPath
-                    }
-
-                    # fallback to recursive search in winget directory
+                    # locate ffmpeg path in case it's not passed correctly
+                    # try multiple possible locations for ffmpeg
                     if ([string]::IsNullOrEmpty($ffmpegPath)) {
 
-                        $ffmpegPath = (
-                            Microsoft.PowerShell.Management\Get-ChildItem `
-                                -Path "${env:LOCALAPPDATA}\Microsoft\WinGet" `
-                                -Filter "ffmpeg.exe" `
-                                -Recurse -ErrorAction SilentlyContinue |
-                                Microsoft.PowerShell.Utility\Select-Object `
-                                    -First 1 |
-                                Microsoft.PowerShell.Core\ForEach-Object `
-                                    FullName
+                        # first try the symlink location (fastest)
+                        $symlinkPath = (
+                            "${env:LOCALAPPDATA}\Microsoft\WinGet\Links\ffmpeg.exe"
                         )
-                    }
-                }
+                        if ([System.IO.File]::Exists($symlinkPath)) {
 
-                # convert file to wav with specific audio parameters for whisper
-                & $ffmpegPath -i "$inputFile" -ac 1 -ar 16000 `
-                    -sample_fmt s16 "$outputFile" -loglevel quiet -y
+                            $ffmpegPath = $symlinkPath
+                        }
 
-                # check if the conversion was successful
-                $success = $LASTEXITCODE -eq 0
+                        # fallback to recursive search in winget directory
+                        if ([string]::IsNullOrEmpty($ffmpegPath)) {
 
-                # handle conversion failure
-                if (-not $success) {
-
-                    Microsoft.PowerShell.Utility\Write-Verbose (
-                        "Failed to convert the file '$inputFile' to WAV format."
-                    )
-
-                    # clean up the temporary file if it exists
-                    if ([System.IO.File]::Exists($outputFile)) {
-
-                        $null = Microsoft.PowerShell.Management\Remove-Item `
-                            -LiteralPath $outputFile -Force
-                    }
-
-                    return
-                }
-
-                # inform user about the transcription process
-                Microsoft.PowerShell.Utility\Write-Verbose (
-                    "Processing audio file: " +
-                    "$(GenXdev.FileSystem\Find-Item $inputFile -NoRecurse)"
-                )
-
-                # check if modeltype was not explicitly set by user
-                if (-not $myPSBoundParameters.ContainsKey("ModelType")) {
-
-                    # use most accurate model for batch processing
-                    $ModelType = 'LargeV3Turbo'
-
-                    # add modeltype to bound parameters for downstream functions
-                    $null = $myPSBoundParameters.Add('ModelType', $ModelType)
-                }
-
-                # set the input file for the transcription engine
-                $invocationArguments = GenXdev.FileSystem\Copy-IdenticalParamValues `
-                    -BoundParameters $myPSBoundParameters `
-                    -FunctionName  'GenXdev.Helpers\Get-SpeechToText'
-
-                # set language using the resolved language format
-                if ($PSBoundParameters.ContainsKey("LanguageIn")) {
-                    $invocationArguments.LanguageIn = (
-                        GenXdev.Helpers\Get-WebLanguageDictionary
-                    )[$LanguageIn]
-                } else {
-                    if ($invocationArguments.ContainsKey("LanguageIn")) {
-                        $null = $invocationArguments.Remove("LanguageIn")
-                    }
-                }
-
-                if ($LanguageOut -eq "English") {
-
-                    $invocationArguments.WithTranslate = $true;
-                    $skipTranslation = $true;
-                }
-
-                $invocationArguments.Input = $outputFile
-
-                try {
-                    # add shouldprocess check before executing the operation
-                    if (-not $PSCmdlet.ShouldProcess(
-                            "Start processing file '$outputFile'", 'Start'
-                        )) {
-
-                        continue
-                    }
-
-                    # check if output should be in srt subtitle format
-                    if ($SRT) {
-
-                        # initialize subtitle counter for srt format
-                        $i = 1
-
-                        GenXdev.Helpers\Get-SpeechToText `
-                            @invocationArguments |
-                            Microsoft.PowerShell.Core\ForEach-Object  {
-
-                                $result = $PSItem
-
-                                # check if translation to output language is required
-                                if (-not [string]::IsNullOrWhiteSpace($LanguageOut) `
-                                    -and -not $skipTranslation) {
-
-                                    Microsoft.PowerShell.Utility\Write-Verbose (
-                                        "Translating text to $LanguageOut for: " +
-                                        "`"$($result.Text)`".."
-                                    )
-
-                                    try {
-
-                                        # prepare parameters for text translation
-                                        $translateParams = `
-                                            GenXdev.FileSystem\Copy-IdenticalParamValues `
-                                            -BoundParameters $myPSBoundParameters `
-                                            -FunctionName `
-                                                'GenXdev.AI\Get-TextTranslation'
-
-                                        if ($translateParams.ContainsKey('Prompt')) {
-                                            $null = $translateParams.Remove('Prompt')
-                                        }
-                                        if ($translateParams.ContainsKey('Instructions')) {
-                                            $null = $translateParams.Remove('Instructions')
-                                        }
-
-                                        # create new result with translated text
-                                        $result = @{
-                                            Text = (GenXdev.AI\Get-TextTranslation `
-                                                    @translateParams `
-                                                    -Text:($result.Text) `
-                                                    -Language:$LanguageOut
-                                                )
-                                            Start = $result.Start
-                                            End   = $result.End
-                                        }
-
-                                        Microsoft.PowerShell.Utility\Write-Verbose (
-                                            "Text translated to: " +
-                                            "`"$($result.Text)`".."
-                                        )
-                                    }
-                                    catch {
-
-                                        Microsoft.PowerShell.Utility\Write-Verbose (
-                                            "Translating text to $LanguageOut, " +
-                                            "failed: $PSItem"
-                                        )
-                                    }
-                                }
-
-                                # format timestamps for srt output
-                                $start = $result.Start.ToString(
-                                    'hh\:mm\:ss\,fff',
-                                    [System.Globalization.CultureInfo]::InvariantCulture
+                            $ffmpegPath = (
+                                Microsoft.PowerShell.Management\Get-ChildItem `
+                                    -Path "${env:LOCALAPPDATA}\Microsoft\WinGet" `
+                                    -Filter "ffmpeg.exe" `
+                                    -Recurse -ErrorAction SilentlyContinue |
+                                    Microsoft.PowerShell.Utility\Select-Object `
+                                        -First 1 |
+                                    Microsoft.PowerShell.Core\ForEach-Object `
+                                        FullName
                                 )
-                                $end = $result.end.ToString(
-                                    'hh\:mm\:ss\,fff',
-                                    [System.Globalization.CultureInfo]::InvariantCulture
-                                )
+                            }
+                        }
 
-                                # return srt formatted subtitle entry to pipeline
-                                Microsoft.PowerShell.Utility\Write-Output "$i`r`n$start --> $end`r`n$($result.Text)`r`n`r`n"
+                        # convert file to wav with specific audio parameters for whisper
+                        & $ffmpegPath -i "$inputFile" -ac 1 -ar 16000 `
+                            -sample_fmt s16 "$outputFile" -loglevel quiet -y
 
-                                # increment subtitle counter
-                                $i++
+                        # check if the conversion was successful
+                        $success = $LASTEXITCODE -eq 0
+
+                        # handle conversion failure
+                        if (-not $success) {
+
+                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                "Failed to convert the file '$inputFile' to WAV format."
+                            )
+
+                            # clean up the temporary file if it exists
+                            if ([System.IO.File]::Exists($outputFile)) {
+
+                                $null = Microsoft.PowerShell.Management\Remove-Item `
+                                    -LiteralPath $outputFile -Force
                             }
 
-                        # exit early for srt format processing
-                        return
-                    }
+                            return
+                        }
 
-                    # check if translation is needed for non-srt output
-                    if (-not [string]::IsNullOrWhiteSpace($LanguageOut) `
-                        -and -not $skipTranslation) {
+                        # inform user about the transcription process
+                        Microsoft.PowerShell.Utility\Write-Verbose (
+                            "Processing audio file: " +
+                            "$(GenXdev.FileSystem\Find-Item $inputFile -NoRecurse)"
+                        )
 
-                        # transcribe the audio file to get raw text
-                        $results =  GenXdev.Helpers\Get-SpeechToText @invocationArguments
+                        # check if modeltype was not explicitly set by user
+                        if (-not $myPSBoundParameters.ContainsKey("ModelType")) {
 
-                        # prepare parameters for text translation
-                        $translateParams = `
-                            GenXdev.FileSystem\Copy-IdenticalParamValues `
+                            # use most accurate model for batch processing
+                            $ModelType = 'LargeV3Turbo'
+
+                            # add modeltype to bound parameters for downstream functions
+                            $null = $myPSBoundParameters.Add('ModelType', $ModelType)
+                        }
+
+                        # set the input file for the transcription engine
+                        $invocationArguments = GenXdev.FileSystem\Copy-IdenticalParamValues `
                             -BoundParameters $myPSBoundParameters `
-                            -FunctionName 'GenXdev.AI\Get-TextTranslation'
+                            -FunctionName 'GenXdev.Helpers\Get-SpeechToText'
 
-                        if ($translateParams.ContainsKey('Prompt')) {
-                            $null = $translateParams.Remove('Prompt')
+                        # set language using the resolved language format
+                        if ($PSBoundParameters.ContainsKey("LanguageIn")) {
+                            $invocationArguments.LanguageIn = (
+                                GenXdev.Helpers\Get-WebLanguageDictionary
+                            )[$LanguageIn]
                         }
-                        if ($translateParams.ContainsKey('Instructions')) {
-                            $null = $translateParams.Remove('Instructions')
+                        else {
+                            if ($invocationArguments.ContainsKey("LanguageIn")) {
+                                $null = $invocationArguments.Remove("LanguageIn")
+                            }
                         }
 
-                        # translate the complete transcribed text and return result
-                        $translationResult = GenXdev.AI\Get-TextTranslation `
-                            @translateParams `
-                            -Text "$results" -Language $LanguageOut
+                        if ($LanguageOut -eq "English") {
 
-                        # return the translation result
-                        return $translationResult
-                    }
+                            $invocationArguments.WithTranslate = $true;
+                            $skipTranslation = $true;
+                        }
 
-                    GenXdev.Helpers\Get-SpeechToText @invocationArguments
-                }
-                catch {
+                        $invocationArguments.Input = $outputFile
 
-                    # only show error if it's not a user abort
-                    if ($PSItem.Exception.Message -notlike '*aborted*') {
+                        try {
+                            # add shouldprocess check before executing the operation
+                            if (-not $PSCmdlet.ShouldProcess(
+                                    "Start processing file '$outputFile'", 'Start'
+                                )) {
 
-                        Microsoft.PowerShell.Utility\Write-Error $PSItem
-                    }
-                }
-                finally {
+                                continue
+                            }
 
-                    # always clean up temporary files
-                    if ([System.IO.File]::Exists($outputFile)) {
+                            # check if output should be in srt subtitle format
+                            if ($SRT) {
 
-                        $null = Microsoft.PowerShell.Management\Remove-Item `
-                            -LiteralPath $outputFile -Force -ErrorAction SilentlyContinue
-                    }
-                }
-            }
+                                # initialize subtitle counter for srt format
+                                $i = 1
+
+                                GenXdev.Helpers\Get-SpeechToText `
+                                    @invocationArguments |
+                                    Microsoft.PowerShell.Core\ForEach-Object {
+
+                                        $result = $PSItem
+
+                                        # check if translation to output language is required
+                                        if (-not [string]::IsNullOrWhiteSpace($LanguageOut) `
+                                                -and -not $skipTranslation) {
+
+                                            Microsoft.PowerShell.Utility\Write-Verbose (
+                                                "Translating text to $LanguageOut for: " +
+                                                "`"$($result.Text)`".."
+                                            )
+
+                                            try {
+
+                                                # prepare parameters for text translation
+                                                $translateParams = `
+                                                    GenXdev.FileSystem\Copy-IdenticalParamValues `
+                                                    -BoundParameters $myPSBoundParameters `
+                                                    -FunctionName `
+                                                    'GenXdev.AI\Get-TextTranslation'
+
+                                                if ($translateParams.ContainsKey('Prompt')) {
+                                                    $null = $translateParams.Remove('Prompt')
+                                                }
+                                                if ($translateParams.ContainsKey('Instructions')) {
+                                                    $null = $translateParams.Remove('Instructions')
+                                                }
+
+                                                # create new result with translated text
+                                                $result = @{
+                                                    Text  = (GenXdev.AI\Get-TextTranslation `
+                                                            @translateParams `
+                                                            -Text:($result.Text) `
+                                                            -Language:$LanguageOut
+                                                    )
+                                                    Start = $result.Start
+                                                    End   = $result.End
+                                                }
+
+                                                Microsoft.PowerShell.Utility\Write-Verbose (
+                                                    "Text translated to: " +
+                                                    "`"$($result.Text)`".."
+                                                )
+                                            }
+                                            catch {
+
+                                                Microsoft.PowerShell.Utility\Write-Verbose (
+                                                    "Translating text to $LanguageOut, " +
+                                                    "failed: $PSItem"
+                                                )
+                                            }
+                                        }
+
+                                        # format timestamps for srt output
+                                        $start = $result.Start.ToString(
+                                            'hh\:mm\:ss\,fff',
+                                            [System.Globalization.CultureInfo]::InvariantCulture
+                                        )
+                                        $end = $result.end.ToString(
+                                            'hh\:mm\:ss\,fff',
+                                            [System.Globalization.CultureInfo]::InvariantCulture
+                                        )
+
+                                        # return srt formatted subtitle entry to pipeline
+                                        Microsoft.PowerShell.Utility\Write-Output "$i`r`n$start --> $end`r`n$($result.Text)`r`n`r`n"
+
+                                        # increment subtitle counter
+                                        $i++
+                                    }
+
+                                    # exit early for srt format processing
+                                    return
+                                }
+
+                                # check if translation is needed for non-srt output
+                                if (-not [string]::IsNullOrWhiteSpace($LanguageOut) `
+                                        -and -not $skipTranslation) {
+
+                                    # transcribe the audio file to get raw text
+                                    $results = GenXdev.Helpers\Get-SpeechToText @invocationArguments
+
+                                    # prepare parameters for text translation
+                                    $translateParams = `
+                                        GenXdev.FileSystem\Copy-IdenticalParamValues `
+                                        -BoundParameters $myPSBoundParameters `
+                                        -FunctionName 'GenXdev.AI\Get-TextTranslation'
+
+                                    if ($translateParams.ContainsKey('Prompt')) {
+                                        $null = $translateParams.Remove('Prompt')
+                                    }
+                                    if ($translateParams.ContainsKey('Instructions')) {
+                                        $null = $translateParams.Remove('Instructions')
+                                    }
+
+                                    # translate the complete transcribed text and return result
+                                    $translationResult = GenXdev.AI\Get-TextTranslation `
+                                        @translateParams `
+                                        -Text "$results" -Language $LanguageOut
+
+                                    # return the translation result
+                                    return $translationResult
+                                }
+
+                                GenXdev.Helpers\Get-SpeechToText @invocationArguments
+                            }
+                            catch {
+
+                                # only show error if it's not a user abort
+                                if ($PSItem.Exception.Message -notlike '*aborted*') {
+
+                                    Microsoft.PowerShell.Utility\Write-Error $PSItem
+                                }
+                            }
+                            finally {
+
+                                # always clean up temporary files
+                                if ([System.IO.File]::Exists($outputFile)) {
+
+                                    $null = Microsoft.PowerShell.Management\Remove-Item `
+                                        -LiteralPath $outputFile -Force -ErrorAction SilentlyContinue
+                                }
+                            }
+                        }
     }
 
     end {
@@ -1443,9 +1443,10 @@ function Start-AudioTranscription {
             # set language using the resolved language format
             if ($PSBoundParameters.ContainsKey("LanguageIn")) {
                 $invocationArguments.LanguageIn = (
-                        GenXdev.Helpers\Get-WebLanguageDictionary
-                    )[$LanguageIn]
-            } else {
+                    GenXdev.Helpers\Get-WebLanguageDictionary
+                )[$LanguageIn]
+            }
+            else {
                 if ($invocationArguments.ContainsKey("LanguageIn")) {
                     $null = $invocationArguments.Remove("LanguageIn")
                 }
@@ -1465,13 +1466,13 @@ function Start-AudioTranscription {
 
                 GenXdev.Helpers\Receive-RealTimeSpeechToText `
                     @invocationArguments |
-                    Microsoft.PowerShell.Core\ForEach-Object  {
+                    Microsoft.PowerShell.Core\ForEach-Object {
 
                         $result = $PSItem
 
                         # check if translation to output language is required
                         if (-not [string]::IsNullOrWhiteSpace($LanguageOut) `
-                            -and -not $skipTranslation) {
+                                -and -not $skipTranslation) {
 
                             Microsoft.PowerShell.Utility\Write-Verbose (
                                 "Translating text to $LanguageOut for: " +
@@ -1485,7 +1486,7 @@ function Start-AudioTranscription {
                                     GenXdev.FileSystem\Copy-IdenticalParamValues `
                                     -BoundParameters $myPSBoundParameters `
                                     -FunctionName `
-                                        'GenXdev.AI\Get-TextTranslation'
+                                    'GenXdev.AI\Get-TextTranslation'
 
                                 if ($translateParams.ContainsKey('Prompt')) {
                                     $null = $translateParams.Remove('Prompt')
@@ -1496,11 +1497,11 @@ function Start-AudioTranscription {
 
                                 # create new result with translated text
                                 $result = @{
-                                    Text = (GenXdev.AI\Get-TextTranslation `
+                                    Text  = (GenXdev.AI\Get-TextTranslation `
                                             @translateParams `
                                             -Text:($result.Text) `
                                             -Language:$LanguageOut
-                                        )
+                                    )
                                     Start = $result.Start
                                     End   = $result.End
                                 }
@@ -1542,7 +1543,7 @@ function Start-AudioTranscription {
 
             # check if translation is needed for microphone recording output
             if (-not [string]::IsNullOrWhiteSpace($LanguageOut) `
-                -and -not $skipTranslation) {
+                    -and -not $skipTranslation) {
 
                 # prepare parameters for text translation
                 $translateParams = GenXdev.FileSystem\Copy-IdenticalParamValues `

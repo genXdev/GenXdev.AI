@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.DeepStack
 Original cmdlet filename  : Get-RegisteredFaces.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.3.2026
+Version                   : 3.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 

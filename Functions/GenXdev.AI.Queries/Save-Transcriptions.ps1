@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Save-Transcriptions.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.3.2026
+Version                   : 3.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -673,8 +673,7 @@ function Save-Transcriptions {
             Mandatory = $false,
             HelpMessage = 'Whisper model type to use, defaults to LargeV3Turbo'
         )]
-        [ValidateSet('Tiny', 'TinyEn', 'Base', 'BaseEn', 'Small', 'SmallEn',
-            'Medium', 'MediumEn', 'Large', 'LargeV1', 'LargeV2', 'LargeV3', 'LargeV3Turbo')]
+        [ValidateSet('Tiny', 'TinyEn', 'Base', 'BaseEn', 'Small', 'SmallEn', 'Medium', 'MediumEn', 'LargeV1', 'LargeV2', 'LargeV3', 'LargeV3Turbo')]
         [string] $ModelType,
         ###########################################################################
         [Parameter(
@@ -949,7 +948,7 @@ function Save-Transcriptions {
 
                 # determine target language and output path for new subtitle file
                 $targetLanguage = [string]::IsNullOrWhiteSpace($languageOut) ?
-                    $languageIn : $languageOut
+                $languageIn : $languageOut
 
                 $langCode = (GenXdev.Helpers\Get-WebLanguageDictionary)[$targetLanguage]
 
@@ -1013,7 +1012,7 @@ function Save-Transcriptions {
 
                     # reduce CPU priority to minimize system impact during processing
                     [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass =
-                        [System.Diagnostics.ProcessPriorityClass]::Idle
+                    [System.Diagnostics.ProcessPriorityClass]::Idle
 
                     try {
 
@@ -1049,7 +1048,7 @@ function Save-Transcriptions {
 
                         # restore normal CPU priority after processing
                         [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass =
-                            [System.Diagnostics.ProcessPriorityClass]::Normal
+                        [System.Diagnostics.ProcessPriorityClass]::Normal
                     }
                 }
                 catch {
@@ -1066,15 +1065,16 @@ function Save-Transcriptions {
                     $null = $transcription |
                         Microsoft.PowerShell.Utility\Out-File $newPath -Force -Encoding UTF8
 
-                    Microsoft.PowerShell.Utility\Write-Host "  Saved: $([System.IO.Path]::GetFileName($newPath))" -ForegroundColor Green
-                    Microsoft.PowerShell.Utility\Write-Verbose ('Transcription saved ' +
-                        "to: $newPath")
-                } catch {
-                    Microsoft.PowerShell.Utility\Write-Error "Failed to save transcription to: $newPath"
-                    Microsoft.PowerShell.Utility\Write-Error "Save error: $($_.Exception.Message)"
-                    return
+                        Microsoft.PowerShell.Utility\Write-Host "  Saved: $([System.IO.Path]::GetFileName($newPath))" -ForegroundColor Green
+                        Microsoft.PowerShell.Utility\Write-Verbose ('Transcription saved ' +
+                            "to: $newPath")
+                    }
+                    catch {
+                        Microsoft.PowerShell.Utility\Write-Error "Failed to save transcription to: $newPath"
+                        Microsoft.PowerShell.Utility\Write-Error "Save error: $($_.Exception.Message)"
+                        return
+                    }
                 }
-            }
     }
 
     end {

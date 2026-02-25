@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.LMStudio
 Original cmdlet filename  : Initialize-LMStudioModel.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 2.3.2026
+Version                   : 3.3.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -298,7 +298,7 @@ function Initialize-LMStudioModel {
             Mandatory = $false,
             HelpMessage = 'Focus the window after opening'
         )]
-        [Alias('fw','focus')]
+        [Alias('fw', 'focus')]
         [switch] $FocusWindow,
         ###############################################################################
         [Parameter(
@@ -397,7 +397,7 @@ function Initialize-LMStudioModel {
 
         $NoLMStudioInitialize = $NoLMStudioInitialize -or (
             (-not [string]::IsNullOrWhiteSpace($ApiEndpoint)) -and (
-            ($ApiEndpoint.Contains('localhost') -or $ApiEndpoint.Contains('127.0.0.1'))
+                ($ApiEndpoint.Contains('localhost') -or $ApiEndpoint.Contains('127.0.0.1'))
             )
         )
 
@@ -409,7 +409,7 @@ function Initialize-LMStudioModel {
         $llmConfigParams = GenXdev.FileSystem\Copy-IdenticalParamValues `
             -BoundParameters $PSBoundParameters `
             -FunctionName 'GenXdev.AI\Get-AILLMSettings' `
-            -DefaultValues  (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
+            -DefaultValues (Microsoft.PowerShell.Utility\Get-Variable -Scope Local -ErrorAction SilentlyContinue)
 
         $llmConfig = GenXdev.AI\Get-AILLMSettings @llmConfigParams
 
@@ -511,7 +511,8 @@ function Initialize-LMStudioModel {
                 if (-not $lmsModelName.ToLowerInvariant().StartsWith('https://huggingface.co/')) {
                     if ($HuggingFaceIdentifier.StartsWith("/")) {
                         $lmsModelName = "https://huggingface.co$HuggingFaceIdentifier"
-                    } else {
+                    }
+                    else {
                         $lmsModelName = "https://huggingface.co/$HuggingFaceIdentifier"
                     }
                 }
@@ -551,6 +552,13 @@ function Initialize-LMStudioModel {
             Microsoft.PowerShell.Core\Where-Object { $_.path -eq $foundModel.path } |
             Microsoft.PowerShell.Utility\Select-Object -First 1
 
+        # If model is already loaded and not unloading, return it immediately
+        if ($null -ne $modelLoaded -and -not $Unload) {
+            Microsoft.PowerShell.Utility\Write-Verbose "Model is already loaded, skipping load operation"
+            Microsoft.PowerShell.Utility\Write-Verbose "Loaded model: $($modelLoaded.path) (Status: $($modelLoaded.status))"
+            return $modelLoaded
+        }
+
         # handle unload request if specified
         if ($Unload) {
 
@@ -583,7 +591,8 @@ function Initialize-LMStudioModel {
 
             if ($null -eq $stillLoaded) {
                 Microsoft.PowerShell.Utility\Write-Verbose 'Model successfully unloaded'
-            } else {
+            }
+            else {
                 Microsoft.PowerShell.Utility\Write-Verbose 'Failed to unload model'
             }
             return
@@ -640,8 +649,8 @@ function Initialize-LMStudioModel {
                 "$($params | Microsoft.PowerShell.Utility\ConvertTo-Json -Compress `
                 -WarningAction SilentlyContinue)")
 
-            # attempt to load the model in a background job
-            $null = Microsoft.PowerShell.Core\Start-Job `
+            # attempt to load the model in a background job with timeout
+            $loadJob = Microsoft.PowerShell.Core\Start-Job `
                 -ArgumentList @($paths, $params) `
                 -ScriptBlock {
                 param($lmstudiopaths, $params)
@@ -662,17 +671,26 @@ function Initialize-LMStudioModel {
                             Microsoft.PowerShell.Core\Where-Object {
                                 $_.path -like $params[1]
                             }
-                        )
-                    }
-                    catch {
-                        Microsoft.PowerShell.Utility\Write-Verbose (
-                            "Error during model load: $_"
-                        )
-                        return $false
-                    }
-                }.GetNewClosure() |
-                    Microsoft.PowerShell.Core\Wait-Job |
-                    Microsoft.PowerShell.Core\Remove-Job
+                    )
+                }
+                catch {
+                    Microsoft.PowerShell.Utility\Write-Verbose (
+                        "Error during model load: $_"
+                    )
+                    return $false
+                }
+            }.GetNewClosure()
+
+            # Wait for the job with a 60-second timeout for the load command to start
+            Microsoft.PowerShell.Utility\Write-Verbose 'Waiting for load command to complete (max 60s)...'
+            $loadJobCompleted = Microsoft.PowerShell.Core\Wait-Job -Job $loadJob -Timeout 60 -ErrorAction SilentlyContinue
+
+            if ($null -eq $loadJobCompleted) {
+                Microsoft.PowerShell.Utility\Write-Verbose 'Load command timed out after 60 seconds, checking if model loaded anyway...'
+                $loadJob | Microsoft.PowerShell.Core\Stop-Job -ErrorAction SilentlyContinue
+            }
+
+            $loadJob | Microsoft.PowerShell.Core\Remove-Job -Force -ErrorAction SilentlyContinue
 
             # Add waiting loop to ensure model is fully loaded
             $timeout = 1800 # 30 minutes in seconds
