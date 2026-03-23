@@ -2,7 +2,7 @@
 Part of PowerShell module : GenXdev.AI.Queries
 Original cmdlet filename  : Find-Image.ps1
 Original author           : René Vaessen / GenXdev
-Version                   : 3.3.2026
+Version                   : 3.23.2026
 ################################################################################
 Copyright (c)  René Vaessen / GenXdev
 
@@ -1415,9 +1415,10 @@ function Find-Image {
                     $contentMatch = $true
                 }
 
-                # check if no nudity is required and image has nudity flag not set to true
-                if ($NoNudity -and ($null -ne $descriptionFound) -and
-                    ($descriptionFound.has_nudity -ne $true)) {
+                # check if no nudity is required and (no metadata OR nudity flag not set to true)
+                # images without metadata are treated as safe (no nudity)
+                if ($NoNudity -and (($null -eq $descriptionFound) -or
+                        ($descriptionFound.has_nudity -ne $true))) {
                     $contentMatch = $true
                 }
 
@@ -1427,9 +1428,10 @@ function Find-Image {
                     $contentMatch = $true
                 }
 
-                # check if no explicit content is required and image has explicit content flag not set to true
-                if ($NoExplicitContent -and ($null -ne $descriptionFound) -and
-                    ($descriptionFound.has_explicit_content -ne $true)) {
+                # check if no explicit content is required and (no metadata OR explicit content flag not set to true)
+                # images without metadata are treated as safe (no explicit content)
+                if ($NoExplicitContent -and (($null -eq $descriptionFound) -or
+                        ($descriptionFound.has_explicit_content -ne $true))) {
                     $contentMatch = $true
                 }
             }
